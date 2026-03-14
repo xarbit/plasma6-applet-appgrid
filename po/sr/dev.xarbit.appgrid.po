@@ -1,0 +1,303 @@
+# Translation file for dev.xarbit.appgrid
+# Serbian translation
+# Copyright (C) 2026
+# This file is distributed under the same license as the dev.xarbit.appgrid package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dev.xarbit.appgrid 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/appgrid/issues\n"
+"POT-Creation-Date: 2026-03-14 20:43+0100\n"
+"PO-Revision-Date: 2026-03-14 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Serbian\n"
+"Language: sr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: package/contents/ui/AppContextMenu.qml:35
+#: package/contents/ui/AppContextMenu.qml:37
+msgid "Pin to Task Manager"
+msgstr "Закачи на управљач задатака"
+
+#: package/contents/ui/AppContextMenu.qml:43
+#: package/contents/ui/AppContextMenu.qml:45
+msgid "Add to Desktop"
+msgstr "Додај на радну површину"
+
+#: package/contents/ui/AppContextMenu.qml:51
+#: package/contents/ui/AppContextMenu.qml:53
+msgid "Edit Application"
+msgstr "Уреди програм"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Remove from Favorites"
+msgstr "Уклони из омиљених"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Add to Favorites"
+msgstr "Додај у омиљене"
+
+#: package/contents/ui/AppContextMenu.qml:74
+#: package/contents/ui/AppContextMenu.qml:82
+msgid "Hide Application"
+msgstr "Сакриј програм"
+
+#: package/contents/ui/AppGridView.qml:148
+msgid "Recently Used"
+msgstr "Недавно коришћено"
+
+#: package/contents/ui/AppGridView.qml:210
+msgid "All Apps"
+msgstr "Сви програми"
+
+#: package/contents/ui/AppIconDelegate.qml:82
+msgid "new"
+msgstr "ново"
+
+#: package/contents/ui/CategoryBar.qml:23
+msgid "All"
+msgstr "Све"
+
+#: package/contents/ui/CategoryBar.qml:28
+msgid "All applications"
+msgstr "Сви програми"
+
+#: package/contents/ui/ConfigGeneral.qml:67
+msgid "Icon:"
+msgstr "Иконица:"
+
+#: package/contents/ui/ConfigGeneral.qml:128
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "Изабери…"
+
+#: package/contents/ui/ConfigGeneral.qml:133
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "Обриши иконицу"
+
+#: package/contents/ui/ConfigGeneral.qml:150
+msgid "Icons per row:"
+msgstr "Иконица по реду:"
+
+#: package/contents/ui/ConfigGeneral.qml:156
+msgid "Visible rows:"
+msgstr "Видљиви редови:"
+
+#: package/contents/ui/ConfigGeneral.qml:162
+msgid "Icon size:"
+msgstr "Величина икона:"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Small"
+msgstr "Мала"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Medium"
+msgstr "Средња"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Large"
+msgstr "Велика"
+
+#: package/contents/ui/ConfigGeneral.qml:167
+msgid "Sort order:"
+msgstr "Редослед сортирања:"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Alphabetical"
+msgstr "Абецедни"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Most Used"
+msgstr "Најкоришћеније"
+
+#: package/contents/ui/ConfigGeneral.qml:177
+msgid "Show recently used applications"
+msgstr "Прикажи недавно коришћене програме"
+
+#: package/contents/ui/ConfigGeneral.qml:188
+msgid "Appearance:"
+msgstr "Изглед:"
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Show scrollbars"
+msgstr "Прикажи траке за померање"
+
+#: package/contents/ui/ConfigGeneral.qml:194
+msgid "Enable background blur"
+msgstr "Укључи замућење позадине"
+
+#: package/contents/ui/ConfigGeneral.qml:199
+msgid "Shake icons on open"
+msgstr "Тресење иконица при отварању"
+
+#: package/contents/ui/ConfigGeneral.qml:204
+msgid "Show labels on power/session buttons"
+msgstr "Прикажи ознаке на дугмадима за напајање/сесију"
+
+#: package/contents/ui/ConfigGeneral.qml:209
+msgid "Expand search to bookmarks, files, and websites"
+msgstr "Прошири претрагу на обележиваче, датотеке и веб-странице"
+
+#: package/contents/ui/ConfigGeneral.qml:213
+msgid "Configure Search Plugins…"
+msgstr "Подеси додатке за претрагу…"
+
+#: package/contents/ui/ConfigGeneral.qml:220
+msgid "Background opacity:"
+msgstr "Непрозирност позадине:"
+
+#: package/contents/ui/ConfigGeneral.qml:236
+msgid "Corner radius:"
+msgstr "Полупречник углова:"
+
+#: package/contents/ui/ConfigGeneral.qml:237
+msgid "Use custom corner radius"
+msgstr "Користи прилагођени полупречник углова"
+
+#: package/contents/ui/ConfigGeneral.qml:249
+msgid "px"
+msgstr "px"
+
+#: package/contents/ui/ConfigGeneral.qml:258
+msgid "Hidden Applications"
+msgstr "Сакривени програми"
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid ""
+"Right-click any application in the grid and choose \"Hide Application\" to "
+"add it here."
+msgstr ""
+"Кликните десним тастером на било који програм у мрежи и изаберите „Сакриј "
+"програм” да бисте га додали овде."
+
+#: package/contents/ui/ConfigGeneral.qml:273
+msgid "No hidden applications."
+msgstr "Нема сакривених програма."
+
+#: package/contents/ui/ConfigGeneral.qml:303
+msgid "Unhide"
+msgstr "Прикажи"
+
+#: package/contents/ui/GridWindow.qml:427
+msgid "More Results"
+msgstr "Још резултата"
+
+#: package/contents/ui/PowerButtons.qml:24
+msgid "Sleep"
+msgstr "Спавање"
+
+#: package/contents/ui/PowerButtons.qml:25
+msgid "Restart"
+msgstr "Поново покрени"
+
+#: package/contents/ui/PowerButtons.qml:26
+msgid "Shut Down"
+msgstr "Искључи"
+
+#: package/contents/ui/PowerButtons.qml:47
+#: package/contents/ui/PowerButtons.qml:50
+#: package/contents/ui/PowerButtons.qml:56
+msgid "Session"
+msgstr "Сесија"
+
+#: package/contents/ui/PowerButtons.qml:65
+#: package/contents/ui/PowerButtons.qml:67
+msgid "Lock"
+msgstr "Закључај"
+
+#: package/contents/ui/PowerButtons.qml:72
+#: package/contents/ui/PowerButtons.qml:74
+msgid "Log Out"
+msgstr "Одјави се"
+
+#: package/contents/ui/PowerButtons.qml:79
+#: package/contents/ui/PowerButtons.qml:81
+msgid "Switch User"
+msgstr "Промени корисника"
+
+#: package/contents/ui/PrefixModeView.qml:42
+msgid "Quick Commands"
+msgstr "Брзе команде"
+
+#: package/contents/ui/PrefixModeView.qml:51
+msgid "Terminal"
+msgstr "Терминал"
+
+#: package/contents/ui/PrefixModeView.qml:52
+msgid "Run Command"
+msgstr "Покрени команду"
+
+#: package/contents/ui/PrefixModeView.qml:53
+msgid "Browse Files"
+msgstr "Прегледај датотеке"
+
+#: package/contents/ui/PrefixModeView.qml:54
+msgid "Browse Home"
+msgstr "Прегледај личну фасциклу"
+
+#: package/contents/ui/PrefixModeView.qml:55
+msgid "This Help"
+msgstr "Ова помоћ"
+
+#: package/contents/ui/PrefixModeView.qml:131
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 покреће резултате претраге одмах"
+
+#: package/contents/ui/PrefixModeView.qml:157
+msgid "Type a command to run in terminal"
+msgstr "Унесите команду за покретање у терминалу"
+
+#: package/contents/ui/PrefixModeView.qml:158
+msgid "Type a command to execute"
+msgstr "Унесите команду за извршавање"
+
+#: package/contents/ui/PrefixModeView.qml:160
+msgid "Press Enter to run in terminal"
+msgstr "Притисните Enter за покретање у терминалу"
+
+#: package/contents/ui/PrefixModeView.qml:161
+msgid "Press Enter to execute"
+msgstr "Притисните Enter за извршавање"
+
+#: package/contents/ui/SearchBar.qml:37
+msgid "Search apps or type ? for commands"
+msgstr "Претражите апликације или унесите ? за команде"
+
+#: package/contents/ui/SearchBar.qml:60
+msgid "Search applications"
+msgstr "Претражи програме"
+
+#: package/contents/ui/SearchBar.qml:75
+msgid "Clear search"
+msgstr "Обриши претрагу"
+
+#: package/contents/ui/SearchResultsList.qml:160
+msgid "Alt+%1: "
+msgstr "Alt+%1: "
+
+#~ msgid "Available Commands"
+#~ msgstr "Доступне команде"
+
+#~ msgid "Run command in terminal"
+#~ msgstr "Покрени команду у терминалу"
+
+#~ msgid "Run shell command (no terminal)"
+#~ msgstr "Покрени команду љуске (без терминала)"
+
+#~ msgid "Browse files from root"
+#~ msgstr "Прегледај датотеке од корена"
+
+#~ msgid "Browse files from home"
+#~ msgstr "Прегледај датотеке из личног директоријума"
+
+#~ msgid "Show this help"
+#~ msgstr "Прикажи ову помоћ"
+
+#~ msgid "Search"
+#~ msgstr "Претрага"

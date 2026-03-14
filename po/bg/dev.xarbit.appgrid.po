@@ -1,0 +1,301 @@
+# Bulgarian translation for dev.xarbit.appgrid
+# Copyright (C) 2026
+# This file is distributed under the same license as the dev.xarbit.appgrid package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dev.xarbit.appgrid 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/appgrid/issues\n"
+"POT-Creation-Date: 2026-03-14 20:43+0100\n"
+"PO-Revision-Date: 2026-03-14 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Bulgarian\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: package/contents/ui/AppContextMenu.qml:35
+#: package/contents/ui/AppContextMenu.qml:37
+msgid "Pin to Task Manager"
+msgstr "Закачане към лентата със задачи"
+
+#: package/contents/ui/AppContextMenu.qml:43
+#: package/contents/ui/AppContextMenu.qml:45
+msgid "Add to Desktop"
+msgstr "Добавяне на работния плот"
+
+#: package/contents/ui/AppContextMenu.qml:51
+#: package/contents/ui/AppContextMenu.qml:53
+msgid "Edit Application"
+msgstr "Редактиране на приложението"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Remove from Favorites"
+msgstr "Премахване от любими"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Add to Favorites"
+msgstr "Добавяне в любими"
+
+#: package/contents/ui/AppContextMenu.qml:74
+#: package/contents/ui/AppContextMenu.qml:82
+msgid "Hide Application"
+msgstr "Скриване на приложението"
+
+#: package/contents/ui/AppGridView.qml:148
+msgid "Recently Used"
+msgstr "Наскоро използвани"
+
+#: package/contents/ui/AppGridView.qml:210
+msgid "All Apps"
+msgstr "Всички приложения"
+
+#: package/contents/ui/AppIconDelegate.qml:82
+msgid "new"
+msgstr "ново"
+
+#: package/contents/ui/CategoryBar.qml:23
+msgid "All"
+msgstr "Всички"
+
+#: package/contents/ui/CategoryBar.qml:28
+msgid "All applications"
+msgstr "Всички приложения"
+
+#: package/contents/ui/ConfigGeneral.qml:67
+msgid "Icon:"
+msgstr "Икона:"
+
+#: package/contents/ui/ConfigGeneral.qml:128
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "Избиране…"
+
+#: package/contents/ui/ConfigGeneral.qml:133
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "Изчистване на иконата"
+
+#: package/contents/ui/ConfigGeneral.qml:150
+msgid "Icons per row:"
+msgstr "Икони на ред:"
+
+#: package/contents/ui/ConfigGeneral.qml:156
+msgid "Visible rows:"
+msgstr "Видими редове:"
+
+#: package/contents/ui/ConfigGeneral.qml:162
+msgid "Icon size:"
+msgstr "Размер на иконите:"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Small"
+msgstr "Малък"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Medium"
+msgstr "Среден"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Large"
+msgstr "Голям"
+
+#: package/contents/ui/ConfigGeneral.qml:167
+msgid "Sort order:"
+msgstr "Подредба:"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Alphabetical"
+msgstr "По азбучен ред"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Most Used"
+msgstr "Най-използвани"
+
+#: package/contents/ui/ConfigGeneral.qml:177
+msgid "Show recently used applications"
+msgstr "Показване на наскоро използвани приложения"
+
+#: package/contents/ui/ConfigGeneral.qml:188
+msgid "Appearance:"
+msgstr "Облик:"
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Show scrollbars"
+msgstr "Показване на ленти за превъртане"
+
+#: package/contents/ui/ConfigGeneral.qml:194
+msgid "Enable background blur"
+msgstr "Включване на размазването на фона"
+
+#: package/contents/ui/ConfigGeneral.qml:199
+msgid "Shake icons on open"
+msgstr "Разклащане на иконите при отваряне"
+
+#: package/contents/ui/ConfigGeneral.qml:204
+msgid "Show labels on power/session buttons"
+msgstr "Показване на етикети върху бутоните за захранване/сесия"
+
+#: package/contents/ui/ConfigGeneral.qml:209
+msgid "Expand search to bookmarks, files, and websites"
+msgstr "Разширяване на търсенето до отметки, файлове и уебсайтове"
+
+#: package/contents/ui/ConfigGeneral.qml:213
+msgid "Configure Search Plugins…"
+msgstr "Настройване на приставки за търсене…"
+
+#: package/contents/ui/ConfigGeneral.qml:220
+msgid "Background opacity:"
+msgstr "Непрозрачност на фона:"
+
+#: package/contents/ui/ConfigGeneral.qml:236
+msgid "Corner radius:"
+msgstr "Радиус на ъглите:"
+
+#: package/contents/ui/ConfigGeneral.qml:237
+msgid "Use custom corner radius"
+msgstr "Използване на потребителски радиус на ъглите"
+
+#: package/contents/ui/ConfigGeneral.qml:249
+msgid "px"
+msgstr "пкс"
+
+#: package/contents/ui/ConfigGeneral.qml:258
+msgid "Hidden Applications"
+msgstr "Скрити приложения"
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid ""
+"Right-click any application in the grid and choose \"Hide Application\" to "
+"add it here."
+msgstr ""
+"Щракнете с десен бутон върху произволно приложение в мрежата и изберете "
+"„Скриване на приложението”, за да го добавите тук."
+
+#: package/contents/ui/ConfigGeneral.qml:273
+msgid "No hidden applications."
+msgstr "Няма скрити приложения."
+
+#: package/contents/ui/ConfigGeneral.qml:303
+msgid "Unhide"
+msgstr "Показване"
+
+#: package/contents/ui/GridWindow.qml:427
+msgid "More Results"
+msgstr "Повече резултати"
+
+#: package/contents/ui/PowerButtons.qml:24
+msgid "Sleep"
+msgstr "Заспиване"
+
+#: package/contents/ui/PowerButtons.qml:25
+msgid "Restart"
+msgstr "Рестартиране"
+
+#: package/contents/ui/PowerButtons.qml:26
+msgid "Shut Down"
+msgstr "Изключване"
+
+#: package/contents/ui/PowerButtons.qml:47
+#: package/contents/ui/PowerButtons.qml:50
+#: package/contents/ui/PowerButtons.qml:56
+msgid "Session"
+msgstr "Сесия"
+
+#: package/contents/ui/PowerButtons.qml:65
+#: package/contents/ui/PowerButtons.qml:67
+msgid "Lock"
+msgstr "Заключване"
+
+#: package/contents/ui/PowerButtons.qml:72
+#: package/contents/ui/PowerButtons.qml:74
+msgid "Log Out"
+msgstr "Излизане"
+
+#: package/contents/ui/PowerButtons.qml:79
+#: package/contents/ui/PowerButtons.qml:81
+msgid "Switch User"
+msgstr "Превключване на потребител"
+
+#: package/contents/ui/PrefixModeView.qml:42
+msgid "Quick Commands"
+msgstr "Бързи команди"
+
+#: package/contents/ui/PrefixModeView.qml:51
+msgid "Terminal"
+msgstr "Терминал"
+
+#: package/contents/ui/PrefixModeView.qml:52
+msgid "Run Command"
+msgstr "Изпълнение на команда"
+
+#: package/contents/ui/PrefixModeView.qml:53
+msgid "Browse Files"
+msgstr "Преглед на файлове"
+
+#: package/contents/ui/PrefixModeView.qml:54
+msgid "Browse Home"
+msgstr "Преглед на домашната папка"
+
+#: package/contents/ui/PrefixModeView.qml:55
+msgid "This Help"
+msgstr "Тази помощ"
+
+#: package/contents/ui/PrefixModeView.qml:131
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 стартира резултатите от търсенето незабавно"
+
+#: package/contents/ui/PrefixModeView.qml:157
+msgid "Type a command to run in terminal"
+msgstr "Въведете команда за изпълнение в терминал"
+
+#: package/contents/ui/PrefixModeView.qml:158
+msgid "Type a command to execute"
+msgstr "Въведете команда за изпълнение"
+
+#: package/contents/ui/PrefixModeView.qml:160
+msgid "Press Enter to run in terminal"
+msgstr "Натиснете Enter за изпълнение в терминал"
+
+#: package/contents/ui/PrefixModeView.qml:161
+msgid "Press Enter to execute"
+msgstr "Натиснете Enter за изпълнение"
+
+#: package/contents/ui/SearchBar.qml:37
+msgid "Search apps or type ? for commands"
+msgstr "Търсене на приложения или въведете ? за команди"
+
+#: package/contents/ui/SearchBar.qml:60
+msgid "Search applications"
+msgstr "Търсене на приложения"
+
+#: package/contents/ui/SearchBar.qml:75
+msgid "Clear search"
+msgstr "Изчистване на търсенето"
+
+#: package/contents/ui/SearchResultsList.qml:160
+msgid "Alt+%1: "
+msgstr "Alt+%1: "
+
+#~ msgid "Available Commands"
+#~ msgstr "Налични команди"
+
+#~ msgid "Run command in terminal"
+#~ msgstr "Изпълняване на команда в терминал"
+
+#~ msgid "Run shell command (no terminal)"
+#~ msgstr "Изпълняване на команда на обвивката (без терминал)"
+
+#~ msgid "Browse files from root"
+#~ msgstr "Разглеждане на файлове от кореновата директория"
+
+#~ msgid "Browse files from home"
+#~ msgstr "Разглеждане на файлове от домашната директория"
+
+#~ msgid "Show this help"
+#~ msgstr "Показване на тази помощ"
+
+#~ msgid "Search"
+#~ msgstr "Търсене"

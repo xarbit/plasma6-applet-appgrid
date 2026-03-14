@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 AppGrid Contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 cmake_minimum_required(VERSION 3.20)
 project(AppGrid VERSION 1.0 LANGUAGES CXX)
 
@@ -10,20 +13,24 @@ find_package(KF6Service REQUIRED)
 find_package(KF6I18n REQUIRED)
 find_package(KF6CoreAddons REQUIRED)
 find_package(KF6KIO REQUIRED)
+find_package(KF6WindowSystem REQUIRED)
 find_package(KF6Package REQUIRED)
+find_package(LayerShellQt REQUIRED)
+find_package(LibKWorkspace REQUIRED)
 find_package(Plasma REQUIRED)
+find_package(PlasmaQuick REQUIRED)
 
 # --- Plasma applet C++ plugin ---
-add_library(org.kde.plasma.appgrid SHARED
+add_library(dev.xarbit.appgrid SHARED
     src/appgridplugin.cpp
     src/appgridplugin.h
     src/appmodel.cpp
     src/appmodel.h
 )
 
-set_target_properties(org.kde.plasma.appgrid PROPERTIES PREFIX "")
+set_target_properties(dev.xarbit.appgrid PROPERTIES PREFIX "")
 
-target_link_libraries(org.kde.plasma.appgrid PRIVATE
+target_link_libraries(dev.xarbit.appgrid PRIVATE
     Qt6::Quick
     Qt6::Gui
     Qt6::DBus
@@ -32,6 +39,10 @@ target_link_libraries(org.kde.plasma.appgrid PRIVATE
     KF6::I18n
     KF6::CoreAddons
     KF6::KIOGui
+    KF6::WindowSystem
+    LayerShellQt::Interface
+    PW::KWorkspace
+    Plasma::PlasmaQuick
 )
 
 # Copy metadata.json next to source for K_PLUGIN_CLASS_WITH_JSON
@@ -42,6 +53,9 @@ configure_file(
 )
 
 # --- Install ---
-install(TARGETS org.kde.plasma.appgrid DESTINATION ${KDE_INSTALL_PLUGINDIR}/plasma/applets)
+install(TARGETS dev.xarbit.appgrid DESTINATION ${KDE_INSTALL_PLUGINDIR}/plasma/applets)
 
-plasma_install_package(package org.kde.plasma.appgrid)
+plasma_install_package(package dev.xarbit.appgrid)
+
+install(FILES dev.xarbit.appgrid.metainfo.xml
+        DESTINATION ${KDE_INSTALL_METAINFODIR})

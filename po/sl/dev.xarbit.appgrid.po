@@ -1,0 +1,302 @@
+# Slovenian translation for dev.xarbit.appgrid
+# Copyright (C) 2026
+# This file is distributed under the same license as the dev.xarbit.appgrid package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dev.xarbit.appgrid 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/appgrid/issues\n"
+"POT-Creation-Date: 2026-03-14 20:43+0100\n"
+"PO-Revision-Date: 2026-03-14 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Slovenian\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
+"n%100==4 ? 2 : 3);\n"
+
+#: package/contents/ui/AppContextMenu.qml:35
+#: package/contents/ui/AppContextMenu.qml:37
+msgid "Pin to Task Manager"
+msgstr "Pripni v upravljalnik opravil"
+
+#: package/contents/ui/AppContextMenu.qml:43
+#: package/contents/ui/AppContextMenu.qml:45
+msgid "Add to Desktop"
+msgstr "Dodaj na namizje"
+
+#: package/contents/ui/AppContextMenu.qml:51
+#: package/contents/ui/AppContextMenu.qml:53
+msgid "Edit Application"
+msgstr "Uredi program"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Remove from Favorites"
+msgstr "Odstrani iz priljubljenih"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Add to Favorites"
+msgstr "Dodaj med priljubljene"
+
+#: package/contents/ui/AppContextMenu.qml:74
+#: package/contents/ui/AppContextMenu.qml:82
+msgid "Hide Application"
+msgstr "Skrij program"
+
+#: package/contents/ui/AppGridView.qml:148
+msgid "Recently Used"
+msgstr "Nedavno uporabljeno"
+
+#: package/contents/ui/AppGridView.qml:210
+msgid "All Apps"
+msgstr "Vsi programi"
+
+#: package/contents/ui/AppIconDelegate.qml:82
+msgid "new"
+msgstr "novo"
+
+#: package/contents/ui/CategoryBar.qml:23
+msgid "All"
+msgstr "Vse"
+
+#: package/contents/ui/CategoryBar.qml:28
+msgid "All applications"
+msgstr "Vsi programi"
+
+#: package/contents/ui/ConfigGeneral.qml:67
+msgid "Icon:"
+msgstr "Ikona:"
+
+#: package/contents/ui/ConfigGeneral.qml:128
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "Izberi …"
+
+#: package/contents/ui/ConfigGeneral.qml:133
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "Počisti ikono"
+
+#: package/contents/ui/ConfigGeneral.qml:150
+msgid "Icons per row:"
+msgstr "Ikon na vrstico:"
+
+#: package/contents/ui/ConfigGeneral.qml:156
+msgid "Visible rows:"
+msgstr "Vidne vrstice:"
+
+#: package/contents/ui/ConfigGeneral.qml:162
+msgid "Icon size:"
+msgstr "Velikost ikon:"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Small"
+msgstr "Majhna"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Medium"
+msgstr "Srednja"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Large"
+msgstr "Velika"
+
+#: package/contents/ui/ConfigGeneral.qml:167
+msgid "Sort order:"
+msgstr "Vrstni red:"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Alphabetical"
+msgstr "Po abecedi"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Most Used"
+msgstr "Najpogosteje uporabljene"
+
+#: package/contents/ui/ConfigGeneral.qml:177
+msgid "Show recently used applications"
+msgstr "Prikaži nedavno uporabljene programe"
+
+#: package/contents/ui/ConfigGeneral.qml:188
+msgid "Appearance:"
+msgstr "Videz:"
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Show scrollbars"
+msgstr "Prikaži drsne trakove"
+
+#: package/contents/ui/ConfigGeneral.qml:194
+msgid "Enable background blur"
+msgstr "Omogoči zameglitev ozadja"
+
+#: package/contents/ui/ConfigGeneral.qml:199
+msgid "Shake icons on open"
+msgstr "Zatresenje ikon ob odprtju"
+
+#: package/contents/ui/ConfigGeneral.qml:204
+msgid "Show labels on power/session buttons"
+msgstr "Prikaži oznake na gumbih za napajanje/sejo"
+
+#: package/contents/ui/ConfigGeneral.qml:209
+msgid "Expand search to bookmarks, files, and websites"
+msgstr "Razširi iskanje na zaznamke, datoteke in spletna mesta"
+
+#: package/contents/ui/ConfigGeneral.qml:213
+msgid "Configure Search Plugins…"
+msgstr "Nastavi iskalne vtičnike …"
+
+#: package/contents/ui/ConfigGeneral.qml:220
+msgid "Background opacity:"
+msgstr "Neprosojnost ozadja:"
+
+#: package/contents/ui/ConfigGeneral.qml:236
+msgid "Corner radius:"
+msgstr "Polmer vogalov:"
+
+#: package/contents/ui/ConfigGeneral.qml:237
+msgid "Use custom corner radius"
+msgstr "Uporabi polmer vogalov po meri"
+
+#: package/contents/ui/ConfigGeneral.qml:249
+msgid "px"
+msgstr "px"
+
+#: package/contents/ui/ConfigGeneral.qml:258
+msgid "Hidden Applications"
+msgstr "Skriti programi"
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid ""
+"Right-click any application in the grid and choose \"Hide Application\" to "
+"add it here."
+msgstr ""
+"Z desnim klikom na katerikoli program v mreži in izbiro „Skrij program” ga "
+"dodate sem."
+
+#: package/contents/ui/ConfigGeneral.qml:273
+msgid "No hidden applications."
+msgstr "Ni skritih programov."
+
+#: package/contents/ui/ConfigGeneral.qml:303
+msgid "Unhide"
+msgstr "Prikaži"
+
+#: package/contents/ui/GridWindow.qml:427
+msgid "More Results"
+msgstr "Več zadetkov"
+
+#: package/contents/ui/PowerButtons.qml:24
+msgid "Sleep"
+msgstr "Spanje"
+
+#: package/contents/ui/PowerButtons.qml:25
+msgid "Restart"
+msgstr "Ponovni zagon"
+
+#: package/contents/ui/PowerButtons.qml:26
+msgid "Shut Down"
+msgstr "Zaustavitev"
+
+#: package/contents/ui/PowerButtons.qml:47
+#: package/contents/ui/PowerButtons.qml:50
+#: package/contents/ui/PowerButtons.qml:56
+msgid "Session"
+msgstr "Seja"
+
+#: package/contents/ui/PowerButtons.qml:65
+#: package/contents/ui/PowerButtons.qml:67
+msgid "Lock"
+msgstr "Zakleni"
+
+#: package/contents/ui/PowerButtons.qml:72
+#: package/contents/ui/PowerButtons.qml:74
+msgid "Log Out"
+msgstr "Odjava"
+
+#: package/contents/ui/PowerButtons.qml:79
+#: package/contents/ui/PowerButtons.qml:81
+msgid "Switch User"
+msgstr "Preklopi uporabnika"
+
+#: package/contents/ui/PrefixModeView.qml:42
+msgid "Quick Commands"
+msgstr "Hitri ukazi"
+
+#: package/contents/ui/PrefixModeView.qml:51
+msgid "Terminal"
+msgstr "Terminal"
+
+#: package/contents/ui/PrefixModeView.qml:52
+msgid "Run Command"
+msgstr "Zaženi ukaz"
+
+#: package/contents/ui/PrefixModeView.qml:53
+msgid "Browse Files"
+msgstr "Brskaj po datotekah"
+
+#: package/contents/ui/PrefixModeView.qml:54
+msgid "Browse Home"
+msgstr "Brskaj po domači mapi"
+
+#: package/contents/ui/PrefixModeView.qml:55
+msgid "This Help"
+msgstr "Ta pomoč"
+
+#: package/contents/ui/PrefixModeView.qml:131
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 takoj zažene rezultate iskanja"
+
+#: package/contents/ui/PrefixModeView.qml:157
+msgid "Type a command to run in terminal"
+msgstr "Vnesite ukaz za zagon v terminalu"
+
+#: package/contents/ui/PrefixModeView.qml:158
+msgid "Type a command to execute"
+msgstr "Vnesite ukaz za izvedbo"
+
+#: package/contents/ui/PrefixModeView.qml:160
+msgid "Press Enter to run in terminal"
+msgstr "Pritisnite Enter za zagon v terminalu"
+
+#: package/contents/ui/PrefixModeView.qml:161
+msgid "Press Enter to execute"
+msgstr "Pritisnite Enter za izvedbo"
+
+#: package/contents/ui/SearchBar.qml:37
+msgid "Search apps or type ? for commands"
+msgstr "Iskanje aplikacij ali vnesite ? za ukaze"
+
+#: package/contents/ui/SearchBar.qml:60
+msgid "Search applications"
+msgstr "Išči programe"
+
+#: package/contents/ui/SearchBar.qml:75
+msgid "Clear search"
+msgstr "Počisti iskanje"
+
+#: package/contents/ui/SearchResultsList.qml:160
+msgid "Alt+%1: "
+msgstr "Alt+%1: "
+
+#~ msgid "Available Commands"
+#~ msgstr "Razpoložljivi ukazi"
+
+#~ msgid "Run command in terminal"
+#~ msgstr "Zaženi ukaz v terminalu"
+
+#~ msgid "Run shell command (no terminal)"
+#~ msgstr "Zaženi ukaz lupine (brez terminala)"
+
+#~ msgid "Browse files from root"
+#~ msgstr "Brskaj po datotekah od korena"
+
+#~ msgid "Browse files from home"
+#~ msgstr "Brskaj po datotekah od domače mape"
+
+#~ msgid "Show this help"
+#~ msgstr "Prikaži to pomoč"
+
+#~ msgid "Search"
+#~ msgstr "Iskanje"

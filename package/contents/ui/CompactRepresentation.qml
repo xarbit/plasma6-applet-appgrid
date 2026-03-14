@@ -1,3 +1,10 @@
+/*
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    Panel icon representation with custom image support and size hints.
+*/
+
 import QtQuick
 import QtQuick.Layouts
 
@@ -43,16 +50,13 @@ Item {
 
         anchors.fill: parent
 
-        readonly property double aspectRatio: root.vertical
-            ? implicitHeight / implicitWidth
-            : implicitWidth / implicitHeight
-
         active: mouseArea.containsMouse
         source: root.useCustomButtonImage
             ? Plasmoid.configuration.customButtonImage
             : Plasmoid.configuration.icon
 
-        roundToIconSize: !root.useCustomButtonImage || aspectRatio === 1
+        roundToIconSize: !root.useCustomButtonImage
+            || (root.vertical ? implicitHeight / implicitWidth : implicitWidth / implicitHeight) === 1
 
         onSourceChanged: root.updateSizeHints()
     }

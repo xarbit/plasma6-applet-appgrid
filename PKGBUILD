@@ -1,4 +1,4 @@
-# Maintainer: Your Name <your@email.com>
+# Maintainer: Jason Scurtu <jscurtu@gmail.com>
 pkgname=appgrid
 pkgver=1.0
 pkgrel=1

@@ -1,0 +1,301 @@
+# Dutch translation for dev.xarbit.appgrid
+# Copyright (C) 2026
+# This file is distributed under the same license as the dev.xarbit.appgrid package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dev.xarbit.appgrid 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/appgrid/issues\n"
+"POT-Creation-Date: 2026-03-14 20:43+0100\n"
+"PO-Revision-Date: 2026-03-14 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Dutch\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: package/contents/ui/AppContextMenu.qml:35
+#: package/contents/ui/AppContextMenu.qml:37
+msgid "Pin to Task Manager"
+msgstr "Vastmaken aan Taakbeheerder"
+
+#: package/contents/ui/AppContextMenu.qml:43
+#: package/contents/ui/AppContextMenu.qml:45
+msgid "Add to Desktop"
+msgstr "Toevoegen aan Bureaublad"
+
+#: package/contents/ui/AppContextMenu.qml:51
+#: package/contents/ui/AppContextMenu.qml:53
+msgid "Edit Application"
+msgstr "Toepassing bewerken"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Remove from Favorites"
+msgstr "Verwijderen uit Favorieten"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Add to Favorites"
+msgstr "Toevoegen aan Favorieten"
+
+#: package/contents/ui/AppContextMenu.qml:74
+#: package/contents/ui/AppContextMenu.qml:82
+msgid "Hide Application"
+msgstr "Toepassing verbergen"
+
+#: package/contents/ui/AppGridView.qml:148
+msgid "Recently Used"
+msgstr "Recent gebruikt"
+
+#: package/contents/ui/AppGridView.qml:210
+msgid "All Apps"
+msgstr "Alle apps"
+
+#: package/contents/ui/AppIconDelegate.qml:82
+msgid "new"
+msgstr "nieuw"
+
+#: package/contents/ui/CategoryBar.qml:23
+msgid "All"
+msgstr "Alle"
+
+#: package/contents/ui/CategoryBar.qml:28
+msgid "All applications"
+msgstr "Alle toepassingen"
+
+#: package/contents/ui/ConfigGeneral.qml:67
+msgid "Icon:"
+msgstr "Pictogram:"
+
+#: package/contents/ui/ConfigGeneral.qml:128
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "Kiezen…"
+
+#: package/contents/ui/ConfigGeneral.qml:133
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "Pictogram wissen"
+
+#: package/contents/ui/ConfigGeneral.qml:150
+msgid "Icons per row:"
+msgstr "Pictogrammen per rij:"
+
+#: package/contents/ui/ConfigGeneral.qml:156
+msgid "Visible rows:"
+msgstr "Zichtbare rijen:"
+
+#: package/contents/ui/ConfigGeneral.qml:162
+msgid "Icon size:"
+msgstr "Pictogramgrootte:"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Small"
+msgstr "Klein"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Medium"
+msgstr "Middel"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Large"
+msgstr "Groot"
+
+#: package/contents/ui/ConfigGeneral.qml:167
+msgid "Sort order:"
+msgstr "Sorteervolgorde:"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Alphabetical"
+msgstr "Alfabetisch"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Most Used"
+msgstr "Meest gebruikt"
+
+#: package/contents/ui/ConfigGeneral.qml:177
+msgid "Show recently used applications"
+msgstr "Recent gebruikte toepassingen tonen"
+
+#: package/contents/ui/ConfigGeneral.qml:188
+msgid "Appearance:"
+msgstr "Uiterlijk:"
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Show scrollbars"
+msgstr "Schuifbalken tonen"
+
+#: package/contents/ui/ConfigGeneral.qml:194
+msgid "Enable background blur"
+msgstr "Achtergrondvervaging inschakelen"
+
+#: package/contents/ui/ConfigGeneral.qml:199
+msgid "Shake icons on open"
+msgstr "Pictogrammen schudden bij openen"
+
+#: package/contents/ui/ConfigGeneral.qml:204
+msgid "Show labels on power/session buttons"
+msgstr "Labels tonen op aan/uit- en sessieknoppen"
+
+#: package/contents/ui/ConfigGeneral.qml:209
+msgid "Expand search to bookmarks, files, and websites"
+msgstr "Zoeken uitbreiden naar bladwijzers, bestanden en websites"
+
+#: package/contents/ui/ConfigGeneral.qml:213
+msgid "Configure Search Plugins…"
+msgstr "Zoekplug-ins configureren…"
+
+#: package/contents/ui/ConfigGeneral.qml:220
+msgid "Background opacity:"
+msgstr "Achtergronddekking:"
+
+#: package/contents/ui/ConfigGeneral.qml:236
+msgid "Corner radius:"
+msgstr "Hoekradius:"
+
+#: package/contents/ui/ConfigGeneral.qml:237
+msgid "Use custom corner radius"
+msgstr "Aangepaste hoekradius gebruiken"
+
+#: package/contents/ui/ConfigGeneral.qml:249
+msgid "px"
+msgstr "px"
+
+#: package/contents/ui/ConfigGeneral.qml:258
+msgid "Hidden Applications"
+msgstr "Verborgen toepassingen"
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid ""
+"Right-click any application in the grid and choose \"Hide Application\" to "
+"add it here."
+msgstr ""
+"Klik met de rechtermuisknop op een toepassing in het raster en kies "
+"\"Toepassing verbergen\" om deze hier toe te voegen."
+
+#: package/contents/ui/ConfigGeneral.qml:273
+msgid "No hidden applications."
+msgstr "Geen verborgen toepassingen."
+
+#: package/contents/ui/ConfigGeneral.qml:303
+msgid "Unhide"
+msgstr "Zichtbaar maken"
+
+#: package/contents/ui/GridWindow.qml:427
+msgid "More Results"
+msgstr "Meer resultaten"
+
+#: package/contents/ui/PowerButtons.qml:24
+msgid "Sleep"
+msgstr "Slaapstand"
+
+#: package/contents/ui/PowerButtons.qml:25
+msgid "Restart"
+msgstr "Herstarten"
+
+#: package/contents/ui/PowerButtons.qml:26
+msgid "Shut Down"
+msgstr "Afsluiten"
+
+#: package/contents/ui/PowerButtons.qml:47
+#: package/contents/ui/PowerButtons.qml:50
+#: package/contents/ui/PowerButtons.qml:56
+msgid "Session"
+msgstr "Sessie"
+
+#: package/contents/ui/PowerButtons.qml:65
+#: package/contents/ui/PowerButtons.qml:67
+msgid "Lock"
+msgstr "Vergrendelen"
+
+#: package/contents/ui/PowerButtons.qml:72
+#: package/contents/ui/PowerButtons.qml:74
+msgid "Log Out"
+msgstr "Afmelden"
+
+#: package/contents/ui/PowerButtons.qml:79
+#: package/contents/ui/PowerButtons.qml:81
+msgid "Switch User"
+msgstr "Gebruiker wisselen"
+
+#: package/contents/ui/PrefixModeView.qml:42
+msgid "Quick Commands"
+msgstr "Snelle opdrachten"
+
+#: package/contents/ui/PrefixModeView.qml:51
+msgid "Terminal"
+msgstr "Terminal"
+
+#: package/contents/ui/PrefixModeView.qml:52
+msgid "Run Command"
+msgstr "Opdracht uitvoeren"
+
+#: package/contents/ui/PrefixModeView.qml:53
+msgid "Browse Files"
+msgstr "Bestanden bladeren"
+
+#: package/contents/ui/PrefixModeView.qml:54
+msgid "Browse Home"
+msgstr "Persoonlijke map bladeren"
+
+#: package/contents/ui/PrefixModeView.qml:55
+msgid "This Help"
+msgstr "Deze hulp"
+
+#: package/contents/ui/PrefixModeView.qml:131
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 start zoekresultaten onmiddellijk"
+
+#: package/contents/ui/PrefixModeView.qml:157
+msgid "Type a command to run in terminal"
+msgstr "Typ een opdracht om in terminal uit te voeren"
+
+#: package/contents/ui/PrefixModeView.qml:158
+msgid "Type a command to execute"
+msgstr "Typ een opdracht om uit te voeren"
+
+#: package/contents/ui/PrefixModeView.qml:160
+msgid "Press Enter to run in terminal"
+msgstr "Druk op Enter om in terminal uit te voeren"
+
+#: package/contents/ui/PrefixModeView.qml:161
+msgid "Press Enter to execute"
+msgstr "Druk op Enter om uit te voeren"
+
+#: package/contents/ui/SearchBar.qml:37
+msgid "Search apps or type ? for commands"
+msgstr "Apps zoeken of typ ? voor opdrachten"
+
+#: package/contents/ui/SearchBar.qml:60
+msgid "Search applications"
+msgstr "Toepassingen zoeken"
+
+#: package/contents/ui/SearchBar.qml:75
+msgid "Clear search"
+msgstr "Zoekopdracht wissen"
+
+#: package/contents/ui/SearchResultsList.qml:160
+msgid "Alt+%1: "
+msgstr "Alt+%1: "
+
+#~ msgid "Available Commands"
+#~ msgstr "Beschikbare opdrachten"
+
+#~ msgid "Run command in terminal"
+#~ msgstr "Opdracht uitvoeren in terminal"
+
+#~ msgid "Run shell command (no terminal)"
+#~ msgstr "Shell-opdracht uitvoeren (geen terminal)"
+
+#~ msgid "Browse files from root"
+#~ msgstr "Bestanden bladeren vanuit root"
+
+#~ msgid "Browse files from home"
+#~ msgstr "Bestanden bladeren vanuit persoonlijke map"
+
+#~ msgid "Show this help"
+#~ msgstr "Deze hulp tonen"
+
+#~ msgid "Search"
+#~ msgstr "Zoeken"

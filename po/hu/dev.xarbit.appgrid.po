@@ -1,0 +1,301 @@
+# Hungarian translation for dev.xarbit.appgrid
+# Copyright (C) 2026
+# This file is distributed under the same license as the dev.xarbit.appgrid package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dev.xarbit.appgrid 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/appgrid/issues\n"
+"POT-Creation-Date: 2026-03-14 20:43+0100\n"
+"PO-Revision-Date: 2026-03-14 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Hungarian\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: package/contents/ui/AppContextMenu.qml:35
+#: package/contents/ui/AppContextMenu.qml:37
+msgid "Pin to Task Manager"
+msgstr "Rögzítés a Feladatkezelőre"
+
+#: package/contents/ui/AppContextMenu.qml:43
+#: package/contents/ui/AppContextMenu.qml:45
+msgid "Add to Desktop"
+msgstr "Hozzáadás az Asztalhoz"
+
+#: package/contents/ui/AppContextMenu.qml:51
+#: package/contents/ui/AppContextMenu.qml:53
+msgid "Edit Application"
+msgstr "Alkalmazás szerkesztése"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Remove from Favorites"
+msgstr "Eltávolítás a Kedvencekből"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Add to Favorites"
+msgstr "Hozzáadás a Kedvencekhez"
+
+#: package/contents/ui/AppContextMenu.qml:74
+#: package/contents/ui/AppContextMenu.qml:82
+msgid "Hide Application"
+msgstr "Alkalmazás elrejtése"
+
+#: package/contents/ui/AppGridView.qml:148
+msgid "Recently Used"
+msgstr "Legutóbb használt"
+
+#: package/contents/ui/AppGridView.qml:210
+msgid "All Apps"
+msgstr "Minden alkalmazás"
+
+#: package/contents/ui/AppIconDelegate.qml:82
+msgid "new"
+msgstr "új"
+
+#: package/contents/ui/CategoryBar.qml:23
+msgid "All"
+msgstr "Összes"
+
+#: package/contents/ui/CategoryBar.qml:28
+msgid "All applications"
+msgstr "Minden alkalmazás"
+
+#: package/contents/ui/ConfigGeneral.qml:67
+msgid "Icon:"
+msgstr "Ikon:"
+
+#: package/contents/ui/ConfigGeneral.qml:128
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "Választás…"
+
+#: package/contents/ui/ConfigGeneral.qml:133
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "Ikon törlése"
+
+#: package/contents/ui/ConfigGeneral.qml:150
+msgid "Icons per row:"
+msgstr "Ikonok soronként:"
+
+#: package/contents/ui/ConfigGeneral.qml:156
+msgid "Visible rows:"
+msgstr "Látható sorok:"
+
+#: package/contents/ui/ConfigGeneral.qml:162
+msgid "Icon size:"
+msgstr "Ikonméret:"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Small"
+msgstr "Kicsi"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Medium"
+msgstr "Közepes"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Large"
+msgstr "Nagy"
+
+#: package/contents/ui/ConfigGeneral.qml:167
+msgid "Sort order:"
+msgstr "Rendezés:"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Alphabetical"
+msgstr "Betűrendes"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Most Used"
+msgstr "Leggyakrabban használt"
+
+#: package/contents/ui/ConfigGeneral.qml:177
+msgid "Show recently used applications"
+msgstr "Legutóbb használt alkalmazások megjelenítése"
+
+#: package/contents/ui/ConfigGeneral.qml:188
+msgid "Appearance:"
+msgstr "Megjelenés:"
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Show scrollbars"
+msgstr "Görgetősávok megjelenítése"
+
+#: package/contents/ui/ConfigGeneral.qml:194
+msgid "Enable background blur"
+msgstr "Háttér elmosásának engedélyezése"
+
+#: package/contents/ui/ConfigGeneral.qml:199
+msgid "Shake icons on open"
+msgstr "Ikonok rázása megnyitáskor"
+
+#: package/contents/ui/ConfigGeneral.qml:204
+msgid "Show labels on power/session buttons"
+msgstr "Feliratok megjelenítése a bekapcsoló/munkamenet gombokon"
+
+#: package/contents/ui/ConfigGeneral.qml:209
+msgid "Expand search to bookmarks, files, and websites"
+msgstr "Keresés kiterjesztése könyvjelzőkre, fájlokra és weboldalakra"
+
+#: package/contents/ui/ConfigGeneral.qml:213
+msgid "Configure Search Plugins…"
+msgstr "Keresőbővítmények beállítása…"
+
+#: package/contents/ui/ConfigGeneral.qml:220
+msgid "Background opacity:"
+msgstr "Háttér átlátszatlansága:"
+
+#: package/contents/ui/ConfigGeneral.qml:236
+msgid "Corner radius:"
+msgstr "Sarokrádiusz:"
+
+#: package/contents/ui/ConfigGeneral.qml:237
+msgid "Use custom corner radius"
+msgstr "Egyéni sarokrádiusz használata"
+
+#: package/contents/ui/ConfigGeneral.qml:249
+msgid "px"
+msgstr "px"
+
+#: package/contents/ui/ConfigGeneral.qml:258
+msgid "Hidden Applications"
+msgstr "Rejtett alkalmazások"
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid ""
+"Right-click any application in the grid and choose \"Hide Application\" to "
+"add it here."
+msgstr ""
+"Kattintson jobb gombbal bármely alkalmazásra a rácsban, és válassza az "
+"\"Alkalmazás elrejtése\" lehetőséget a hozzáadáshoz."
+
+#: package/contents/ui/ConfigGeneral.qml:273
+msgid "No hidden applications."
+msgstr "Nincsenek rejtett alkalmazások."
+
+#: package/contents/ui/ConfigGeneral.qml:303
+msgid "Unhide"
+msgstr "Megjelenítés"
+
+#: package/contents/ui/GridWindow.qml:427
+msgid "More Results"
+msgstr "További találatok"
+
+#: package/contents/ui/PowerButtons.qml:24
+msgid "Sleep"
+msgstr "Alvás"
+
+#: package/contents/ui/PowerButtons.qml:25
+msgid "Restart"
+msgstr "Újraindítás"
+
+#: package/contents/ui/PowerButtons.qml:26
+msgid "Shut Down"
+msgstr "Leállítás"
+
+#: package/contents/ui/PowerButtons.qml:47
+#: package/contents/ui/PowerButtons.qml:50
+#: package/contents/ui/PowerButtons.qml:56
+msgid "Session"
+msgstr "Munkamenet"
+
+#: package/contents/ui/PowerButtons.qml:65
+#: package/contents/ui/PowerButtons.qml:67
+msgid "Lock"
+msgstr "Zárolás"
+
+#: package/contents/ui/PowerButtons.qml:72
+#: package/contents/ui/PowerButtons.qml:74
+msgid "Log Out"
+msgstr "Kijelentkezés"
+
+#: package/contents/ui/PowerButtons.qml:79
+#: package/contents/ui/PowerButtons.qml:81
+msgid "Switch User"
+msgstr "Felhasználóváltás"
+
+#: package/contents/ui/PrefixModeView.qml:42
+msgid "Quick Commands"
+msgstr "Gyorsparancsok"
+
+#: package/contents/ui/PrefixModeView.qml:51
+msgid "Terminal"
+msgstr "Terminál"
+
+#: package/contents/ui/PrefixModeView.qml:52
+msgid "Run Command"
+msgstr "Parancs futtatása"
+
+#: package/contents/ui/PrefixModeView.qml:53
+msgid "Browse Files"
+msgstr "Fájlok tallózása"
+
+#: package/contents/ui/PrefixModeView.qml:54
+msgid "Browse Home"
+msgstr "Saját mappa tallózása"
+
+#: package/contents/ui/PrefixModeView.qml:55
+msgid "This Help"
+msgstr "Ez a súgó"
+
+#: package/contents/ui/PrefixModeView.qml:131
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 azonnal elindítja a keresési találatokat"
+
+#: package/contents/ui/PrefixModeView.qml:157
+msgid "Type a command to run in terminal"
+msgstr "Írjon be egy parancsot a terminálban való futtatáshoz"
+
+#: package/contents/ui/PrefixModeView.qml:158
+msgid "Type a command to execute"
+msgstr "Írjon be egy parancsot a végrehajtáshoz"
+
+#: package/contents/ui/PrefixModeView.qml:160
+msgid "Press Enter to run in terminal"
+msgstr "Nyomja meg az Entert a terminálban való futtatáshoz"
+
+#: package/contents/ui/PrefixModeView.qml:161
+msgid "Press Enter to execute"
+msgstr "Nyomja meg az Entert a végrehajtáshoz"
+
+#: package/contents/ui/SearchBar.qml:37
+msgid "Search apps or type ? for commands"
+msgstr "Alkalmazások keresése vagy írja be a ? jelet a parancsokhoz"
+
+#: package/contents/ui/SearchBar.qml:60
+msgid "Search applications"
+msgstr "Alkalmazások keresése"
+
+#: package/contents/ui/SearchBar.qml:75
+msgid "Clear search"
+msgstr "Keresés törlése"
+
+#: package/contents/ui/SearchResultsList.qml:160
+msgid "Alt+%1: "
+msgstr "Alt+%1: "
+
+#~ msgid "Available Commands"
+#~ msgstr "Elérhető parancsok"
+
+#~ msgid "Run command in terminal"
+#~ msgstr "Parancs futtatása terminálban"
+
+#~ msgid "Run shell command (no terminal)"
+#~ msgstr "Shell parancs futtatása (terminál nélkül)"
+
+#~ msgid "Browse files from root"
+#~ msgstr "Fájlok böngészése a gyökérkönyvtártól"
+
+#~ msgid "Browse files from home"
+#~ msgstr "Fájlok böngészése a saját mappától"
+
+#~ msgid "Show this help"
+#~ msgstr "Súgó megjelenítése"
+
+#~ msgid "Search"
+#~ msgstr "Keresés"

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SPDX-FileCopyrightText: 2026 Jason Scurtu
+    SPDX-License-Identifier: CC0-1.0
+-->
+<component type="addon">
+    <id>dev.xarbit.appgrid</id>
+    <extends>org.kde.plasmashell</extends>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-2.0-or-later</project_license>
+
+    <name>Application Launcher (modern)</name>
+    <summary>A modern fullscreen application grid launcher for KDE Plasma</summary>
+    <description>
+        <p>
+            AppGrid is a modern fullscreen application grid launcher for
+            KDE Plasma, inspired by macOS Launchpad. It provides a clean,
+            visual way to browse and launch your applications.
+        </p>
+        <p>Features include:</p>
+        <ul>
+            <li>Fullscreen overlay grid with Wayland layer-shell support</li>
+            <li>Category-based filtering and KRunner search integration</li>
+            <li>Quick commands: terminal, shell, file browser (type ? for help)</li>
+            <li>Configurable icon size, grid dimensions, and sort order</li>
+            <li>Pin to Task Manager, Add to Desktop, Favorites, Hide apps</li>
+            <li>Session management (Sleep, Restart, Shut Down, Lock, Log Out)</li>
+            <li>Background blur, opacity, and corner radius customization</li>
+            <li>Alt+1 through Alt+9 shortcuts for instant search result launching</li>
+            <li>New app detection and most-used sorting</li>
+            <li>29 European language translations</li>
+        </ul>
+    </description>
+
+    <url type="homepage">https://github.com/xarbit/appgrid</url>
+    <url type="bugtracker">https://github.com/xarbit/appgrid/issues</url>
+
+    <developer id="dev.xarbit">
+        <name>Jason Scurtu</name>
+    </developer>
+
+    <releases>
+        <release version="1.0" date="2026-03-14">
+            <description>
+                <p>Initial release.</p>
+            </description>
+        </release>
+    </releases>
+
+    <categories>
+        <category>Utility</category>
+    </categories>
+
+    <provides>
+        <binary>dev.xarbit.appgrid</binary>
+    </provides>
+
+    <requires>
+        <id version="6.0" compare="ge">org.kde.plasmashell</id>
+    </requires>
+
+    <content_rating type="oars-1.1"/>
+</component>

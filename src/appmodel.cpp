@@ -1,9 +1,16 @@
+/*
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
+
 #include "appmodel.h"
 
 #include <KService>
 #include <KServiceGroup>
+#include <KSycoca>
 
 #include <KIO/ApplicationLauncherJob>
+#include <KJob>
 
 #include <QCollator>
 #include <algorithm>
@@ -108,6 +115,7 @@ AppModel::AppModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     loadApplications();
+    connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppModel::reload);
 }
 
 int AppModel::rowCount(const QModelIndex &parent) const
@@ -134,6 +142,8 @@ QVariant AppModel::data(const QModelIndex &index, int role) const
         return app.category;
     case GenericNameRole:
         return app.genericName;
+    case StorageIdRole:
+        return app.storageId;
     }
     return {};
 }
@@ -146,6 +156,7 @@ QHash<int, QByteArray> AppModel::roleNames() const
         {DesktopFileRole, "desktopFile"},
         {CategoryRole, "category"},
         {GenericNameRole, "genericName"},
+        {StorageIdRole, "storageId"},
     };
 }
 
@@ -209,6 +220,7 @@ void AppModel::loadApplications()
             appEntry.desktopFile = service->entryPath();
             appEntry.genericName = service->genericName();
             appEntry.exec = service->exec();
+            appEntry.storageId = storageId;
             appEntry.category = mapCategory(service->categories());
 
             categorySet.insert(appEntry.category);
@@ -242,12 +254,26 @@ void AppModel::launch(int index)
         return;
 
     auto *job = new KIO::ApplicationLauncherJob(service);
+    job->setAutoDelete(true);
+    connect(job, &KJob::finished, this, [](KJob *j) {
+        if (j->error())
+            qWarning() << "AppGrid: failed to launch application:" << j->errorString();
+    });
     job->start();
 }
 
 QStringList AppModel::categories() const
 {
     return m_categories;
+}
+
+void AppModel::reload()
+{
+    beginResetModel();
+    m_apps.clear();
+    m_categories.clear();
+    loadApplications();
+    endResetModel();
 }
 
 // --- AppFilterModel ---
@@ -300,9 +326,134 @@ void AppFilterModel::setSearchText(const QString &text)
     emit searchTextChanged();
 }
 
+QStringList AppFilterModel::hiddenApps() const
+{
+    return m_hiddenApps;
+}
+
+void AppFilterModel::setHiddenApps(const QStringList &list)
+{
+    if (m_hiddenApps == list)
+        return;
+    beginFilterChange();
+    m_hiddenApps = list;
+    endFilterChange();
+    emit hiddenAppsChanged();
+}
+
+void AppFilterModel::hideApp(int proxyIndex)
+{
+    const auto idx = index(proxyIndex, 0);
+    if (!idx.isValid())
+        return;
+    const auto sid = idx.data(AppModel::StorageIdRole).toString();
+    if (!sid.isEmpty() && !m_hiddenApps.contains(sid)) {
+        beginFilterChange();
+        m_hiddenApps.append(sid);
+        endFilterChange();
+        emit hiddenAppsChanged();
+    }
+}
+
+void AppFilterModel::unhideApp(const QString &storageId)
+{
+    if (m_hiddenApps.contains(storageId)) {
+        beginFilterChange();
+        m_hiddenApps.removeAll(storageId);
+        endFilterChange();
+        emit hiddenAppsChanged();
+    }
+}
+
+QStringList AppFilterModel::favoriteApps() const
+{
+    return m_favoriteApps;
+}
+
+void AppFilterModel::setFavoriteApps(const QStringList &list)
+{
+    if (m_favoriteApps == list)
+        return;
+    m_favoriteApps = list;
+    emit favoriteAppsChanged();
+}
+
+bool AppFilterModel::isFavorite(const QString &storageId) const
+{
+    return m_favoriteApps.contains(storageId);
+}
+
+void AppFilterModel::toggleFavorite(const QString &storageId)
+{
+    if (storageId.isEmpty())
+        return;
+    if (m_favoriteApps.contains(storageId))
+        m_favoriteApps.removeAll(storageId);
+    else
+        m_favoriteApps.append(storageId);
+    emit favoriteAppsChanged();
+}
+
+QStringList AppFilterModel::recentApps() const
+{
+    return m_recentApps;
+}
+
+void AppFilterModel::setRecentApps(const QStringList &list)
+{
+    bool changed = (m_recentApps != list);
+    m_recentApps = list;
+    invalidate();
+    if (changed)
+        emit recentAppsChanged();
+}
+
+int AppFilterModel::maxRecentApps() const
+{
+    return m_maxRecentApps;
+}
+
+void AppFilterModel::setMaxRecentApps(int max)
+{
+    if (m_maxRecentApps == max)
+        return;
+    m_maxRecentApps = max;
+    emit maxRecentAppsChanged();
+}
+
+bool AppFilterModel::isRecent(const QString &storageId) const
+{
+    return m_recentApps.contains(storageId);
+}
+
+QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
+{
+    QVariantMap map;
+    auto *src = sourceModel();
+    if (!src)
+        return map;
+    for (int i = 0; i < src->rowCount(); ++i) {
+        const auto idx = src->index(i, 0);
+        if (idx.data(AppModel::StorageIdRole).toString() == storageId) {
+            map[QStringLiteral("name")] = idx.data(AppModel::NameRole);
+            map[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
+            map[QStringLiteral("desktopFile")] = idx.data(AppModel::DesktopFileRole);
+            map[QStringLiteral("storageId")] = idx.data(AppModel::StorageIdRole);
+            map[QStringLiteral("genericName")] = idx.data(AppModel::GenericNameRole);
+            break;
+        }
+    }
+    return map;
+}
+
 bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     const auto idx = sourceModel()->index(sourceRow, 0, sourceParent);
+
+    // Hide hidden apps
+    const auto sid = idx.data(AppModel::StorageIdRole).toString();
+    if (!sid.isEmpty() && m_hiddenApps.contains(sid))
+        return false;
 
     if (!m_filterCategory.isEmpty()) {
         const auto category = idx.data(AppModel::CategoryRole).toString();
@@ -318,11 +469,109 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
             return false;
     }
 
+    // In "All" view (no category, no search), hide recents from the main grid
+    // (they are shown in the header section instead).
+    // Skip this when sorting by most-used — all apps stay in the grid.
+    if (m_sortMode == Alphabetical
+        && m_filterCategory.isEmpty() && m_searchText.isEmpty()
+        && !m_recentApps.isEmpty() && m_recentApps.contains(sid))
+        return false;
+
     return true;
+}
+
+int AppFilterModel::sortMode() const
+{
+    return m_sortMode;
+}
+
+void AppFilterModel::setSortMode(int mode)
+{
+    if (m_sortMode == mode)
+        return;
+    m_sortMode = mode;
+    invalidate();
+    emit sortModeChanged();
+}
+
+QVariantMap AppFilterModel::launchCountsMap() const
+{
+    QVariantMap map;
+    for (auto it = m_launchCounts.cbegin(); it != m_launchCounts.cend(); ++it)
+        map.insert(it.key(), it.value());
+    return map;
+}
+
+void AppFilterModel::setLaunchCountsMap(const QVariantMap &map)
+{
+    m_launchCounts.clear();
+    for (auto it = map.cbegin(); it != map.cend(); ++it)
+        m_launchCounts.insert(it.key(), it.value().toInt());
+    if (m_sortMode == MostUsed)
+        invalidate();
+    emit launchCountsChanged();
+}
+
+QStringList AppFilterModel::knownApps() const
+{
+    return m_knownApps;
+}
+
+void AppFilterModel::setKnownApps(const QStringList &list)
+{
+    if (m_knownApps == list)
+        return;
+    m_knownApps = list;
+    emit knownAppsChanged();
+}
+
+bool AppFilterModel::isNewApp(const QString &storageId) const
+{
+    // If knownApps was never set (empty), nothing is "new"
+    return !m_knownApps.isEmpty() && !m_knownApps.contains(storageId);
+}
+
+void AppFilterModel::markAllKnown()
+{
+    auto *model = qobject_cast<AppModel *>(sourceModel());
+    if (!model)
+        return;
+    QStringList all;
+    all.reserve(model->rowCount());
+    for (int i = 0; i < model->rowCount(); ++i)
+        all.append(model->index(i, 0).data(AppModel::StorageIdRole).toString());
+    setKnownApps(all);
+}
+
+int AppFilterModel::getLaunchCount(const QString &storageId) const
+{
+    return m_launchCounts.value(storageId, 0);
+}
+
+void AppFilterModel::recordLaunch(const QString &storageId)
+{
+    if (storageId.isEmpty())
+        return;
+    m_launchCounts[storageId] = m_launchCounts.value(storageId, 0) + 1;
+    emit launchCountsChanged();
+
+    // Mark as known when launched
+    if (!m_knownApps.contains(storageId)) {
+        m_knownApps.append(storageId);
+        emit knownAppsChanged();
+    }
 }
 
 bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
+    if (m_sortMode == MostUsed) {
+        const auto leftSid = left.data(AppModel::StorageIdRole).toString();
+        const auto rightSid = right.data(AppModel::StorageIdRole).toString();
+        const int leftCount = m_launchCounts.value(leftSid, 0);
+        const int rightCount = m_launchCounts.value(rightSid, 0);
+        if (leftCount != rightCount)
+            return leftCount > rightCount; // Higher count first
+    }
     const auto leftName = left.data(AppModel::NameRole).toString();
     const auto rightName = right.data(AppModel::NameRole).toString();
     return QString::localeAwareCompare(leftName, rightName) < 0;
@@ -330,10 +579,50 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
 
 void AppFilterModel::launch(int proxyIndex)
 {
-    const auto sourceIdx = mapToSource(index(proxyIndex, 0));
+    const auto idx = index(proxyIndex, 0);
+    const auto sourceIdx = mapToSource(idx);
     auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (model)
-        model->launch(sourceIdx.row());
+    if (!model)
+        return;
+
+    // Record as recent and track launch count
+    const auto sid = idx.data(AppModel::StorageIdRole).toString();
+    if (!sid.isEmpty()) {
+        m_recentApps.removeAll(sid);
+        m_recentApps.prepend(sid);
+        while (m_recentApps.size() > m_maxRecentApps)
+            m_recentApps.removeLast();
+        invalidate();
+        emit recentAppsChanged();
+        recordLaunch(sid);
+    }
+
+    model->launch(sourceIdx.row());
+}
+
+void AppFilterModel::launchByStorageId(const QString &storageId)
+{
+    auto *model = qobject_cast<AppModel *>(sourceModel());
+    if (!model)
+        return;
+
+    // Find the source row for this storageId
+    for (int i = 0; i < model->rowCount(); ++i) {
+        const auto idx = model->index(i, 0);
+        if (idx.data(AppModel::StorageIdRole).toString() == storageId) {
+            // Record as recent and track launch count
+            m_recentApps.removeAll(storageId);
+            m_recentApps.prepend(storageId);
+            while (m_recentApps.size() > m_maxRecentApps)
+                m_recentApps.removeLast();
+            invalidate();
+            emit recentAppsChanged();
+            recordLaunch(storageId);
+
+            model->launch(i);
+            return;
+        }
+    }
 }
 
 QStringList AppFilterModel::categories() const

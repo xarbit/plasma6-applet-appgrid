@@ -1,311 +1,506 @@
+/*
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    Fullscreen overlay window containing the application grid panel.
+    Uses LayerShellQt (via C++ configureWindow) to appear as a Wayland
+    overlay without KWin window decorations or taskbar entries.
+*/
+
 import QtQuick
-import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import QtQuick.Window
-import QtQuick.Effects
-
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid
+import org.kde.milou as Milou
 
 Window {
     id: root
 
+    // -- Public interface --
+    property var appletInterface: null
+
+    // -- Derived properties --
     readonly property var appsModel: Plasmoid ? Plasmoid.appsModel : null
-    readonly property bool isSearching: searchField.text.length > 0
-    readonly property int columns: Math.max(4, Math.min(8, Math.floor(Screen.width / 180)))
+    readonly property bool isSearching: searchBar.text.length > 0
+    readonly property int columns: Plasmoid.configuration.gridColumns || 7
+    readonly property int rows: Plasmoid.configuration.gridRows || 4
+    readonly property int scrollBarPolicy: Plasmoid.configuration.showScrollbars
+                                           ? PlasmaComponents.ScrollBar.AsNeeded : PlasmaComponents.ScrollBar.AlwaysOff
 
-    width: Math.min(Screen.width * 0.65, 1200)
-    height: Math.min(Screen.height * 0.75, 900)
-    x: (Screen.width - width) / 2
-    y: (Screen.height - height) / 2
+    // -- Icon size mapping (0=Small/medium, 1=Medium/large, 2=Large/huge) --
+    readonly property real gridIconSize: {
+        var preset = Plasmoid.configuration.iconSize
+        if (preset === 0) return Kirigami.Units.iconSizes.medium
+        if (preset === 1) return Kirigami.Units.iconSizes.large
+        return Kirigami.Units.iconSizes.huge
+    }
 
+    // -- Prefix mode detection --
+    readonly property string prefixMode: {
+        var t = searchBar.text
+        if (t.startsWith("t:")) return "terminal"
+        if (t.startsWith("?")) return "help"
+        if (t.startsWith("/") || t.startsWith("~/")) return "files"
+        if (t.startsWith(":")) return "command"
+        return ""
+    }
+    readonly property bool isPrefixMode: prefixMode !== ""
+    readonly property string prefixArgument: {
+        var t = searchBar.text
+        if (prefixMode === "terminal") return t.substring(2).trim()
+        if (prefixMode === "command") return t.substring(1).trim()
+        if (prefixMode === "files") return t.trim()
+        return ""
+    }
+
+    // -- Window setup --
+    width: Screen.width
+    height: Screen.height
+    x: 0; y: 0
     visible: false
     color: "transparent"
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Dialog
+    flags: Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Tool
+
+    property bool windowConfigured: false
+    property bool _needsScrollToTop: false
+
+    // -- Launch counts serialization helpers --
+    function launchCountsToMap(list) {
+        var map = {}
+        if (list) {
+            for (var i = 0; i < list.length; i++) {
+                var parts = list[i].split("=")
+                if (parts.length === 2)
+                    map[parts[0]] = parseInt(parts[1]) || 0
+            }
+        }
+        return map
+    }
+
+    function launchCountsToList(map) {
+        var list = []
+        for (var key in map)
+            if (map[key] > 0)
+                list.push(key + "=" + map[key])
+        return list
+    }
+
+    Component.onCompleted: {
+        if (appsModel) {
+            appsModel.hiddenApps = Plasmoid.configuration.hiddenApps || []
+            appsModel.favoriteApps = Plasmoid.configuration.favoriteApps || []
+            appsModel.maxRecentApps = root.columns
+            appsModel.recentApps = Plasmoid.configuration.recentApps || []
+            appsModel.sortMode = Plasmoid.configuration.sortMode || 0
+            appsModel.launchCounts = root.launchCountsToMap(Plasmoid.configuration.launchCounts)
+            appsModel.knownApps = Plasmoid.configuration.knownApps || []
+            // First run: mark all current apps as known
+            if (appsModel.knownApps.length === 0)
+                appsModel.markAllKnown()
+        }
+    }
+
+    // Keep maxRecentApps in sync with configured columns
+    onColumnsChanged: if (appsModel) appsModel.maxRecentApps = columns
+
+    // Persist model state to config when it changes
+    Connections {
+        target: appsModel
+        function onRecentAppsChanged() {
+            Plasmoid.configuration.recentApps = appsModel.recentApps
+        }
+        function onLaunchCountsChanged() {
+            Plasmoid.configuration.launchCounts = root.launchCountsToList(appsModel.launchCounts)
+        }
+        function onKnownAppsChanged() {
+            Plasmoid.configuration.knownApps = appsModel.knownApps
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Blur management
+    // -----------------------------------------------------------------------
+
+    function applyBlur() {
+        if (Plasmoid.configuration.enableBlur && visible) {
+            var pw = Math.round(panel.width)
+            var ph = Math.round(panel.height)
+            var px = Math.round((root.width - pw) / 2)
+            var py = Math.round((root.height - ph) / 2)
+            Plasmoid.setBlurBehind(root, true, px, py, pw, ph, panel.radius)
+        } else {
+            Plasmoid.setBlurBehind(root, false, 0, 0, 0, 0, 0)
+        }
+    }
+
+    onWidthChanged: if (visible) applyBlur()
+    onHeightChanged: if (visible) applyBlur()
+
+    // -----------------------------------------------------------------------
+    // Grid lifecycle
+    // -----------------------------------------------------------------------
 
     function showGrid() {
-        searchField.text = ""
+        contextMenu.close()
+        searchBar.text = ""
         if (appsModel) {
             appsModel.searchText = ""
             appsModel.filterCategory = ""
+            appsModel.hiddenApps = Plasmoid.configuration.hiddenApps || []
+            appsModel.favoriteApps = Plasmoid.configuration.favoriteApps || []
+            appsModel.maxRecentApps = root.columns
+            appsModel.sortMode = Plasmoid.configuration.sortMode || 0
+            appsModel.launchCounts = root.launchCountsToMap(Plasmoid.configuration.launchCounts)
+            appsModel.knownApps = Plasmoid.configuration.knownApps || []
+            if (appsModel.knownApps.length === 0)
+                appsModel.markAllKnown()
+            if (Plasmoid.configuration.showRecentApps !== false)
+                appsModel.recentApps = Plasmoid.configuration.recentApps || []
+            else
+                appsModel.recentApps = []
         }
-        x = (Screen.width - width) / 2
-        y = (Screen.height - height) / 2
+        if (!windowConfigured) {
+            Plasmoid.configureWindow(root)
+            windowConfigured = true
+        }
+        appGrid.contentY = appGrid.originY
+        appGrid.currentIndex = -1
+        appGrid.recentIndex = -1
+        searchResultsList.contentY = searchResultsList.originY
         visible = true
+        root._needsScrollToTop = true
+        applyBlur()
         requestActivate()
         openAnim.start()
-        searchField.forceActiveFocus()
+        searchBar.field.forceActiveFocus()
     }
 
     function closeGrid() {
+        contextMenu.close()
         closeAnim.start()
     }
 
-    function launchSelected() {
-        if (!appsModel) return
-
-        if (isSearching) {
-            if (listView.currentIndex >= 0) {
-                appsModel.launch(listView.currentIndex)
-                closeGrid()
-            }
-        } else {
-            if (gridView.currentIndex >= 0) {
-                appsModel.launch(gridView.currentIndex)
-                closeGrid()
-            }
-        }
-    }
-
-    onActiveChanged: {
-        if (!active && visible) {
-            closeGrid()
+    function launchApp(index) {
+        if (appsModel && index >= 0) {
+            appsModel.launch(index)
+            if (appletInterface)
+                appletInterface.closeWindow()
         }
     }
 
     Shortcut {
         sequence: "Escape"
-        onActivated: root.closeGrid()
+        onActivated: {
+            if (root.appletInterface)
+                root.appletInterface.closeWindow()
+        }
     }
 
-    // Background click to close
+    // Alt+1 through Alt+9 handled via search bar key forwarding
+
+    // -----------------------------------------------------------------------
+    // Background (click to close)
+    // -----------------------------------------------------------------------
+
     MouseArea {
         anchors.fill: parent
-        onClicked: root.closeGrid()
+        onClicked: {
+            if (root.appletInterface)
+                root.appletInterface.closeWindow()
+        }
     }
 
+    // -----------------------------------------------------------------------
     // Main panel
-    Rectangle {
+    // -----------------------------------------------------------------------
+
+    Kirigami.ShadowedRectangle {
         id: panel
         anchors.centerIn: parent
-        width: root.width - 20
-        height: root.height - 20
-        radius: 24
-        color: Kirigami.Theme.backgroundColor
+        width: Math.min(appGrid.cellWidth * root.columns
+                       + Kirigami.Units.largeSpacing * 4, Screen.width * 0.9)
+        height: Math.min(appGrid.cellHeight * root.rows
+                        + Kirigami.Units.largeSpacing * 4
+                        + Kirigami.Units.gridUnit * 5, Screen.height * 0.9)
+        radius: Plasmoid.configuration.overrideRadius
+                ? Plasmoid.configuration.cornerRadius
+                : Kirigami.Units.cornerRadius * 2
         opacity: 0.0
         scale: 1.15
         transformOrigin: Item.Center
 
+        readonly property real bgOpacity: Plasmoid.configuration.backgroundOpacity / 100
+        color: Qt.rgba(Kirigami.Theme.backgroundColor.r,
+                       Kirigami.Theme.backgroundColor.g,
+                       Kirigami.Theme.backgroundColor.b,
+                       bgOpacity)
+
+        border.width: 1
+        border.color: Qt.rgba(Kirigami.Theme.textColor.r,
+                              Kirigami.Theme.textColor.g,
+                              Kirigami.Theme.textColor.b,
+                              0.15)
+
+        shadow.size: Kirigami.Units.gridUnit
+        shadow.color: Qt.rgba(0, 0, 0, 0.3)
+        shadow.xOffset: 0
+        shadow.yOffset: Kirigami.Units.smallSpacing
+
         Kirigami.Theme.colorSet: Kirigami.Theme.View
         Kirigami.Theme.inherit: false
 
-        border.color: Qt.rgba(Kirigami.Theme.textColor.r,
-                              Kirigami.Theme.textColor.g,
-                              Kirigami.Theme.textColor.b, 0.1)
-        border.width: 1
-
-        // Absorb clicks inside panel
-        MouseArea {
-            anchors.fill: parent
-        }
-
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, 0.3)
-            shadowBlur: 1.0
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset: 4
-        }
+        MouseArea { anchors.fill: parent }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: Kirigami.Units.largeSpacing
-            spacing: Kirigami.Units.smallSpacing
+            anchors.margins: Kirigami.Units.largeSpacing * 2
+            spacing: Kirigami.Units.largeSpacing
 
-            // Search bar
-            PlasmaExtras.SearchField {
-                id: searchField
+            // -- Header --
+            RowLayout {
                 Layout.fillWidth: true
-                onTextChanged: { if (appsModel) appsModel.searchText = text }
+                spacing: Kirigami.Units.largeSpacing
 
-                Keys.onReturnPressed: root.launchSelected()
-                Keys.onEnterPressed: root.launchSelected()
-                Keys.onDownPressed: {
-                    if (root.isSearching) {
-                        listView.forceActiveFocus()
-                        listView.currentIndex = 0
+                SearchBar {
+                    id: searchBar
+                    onTextChanged: {
+                        if (appsModel)
+                            appsModel.searchText = root.isPrefixMode ? "" : text
                     }
-                }
-                Keys.onUpPressed: {
-                    if (root.isSearching && listView.currentIndex <= 0) {
-                        searchField.forceActiveFocus()
+                    onAltNumberPressed: function(number) {
+                        if (root.isSearching && !root.isPrefixMode
+                            && number <= searchResultsList.count) {
+                            root.launchApp(number - 1)
+                        }
                     }
-                }
-            }
-
-            // Category bar (hidden during search)
-            QQC2.ScrollView {
-                Layout.fillWidth: true
-                Layout.preferredHeight: categoryRow.implicitHeight + Kirigami.Units.smallSpacing * 2
-                QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AsNeeded
-                QQC2.ScrollBar.vertical.policy: QQC2.ScrollBar.AlwaysOff
-                visible: !root.isSearching
-
-                Row {
-                    id: categoryRow
-                    spacing: Kirigami.Units.smallSpacing
-
-                    PlasmaComponents.ToolButton {
-                        text: "All"
-                        checked: !appsModel || appsModel.filterCategory === ""
-                        onClicked: { if (appsModel) appsModel.filterCategory = "" }
+                    onAccepted: {
+                        if (root.prefixMode === "terminal") {
+                            Plasmoid.runInTerminal(root.prefixArgument)
+                            if (root.appletInterface) root.appletInterface.closeWindow()
+                        } else if (root.prefixMode === "command") {
+                            Plasmoid.runCommand(root.prefixArgument)
+                            if (root.appletInterface) root.appletInterface.closeWindow()
+                        } else if (root.prefixMode === "files") {
+                            prefixModeView.activateFileCurrent()
+                        } else if (!root.isPrefixMode) {
+                            var view = root.isSearching ? searchResultsList : appGrid
+                            if (view.currentIndex >= 0) root.launchApp(view.currentIndex)
+                        }
                     }
-
-                    Repeater {
-                        model: appsModel ? appsModel.categories() : []
-                        delegate: PlasmaComponents.ToolButton {
-                            required property string modelData
-                            text: modelData
-                            checked: appsModel && appsModel.filterCategory === modelData
-                            onClicked: { if (appsModel) appsModel.filterCategory = modelData }
+                    onMoveDown: {
+                        if (root.prefixMode === "files") {
+                            prefixModeView.focusFileList()
+                            return
+                        }
+                        if (root.isSearching && !root.isPrefixMode) {
+                            if (searchResultsList.count > 0) {
+                                searchResultsList.forceActiveFocus()
+                                searchResultsList.currentIndex = 0
+                            } else if (runnerResults.visible && runnerResults.count > 0) {
+                                runnerResults.forceActiveFocus()
+                                runnerResults.currentIndex = 0
+                            }
+                        } else {
+                            appGrid.forceActiveFocus()
+                            if (appGrid.showRecents) {
+                                appGrid.recentIndex = 0
+                                appGrid.currentIndex = -1
+                            } else {
+                                appGrid.currentIndex = 0
+                            }
+                        }
+                    }
+                    onTabPressed: {
+                        if (root.isSearching) {
+                            if (searchResultsList.count > 0) {
+                                searchResultsList.forceActiveFocus()
+                                searchResultsList.currentIndex = Math.min(
+                                    searchResultsList.currentIndex + 1,
+                                    searchResultsList.count - 1)
+                            } else if (runnerResults.visible && runnerResults.count > 0) {
+                                runnerResults.forceActiveFocus()
+                                runnerResults.currentIndex = 0
+                            }
                         }
                     }
                 }
+
+                PowerButtons {
+                    onActionTriggered: root.closeGrid()
+                }
             }
 
-            // Separator
-            Kirigami.Separator {
+            // -- Category bar --
+            Rectangle {
                 Layout.fillWidth: true
+                implicitHeight: 1
+                color: Qt.rgba(Kirigami.Theme.textColor.r,
+                               Kirigami.Theme.textColor.g,
+                               Kirigami.Theme.textColor.b, 0.15)
+                visible: !root.isSearching && !root.isPrefixMode
             }
 
-            // Search results list (visible when searching)
-            QQC2.ScrollView {
+            CategoryBar {
+                visible: !root.isSearching && !root.isPrefixMode
+                appsModel: root.appsModel
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 1
+                color: Qt.rgba(Kirigami.Theme.textColor.r,
+                               Kirigami.Theme.textColor.g,
+                               Kirigami.Theme.textColor.b, 0.15)
+                visible: !root.isSearching && !root.isPrefixMode
+            }
+
+            // -- Prefix mode view --
+            PrefixModeView {
+                id: prefixModeView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
-                visible: root.isSearching
+                visible: root.isPrefixMode
+                mode: root.prefixMode
+                argument: root.prefixArgument
+                searchField: searchBar.field
+                onCommandExecuted: {
+                    if (root.appletInterface) root.appletInterface.closeWindow()
+                }
+                onFileOpened: {
+                    if (root.appletInterface) root.appletInterface.closeWindow()
+                }
+                onDirectoryNavigated: function(path) {
+                    searchBar.text = path
+                }
 
-                ListView {
-                    id: listView
-                    clip: true
-                    model: root.isSearching ? appsModel : null
-                    currentIndex: 0
+            }
+
+            // -- Search results (app results + KRunner results) --
+            PlasmaComponents.ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
+                PlasmaComponents.ScrollBar.vertical.policy: root.scrollBarPolicy
+                visible: root.isSearching && !root.isPrefixMode
+
+                Flickable {
+                    id: searchFlickable
+                    contentHeight: searchColumn.implicitHeight
                     boundsBehavior: Flickable.StopAtBounds
-                    highlight: Rectangle {
-                        color: Kirigami.Theme.highlightColor
-                        radius: Kirigami.Units.cornerRadius
-                    }
-                    highlightMoveDuration: 0
 
-                    Keys.onReturnPressed: root.launchSelected()
-                    Keys.onEnterPressed: root.launchSelected()
+                    ColumnLayout {
+                        id: searchColumn
+                        width: searchFlickable.width
+                        spacing: 0
 
-                    delegate: QQC2.ItemDelegate {
-                        id: listDelegate
-                        width: listView.width
-                        height: Kirigami.Units.iconSizes.huge + Kirigami.Units.smallSpacing * 2
-
-                        highlighted: listView.currentIndex === model.index
-
-                        contentItem: RowLayout {
-                            spacing: Kirigami.Units.largeSpacing
-
-                            Kirigami.Icon {
-                                implicitWidth: Kirigami.Units.iconSizes.huge
-                                implicitHeight: Kirigami.Units.iconSizes.huge
-                                source: model.iconName || "application-x-executable"
-                            }
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 0
-
-                                PlasmaComponents.Label {
-                                    Layout.fillWidth: true
-                                    text: model.name || ""
-                                    elide: Text.ElideRight
-                                    color: listDelegate.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
-                                }
-
-                                PlasmaComponents.Label {
-                                    Layout.fillWidth: true
-                                    text: model.genericName || ""
-                                    elide: Text.ElideRight
-                                    font: Kirigami.Theme.smallFont
-                                    opacity: 0.6
-                                    visible: text.length > 0
-                                    color: listDelegate.highlighted ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                        SearchResultsList {
+                            id: searchResultsList
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: contentHeight
+                            model: root.isSearching ? appsModel : null
+                            searchField: searchBar.field
+                            interactive: false
+                            onLaunched: function(index) { root.launchApp(index) }
+                            onNavigatedPastEnd: {
+                                if (runnerResults.visible && runnerResults.count > 0) {
+                                    runnerResults.forceActiveFocus()
+                                    runnerResults.currentIndex = 0
                                 }
                             }
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onPositionChanged: listView.currentIndex = model.index
-                            onClicked: {
-                                if (appsModel) appsModel.launch(model.index)
-                                root.closeGrid()
+                        // KRunner results
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 1
+                            color: Qt.rgba(Kirigami.Theme.textColor.r,
+                                           Kirigami.Theme.textColor.g,
+                                           Kirigami.Theme.textColor.b, 0.15)
+                            visible: runnerResults.visible
+                        }
+
+                        PlasmaComponents.Label {
+                            Layout.leftMargin: Kirigami.Units.largeSpacing
+                            Layout.topMargin: Kirigami.Units.smallSpacing
+                            text: i18n("More Results")
+                            font.bold: true
+                            opacity: 0.7
+                            visible: runnerResults.visible
+                        }
+
+                        Milou.ResultsView {
+                            id: runnerResults
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: contentHeight
+                            interactive: false
+                            queryString: root.isSearching && !root.isPrefixMode ? searchBar.text : ""
+                            queryField: searchBar.field
+                            limit: 5
+                            visible: root.isSearching
+                                     && Plasmoid.configuration.useExtraRunners !== false
+                                     && count > 0
+                            onActivated: {
+                                if (root.appletInterface)
+                                    root.appletInterface.closeWindow()
                             }
                         }
                     }
                 }
             }
 
-            // App grid (visible when not searching)
-            QQC2.ScrollView {
+            // -- App grid --
+            PlasmaComponents.ScrollView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
-                visible: !root.isSearching
+                PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
+                PlasmaComponents.ScrollBar.vertical.policy: root.scrollBarPolicy
+                visible: !root.isSearching && !root.isPrefixMode
 
-                GridView {
-                    id: gridView
-                    clip: true
-                    cellWidth: Math.floor(width / root.columns)
-                    cellHeight: Kirigami.Units.iconSizes.huge + Kirigami.Units.gridUnit * 2 + Kirigami.Units.smallSpacing * 2
+                AppGridView {
+                    id: appGrid
                     model: !root.isSearching ? appsModel : null
-                    boundsBehavior: Flickable.StopAtBounds
-
-                    delegate: Item {
-                        width: gridView.cellWidth
-                        height: gridView.cellHeight
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: Kirigami.Units.smallSpacing
-                            spacing: Kirigami.Units.smallSpacing
-
-                            Kirigami.Icon {
-                                Layout.alignment: Qt.AlignHCenter
-                                implicitWidth: Kirigami.Units.iconSizes.huge
-                                implicitHeight: Kirigami.Units.iconSizes.huge
-                                source: model.iconName || "application-x-executable"
-                                active: delegateMouse.containsMouse
-                            }
-
-                            PlasmaComponents.Label {
-                                Layout.fillWidth: true
-                                text: model.name || ""
-                                font: Kirigami.Theme.smallFont
-                                elide: Text.ElideRight
-                                maximumLineCount: 2
-                                wrapMode: Text.Wrap
-                                horizontalAlignment: Text.AlignHCenter
-                            }
+                    appsModel: root.appsModel
+                    columns: root.columns
+                    iconSize: root.gridIconSize
+                    searchField: searchBar.field
+                    showRecentApps: Plasmoid.configuration.showRecentApps !== false
+                    onOriginYChanged: {
+                        if (root._needsScrollToTop) {
+                            contentY = originY
+                            root._needsScrollToTop = false
                         }
-
-                        MouseArea {
-                            id: delegateMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                if (appsModel) appsModel.launch(model.index)
-                                root.closeGrid()
-                            }
+                    }
+                    onLaunched: function(index) { root.launchApp(index) }
+                    onRecentLaunched: function(storageId) {
+                        if (appsModel) {
+                            appsModel.launchByStorageId(storageId)
+                            if (appletInterface)
+                                appletInterface.closeWindow()
                         }
+                    }
+                    onContextMenuRequested: function(index, storageId, desktopFile) {
+                        contextMenu.showForApp(index, storageId, desktopFile)
                     }
                 }
             }
         }
     }
 
-    // Open animation
+    // -----------------------------------------------------------------------
+    // Context menu
+    // -----------------------------------------------------------------------
+
+    AppContextMenu {
+        id: contextMenu
+        appsModel: root.appsModel
+    }
+
+    // -----------------------------------------------------------------------
+    // Animations
+    // -----------------------------------------------------------------------
+
     ParallelAnimation {
         id: openAnim
         NumberAnimation {
@@ -318,9 +513,12 @@ Window {
             from: 0.0; to: 1.0; duration: 120
             easing.type: Easing.OutCubic
         }
+        onFinished: {
+            if (Plasmoid.configuration.shakeOnOpen)
+                appGrid.shakeAllIcons()
+        }
     }
 
-    // Close animation
     ParallelAnimation {
         id: closeAnim
         NumberAnimation {

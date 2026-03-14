@@ -1,0 +1,304 @@
+# Translation file for dev.xarbit.appgrid
+# Irish translation
+# Copyright (C) 2026
+# This file is distributed under the same license as the dev.xarbit.appgrid package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dev.xarbit.appgrid 1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/appgrid/issues\n"
+"POT-Creation-Date: 2026-03-14 20:43+0100\n"
+"PO-Revision-Date: 2026-03-14 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Irish\n"
+"Language: ga\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 : "
+"(n>6 && n<11) ? 3 : 4);\n"
+
+#: package/contents/ui/AppContextMenu.qml:35
+#: package/contents/ui/AppContextMenu.qml:37
+msgid "Pin to Task Manager"
+msgstr "Pionnail leis an mBainisteoir Tascanna"
+
+#: package/contents/ui/AppContextMenu.qml:43
+#: package/contents/ui/AppContextMenu.qml:45
+msgid "Add to Desktop"
+msgstr "Cuir leis an Deasc"
+
+#: package/contents/ui/AppContextMenu.qml:51
+#: package/contents/ui/AppContextMenu.qml:53
+msgid "Edit Application"
+msgstr "Cuir an Feidhmchlár in Eagar"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Remove from Favorites"
+msgstr "Bain de na Ceanáin"
+
+#: package/contents/ui/AppContextMenu.qml:59
+msgid "Add to Favorites"
+msgstr "Cuir leis na Ceanáin"
+
+#: package/contents/ui/AppContextMenu.qml:74
+#: package/contents/ui/AppContextMenu.qml:82
+msgid "Hide Application"
+msgstr "Folaigh an Feidhmchlár"
+
+#: package/contents/ui/AppGridView.qml:148
+msgid "Recently Used"
+msgstr "Úsáidte Le Déanaí"
+
+#: package/contents/ui/AppGridView.qml:210
+msgid "All Apps"
+msgstr "Gach Feidhmchlár"
+
+#: package/contents/ui/AppIconDelegate.qml:82
+msgid "new"
+msgstr "nua"
+
+#: package/contents/ui/CategoryBar.qml:23
+msgid "All"
+msgstr "Uile"
+
+#: package/contents/ui/CategoryBar.qml:28
+msgid "All applications"
+msgstr "Gach feidhmchlár"
+
+#: package/contents/ui/ConfigGeneral.qml:67
+msgid "Icon:"
+msgstr "Deilbhín:"
+
+#: package/contents/ui/ConfigGeneral.qml:128
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "Roghnaigh…"
+
+#: package/contents/ui/ConfigGeneral.qml:133
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "Glan an Deilbhín"
+
+#: package/contents/ui/ConfigGeneral.qml:150
+msgid "Icons per row:"
+msgstr "Deilbhíní in aghaidh an ró:"
+
+#: package/contents/ui/ConfigGeneral.qml:156
+msgid "Visible rows:"
+msgstr "Rónna infheicthe:"
+
+#: package/contents/ui/ConfigGeneral.qml:162
+msgid "Icon size:"
+msgstr "Méid na ndeilbhíní:"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Small"
+msgstr "Beag"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Medium"
+msgstr "Meánach"
+
+#: package/contents/ui/ConfigGeneral.qml:163
+msgid "Large"
+msgstr "Mór"
+
+#: package/contents/ui/ConfigGeneral.qml:167
+msgid "Sort order:"
+msgstr "Ord sórtála:"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Alphabetical"
+msgstr "Aibítreach"
+
+#: package/contents/ui/ConfigGeneral.qml:172
+msgid "Most Used"
+msgstr "Is mó a úsáidtear"
+
+#: package/contents/ui/ConfigGeneral.qml:177
+msgid "Show recently used applications"
+msgstr "Taispeáin feidhmchláir a úsáideadh le déanaí"
+
+#: package/contents/ui/ConfigGeneral.qml:188
+msgid "Appearance:"
+msgstr "Cuma:"
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Show scrollbars"
+msgstr "Taispeáin na barraí scrollaithe"
+
+#: package/contents/ui/ConfigGeneral.qml:194
+msgid "Enable background blur"
+msgstr "Cumasaigh doiléiriú cúlra"
+
+#: package/contents/ui/ConfigGeneral.qml:199
+msgid "Shake icons on open"
+msgstr "Croith na deilbhíní ar oscailt"
+
+#: package/contents/ui/ConfigGeneral.qml:204
+msgid "Show labels on power/session buttons"
+msgstr "Taispeáin lipéid ar na cnaipí cumhachta/seisiúin"
+
+#: package/contents/ui/ConfigGeneral.qml:209
+msgid "Expand search to bookmarks, files, and websites"
+msgstr ""
+"Leathnaigh an cuardach chuig leabharmharcanna, comhaid agus suímh ghréasáin"
+
+#: package/contents/ui/ConfigGeneral.qml:213
+msgid "Configure Search Plugins…"
+msgstr "Cumraigh Breiseáin Chuardaigh…"
+
+#: package/contents/ui/ConfigGeneral.qml:220
+msgid "Background opacity:"
+msgstr "Teimhneacht an chúlra:"
+
+#: package/contents/ui/ConfigGeneral.qml:236
+msgid "Corner radius:"
+msgstr "Ga an chúinne:"
+
+#: package/contents/ui/ConfigGeneral.qml:237
+msgid "Use custom corner radius"
+msgstr "Úsáid ga cúinne saincheaptha"
+
+#: package/contents/ui/ConfigGeneral.qml:249
+msgid "px"
+msgstr "px"
+
+#: package/contents/ui/ConfigGeneral.qml:258
+msgid "Hidden Applications"
+msgstr "Feidhmchláir Fholaithe"
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid ""
+"Right-click any application in the grid and choose \"Hide Application\" to "
+"add it here."
+msgstr ""
+"Deaschliceáil aon fheidhmchlár sa ghreille agus roghnaigh \"Folaigh an "
+"Feidhmchlár\" chun é a chur anseo."
+
+#: package/contents/ui/ConfigGeneral.qml:273
+msgid "No hidden applications."
+msgstr "Níl aon fheidhmchlár folaithe."
+
+#: package/contents/ui/ConfigGeneral.qml:303
+msgid "Unhide"
+msgstr "Dífolaigh"
+
+#: package/contents/ui/GridWindow.qml:427
+msgid "More Results"
+msgstr "Tuilleadh Torthaí"
+
+#: package/contents/ui/PowerButtons.qml:24
+msgid "Sleep"
+msgstr "Codladh"
+
+#: package/contents/ui/PowerButtons.qml:25
+msgid "Restart"
+msgstr "Atosaigh"
+
+#: package/contents/ui/PowerButtons.qml:26
+msgid "Shut Down"
+msgstr "Múch"
+
+#: package/contents/ui/PowerButtons.qml:47
+#: package/contents/ui/PowerButtons.qml:50
+#: package/contents/ui/PowerButtons.qml:56
+msgid "Session"
+msgstr "Seisiún"
+
+#: package/contents/ui/PowerButtons.qml:65
+#: package/contents/ui/PowerButtons.qml:67
+msgid "Lock"
+msgstr "Glasáil"
+
+#: package/contents/ui/PowerButtons.qml:72
+#: package/contents/ui/PowerButtons.qml:74
+msgid "Log Out"
+msgstr "Logáil Amach"
+
+#: package/contents/ui/PowerButtons.qml:79
+#: package/contents/ui/PowerButtons.qml:81
+msgid "Switch User"
+msgstr "Athraigh Úsáideoir"
+
+#: package/contents/ui/PrefixModeView.qml:42
+msgid "Quick Commands"
+msgstr "Mear-orduithe"
+
+#: package/contents/ui/PrefixModeView.qml:51
+msgid "Terminal"
+msgstr "Teirminéal"
+
+#: package/contents/ui/PrefixModeView.qml:52
+msgid "Run Command"
+msgstr "Rith ordú"
+
+#: package/contents/ui/PrefixModeView.qml:53
+msgid "Browse Files"
+msgstr "Brabhsáil comhaid"
+
+#: package/contents/ui/PrefixModeView.qml:54
+msgid "Browse Home"
+msgstr "Brabhsáil fillteán baile"
+
+#: package/contents/ui/PrefixModeView.qml:55
+msgid "This Help"
+msgstr "An chabhair seo"
+
+#: package/contents/ui/PrefixModeView.qml:131
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Seolann Alt+1 – Alt+9 torthaí cuardaigh láithreach"
+
+#: package/contents/ui/PrefixModeView.qml:157
+msgid "Type a command to run in terminal"
+msgstr "Clóscríobh ordú le rith sa teirminéal"
+
+#: package/contents/ui/PrefixModeView.qml:158
+msgid "Type a command to execute"
+msgstr "Clóscríobh ordú le rith"
+
+#: package/contents/ui/PrefixModeView.qml:160
+msgid "Press Enter to run in terminal"
+msgstr "Brúigh Enter le rith sa teirminéal"
+
+#: package/contents/ui/PrefixModeView.qml:161
+msgid "Press Enter to execute"
+msgstr "Brúigh Enter le rith"
+
+#: package/contents/ui/SearchBar.qml:37
+msgid "Search apps or type ? for commands"
+msgstr "Cuardaigh aipeanna nó clóscríobh ? le haghaidh orduithe"
+
+#: package/contents/ui/SearchBar.qml:60
+msgid "Search applications"
+msgstr "Cuardaigh feidhmchláir"
+
+#: package/contents/ui/SearchBar.qml:75
+msgid "Clear search"
+msgstr "Glan an cuardach"
+
+#: package/contents/ui/SearchResultsList.qml:160
+msgid "Alt+%1: "
+msgstr "Alt+%1: "
+
+#~ msgid "Available Commands"
+#~ msgstr "Orduithe ar Fáil"
+
+#~ msgid "Run command in terminal"
+#~ msgstr "Rith ordú sa teirminéal"
+
+#~ msgid "Run shell command (no terminal)"
+#~ msgstr "Rith ordú blaoisce (gan teirminéal)"
+
+#~ msgid "Browse files from root"
+#~ msgstr "Brabhsáil comhaid ón bhfréamh"
+
+#~ msgid "Browse files from home"
+#~ msgstr "Brabhsáil comhaid ón mbaile"
+
+#~ msgid "Show this help"
+#~ msgstr "Taispeáin an chabhair seo"
+
+#~ msgid "Search"
+#~ msgstr "Cuardaigh"

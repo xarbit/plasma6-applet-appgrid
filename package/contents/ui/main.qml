@@ -1,3 +1,10 @@
+/*
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    Root plasmoid item: panel icon + overlay window lifecycle.
+*/
+
 import QtQuick
 import QtQuick.Window
 import org.kde.plasma.plasmoid
@@ -21,6 +28,7 @@ PlasmoidItem {
         : Plasmoid.configuration.icon
 
     property GridWindow gridWindow: null
+    property bool gridOpen: false
 
     Component {
         id: compactRepresentationComponent
@@ -36,14 +44,24 @@ PlasmoidItem {
     }
 
     function toggleWindow() {
-        if (gridWindow && gridWindow.visible) {
-            gridWindow.closeGrid()
+        if (gridOpen) {
+            closeWindow()
         } else {
-            if (!gridWindow) {
-                gridWindow = gridWindowComponent.createObject(kicker)
-            }
-            gridWindow.showGrid()
+            openWindow()
         }
+    }
+
+    function openWindow() {
+        gridOpen = true
+        if (!gridWindow)
+            gridWindow = gridWindowComponent.createObject(kicker, { appletInterface: kicker })
+        gridWindow.showGrid()
+    }
+
+    function closeWindow() {
+        gridOpen = false
+        if (gridWindow)
+            gridWindow.closeGrid()
     }
 
     Component {

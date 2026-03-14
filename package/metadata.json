@@ -1,23 +1,20 @@
 {
-    "KPackageStructure": "Plasma/Applet",
-    "KPlugin": {
-        "Authors": [
-            {
-                "Name": "AppGrid"
-            }
-        ],
-        "Category": "Application Launchers",
-        "Description": "A macOS Tahoe-style application grid launcher",
-        "FormFactors": [
-            "desktop"
-        ],
-        "Icon": "start-here-kde-symbolic",
-        "Id": "org.kde.plasma.appgrid",
-        "License": "GPL-2.0+",
-        "Name": "AppGrid"
-    },
-    "X-Plasma-API-Minimum-Version": "6.0",
-    "X-Plasma-Provides": [
-        "org.kde.plasma.launchermenu"
-    ]
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Jason Scurtu",
+        "Email": "jscurtu@gmail.com"
+      }
+    ],
+    "Category": "Application Launchers",
+    "Description": "A modern style application launcher",
+    "FormFactors": ["desktop"],
+    "Icon": "start-here-kde-symbolic",
+    "Id": "dev.xarbit.appgrid",
+    "License": "GPL-2.0+",
+    "Name": "Application Launcher (modern)"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-Provides": ["org.kde.plasma.launchermenu"]
 }

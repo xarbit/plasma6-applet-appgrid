@@ -1,7 +1,21 @@
-.claude
+# IDE / tools
+.claude/
+
+# Build artifacts
 build/
+build-*/
 pkg/
 src/build/
 src/metadata.json
+*.o
+*.so
+
+# Packages
 *.pkg.tar.zst
 *.pkg.tar.xz
+
+# Translation backups
+*.po~
+
+# Screenshots
+Screenshot_*.png
