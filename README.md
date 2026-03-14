@@ -1,23 +1,33 @@
 # AppGrid
 
-A macOS Tahoe-style application grid launcher for KDE Plasma 6.
+A modern fullscreen application launcher for KDE Plasma, inspired by macOS Launchpad and COSMIC.
 
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0+-green)
 
+## Screenshots
+
+![App Grid](images/launcher-main.png)
+
+![Search](images/search.png)
+
+![Quick Commands](images/quick-commands.png)
+
 ## Features
 
-- **App grid** — All installed applications displayed in a responsive grid layout
-- **Category filtering** — Filter apps by category (Development, Graphics, Internet, Multimedia, Office, Games, Education, System, Utilities)
-- **Search** — Instant search with list view results, press Enter to launch the top result
-- **Centered popup** — Opens centered on screen, not attached to the panel
-- **Animations** — macOS-style scale + fade open/close animations
-- **Super key support** — Toggle with Super key or panel icon click
-- **Configurable icon** — Change the panel icon via right-click → Configure, matching Kicker/Kickoff behavior
-- **Theme support** — Follows the user's light/dark Plasma theme
-- **Responsive** — Adapts columns and size to different screen resolutions
-- **Show Alternatives** — Integrates with Plasma's "Show Alternatives" panel mechanism as a launcher alternative
-- **Proper app launching** — Uses KIO::ApplicationLauncherJob, correctly handles terminal apps, D-Bus activation, and field codes
+- **Fullscreen app grid** — All installed applications in a clean, visual grid with Wayland layer-shell support
+- **Category filtering** — Filter apps by category (Development, Graphics, Internet, Multimedia, Office, System, Utilities)
+- **Search with KRunner integration** — Instant search with numbered results and Alt+1–9 shortcuts for quick launching
+- **Quick commands** — Type `?` for help: open terminal (`t:`), run shell commands (`:`), browse files (`/`, `~/`)
+- **Configurable icon size** — Small, medium, or large icons
+- **Sort by most used** — Option to sort apps by launch frequency instead of alphabetically
+- **New app detection** — Highlights recently installed applications with a badge
+- **Session management** — Sleep, restart, shut down, lock, and log out buttons
+- **Context menu** — Pin to Task Manager, Add to Desktop, Edit Application, Hide apps
+- **Background customization** — Blur, opacity, and corner radius settings
+- **Theme support** — Follows the user's Plasma theme (light/dark)
+- **29 language translations** — European language support included
+- **Show Alternatives** — Works as a drop-in replacement via Plasma's launcher alternative mechanism
 
 ## Dependencies
 
@@ -72,15 +82,21 @@ Or add it as a new widget: right-click the panel → **Add Widgets** → search 
 |-----|--------|
 | Super | Toggle AppGrid |
 | Escape | Close |
-| Enter | Launch selected search result |
-| Arrow keys | Navigate search results |
+| Enter | Launch top search result |
+| Alt+1–9 | Launch numbered search result |
+| Arrow keys | Navigate results |
+| Tab | Cycle categories |
 | Type anywhere | Start searching |
 
 ## Configuration
 
 Right-click the AppGrid panel icon → **Configure AppGrid** → **General**:
 
-- **Icon** — Click to choose a custom icon or drag-and-drop an image file (.png, .svg, .svgz, .xpm)
+- **Panel icon** — Choose a custom icon or drag-and-drop an image file
+- **Icon size** — Small, medium, or large grid icons
+- **Grid dimensions** — Columns and rows
+- **Sort order** — Alphabetical or most used
+- **Background** — Blur, opacity, and corner radius
 
 ## Project Structure
 

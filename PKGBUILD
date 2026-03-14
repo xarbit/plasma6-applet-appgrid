@@ -2,7 +2,7 @@
 pkgname=appgrid
 pkgver=1.0
 pkgrel=1
-pkgdesc="A macOS Tahoe-style application grid launcher for KDE Plasma"
+pkgdesc="A modern fullscreen application launcher for KDE Plasma"
 arch=('x86_64')
 license=('GPL-2.0-or-later')
 depends=(

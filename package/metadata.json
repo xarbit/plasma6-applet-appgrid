@@ -12,7 +12,7 @@
     "FormFactors": ["desktop"],
     "Icon": "start-here-kde-symbolic",
     "Id": "dev.xarbit.appgrid",
-    "License": "GPL-2.0+",
+    "License": "GPL-2.0-or-later",
     "Name": "Application Launcher (modern)"
   },
   "X-Plasma-API-Minimum-Version": "6.0",
