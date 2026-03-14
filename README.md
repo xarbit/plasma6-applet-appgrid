@@ -5,6 +5,8 @@ A modern fullscreen application launcher for KDE Plasma, inspired by macOS Launc
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
 
+![AppGrid](images/launcher.png)
+
 ## Screenshots
 
 ![App Grid](images/launcher-main.png)
