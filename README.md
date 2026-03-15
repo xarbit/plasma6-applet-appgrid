@@ -1,11 +1,15 @@
 # AppGrid
 
-A modern fullscreen application launcher for KDE Plasma, inspired by macOS Launchpad and COSMIC.
+A modern application launcher for KDE Plasma, inspired by macOS Launchpad, COSMIC, and Pantheon.
 
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
 
 ![AppGrid](images/launcher.png)
+
+## Why AppGrid?
+
+KDE Plasma ships with Kickoff and Kicker as its default application launchers. While they are feature-rich, I find them difficult to navigate and slower to use for everyday app launching. I've always preferred the simplicity of how COSMIC, macOS Launchpad, and Pantheon handle application launching — a clean, fullscreen grid where everything is visible at a glance. Since nothing like that existed for Plasma, I decided to build one that fits my workflow.
 
 ## Screenshots
 
