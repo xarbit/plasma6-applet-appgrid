@@ -26,6 +26,8 @@ KCMUtils.SimpleKCM {
     property alias cfg_iconSize: iconSize.currentIndex
     property alias cfg_sortMode: sortMode.currentIndex
     property alias cfg_showScrollbars: showScrollbars.checked
+    property alias cfg_searchAll: searchAll.checked
+    property alias cfg_startWithFavorites: startWithFavorites.checked
     property alias cfg_shakeOnOpen: shakeOnOpen.checked
     property alias cfg_hoverAnimation: hoverAnimation.currentIndex
     property alias cfg_showActionLabels: showActionLabels.checked
@@ -176,6 +178,17 @@ KCMUtils.SimpleKCM {
         // --- Appearance ---
 
         Item { Kirigami.FormData.isSection: true }
+
+        QQC2.CheckBox {
+            id: searchAll
+            Kirigami.FormData.label: i18n("Behavior:")
+            text: i18n("Search all apps regardless of active tab")
+        }
+
+        QQC2.CheckBox {
+            id: startWithFavorites
+            text: i18n("Start with favorites tab")
+        }
 
         QQC2.CheckBox {
             id: showScrollbars

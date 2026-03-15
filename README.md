@@ -7,7 +7,7 @@ AppGrid ships as two plasmoids that share a common codebase:
 - **AppGrid** — a standalone window launcher that opens as a fullscreen overlay or centered popup, with its own blur, opacity, and corner radius settings.
 - **AppGrid (Panel)** — a native Plasma panel popup that opens anchored to the panel icon, just like Kickoff. For those who prefer the traditional style.
 
-Both variants share the same app grid, search, categories, quick commands, and configuration — pick whichever fits your workflow.
+Both variants share the same app grid, search, categories, quick commands, and configuration — pick whichever fits your workflow. Requires version 1.2+.
 
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
@@ -31,13 +31,14 @@ KDE Plasma ships with Kickoff and Kicker as its default application launchers. W
 ## Features
 
 - **Two plasmoid variants** — fullscreen/centered popup launcher, or a native Plasma panel popup (like Kickoff)
+- Favorites tab — right-click any app to add it, with optional start-on-favorites mode
 - Category filtering and KRunner search integration
 - Quick commands — terminal, shell commands, file browser (type `?` for help)
 - Sort by most used or alphabetically
 - New app detection with badge
 - Configurable icon hover animations — shake, grow, bounce, spin, or none
 - Session management (sleep, restart, shut down, lock, log out)
-- Context menu with pin to Task Manager, add to Desktop, hide apps
+- Context menu with add to favorites, pin to Task Manager, add to Desktop, hide apps
 - Customizable grid size, icon size, background blur, opacity, and corner radius
 - Drop-in replacement via Plasma's Show Alternatives
 
@@ -133,6 +134,8 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | **Visible rows** | Number of rows visible before scrolling | 4 |
 | **Icon size** | Small, medium, or large | Large |
 | **Sort order** | **Alphabetical** sorts apps A–Z. **Most Used** sorts by launch frequency, so your most opened apps appear first. | Most Used |
+| **Search all apps** | Search covers all apps regardless of the active category or favorites tab | On |
+| **Start with favorites tab** | Open the launcher showing only your favorited apps instead of all apps | Off |
 | **Show scrollbars** | Show scrollbars in grid and search views | Off |
 | **Enable background blur** | Blur effect behind the launcher (AppGrid only) | On |
 | **Icon animation** | Hover and open animation style — None, Shake, Grow, Bounce, or Spin | Shake |

@@ -163,9 +163,12 @@ Kirigami.ShadowedRectangle {
     function resetState() {
         contextMenu.close()
         searchBar.text = ""
+        var startFav = Plasmoid.configuration.startWithFavorites || false
+        categoryBar.favoritesActive = startFav
         if (appsModel) {
             appsModel.searchText = ""
             appsModel.filterCategory = ""
+            appsModel.showFavoritesOnly = startFav
             appsModel.hiddenApps = Plasmoid.configuration.hiddenApps || []
             appsModel.favoriteApps = Plasmoid.configuration.favoriteApps || []
             appsModel.maxRecentApps = columns
@@ -209,7 +212,31 @@ Kirigami.ShadowedRectangle {
 
             SearchBar {
                 id: searchBar
+                property string savedCategory: ""
+                property bool savedFavorites: false
+                property bool filtersCleared: false
+
                 onTextChanged: {
+                    var searching = text.length > 0 && !panel.isPrefixMode
+                    var searchAll = Plasmoid.configuration.searchAll !== false
+
+                    if (searching && searchAll && !filtersCleared) {
+                        savedCategory = panel.appsModel ? panel.appsModel.filterCategory : ""
+                        savedFavorites = categoryBar.favoritesActive
+                        if (panel.appsModel) {
+                            panel.appsModel.filterCategory = ""
+                            panel.appsModel.showFavoritesOnly = false
+                        }
+                        filtersCleared = true
+                    } else if (!searching && filtersCleared) {
+                        if (panel.appsModel) {
+                            panel.appsModel.filterCategory = savedCategory
+                            panel.appsModel.showFavoritesOnly = savedFavorites
+                        }
+                        categoryBar.favoritesActive = savedFavorites
+                        filtersCleared = false
+                    }
+
                     if (panel.appsModel)
                         panel.appsModel.searchText = panel.isPrefixMode ? "" : text
                 }
@@ -287,8 +314,17 @@ Kirigami.ShadowedRectangle {
         }
 
         CategoryBar {
+            id: categoryBar
             visible: !panel.isSearching && !panel.isPrefixMode
             appsModel: panel.appsModel
+            onFavoritesToggled: function(active) {
+                categoryBar.favoritesActive = active
+                if (panel.appsModel) {
+                    panel.appsModel.showFavoritesOnly = active
+                    if (active)
+                        panel.appsModel.filterCategory = ""
+                }
+            }
         }
 
         Rectangle {

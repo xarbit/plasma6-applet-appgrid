@@ -80,6 +80,7 @@ class AppFilterModel : public QSortFilterProxyModel {
     Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
     Q_PROPERTY(QVariantMap launchCounts READ launchCountsMap WRITE setLaunchCountsMap NOTIFY launchCountsChanged)
     Q_PROPERTY(QStringList knownApps READ knownApps WRITE setKnownApps NOTIFY knownAppsChanged)
+    Q_PROPERTY(bool showFavoritesOnly READ showFavoritesOnly WRITE setShowFavoritesOnly NOTIFY showFavoritesOnlyChanged)
 
 public:
     /** Sort modes for the grid view. */
@@ -120,6 +121,9 @@ public:
     QStringList knownApps() const;
     void setKnownApps(const QStringList &list);
 
+    bool showFavoritesOnly() const;
+    void setShowFavoritesOnly(bool enabled);
+
     Q_INVOKABLE void launch(int proxyIndex);
     Q_INVOKABLE void launchByStorageId(const QString &storageId);
     Q_INVOKABLE QStringList categories() const;
@@ -145,6 +149,7 @@ signals:
     void sortModeChanged();
     void launchCountsChanged();
     void knownAppsChanged();
+    void showFavoritesOnlyChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
@@ -162,4 +167,5 @@ private:
     int m_sortMode = Alphabetical;
     QHash<QString, int> m_launchCounts;
     QStringList m_knownApps;
+    bool m_showFavoritesOnly = false;
 };

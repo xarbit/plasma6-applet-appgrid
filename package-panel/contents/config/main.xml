@@ -30,6 +30,14 @@
       <label>Whether to shake all icons when the grid opens.</label>
       <default>true</default>
     </entry>
+    <entry name="searchAll" type="Bool">
+      <label>Whether search covers all apps regardless of active category or favorites filter.</label>
+      <default>true</default>
+    </entry>
+    <entry name="startWithFavorites" type="Bool">
+      <label>Whether to show the favorites tab by default when opening the launcher.</label>
+      <default>false</default>
+    </entry>
     <entry name="hoverAnimation" type="Int">
       <label>Icon hover animation (0=None, 1=Shake, 2=Grow, 3=Bounce, 4=Spin).</label>
       <default>1</default>

@@ -370,6 +370,8 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
     if (m_favoriteApps == list)
         return;
     m_favoriteApps = list;
+    if (m_showFavoritesOnly)
+        invalidateFilter();
     emit favoriteAppsChanged();
 }
 
@@ -386,6 +388,8 @@ void AppFilterModel::toggleFavorite(const QString &storageId)
         m_favoriteApps.removeAll(storageId);
     else
         m_favoriteApps.append(storageId);
+    if (m_showFavoritesOnly)
+        invalidateFilter();
     emit favoriteAppsChanged();
 }
 
@@ -449,6 +453,12 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
     if (!sid.isEmpty() && m_hiddenApps.contains(sid))
         return false;
+
+    // Favorites-only filter
+    if (m_showFavoritesOnly) {
+        if (sid.isEmpty() || !m_favoriteApps.contains(sid))
+            return false;
+    }
 
     if (!m_filterCategory.isEmpty()) {
         const auto category = idx.data(AppModel::CategoryRole).toString();
@@ -536,6 +546,20 @@ void AppFilterModel::markAllKnown()
     for (int i = 0; i < model->rowCount(); ++i)
         all.append(model->index(i, 0).data(AppModel::StorageIdRole).toString());
     setKnownApps(all);
+}
+
+bool AppFilterModel::showFavoritesOnly() const
+{
+    return m_showFavoritesOnly;
+}
+
+void AppFilterModel::setShowFavoritesOnly(bool enabled)
+{
+    if (m_showFavoritesOnly == enabled)
+        return;
+    m_showFavoritesOnly = enabled;
+    invalidateFilter();
+    emit showFavoritesOnlyChanged();
 }
 
 int AppFilterModel::getLaunchCount(const QString &storageId) const
