@@ -27,6 +27,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_sortMode: sortMode.currentIndex
     property alias cfg_showScrollbars: showScrollbars.checked
     property alias cfg_shakeOnOpen: shakeOnOpen.checked
+    property alias cfg_hoverAnimation: hoverAnimation.currentIndex
     property alias cfg_showActionLabels: showActionLabels.checked
     property alias cfg_showRecentApps: showRecentApps.checked
     property alias cfg_useExtraRunners: useExtraRunners.checked
@@ -182,9 +183,16 @@ KCMUtils.SimpleKCM {
             text: i18n("Show scrollbars")
         }
 
+        QQC2.ComboBox {
+            id: hoverAnimation
+            Kirigami.FormData.label: i18n("Icon animation:")
+            model: [i18n("None"), i18n("Shake"), i18n("Grow"), i18n("Bounce"), i18n("Spin")]
+        }
+
         QQC2.CheckBox {
             id: shakeOnOpen
-            text: i18n("Shake icons on open")
+            text: i18n("Animate icons on open")
+            enabled: hoverAnimation.currentIndex > 0
         }
 
         QQC2.CheckBox {

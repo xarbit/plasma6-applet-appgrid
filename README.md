@@ -23,10 +23,12 @@ KDE Plasma ships with Kickoff and Kicker as its default application launchers. W
 
 ## Features
 
+- **Two plasmoid variants** — fullscreen/centered popup launcher, or a native Plasma panel popup (like Kickoff)
 - Category filtering and KRunner search integration
 - Quick commands — terminal, shell commands, file browser (type `?` for help)
 - Sort by most used or alphabetically
 - New app detection with badge
+- Configurable icon hover animations — shake, grow, bounce, spin, or none
 - Session management (sleep, restart, shut down, lock, log out)
 - Context menu with pin to Task Manager, add to Desktop, hide apps
 - Customizable grid size, icon size, background blur, opacity, and corner radius
@@ -95,6 +97,10 @@ kquitapp6 plasmashell && kstart plasmashell
 
 Or add it as a new widget: right-click the panel → **Add Widgets** → search for **AppGrid**.
 
+There are two variants:
+- **AppGrid** — opens as a fullscreen overlay or centered popup window
+- **AppGrid (Panel)** — opens as a native Plasma popup anchored to the panel icon, like Kickoff
+
 ### Keyboard shortcuts
 
 | Key | Action |
@@ -116,19 +122,21 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | Setting | Description | Default |
 |---------|-------------|---------|
 | **Icon** | Panel icon or custom image | `start-here-kde-symbolic` |
-| **Display mode** | **Fullscreen overlay** covers the entire screen with a blurred background, similar to macOS Launchpad. **Centered popup** opens a floating window in the center of the screen. **Near panel icon** opens a popup anchored to the panel icon, like Kickoff. | Centered popup |
 | **Icons per row** | Number of columns in the grid | 7 |
 | **Visible rows** | Number of rows visible before scrolling | 4 |
 | **Icon size** | Small, medium, or large | Large |
 | **Sort order** | **Alphabetical** sorts apps A–Z. **Most Used** sorts by launch frequency, so your most opened apps appear first. | Most Used |
 | **Show scrollbars** | Show scrollbars in grid and search views | Off |
-| **Enable background blur** | Blur effect behind the launcher | On |
-| **Shake icons on open** | Subtle icon animation when launcher opens | On |
+| **Enable background blur** | Blur effect behind the launcher (AppGrid only) | On |
+| **Icon animation** | Hover and open animation style — None, Shake, Grow, Bounce, or Spin | Shake |
+| **Animate icons on open** | Play the selected animation on all icons when the launcher opens (requires an animation selected above) | On |
 | **Show labels on power/session buttons** | Text labels on sleep, restart, shut down, etc. | Off |
 | **Expand search to bookmarks, files, and websites** | Use additional KRunner plugins for search | On |
-| **Background opacity** | Opacity of the launcher background (0–100%) | 85% |
-| **Corner radius** | Override the default corner radius (in pixels) | 24 px (off by default) |
+| **Background opacity** | Opacity of the launcher background (AppGrid only) | 85% |
+| **Corner radius** | Override the default corner radius (AppGrid only) | 24 px (off by default) |
 | **Hidden Applications** | Apps hidden from the grid via right-click → Hide | — |
+
+> **Note:** The **AppGrid (Panel)** variant shares most settings but does not include display mode, background blur, opacity, or corner radius options — those are managed by Plasma's native popup.
 
 ## Credits
 

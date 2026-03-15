@@ -26,13 +26,14 @@ KCMUtils.SimpleKCM {
     property alias cfg_gridRows: gridRows.value
     property alias cfg_iconSize: iconSize.currentIndex
     property alias cfg_sortMode: sortMode.currentIndex
-    property alias cfg_displayMode: displayMode.currentIndex
+    property int cfg_displayMode: Plasmoid.configuration.displayMode
     property alias cfg_overrideRadius: overrideRadius.checked
     property alias cfg_cornerRadius: cornerRadius.value
     property alias cfg_showScrollbars: showScrollbars.checked
     property alias cfg_backgroundOpacity: backgroundOpacity.value
     property alias cfg_enableBlur: enableBlur.checked
     property alias cfg_shakeOnOpen: shakeOnOpen.checked
+    property alias cfg_hoverAnimation: hoverAnimation.currentIndex
     property alias cfg_showActionLabels: showActionLabels.checked
     property alias cfg_showRecentApps: showRecentApps.checked
     property alias cfg_useExtraRunners: useExtraRunners.checked
@@ -142,16 +143,6 @@ KCMUtils.SimpleKCM {
             }
         }
 
-        // --- Display mode ---
-
-        Item { Kirigami.FormData.isSection: true }
-
-        QQC2.ComboBox {
-            id: displayMode
-            Kirigami.FormData.label: i18n("Display mode:")
-            model: [i18n("Fullscreen overlay"), i18n("Centered popup")]
-        }
-
         // --- Grid size ---
 
         Item { Kirigami.FormData.isSection: true }
@@ -205,9 +196,16 @@ KCMUtils.SimpleKCM {
             text: i18n("Enable background blur")
         }
 
+        QQC2.ComboBox {
+            id: hoverAnimation
+            Kirigami.FormData.label: i18n("Icon animation:")
+            model: [i18n("None"), i18n("Shake"), i18n("Grow"), i18n("Bounce"), i18n("Spin")]
+        }
+
         QQC2.CheckBox {
             id: shakeOnOpen
-            text: i18n("Shake icons on open")
+            text: i18n("Animate icons on open")
+            enabled: hoverAnimation.currentIndex > 0
         }
 
         QQC2.CheckBox {
