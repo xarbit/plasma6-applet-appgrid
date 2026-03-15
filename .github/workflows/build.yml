@@ -159,7 +159,9 @@ jobs:
 
           %files
           /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
+          /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
           /usr/share/plasma/plasmoids/dev.xarbit.appgrid/
+          /usr/share/plasma/plasmoids/dev.xarbit.appgrid.panel/
           /usr/share/metainfo/dev.xarbit.appgrid.metainfo.xml
           /usr/share/locale/*/LC_MESSAGES/dev.xarbit.appgrid.mo
           SPEC
@@ -242,7 +244,9 @@ jobs:
 
           %files
           /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
+          /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
           /usr/share/plasma/plasmoids/dev.xarbit.appgrid/
+          /usr/share/plasma/plasmoids/dev.xarbit.appgrid.panel/
           /usr/share/metainfo/dev.xarbit.appgrid.metainfo.xml
           /usr/share/locale/*/LC_MESSAGES/dev.xarbit.appgrid.mo
           SPEC
