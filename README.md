@@ -119,6 +119,9 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 - **Jason Scurtu** — Author
 - **[@claude](https://github.com/claude)** — AI pair programming assistant
 
+Disclaimer:
+This project uses [Claude Code](https://claude.ai/claude-code) as an AI pair programmer and AI assistant. To be clear: this is **not** vibe-coded — it is context engineered and reviewed. Nevertheless, if AI-assisted code gives you the ick, this might not be the launcher for you.
+
 ## License
 
 GPL-2.0-or-later
