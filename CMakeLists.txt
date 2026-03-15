@@ -57,5 +57,7 @@ install(TARGETS dev.xarbit.appgrid DESTINATION ${KDE_INSTALL_PLUGINDIR}/plasma/a
 
 plasma_install_package(package dev.xarbit.appgrid)
 
+ki18n_install(po)
+
 install(FILES dev.xarbit.appgrid.metainfo.xml
         DESTINATION ${KDE_INSTALL_METAINFODIR})
