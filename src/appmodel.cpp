@@ -305,9 +305,8 @@ void AppFilterModel::setFilterCategory(const QString &category)
 {
     if (m_filterCategory == category)
         return;
-    beginFilterChange();
     m_filterCategory = category;
-    endFilterChange();
+    invalidateFilter();
     emit filterCategoryChanged();
 }
 
@@ -320,9 +319,8 @@ void AppFilterModel::setSearchText(const QString &text)
 {
     if (m_searchText == text)
         return;
-    beginFilterChange();
     m_searchText = text;
-    endFilterChange();
+    invalidateFilter();
     emit searchTextChanged();
 }
 
@@ -335,9 +333,8 @@ void AppFilterModel::setHiddenApps(const QStringList &list)
 {
     if (m_hiddenApps == list)
         return;
-    beginFilterChange();
     m_hiddenApps = list;
-    endFilterChange();
+    invalidateFilter();
     emit hiddenAppsChanged();
 }
 
@@ -348,9 +345,8 @@ void AppFilterModel::hideApp(int proxyIndex)
         return;
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
     if (!sid.isEmpty() && !m_hiddenApps.contains(sid)) {
-        beginFilterChange();
         m_hiddenApps.append(sid);
-        endFilterChange();
+        invalidateFilter();
         emit hiddenAppsChanged();
     }
 }
@@ -358,9 +354,8 @@ void AppFilterModel::hideApp(int proxyIndex)
 void AppFilterModel::unhideApp(const QString &storageId)
 {
     if (m_hiddenApps.contains(storageId)) {
-        beginFilterChange();
         m_hiddenApps.removeAll(storageId);
-        endFilterChange();
+        invalidateFilter();
         emit hiddenAppsChanged();
     }
 }
