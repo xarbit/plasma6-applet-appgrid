@@ -9,6 +9,7 @@ depends=(
     'plasma-workspace'
     'kservice'
     'ki18n'
+    'layer-shell-qt'
 )
 makedepends=(
     'cmake'
@@ -18,6 +19,9 @@ makedepends=(
     'libplasma'
     'kpackage'
     'kio'
+    'kcoreaddons'
+    'kwindowsystem'
+    'gettext'
 )
 source=()
 
