@@ -25,7 +25,7 @@
     <!-- TODO: Test which display mode works best, may remove this setting -->
     <entry name="displayMode" type="Int">
       <label>Display mode (0=Fullscreen overlay, 1=Centered popup).</label>
-      <default>0</default>
+      <default>1</default>
     </entry>
     <entry name="showScrollbars" type="Bool">
       <label>Whether to show scrollbars in the grid and search views.</label>
