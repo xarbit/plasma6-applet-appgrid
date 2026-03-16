@@ -43,11 +43,6 @@ RowLayout {
         categoryList = cats
     }
 
-    // Returns effective category list
-    function effectiveCategories() {
-        return categoryList
-    }
-
     // -- Mnemonic helpers --
 
     function rebuildMnemonics() {
@@ -56,7 +51,7 @@ RowLayout {
         var items = []
 
         items.push({ type: "all", name: i18nd("dev.xarbit.appgrid", "All") })
-        var cats = effectiveCategories()
+        var cats = categoryList
         for (var i = 0; i < cats.length; i++)
             items.push({ type: "category", name: cats[i] })
         items.push({ type: "favorites", name: i18nd("dev.xarbit.appgrid", "Favorites") })
@@ -143,7 +138,7 @@ RowLayout {
             for (var i = 0; i < catRepeater.count; i++) {
                 var item = catRepeater.itemAt(i)
                 if (!item) continue
-                var cats = effectiveCategories()
+                var cats = categoryList
                 if (i < cats.length && cats[i] === active) {
                     var itemLeft = item.x
                     var itemRight = item.x + item.width
@@ -252,7 +247,7 @@ RowLayout {
 
             Repeater {
                 id: catRepeater
-                model: categoryBar.effectiveCategories()
+                model: categoryBar.categoryList
                 delegate: PlasmaComponents.ToolButton {
                     Layout.fillWidth: true
                     required property int index

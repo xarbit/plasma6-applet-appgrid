@@ -6,11 +6,31 @@
 #pragma once
 
 #include <Plasma/Applet>
+#include <KRunner/ResultsModel>
 
 #include "appmodel.h"
 
 class QWindow;
 class SessionManagement;
+
+/**
+ * @brief Proxy that filters KRunner results already present in AppFilterModel.
+ *
+ * Hides runner results whose display name matches a visible app result,
+ * preventing duplicate entries in the search view.
+ */
+class RunnerFilterModel : public QSortFilterProxyModel {
+    Q_OBJECT
+public:
+    explicit RunnerFilterModel(QObject *parent = nullptr);
+    void setAppModel(AppFilterModel *model);
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+    AppFilterModel *m_appModel = nullptr;
+};
 
 /**
  * @brief Main Plasma applet plugin for the AppGrid application launcher.
@@ -23,11 +43,15 @@ class SessionManagement;
 class AppGridPlugin : public Plasma::Applet {
     Q_OBJECT
     Q_PROPERTY(AppFilterModel *appsModel READ appsModel CONSTANT)
+    Q_PROPERTY(QAbstractItemModel *runnerModel READ runnerModel CONSTANT)
+    Q_PROPERTY(KRunner::ResultsModel *runnerSourceModel READ runnerSourceModel CONSTANT)
 
 public:
     AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
     AppFilterModel *appsModel();
+    QAbstractItemModel *runnerModel();
+    KRunner::ResultsModel *runnerSourceModel();
 
     // --- Window management ---
 
@@ -57,6 +81,9 @@ public:
     /** Returns list of installed shells from /etc/shells. */
     Q_INVOKABLE QStringList availableShells();
 
+    /** Run a KRunner result by model index. Returns true if the UI should close. */
+    Q_INVOKABLE bool runRunnerResult(int index);
+
     /** Launch KDE Menu Editor, optionally navigating to @p menuPath (e.g. "Education"). */
     Q_INVOKABLE void openMenuEditor(const QString &menuPath = QString());
 
@@ -83,5 +110,7 @@ protected:
 private:
     AppModel m_appModel;
     AppFilterModel m_filterModel;
+    KRunner::ResultsModel *m_runnerModel = nullptr;
+    RunnerFilterModel m_runnerFilterModel;
     SessionManagement *m_session = nullptr;
 };

@@ -19,6 +19,7 @@ ListView {
 
     signal launched(int index)
     signal navigatedPastEnd()
+    signal navigatedPastStart()
 
     clip: true
     currentIndex: 0
@@ -79,15 +80,19 @@ ListView {
     Keys.onBacktabPressed: {
         if (currentIndex > 0)
             currentIndex--
-        else if (searchField)
-            searchField.forceActiveFocus()
+        else
+            listView.navigatedPastStart()
+    }
+
+    Keys.onEscapePressed: {
+        if (searchField) searchField.forceActiveFocus()
     }
 
     delegate: PlasmaComponents.ItemDelegate {
         id: listDelegate
         width: listView.width
         height: Kirigami.Units.iconSizes.huge + Kirigami.Units.smallSpacing * 2
-        highlighted: listView.currentIndex === model.index
+        highlighted: listView.activeFocus && listView.currentIndex === model.index
 
         contentItem: RowLayout {
             spacing: Kirigami.Units.largeSpacing
@@ -95,7 +100,7 @@ ListView {
             // Shortcut badge (Alt+1 through Alt+9)
             Rectangle {
                 visible: model.index < 9
-                implicitWidth: Kirigami.Units.gridUnit * 1.5
+                implicitWidth: shortcutLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
                 implicitHeight: Kirigami.Units.gridUnit * 1.5
                 radius: Kirigami.Units.cornerRadius
                 color: Qt.rgba(Kirigami.Theme.highlightColor.r,
@@ -107,8 +112,9 @@ ListView {
                                       Kirigami.Theme.textColor.b, 0.2)
 
                 PlasmaComponents.Label {
+                    id: shortcutLabel
                     anchors.centerIn: parent
-                    text: String(model.index + 1)
+                    text: "Alt+" + String(model.index + 1)
                     font.bold: true
                     font.pointSize: Kirigami.Theme.smallFont.pointSize
                     opacity: 0.7
@@ -127,13 +133,32 @@ ListView {
                 Layout.fillWidth: true
                 spacing: 0
 
-                PlasmaComponents.Label {
+                RowLayout {
                     Layout.fillWidth: true
-                    text: model.name || ""
-                    elide: Text.ElideRight
-                    color: listDelegate.highlighted
-                           ? Kirigami.Theme.highlightedTextColor
-                           : Kirigami.Theme.textColor
+                    PlasmaComponents.Label {
+                        Layout.fillWidth: true
+                        text: model.name || ""
+                        elide: Text.ElideRight
+                        color: listDelegate.highlighted
+                               ? Kirigami.Theme.highlightedTextColor
+                               : Kirigami.Theme.textColor
+                    }
+                    Rectangle {
+                        implicitWidth: appTypeLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+                        implicitHeight: appTypeLabel.implicitHeight + Kirigami.Units.smallSpacing
+                        radius: Kirigami.Units.cornerRadius
+                        color: Qt.rgba(Kirigami.Theme.textColor.r,
+                                       Kirigami.Theme.textColor.g,
+                                       Kirigami.Theme.textColor.b, 0.08)
+
+                        PlasmaComponents.Label {
+                            id: appTypeLabel
+                            anchors.centerIn: parent
+                            text: model.category || i18nd("dev.xarbit.appgrid", "Application")
+                            font: Kirigami.Theme.smallFont
+                            opacity: 0.6
+                        }
+                    }
                 }
 
                 PlasmaComponents.Label {

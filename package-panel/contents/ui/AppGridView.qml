@@ -69,8 +69,8 @@ GridView {
         var otherData = appsModel ? appsModel.get(otherIndex) : null
         if (!fromData || !otherData) return
 
-        var fromIcon = iconSwaps[fromIndex] !== undefined ? iconSwaps[fromIndex] : (fromData.iconName || "application-x-executable")
-        var otherIcon = iconSwaps[otherIndex] !== undefined ? iconSwaps[otherIndex] : (otherData.iconName || "application-x-executable")
+        var fromIcon = resolveIcon(fromIndex, fromData.iconName)
+        var otherIcon = resolveIcon(otherIndex, otherData.iconName)
 
         var fromItem = itemAtIndex(fromIndex)
         var otherItem = itemAtIndex(otherIndex)
@@ -99,8 +99,15 @@ GridView {
         shufflesUpdated()
     }
 
+    readonly property string defaultIcon: "application-x-executable"
+
     function getDisplayIcon(index) {
         return iconSwaps[index] !== undefined ? iconSwaps[index] : ""
+    }
+
+    function resolveIcon(index, fallbackName) {
+        if (iconSwaps[index] !== undefined) return iconSwaps[index]
+        return fallbackName || defaultIcon
     }
 
     // Whether edit/reorder mode is active

@@ -17,7 +17,7 @@ depends=(
     'ksvg'
     'glibc'
     'kio'
-    'milou'
+    'krunner'
     'kdeclarative'
     'qt6-declarative'
     'libstdc++'

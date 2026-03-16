@@ -17,6 +17,7 @@ find_package(KF6WindowSystem REQUIRED)
 find_package(KF6Package REQUIRED)
 find_package(LayerShellQt REQUIRED)
 find_package(LibKWorkspace REQUIRED)
+find_package(KF6Runner REQUIRED)
 find_package(Plasma REQUIRED)
 find_package(PlasmaQuick REQUIRED)
 
@@ -33,6 +34,7 @@ set(APPGRID_COMMON_LIBS
     LayerShellQt::Interface
     PW::KWorkspace
     Plasma::PlasmaQuick
+    KF6::Runner
 )
 
 # QML components shared between both plasmoids

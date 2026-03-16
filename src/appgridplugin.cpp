@@ -6,7 +6,7 @@
 #include "appgridplugin.h"
 
 #include <KIO/OpenUrlJob>
-#include <KLocalizedString>
+#include <KRunner/ResultsModel>
 #include <KTerminalLauncherJob>
 #include <KWindowEffects>
 #include <LayerShellQt/window.h>
@@ -39,6 +39,9 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
     , m_session(new SessionManagement(this))
 {
     m_filterModel.setSourceModel(&m_appModel);
+    m_runnerModel = new KRunner::ResultsModel(this);
+    m_runnerFilterModel.setSourceModel(m_runnerModel);
+    m_runnerFilterModel.setAppModel(&m_filterModel);
     QQuickWindow::setDefaultAlphaBuffer(true);
 
     // PlasmoidItem::init() connects activated → setExpanded(true).
@@ -60,6 +63,26 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
 AppFilterModel *AppGridPlugin::appsModel()
 {
     return &m_filterModel;
+}
+
+QAbstractItemModel *AppGridPlugin::runnerModel()
+{
+    return &m_runnerFilterModel;
+}
+
+KRunner::ResultsModel *AppGridPlugin::runnerSourceModel()
+{
+    return m_runnerModel;
+}
+
+bool AppGridPlugin::runRunnerResult(int index)
+{
+    if (!m_runnerModel || index < 0 || index >= m_runnerFilterModel.rowCount())
+        return false;
+    // Map from filter proxy index to source model index
+    const auto proxyIdx = m_runnerFilterModel.index(index, 0);
+    const auto sourceIdx = m_runnerFilterModel.mapToSource(proxyIdx);
+    return m_runnerModel->run(sourceIdx);
 }
 
 // --- Window management ---
@@ -318,4 +341,36 @@ void AppGridPlugin::addToDesktop(const QString &desktopFile)
         desktop->createApplet(QStringLiteral("org.kde.plasma.icon"),
                               QVariantList() << QUrl::fromLocalFile(absPath));
     }
+}
+
+// --- RunnerFilterModel ---
+
+RunnerFilterModel::RunnerFilterModel(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+}
+
+void RunnerFilterModel::setAppModel(AppFilterModel *model)
+{
+    m_appModel = model;
+    // Re-filter when app search results change
+    connect(m_appModel, &QAbstractItemModel::modelReset, this, &RunnerFilterModel::invalidate);
+    connect(m_appModel, &QAbstractItemModel::layoutChanged, this, &RunnerFilterModel::invalidate);
+}
+
+bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+{
+    if (!m_appModel)
+        return true;
+
+    const auto idx = sourceModel()->index(sourceRow, 0, sourceParent);
+    const auto runnerName = idx.data(Qt::DisplayRole).toString();
+
+    // Check if any visible app result has the same name
+    for (int i = 0; i < m_appModel->rowCount(); ++i) {
+        const auto appIdx = m_appModel->index(i, 0);
+        if (appIdx.data(AppModel::NameRole).toString().compare(runnerName, Qt::CaseInsensitive) == 0)
+            return false;
+    }
+    return true;
 }
