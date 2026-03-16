@@ -34,14 +34,19 @@ KDE Plasma ships with Kickoff and Kicker as its default application launchers. W
 
 - **Two plasmoid variants** — standalone window launcher, or a native Plasma panel popup (like Kickoff)
 - Favorites tab — right-click any app to add it, with optional start-on-favorites mode
-- Category filtering and KRunner search integration
+- Category filtering with scrollable category bar and Alt+key mnemonic navigation
+- **Two category modes** — simplified built-in categories for a clean look, or system categories that respect KDE Menu Editor changes
+- KDE Menu Editor integration — right-click categories to edit them (system categories mode)
+- KRunner search integration with configurable search scope (all apps or active tab)
 - Quick commands — terminal, shell commands, file browser (type `?` for help)
+- Configurable terminal shell for quick commands (`/bin/sh`, `/bin/bash`, `/bin/zsh`, etc.)
 - Sort by most used or alphabetically
 - New app detection with badge
-- Configurable icon hover animations — shake, grow, bounce, spin, or none
+- Configurable icon hover animations — shake, grow, bounce, spin, shuffle, or none
 - Session management (sleep, restart, shut down, lock, log out)
 - Context menu with add to favorites, pin to Task Manager, add to Desktop, hide apps
 - Customizable grid size, icon size, background blur, opacity, and corner radius
+- Reset to defaults button for easy configuration recovery
 - Drop-in replacement via Plasma's Show Alternatives
 
 ## Dependencies
@@ -119,6 +124,7 @@ There are two variants:
 | Escape | Close |
 | Enter | Launch top search result |
 | Alt+1–9 | Launch numbered search result |
+| Alt+letter | Jump to category by mnemonic |
 | Arrow keys | Navigate results |
 | Tab | Cycle categories |
 | Type anywhere | Start searching |
@@ -138,9 +144,11 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | **Sort order** | **Alphabetical** sorts apps A–Z. **Most Used** sorts by launch frequency, so your most opened apps appear first. | Most Used |
 | **Search all apps** | Search covers all apps regardless of the active category or favorites tab | On |
 | **Start with favorites tab** | Open the launcher showing only your favorited apps instead of all apps | Off |
+| **Use system categories** | Use KDE menu system categories instead of simplified built-in mapping. Supports KDE Menu Editor for renaming and organizing categories. | Off |
+| **Terminal shell** | Shell used for `t:` quick commands | Default (/bin/sh) |
 | **Show scrollbars** | Show scrollbars in grid and search views | Off |
 | **Enable background blur** | Blur effect behind the launcher (AppGrid only) | On |
-| **Icon animation** | Hover and open animation style — None, Shake, Grow, Bounce, or Spin | Shake |
+| **Icon animation** | Hover and open animation style — None, Shake, Grow, Bounce, Spin, or Shuffle | Shake |
 | **Animate icons on open** | Play the selected animation on all icons when the launcher opens (requires an animation selected above) | On |
 | **Show labels on power/session buttons** | Text labels on sleep, restart, shut down, etc. | Off |
 | **Expand search to bookmarks, files, and websites** | Use additional KRunner plugins for search | On |
@@ -148,13 +156,17 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | **Corner radius** | Override the default corner radius (AppGrid only) | 24 px (off by default) |
 | **Hidden Applications** | Apps hidden from the grid via right-click → Hide | — |
 
-> **Note:** The **AppGrid (Panel)** variant shares most settings but does not include display mode, background blur, opacity, or corner radius options — those are managed by Plasma's native popup.
+> **Note:** The **AppGrid (Panel)** variant shares most settings but does not include background blur, opacity, or corner radius options — those are managed by Plasma's native popup.
 
 ## FAQ
 
 **Why isn't there a `.plasmoid` file I can install from the KDE Store?**
 
 AppGrid uses a C++ backend for app discovery, window management, blur effects, and session actions. The `.plasmoid` format only supports pure QML plasmoids — it has no mechanism to install the compiled plugin (`.so`) to the system plugin path where Plasma expects it. This is the same reason KDE's own C++ plasmoids (Kickoff, Kicker, etc.) are only distributed via system packages. AppGrid provides packages for Arch, Fedora, openSUSE, Ubuntu, and Debian.
+
+**What are the two category modes?**
+
+By default, AppGrid uses a simplified built-in category mapping that groups apps into clean categories like Development, Graphics, Internet, Multimedia, Office, System, and Utilities. If you enable "Use system categories" in settings, AppGrid reads categories directly from the KDE menu system. This respects any changes made in KDE Menu Editor — you can rename, reorganize, or create custom categories and AppGrid will reflect them automatically. Right-click any category to open the Menu Editor.
 
 ## Credits
 
