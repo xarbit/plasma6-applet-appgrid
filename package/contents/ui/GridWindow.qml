@@ -16,7 +16,7 @@ Window {
 
     property var appletInterface: null
 
-    readonly property bool isPopupMode: Plasmoid.configuration.displayMode === 1
+    readonly property bool isPopupMode: true
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
 
     // Compute window size independently from panel to avoid circular dependencies.
