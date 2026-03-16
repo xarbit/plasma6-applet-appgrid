@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
@@ -61,7 +61,7 @@ msgstr "Tutte"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Preferiti"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -69,19 +69,19 @@ msgstr "Tutte le applicazioni"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Scorri a sinistra"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Scorri a destra"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "Modifica \"%1\" nell’editor dei menu…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Apri editor dei menu…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -139,31 +139,31 @@ msgstr "Mostra le applicazioni usate di recente"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Comportamento:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Mostra barra delle categorie"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Cerca in tutte le applicazioni"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Avvia con la scheda preferiti"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Categorie di sistema (editor dei menu KDE)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Shell del terminale:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Predefinita (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -179,35 +179,35 @@ msgstr "Abilita la sfocatura dello sfondo"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Animazione icone:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Nessuna"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Scuotimento"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Ingrandimento"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Rimbalzo"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Rotazione"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Mescolamento"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Anima icone all'apertura"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -239,7 +239,7 @@ msgstr "px"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Ripristina predefiniti"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -267,19 +267,19 @@ msgstr "Altri risultati"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Fare clic su un'icona per selezionare, poi su un'altra per scambiare"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Fare clic su un'altra icona per scambiare o di nuovo per deselezionare"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Fatto"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Riordina preferiti"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -381,6 +381,46 @@ msgstr "Cancella ricerca"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Utilità"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Sviluppo"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafica"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Internet"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Multimedia"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Ufficio"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Giochi"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Istruzione"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Sistema"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Altro"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Agita le icone all'apertura"

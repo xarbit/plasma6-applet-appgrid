@@ -29,7 +29,7 @@ PlasmaComponents.Menu {
 
     PlasmaComponents.MenuItem {
         icon.name: contextMenu.popupIsFavorite ? "bookmark-remove" : "bookmark-new"
-        text: contextMenu.popupIsFavorite ? i18n("Remove from Favorites") : i18n("Add to Favorites")
+        text: contextMenu.popupIsFavorite ? i18nd("dev.xarbit.appgrid", "Remove from Favorites") : i18nd("dev.xarbit.appgrid", "Add to Favorites")
         onClicked: {
             if (contextMenu.appsModel) {
                 contextMenu.appsModel.toggleFavorite(contextMenu.popupStorageId)
@@ -44,25 +44,25 @@ PlasmaComponents.Menu {
 
     PlasmaComponents.MenuItem {
         icon.name: "pin"
-        text: i18n("Pin to Task Manager")
+        text: i18nd("dev.xarbit.appgrid", "Pin to Task Manager")
         onClicked: Plasmoid.pinToTaskManager(contextMenu.popupStorageId)
-        Accessible.name: i18n("Pin to Task Manager")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Pin to Task Manager")
         Accessible.role: Accessible.MenuItem
     }
 
     PlasmaComponents.MenuItem {
         icon.name: "desktop"
-        text: i18n("Add to Desktop")
+        text: i18nd("dev.xarbit.appgrid", "Add to Desktop")
         onClicked: Plasmoid.addToDesktop(contextMenu.popupDesktopFile)
-        Accessible.name: i18n("Add to Desktop")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Add to Desktop")
         Accessible.role: Accessible.MenuItem
     }
 
     PlasmaComponents.MenuItem {
         icon.name: "document-edit"
-        text: i18n("Edit Application")
+        text: i18nd("dev.xarbit.appgrid", "Edit Application")
         onClicked: Plasmoid.editApplication(contextMenu.popupDesktopFile)
-        Accessible.name: i18n("Edit Application")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Edit Application")
         Accessible.role: Accessible.MenuItem
     }
 
@@ -70,14 +70,14 @@ PlasmaComponents.Menu {
 
     PlasmaComponents.MenuItem {
         icon.name: "view-hidden"
-        text: i18n("Hide Application")
+        text: i18nd("dev.xarbit.appgrid", "Hide Application")
         onClicked: {
             if (contextMenu.appsModel) {
                 contextMenu.appsModel.hideApp(contextMenu.popupIndex)
                 Plasmoid.configuration.hiddenApps = contextMenu.appsModel.hiddenApps
             }
         }
-        Accessible.name: i18n("Hide Application")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Hide Application")
         Accessible.role: Accessible.MenuItem
     }
 }

@@ -38,7 +38,7 @@ Item {
 
         // Header
         PlasmaComponents.Label {
-            text: i18n("Quick Commands")
+            text: i18nd("dev.xarbit.appgrid", "Quick Commands")
             font.bold: true
             font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.3
             Layout.bottomMargin: Kirigami.Units.largeSpacing * 2
@@ -47,11 +47,11 @@ Item {
         // Command list
         Repeater {
             model: [
-                { prefix: "t:", icon: "utilities-terminal", title: i18n("Terminal"), example: "t:htop" },
-                { prefix: ":",  icon: "system-run",         title: i18n("Run Command"), example: ":xdg-open ." },
-                { prefix: "/",  icon: "folder-open",        title: i18n("Browse Files"), example: "/usr/bin" },
-                { prefix: "~/", icon: "folder-home",        title: i18n("Browse Home"), example: "~/Documents" },
-                { prefix: "?",  icon: "help-hint",          title: i18n("This Help"), example: "" }
+                { prefix: "t:", icon: "utilities-terminal", title: i18nd("dev.xarbit.appgrid", "Terminal"), example: "t:htop" },
+                { prefix: ":",  icon: "system-run",         title: i18nd("dev.xarbit.appgrid", "Run Command"), example: ":xdg-open ." },
+                { prefix: "/",  icon: "folder-open",        title: i18nd("dev.xarbit.appgrid", "Browse Files"), example: "/usr/bin" },
+                { prefix: "~/", icon: "folder-home",        title: i18nd("dev.xarbit.appgrid", "Browse Home"), example: "~/Documents" },
+                { prefix: "?",  icon: "help-hint",          title: i18nd("dev.xarbit.appgrid", "This Help"), example: "" }
             ]
 
             delegate: Item {
@@ -127,7 +127,7 @@ Item {
         PlasmaComponents.Label {
             Layout.fillWidth: true
             Layout.topMargin: Kirigami.Units.largeSpacing
-            text: i18n("Alt+1\u2009\u2013\u2009Alt+9 launches search results instantly")
+            text: i18nd("dev.xarbit.appgrid", "Alt+1\u2009\u2013\u2009Alt+9 launches search results instantly")
             font: Kirigami.Theme.smallFont
             opacity: 0.35
             horizontalAlignment: Text.AlignHCenter
@@ -153,11 +153,11 @@ Item {
             text: {
                 if (prefixView.argument.trim().length === 0)
                     return prefixView.mode === "terminal"
-                        ? i18n("Type a command to run in terminal")
-                        : i18n("Type a command to execute")
+                        ? i18nd("dev.xarbit.appgrid", "Type a command to run in terminal")
+                        : i18nd("dev.xarbit.appgrid", "Type a command to execute")
                 return prefixView.mode === "terminal"
-                    ? i18n("Press Enter to run in terminal")
-                    : i18n("Press Enter to execute")
+                    ? i18nd("dev.xarbit.appgrid", "Press Enter to run in terminal")
+                    : i18nd("dev.xarbit.appgrid", "Press Enter to execute")
             }
             font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
             opacity: 0.7

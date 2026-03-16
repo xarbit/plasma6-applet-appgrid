@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
@@ -61,7 +61,7 @@ msgstr "Összes"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Kedvencek"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -69,19 +69,19 @@ msgstr "Minden alkalmazás"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Görgetés balra"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Görgetés jobbra"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "\"%1\" szerkesztése a Menüszerkesztőben…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Menüszerkesztő megnyitása…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -139,31 +139,31 @@ msgstr "Legutóbb használt alkalmazások megjelenítése"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Viselkedés:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Kategóriasáv megjelenítése"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Keresés az összes alkalmazásban"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Indítás a kedvencek füllel"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Rendszerkategóriák (KDE Menüszerkesztő)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Terminálhéj:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Alapértelmezett (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -179,35 +179,35 @@ msgstr "Háttér elmosásának engedélyezése"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Ikonanimáció:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Nincs"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Rázás"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Növekedés"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Pattogás"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Pörgés"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Keverés"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Ikonok animálása megnyitáskor"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -239,7 +239,7 @@ msgstr "px"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Alapértékek visszaállítása"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -267,19 +267,19 @@ msgstr "További találatok"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Kattintson egy ikonra a kiválasztáshoz, majd egy másikra a cseréhez"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Kattintson másik ikonra cseréhez, vagy újra a kijelölés megszüntetéséhez"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Kész"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Kedvencek átrendezése"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -381,6 +381,46 @@ msgstr "Keresés törlése"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Segédprogramok"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Fejlesztés"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafika"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Internet"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Multimédia"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Iroda"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Játékok"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Oktatás"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Rendszer"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Egyéb"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Ikonok rázása megnyitáskor"

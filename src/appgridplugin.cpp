@@ -6,6 +6,7 @@
 #include "appgridplugin.h"
 
 #include <KIO/OpenUrlJob>
+#include <KLocalizedString>
 #include <KTerminalLauncherJob>
 #include <KWindowEffects>
 #include <LayerShellQt/window.h>

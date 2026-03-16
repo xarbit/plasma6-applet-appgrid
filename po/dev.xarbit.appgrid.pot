@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -379,4 +379,44 @@ msgstr ""
 
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
+msgstr ""
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr ""
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr ""
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr ""
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr ""
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr ""
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr ""
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr ""
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr ""
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr ""
+
+#: src/appmodel.cpp:176
+msgid "Other"
 msgstr ""

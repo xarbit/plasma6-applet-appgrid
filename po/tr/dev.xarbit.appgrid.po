@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
@@ -60,7 +60,7 @@ msgstr "Tümü"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Sık Kullanılanlar"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -68,19 +68,19 @@ msgstr "Tüm uygulamalar"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Sola kaydır"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Sağa kaydır"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "\"%1\" öğesini Menü Düzenleyici’de düzenle…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Menü Düzenleyici’yi aç…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -138,31 +138,31 @@ msgstr "Son kullanılan uygulamaları göster"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Davranış:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Kategori çubuğunu göster"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Tüm uygulamalarda ara"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Sık kullanılanlar sekmesiyle başla"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Sistem kategorileri (KDE Menü Düzenleyici)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Terminal kabuğu:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Varsayılan (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -178,35 +178,35 @@ msgstr "Arka plan bulanıklığını etkinleştir"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Simge canlandırması:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Yok"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Sallama"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Büyüme"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Zıplama"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Dönme"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Karıştırma"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Açılışta simgeleri canlandır"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -238,7 +238,7 @@ msgstr "px"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Varsayılanlara sıfırla"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -266,19 +266,19 @@ msgstr "Daha Fazla Sonuç"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Seçmek için bir simgeye tıklayın, değiştirmek için başka birine"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Değiştirmek için başka simgeye veya seçimi kaldırmak için yeniden tıklayın"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Bitti"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Sık kullanılanları yeniden sırala"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -380,6 +380,46 @@ msgstr "Aramayı temizle"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Araçlar"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Geliştirme"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafik"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "İnternet"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Çoklu Ortam"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Ofis"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Oyunlar"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Eğitim"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Sistem"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Diğer"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Açılışta simgeleri salla"

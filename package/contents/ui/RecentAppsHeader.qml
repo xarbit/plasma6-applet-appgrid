@@ -27,7 +27,7 @@ Column {
 
     PlasmaComponents.Label {
         leftPadding: Kirigami.Units.largeSpacing
-        text: i18n("Recently Used")
+        text: i18nd("dev.xarbit.appgrid", "Recently Used")
         font.bold: true
         opacity: 0.7
     }
@@ -89,7 +89,7 @@ Column {
 
     PlasmaComponents.Label {
         leftPadding: Kirigami.Units.largeSpacing
-        text: i18n("All Apps")
+        text: i18nd("dev.xarbit.appgrid", "All Apps")
         font.bold: true
         opacity: 0.7
     }

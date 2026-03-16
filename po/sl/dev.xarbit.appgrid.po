@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
@@ -62,7 +62,7 @@ msgstr "Vse"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Priljubljene"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -70,19 +70,19 @@ msgstr "Vsi programi"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Pomakni levo"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Pomakni desno"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "Uredi \"%1\" v urejevalniku menijev…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Odpri urejevalnik menijev…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -140,31 +140,31 @@ msgstr "Prikaži nedavno uporabljene programe"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Obnašanje:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Prikaži vrstico kategorij"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Išči med vsemi aplikacijami"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Začni z zavihkom priljubljenih"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Sistemske kategorije (KDE urejevalnik menijev)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Lupina terminala:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Privzeta (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -180,35 +180,35 @@ msgstr "Omogoči zameglitev ozadja"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Animacija ikon:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Brez"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Tresenje"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Povečava"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Poskakovanje"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Vrtenje"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Mešanje"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Animiraj ikone ob odprtju"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -240,7 +240,7 @@ msgstr "px"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Ponastavi na privzeto"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -268,19 +268,19 @@ msgstr "Več zadetkov"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Kliknite ikono za izbiro, nato drugo za zamenjavo"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Kliknite drugo ikono za zamenjavo ali znova za preklic"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Končano"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Preuredi priljubljene"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -382,6 +382,46 @@ msgstr "Počisti iskanje"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Pripomočki"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Razvoj"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafika"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Internet"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Večpredstavnost"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Pisarna"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Igre"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Izobraževanje"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Sistem"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Drugo"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Zatresenje ikon ob odprtju"

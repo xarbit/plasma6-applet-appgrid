@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Latvian\n"
@@ -61,7 +61,7 @@ msgstr "Visas"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Izlase"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -69,19 +69,19 @@ msgstr "Visas lietotnes"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Ritināt pa kreisi"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Ritināt pa labi"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "Rediģēt \"%1\" izvēlņu redaktorā…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Atvērt izvēlņu redaktoru…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -139,31 +139,31 @@ msgstr "Rādīt nesen lietotās lietotnes"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Uzvedība:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Rādīt kategoriju joslu"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Meklēt visās lietotnēs"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Sākt ar izlases cilni"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Sistēmas kategorijas (KDE izvēlņu redaktors)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Termināļa čaula:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Noklusējuma (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -179,35 +179,35 @@ msgstr "Iespējot fona aizmiglošanu"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Ikonu animācija:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Nav"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Kratīšana"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Palielināšana"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Atlēkšana"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Griešana"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Jaukšana"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Animēt ikonas atverot"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -239,7 +239,7 @@ msgstr "pikseļi"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Atjaunot noklusējuma vērtības"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -267,19 +267,19 @@ msgstr "Vairāk rezultātu"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Noklikšķiniet uz ikonas atlasīšanai, pēc tam uz citas apmaiņai"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Noklikšķiniet uz citas ikonas apmaiņai vai vēlreiz atcelšanai"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Gatavs"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Pārkārtot izlasi"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -381,6 +381,46 @@ msgstr "Notīrīt meklēšanu"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Utilītas"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Izstrāde"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafika"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Internets"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Multimedija"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Birojs"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Spēles"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Izglītība"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Sistēma"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Citi"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Kratīt ikonas atverot"

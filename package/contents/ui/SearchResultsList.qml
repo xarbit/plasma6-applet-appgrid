@@ -157,7 +157,7 @@ ListView {
             onEntered: listView.currentIndex = model.index
             onClicked: listView.launched(model.index)
 
-            Accessible.name: (model.index < 9 ? i18n("Alt+%1: ", model.index + 1) : "") + (model.name || "")
+            Accessible.name: (model.index < 9 ? i18nd("dev.xarbit.appgrid", "Alt+%1: ", model.index + 1) : "") + (model.name || "")
             Accessible.role: Accessible.Button
             Accessible.description: model.genericName || ""
             Accessible.focusable: true

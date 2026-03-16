@@ -5,6 +5,7 @@
 
 #include "appmodel.h"
 
+#include <KLocalizedString>
 #include <KService>
 #include <KServiceGroup>
 #include <KSycoca>
@@ -160,15 +161,31 @@ QHash<int, QByteArray> AppModel::roleNames() const
     };
 }
 
+static QString translateCategory(const QString &name)
+{
+    // Each string must appear literally for xgettext extraction
+    if (name == QLatin1String("Utilities"))   return i18nd("dev.xarbit.appgrid", "Utilities");
+    if (name == QLatin1String("Development")) return i18nd("dev.xarbit.appgrid", "Development");
+    if (name == QLatin1String("Graphics"))    return i18nd("dev.xarbit.appgrid", "Graphics");
+    if (name == QLatin1String("Internet"))    return i18nd("dev.xarbit.appgrid", "Internet");
+    if (name == QLatin1String("Multimedia"))  return i18nd("dev.xarbit.appgrid", "Multimedia");
+    if (name == QLatin1String("Office"))      return i18nd("dev.xarbit.appgrid", "Office");
+    if (name == QLatin1String("Games"))       return i18nd("dev.xarbit.appgrid", "Games");
+    if (name == QLatin1String("Education"))   return i18nd("dev.xarbit.appgrid", "Education");
+    if (name == QLatin1String("System"))      return i18nd("dev.xarbit.appgrid", "System");
+    if (name == QLatin1String("Other"))       return i18nd("dev.xarbit.appgrid", "Other");
+    return name;
+}
+
 QString AppModel::mapCategory(const QStringList &categories) const
 {
     const auto &map = categoryMap();
     for (const auto &cat : categories) {
         auto it = map.find(cat);
         if (it != map.end())
-            return it.value();
+            return translateCategory(it.value());
     }
-    return QStringLiteral("Other");
+    return translateCategory(QStringLiteral("Other"));
 }
 
 bool AppModel::useSystemCategories() const

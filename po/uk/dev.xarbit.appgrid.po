@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
@@ -62,7 +62,7 @@ msgstr "Усі"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Вибране"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -70,19 +70,19 @@ msgstr "Усі програми"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Прокрутити ліворуч"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Прокрутити праворуч"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "Редагувати \"%1\" у Редакторі меню…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Відкрити Редактор меню…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -140,31 +140,31 @@ msgstr "Показувати нещодавно використані прог�
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Поведінка:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Показати панель категорій"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Шукати у всіх програмах"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Починати з вкладки вибраного"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Системні категорії (Редактор меню KDE)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Оболонка термінала:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Типова (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -180,35 +180,35 @@ msgstr "Увімкнути розмиття тла"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Анімація значків:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Без"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Тремтіння"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Збільшення"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Підстрибування"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Обертання"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Перемішування"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Анімувати значки при відкритті"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -240,7 +240,7 @@ msgstr "пк"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Скинути до типових"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -268,19 +268,19 @@ msgstr "Більше результатів"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Клацніть значок для вибору, потім інший для обміну"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Клацніть інший значок для обміну або ще раз для скасування"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Готово"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Перевпорядкувати вибране"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -382,6 +382,46 @@ msgstr "Очистити пошук"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Утиліти"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Розробка"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Графіка"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Інтернет"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Мультимедіа"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Офіс"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Ігри"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Освіта"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Система"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Інше"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Трясти піктограми при відкритті"

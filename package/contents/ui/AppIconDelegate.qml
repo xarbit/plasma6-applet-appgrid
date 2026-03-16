@@ -112,7 +112,7 @@ Item {
             source: "remove-symbolic"
         }
 
-        PlasmaComponents.ToolTip.text: i18n("Remove from Favorites")
+        PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Remove from Favorites")
         PlasmaComponents.ToolTip.visible: removeBtn.containsMouse
         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
     }
@@ -144,7 +144,7 @@ Item {
             root.clicked(mouse)
         }
 
-        Accessible.name: root.appName + (root.isNew ? ", " + i18n("new") : "")
+        Accessible.name: root.appName + (root.isNew ? ", " + i18nd("dev.xarbit.appgrid", "new") : "")
         Accessible.role: Accessible.Button
         Accessible.description: root.appGenericName
         Accessible.focusable: true

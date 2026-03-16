@@ -430,7 +430,7 @@ Kirigami.ShadowedRectangle {
                     PlasmaComponents.Label {
                         Layout.leftMargin: Kirigami.Units.largeSpacing
                         Layout.topMargin: Kirigami.Units.smallSpacing
-                        text: i18n("More Results")
+                        text: i18nd("dev.xarbit.appgrid", "More Results")
                         font.bold: true
                         opacity: 0.7
                         visible: runnerResults.visible
@@ -527,8 +527,8 @@ Kirigami.ShadowedRectangle {
                     id: helpLabel
                     anchors.centerIn: parent
                     text: appGrid.selectedSwapIndex < 0
-                          ? i18n("Click an icon to select it, then click another to swap positions")
-                          : i18n("Now click another icon to swap, or click again to deselect")
+                          ? i18nd("dev.xarbit.appgrid", "Click an icon to select it, then click another to swap positions")
+                          : i18nd("dev.xarbit.appgrid", "Now click another icon to swap, or click again to deselect")
                     font: Kirigami.Theme.smallFont
                 }
             }
@@ -550,7 +550,7 @@ Kirigami.ShadowedRectangle {
                         appGrid.favoritesOrderChanged()
                 }
 
-                PlasmaComponents.ToolTip.text: appGrid.editMode ? i18n("Done") : i18n("Reorder favorites")
+                PlasmaComponents.ToolTip.text: appGrid.editMode ? i18nd("dev.xarbit.appgrid", "Done") : i18nd("dev.xarbit.appgrid", "Reorder favorites")
                 PlasmaComponents.ToolTip.visible: hovered
                 PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
             }

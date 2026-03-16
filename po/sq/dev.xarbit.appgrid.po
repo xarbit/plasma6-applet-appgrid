@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Albanian\n"
@@ -62,7 +62,7 @@ msgstr "Krejt"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Të preferuarat"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -70,19 +70,19 @@ msgstr "Krejt aplikacionet"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Lëviz majtas"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Lëviz djathtas"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "Ndrysho \"%1\" në Redaktorin e Menysë…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Hap Redaktorin e Menysë…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -140,31 +140,31 @@ msgstr "Shfaq aplikacionet e përdorura së fundi"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Sjellja:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Shfaq shiritin e kategorive"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Kërko në të gjitha aplikacionet"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Fillo me skedën e të preferuarave"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Kategoritë e sistemit (Redaktori i Menysë KDE)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Shell-i i terminalit:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "I parazgjedhur (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -180,35 +180,35 @@ msgstr "Aktivizo turbullimin e sfondit"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Animacioni i ikonave:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Asnjë"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Dridhje"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Rritje"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Kërcim"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Rrotullim"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Përziej"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Animo ikonat gjatë hapjes"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -240,7 +240,7 @@ msgstr "px"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Rivendos vlerat e parazgjedhura"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -268,19 +268,19 @@ msgstr "Më Tepër Përfundime"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Klikoni ikonën për zgjedhje, pastaj një tjetër për ndërrim"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Klikoni ikonë tjetër për ndërrim ose përsëri për heqje zgjedhjeje"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "U krye"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Rirendit të preferuarat"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -382,6 +382,46 @@ msgstr "Pastro kërkimin"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Mjete"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Zhvillim"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafikë"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Internet"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Multimedia"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Zyrë"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Lojëra"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Arsim"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Sistem"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Të tjera"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Tund ikonat kur hapen"

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 16:45+0100\n"
+"POT-Creation-Date: 2026-03-16 17:14+0100\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Irish\n"
@@ -63,7 +63,7 @@ msgstr "Uile"
 #: package/contents/ui/CategoryBar.qml:314
 #: package/contents/ui/CategoryBar.qml:318
 msgid "Favorites"
-msgstr ""
+msgstr "Ceanáin"
 
 #: package/contents/ui/CategoryBar.qml:203
 msgid "All applications"
@@ -71,19 +71,19 @@ msgstr "Gach feidhmchlár"
 
 #: package/contents/ui/CategoryBar.qml:217
 msgid "Scroll categories left"
-msgstr ""
+msgstr "Scrolláil ar chlé"
 
 #: package/contents/ui/CategoryBar.qml:302
 msgid "Scroll categories right"
-msgstr ""
+msgstr "Scrolláil ar dheis"
 
 #: package/contents/ui/CategoryBar.qml:329
 msgid "Edit \"%1\" in Menu Editor…"
-msgstr ""
+msgstr "Cuir \"%1\" in eagar san Eagarthóir Roghchláir…"
 
 #: package/contents/ui/CategoryBar.qml:337
 msgid "Open Menu Editor…"
-msgstr ""
+msgstr "Oscail an tEagarthóir Roghchláir…"
 
 #: package/contents/ui/ConfigGeneral.qml:74
 msgid "Icon:"
@@ -141,31 +141,31 @@ msgstr "Taispeáin feidhmchláir a úsáideadh le déanaí"
 
 #: package/contents/ui/ConfigGeneral.qml:195
 msgid "Behavior:"
-msgstr ""
+msgstr "Iompar:"
 
 #: package/contents/ui/ConfigGeneral.qml:196
 msgid "Show category bar"
-msgstr ""
+msgstr "Taispeáin barra catagóire"
 
 #: package/contents/ui/ConfigGeneral.qml:201
 msgid "Search all apps regardless of active tab"
-msgstr ""
+msgstr "Cuardaigh gach aip"
 
 #: package/contents/ui/ConfigGeneral.qml:206
 msgid "Start with favorites tab"
-msgstr ""
+msgstr "Tosaigh le cluaisín ceanán"
 
 #: package/contents/ui/ConfigGeneral.qml:212
 msgid "Use system categories (supports KDE Menu Editor)"
-msgstr ""
+msgstr "Catagóirí córais (Eagarthóir Roghchláir KDE)"
 
 #: package/contents/ui/ConfigGeneral.qml:218
 msgid "Terminal shell:"
-msgstr ""
+msgstr "Blaosc teirminéil:"
 
 #: package/contents/ui/ConfigGeneral.qml:222
 msgid "Default (/bin/sh)"
-msgstr ""
+msgstr "Réamhshocrú (/bin/sh)"
 
 #: package/contents/ui/ConfigGeneral.qml:242
 msgid "Appearance:"
@@ -181,35 +181,35 @@ msgstr "Cumasaigh doiléiriú cúlra"
 
 #: package/contents/ui/ConfigGeneral.qml:253
 msgid "Icon animation:"
-msgstr ""
+msgstr "Beochan deilbhíní:"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "None"
-msgstr ""
+msgstr "Gan aon"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shake"
-msgstr ""
+msgstr "Croitheadh"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Grow"
-msgstr ""
+msgstr "Fás"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Bounce"
-msgstr ""
+msgstr "Preab"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Spin"
-msgstr ""
+msgstr "Cas"
 
 #: package/contents/ui/ConfigGeneral.qml:254
 msgid "Shuffle"
-msgstr ""
+msgstr "Suaitheadh"
 
 #: package/contents/ui/ConfigGeneral.qml:259
 msgid "Animate icons on open"
-msgstr ""
+msgstr "Beochaigh deilbhíní ar oscailt"
 
 #: package/contents/ui/ConfigGeneral.qml:265
 msgid "Show labels on power/session buttons"
@@ -242,7 +242,7 @@ msgstr "px"
 
 #: package/contents/ui/ConfigGeneral.qml:322
 msgid "Reset to Defaults"
-msgstr ""
+msgstr "Athshocraigh go réamhshocruithe"
 
 #: package/contents/ui/ConfigGeneral.qml:355
 msgid "Hidden Applications"
@@ -270,19 +270,19 @@ msgstr "Tuilleadh Torthaí"
 
 #: package/contents/ui/GridPanel.qml:530
 msgid "Click an icon to select it, then click another to swap positions"
-msgstr ""
+msgstr "Cliceáil ar dheilbhín chun é a roghnú, ansin ar cheann eile chun malartú"
 
 #: package/contents/ui/GridPanel.qml:531
 msgid "Now click another icon to swap, or click again to deselect"
-msgstr ""
+msgstr "Cliceáil ar dheilbhín eile le malartú nó arís le díroghnú"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Done"
-msgstr ""
+msgstr "Déanta"
 
 #: package/contents/ui/GridPanel.qml:553
 msgid "Reorder favorites"
-msgstr ""
+msgstr "Athordaigh ceanáin"
 
 #: package/contents/ui/PowerButtons.qml:25
 msgid "Sleep"
@@ -384,6 +384,46 @@ msgstr "Glan an cuardach"
 #: package/contents/ui/SearchResultsList.qml:160
 msgid "Alt+%1: "
 msgstr "Alt+%1: "
+
+#: src/appmodel.cpp:167
+msgid "Utilities"
+msgstr "Fóntais"
+
+#: src/appmodel.cpp:168
+msgid "Development"
+msgstr "Forbairt"
+
+#: src/appmodel.cpp:169
+msgid "Graphics"
+msgstr "Grafaic"
+
+#: src/appmodel.cpp:170
+msgid "Internet"
+msgstr "Idirlíon"
+
+#: src/appmodel.cpp:171
+msgid "Multimedia"
+msgstr "Ilmheán"
+
+#: src/appmodel.cpp:172
+msgid "Office"
+msgstr "Oifig"
+
+#: src/appmodel.cpp:173
+msgid "Games"
+msgstr "Cluichí"
+
+#: src/appmodel.cpp:174
+msgid "Education"
+msgstr "Oideachas"
+
+#: src/appmodel.cpp:175
+msgid "System"
+msgstr "Córas"
+
+#: src/appmodel.cpp:176
+msgid "Other"
+msgstr "Eile"
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Croith na deilbhíní ar oscailt"

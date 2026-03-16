@@ -35,7 +35,7 @@ RowLayout {
     PlasmaComponents.TextField {
         id: textField
         Layout.fillWidth: true
-        placeholderText: i18n("Search apps or type ? for commands")
+        placeholderText: i18nd("dev.xarbit.appgrid", "Search apps or type ? for commands")
         font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.3
         background: Item {}
         color: Kirigami.Theme.textColor
@@ -61,7 +61,7 @@ RowLayout {
             }
         }
 
-        Accessible.name: i18n("Search applications")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Search applications")
         Accessible.role: Accessible.EditableText
         Accessible.searchEdit: true
 
@@ -76,7 +76,7 @@ RowLayout {
                 textField.text = ""
                 textField.forceActiveFocus()
             }
-            Accessible.name: i18n("Clear search")
+            Accessible.name: i18nd("dev.xarbit.appgrid", "Clear search")
         }
     }
 }

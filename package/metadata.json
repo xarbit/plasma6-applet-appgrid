@@ -18,6 +18,9 @@
     "Website": "https://github.com/xarbit/plasma6-applet-appgrid",
     "BugReportUrl": "https://github.com/xarbit/plasma6-applet-appgrid/issues"
   },
+  "KLocalizedString": {
+    "UseTranslationDomain": "dev.xarbit.appgrid"
+  },
   "X-Plasma-API-Minimum-Version": "6.0",
   "X-Plasma-Provides": ["org.kde.plasma.launchermenu"]
 }

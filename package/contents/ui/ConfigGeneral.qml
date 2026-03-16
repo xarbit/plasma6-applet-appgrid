@@ -71,7 +71,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.Button {
             id: iconButton
-            Kirigami.FormData.label: i18n("Icon:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icon:")
             implicitWidth: previewFrame.width + Kirigami.Units.smallSpacing * 2
             implicitHeight: previewFrame.height + Kirigami.Units.smallSpacing * 2
             checkable: true
@@ -132,12 +132,12 @@ KCMUtils.SimpleKCM {
                 onClosed: iconButton.checked = false
 
                 QQC2.MenuItem {
-                    text: i18nc("@item:inmenu Open icon chooser dialog", "Choose\u2026")
+                    text: i18ndc("dev.xarbit.appgrid", "@item:inmenu Open icon chooser dialog", "Choose\u2026")
                     icon.name: "document-open-folder"
                     onClicked: iconDialog.open()
                 }
                 QQC2.MenuItem {
-                    text: i18nc("@item:inmenu Reset icon to default", "Clear Icon")
+                    text: i18ndc("dev.xarbit.appgrid", "@item:inmenu Reset icon to default", "Clear Icon")
                     icon.name: "edit-clear"
                     onClicked: {
                         configGeneral.cfg_icon = configGeneral.defaultIcon
@@ -154,34 +154,34 @@ KCMUtils.SimpleKCM {
 
         QQC2.SpinBox {
             id: gridColumns
-            Kirigami.FormData.label: i18n("Icons per row:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icons per row:")
             from: 3; to: 10
         }
 
         QQC2.SpinBox {
             id: gridRows
-            Kirigami.FormData.label: i18n("Visible rows:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Visible rows:")
             from: 2; to: 10
         }
 
         QQC2.ComboBox {
             id: iconSize
-            Kirigami.FormData.label: i18n("Icon size:")
-            model: [i18n("Small"), i18n("Medium"), i18n("Large")]
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icon size:")
+            model: [i18nd("dev.xarbit.appgrid", "Small"), i18nd("dev.xarbit.appgrid", "Medium"), i18nd("dev.xarbit.appgrid", "Large")]
         }
 
         RowLayout {
-            Kirigami.FormData.label: i18n("Sort order:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Sort order:")
             spacing: Kirigami.Units.largeSpacing
 
             QQC2.ComboBox {
                 id: sortMode
-                model: [i18n("Alphabetical"), i18n("Most Used")]
+                model: [i18nd("dev.xarbit.appgrid", "Alphabetical"), i18nd("dev.xarbit.appgrid", "Most Used")]
             }
 
             QQC2.CheckBox {
                 id: showRecentApps
-                text: i18n("Show recently used applications")
+                text: i18nd("dev.xarbit.appgrid", "Show recently used applications")
                 enabled: sortMode.currentIndex === 0
             }
         }
@@ -192,34 +192,34 @@ KCMUtils.SimpleKCM {
 
         QQC2.CheckBox {
             id: showCategoryBar
-            Kirigami.FormData.label: i18n("Behavior:")
-            text: i18n("Show category bar")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Behavior:")
+            text: i18nd("dev.xarbit.appgrid", "Show category bar")
         }
 
         QQC2.CheckBox {
             id: searchAll
-            text: i18n("Search all apps regardless of active tab")
+            text: i18nd("dev.xarbit.appgrid", "Search all apps regardless of active tab")
         }
 
         QQC2.CheckBox {
             id: startWithFavorites
-            text: i18n("Start with favorites tab")
+            text: i18nd("dev.xarbit.appgrid", "Start with favorites tab")
             enabled: showCategoryBar.checked
         }
 
         QQC2.CheckBox {
             id: useSystemCategories
-            text: i18n("Use system categories (supports KDE Menu Editor)")
+            text: i18nd("dev.xarbit.appgrid", "Use system categories (supports KDE Menu Editor)")
             enabled: showCategoryBar.checked
         }
 
         QQC2.ComboBox {
             id: terminalShell
-            Kirigami.FormData.label: i18n("Terminal shell:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Terminal shell:")
             Layout.fillWidth: true
             model: {
                 var shells = Plasmoid.availableShells ? Plasmoid.availableShells() : []
-                return [i18n("Default (/bin/sh)")].concat(shells)
+                return [i18nd("dev.xarbit.appgrid", "Default (/bin/sh)")].concat(shells)
             }
             currentIndex: {
                 if (!configGeneral.cfg_terminalShell) return 0
@@ -239,46 +239,46 @@ KCMUtils.SimpleKCM {
 
         QQC2.CheckBox {
             id: showScrollbars
-            Kirigami.FormData.label: i18n("Appearance:")
-            text: i18n("Show scrollbars")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Appearance:")
+            text: i18nd("dev.xarbit.appgrid", "Show scrollbars")
         }
 
         QQC2.CheckBox {
             id: enableBlur
-            text: i18n("Enable background blur")
+            text: i18nd("dev.xarbit.appgrid", "Enable background blur")
         }
 
         QQC2.ComboBox {
             id: hoverAnimation
-            Kirigami.FormData.label: i18n("Icon animation:")
-            model: [i18n("None"), i18n("Shake"), i18n("Grow"), i18n("Bounce"), i18n("Spin"), i18n("Shuffle")]
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icon animation:")
+            model: [i18nd("dev.xarbit.appgrid", "None"), i18nd("dev.xarbit.appgrid", "Shake"), i18nd("dev.xarbit.appgrid", "Grow"), i18nd("dev.xarbit.appgrid", "Bounce"), i18nd("dev.xarbit.appgrid", "Spin"), i18nd("dev.xarbit.appgrid", "Shuffle")]
         }
 
         QQC2.CheckBox {
             id: shakeOnOpen
-            text: i18n("Animate icons on open")
+            text: i18nd("dev.xarbit.appgrid", "Animate icons on open")
             enabled: hoverAnimation.currentIndex > 0
         }
 
         QQC2.CheckBox {
             id: showActionLabels
-            text: i18n("Show labels on power/session buttons")
+            text: i18nd("dev.xarbit.appgrid", "Show labels on power/session buttons")
         }
 
         QQC2.CheckBox {
             id: useExtraRunners
-            text: i18n("Expand search to bookmarks, files, and websites")
+            text: i18nd("dev.xarbit.appgrid", "Expand search to bookmarks, files, and websites")
         }
 
         QQC2.Button {
-            text: i18n("Configure Search Plugins…")
+            text: i18nd("dev.xarbit.appgrid", "Configure Search Plugins…")
             icon.name: "settings-configure"
             enabled: useExtraRunners.checked
             onClicked: KCMUtils.KCMLauncher.openSystemSettings("kcm_plasmasearch")
         }
 
         RowLayout {
-            Kirigami.FormData.label: i18n("Background opacity:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Background opacity:")
 
             QQC2.Slider {
                 id: backgroundOpacity
@@ -294,8 +294,8 @@ KCMUtils.SimpleKCM {
 
         QQC2.CheckBox {
             id: overrideRadius
-            Kirigami.FormData.label: i18n("Corner radius:")
-            text: i18n("Use custom corner radius")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Corner radius:")
+            text: i18nd("dev.xarbit.appgrid", "Use custom corner radius")
         }
 
         RowLayout {
@@ -307,7 +307,7 @@ KCMUtils.SimpleKCM {
             }
 
             QQC2.Label {
-                text: i18n("px")
+                text: i18nd("dev.xarbit.appgrid", "px")
                 opacity: overrideRadius.checked ? 1.0 : 0.5
             }
         }
@@ -319,7 +319,7 @@ KCMUtils.SimpleKCM {
         QQC2.Button {
             Kirigami.FormData.label: ""
             icon.name: "edit-undo"
-            text: i18n("Reset to Defaults")
+            text: i18nd("dev.xarbit.appgrid", "Reset to Defaults")
             onClicked: {
                 configGeneral.cfg_icon = "start-here-kde-symbolic"
                 configGeneral.cfg_useCustomButtonImage = false
@@ -352,14 +352,14 @@ KCMUtils.SimpleKCM {
 
         Item {
             Kirigami.FormData.isSection: true
-            Kirigami.FormData.label: i18n("Hidden Applications")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Hidden Applications")
         }
 
         QQC2.Label {
             Kirigami.FormData.label: ""
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: i18n("Right-click any application in the grid and choose \"Hide Application\" to add it here.")
+            text: i18nd("dev.xarbit.appgrid", "Right-click any application in the grid and choose \"Hide Application\" to add it here.")
             font: Kirigami.Theme.smallFont
             opacity: 0.7
         }
@@ -367,7 +367,7 @@ KCMUtils.SimpleKCM {
         QQC2.Label {
             Kirigami.FormData.label: ""
             visible: hiddenAppsModel.count === 0
-            text: i18n("No hidden applications.")
+            text: i18nd("dev.xarbit.appgrid", "No hidden applications.")
             opacity: 0.5
         }
 
@@ -397,7 +397,7 @@ KCMUtils.SimpleKCM {
 
                     QQC2.ToolButton {
                         icon.name: "edit-delete-remove"
-                        QQC2.ToolTip.text: i18n("Unhide")
+                        QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
                         QQC2.ToolTip.visible: hovered
                         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                         onClicked: {

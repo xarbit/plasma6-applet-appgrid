@@ -55,11 +55,11 @@ RowLayout {
         var map = {}
         var items = []
 
-        items.push({ type: "all", name: i18n("All") })
+        items.push({ type: "all", name: i18nd("dev.xarbit.appgrid", "All") })
         var cats = effectiveCategories()
         for (var i = 0; i < cats.length; i++)
             items.push({ type: "category", name: cats[i] })
-        items.push({ type: "favorites", name: i18n("Favorites") })
+        items.push({ type: "favorites", name: i18nd("dev.xarbit.appgrid", "Favorites") })
 
         for (var i = 0; i < items.length; i++) {
             var name = items[i].name
@@ -180,18 +180,18 @@ RowLayout {
         checked: categoryBar.favoritesActive
         onClicked: categoryBar.favoritesToggled(!categoryBar.favoritesActive)
 
-        PlasmaComponents.ToolTip.text: i18n("Favorites")
+        PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
         PlasmaComponents.ToolTip.visible: hovered
         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
-        Accessible.name: i18n("Favorites")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
         Accessible.role: Accessible.Button
     }
 
     // -- "All" button (always visible, pinned) --
     PlasmaComponents.ToolButton {
         id: allButton
-        text: categoryBar.mnemonicText(i18n("All"))
+        text: categoryBar.mnemonicText(i18nd("dev.xarbit.appgrid", "All"))
         font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
         checked: !categoryBar.favoritesActive
                  && (!categoryBar.appsModel || categoryBar.appsModel.filterCategory === "")
@@ -200,7 +200,7 @@ RowLayout {
             catFlick.contentX = 0
         }
 
-        Accessible.name: i18n("All applications")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "All applications")
         Accessible.role: Accessible.Button
     }
 
@@ -214,7 +214,7 @@ RowLayout {
             catFlick.contentX = Math.max(0, catFlick.contentX - catFlick.width * 0.5)
         }
 
-        Accessible.name: i18n("Scroll categories left")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
         Accessible.role: Accessible.Button
     }
 
@@ -299,7 +299,7 @@ RowLayout {
                 catFlick.contentX + catFlick.width * 0.5)
         }
 
-        Accessible.name: i18n("Scroll categories right")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
         Accessible.role: Accessible.Button
     }
 
@@ -311,11 +311,11 @@ RowLayout {
         checked: categoryBar.favoritesActive
         onClicked: categoryBar.favoritesToggled(!categoryBar.favoritesActive)
 
-        PlasmaComponents.ToolTip.text: i18n("Favorites")
+        PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
         PlasmaComponents.ToolTip.visible: hovered
         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
-        Accessible.name: i18n("Favorites")
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
         Accessible.role: Accessible.Button
     }
 
@@ -326,7 +326,7 @@ RowLayout {
 
         PlasmaComponents.MenuItem {
             icon.name: "kmenuedit"
-            text: i18n("Edit \"%1\" in Menu Editor…", catContextMenu.categoryName)
+            text: i18nd("dev.xarbit.appgrid", "Edit \"%1\" in Menu Editor…", catContextMenu.categoryName)
             onClicked: {
                 var menuPath = categoryBar.appsModel.categoryMenuPath(catContextMenu.categoryName)
                 Plasmoid.openMenuEditor(menuPath || "")
@@ -334,7 +334,7 @@ RowLayout {
         }
         PlasmaComponents.MenuItem {
             icon.name: "kmenuedit"
-            text: i18n("Open Menu Editor…")
+            text: i18nd("dev.xarbit.appgrid", "Open Menu Editor…")
             onClicked: Plasmoid.openMenuEditor("")
         }
     }
