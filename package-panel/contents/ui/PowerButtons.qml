@@ -44,7 +44,7 @@ RowLayout {
 
     PlasmaComponents.ToolButton {
         id: sessionButton
-        icon.name: "user-identity"
+        icon.name: "system-log-out"
         text: powerButtons.showLabels ? i18n("Session") : ""
         display: powerButtons.showLabels ? PlasmaComponents.AbstractButton.TextBesideIcon
                                          : PlasmaComponents.AbstractButton.IconOnly
