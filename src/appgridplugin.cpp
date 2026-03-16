@@ -14,6 +14,8 @@
 #include <PlasmaQuick/AppletQuickItem>
 #include <algorithm>
 #include <QDir>
+#include <QFile>
+#include <QTextStream>
 #include <QFileInfo>
 #include <QMimeDatabase>
 #include <QProcess>
@@ -141,25 +143,43 @@ void AppGridPlugin::switchUser()
 
 // --- Prefix mode commands ---
 
-void AppGridPlugin::runInTerminal(const QString &command)
+void AppGridPlugin::runInTerminal(const QString &command, const QString &shell)
 {
     if (command.trimmed().isEmpty())
         return;
 
+    const QString sh = shell.isEmpty() ? QStringLiteral("/bin/sh") : shell;
+
     // Wrap command so the terminal stays open after it finishes.
-    const QString wrapped = QStringLiteral("/bin/sh -c '%1; echo; echo \"[Press Enter to close]\"; read _'")
-                                .arg(QString(command).replace(QLatin1Char('\''), QStringLiteral("'\"'\"'")));
+    const QString wrapped = QStringLiteral("%1 -c '%2; echo; echo \"[Press Enter to close]\"; read _'")
+                                .arg(sh, QString(command).replace(QLatin1Char('\''), QStringLiteral("'\"'\"'")));
 
     auto *job = new KTerminalLauncherJob(wrapped);
     job->start();
 }
 
-void AppGridPlugin::runCommand(const QString &command)
+void AppGridPlugin::runCommand(const QString &command, const QString &shell)
 {
     if (command.trimmed().isEmpty())
         return;
 
-    QProcess::startDetached(QStringLiteral("/bin/sh"), {QStringLiteral("-c"), command});
+    const QString sh = shell.isEmpty() ? QStringLiteral("/bin/sh") : shell;
+    QProcess::startDetached(sh, {QStringLiteral("-c"), command});
+}
+
+QStringList AppGridPlugin::availableShells()
+{
+    QStringList shells;
+    QFile file(QStringLiteral("/etc/shells"));
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        while (!in.atEnd()) {
+            const QString line = in.readLine().trimmed();
+            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && QFile::exists(line))
+                shells.append(line);
+        }
+    }
+    return shells;
 }
 
 QVariantList AppGridPlugin::listDirectory(const QString &path)

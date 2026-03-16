@@ -262,10 +262,10 @@ Kirigami.ShadowedRectangle {
                 }
                 onAccepted: {
                     if (panel.prefixMode === "terminal") {
-                        Plasmoid.runInTerminal(panel.prefixArgument)
+                        Plasmoid.runInTerminal(panel.prefixArgument, Plasmoid.configuration.terminalShell || "")
                         panel.closeRequested()
                     } else if (panel.prefixMode === "command") {
-                        Plasmoid.runCommand(panel.prefixArgument)
+                        Plasmoid.runCommand(panel.prefixArgument, Plasmoid.configuration.terminalShell || "")
                         panel.closeRequested()
                     } else if (panel.prefixMode === "files") {
                         prefixModeView.activateFileCurrent()

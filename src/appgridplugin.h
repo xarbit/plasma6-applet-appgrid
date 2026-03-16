@@ -48,11 +48,14 @@ public:
 
     // --- Prefix mode commands ---
 
-    /** Run @p command in the user's preferred terminal emulator. */
-    Q_INVOKABLE void runInTerminal(const QString &command);
+    /** Run @p command in the user's preferred terminal emulator using @p shell. */
+    Q_INVOKABLE void runInTerminal(const QString &command, const QString &shell = QString());
 
-    /** Run @p command via /bin/sh without a terminal. */
-    Q_INVOKABLE void runCommand(const QString &command);
+    /** Run @p command via the configured shell without a terminal. */
+    Q_INVOKABLE void runCommand(const QString &command, const QString &shell = QString());
+
+    /** Returns list of installed shells from /etc/shells. */
+    Q_INVOKABLE QStringList availableShells();
 
     /** List directory contents at @p path. Returns a list of {name, path, isDir, icon}. */
     Q_INVOKABLE QVariantList listDirectory(const QString &path);

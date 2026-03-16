@@ -39,6 +39,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showActionLabels: showActionLabels.checked
     property alias cfg_showRecentApps: showRecentApps.checked
     property alias cfg_useExtraRunners: useExtraRunners.checked
+    property string cfg_terminalShell: Plasmoid.configuration.terminalShell
     property var cfg_hiddenApps: Plasmoid.configuration.hiddenApps
 
     // Default icon defined in main.xml — single source of truth for fallback.
@@ -198,6 +199,30 @@ KCMUtils.SimpleKCM {
             text: i18n("Start with favorites tab")
         }
 
+        QQC2.ComboBox {
+            id: terminalShell
+            Kirigami.FormData.label: i18n("Terminal shell:")
+            Layout.fillWidth: true
+            model: {
+                var shells = Plasmoid.availableShells ? Plasmoid.availableShells() : []
+                return [i18n("Default (/bin/sh)")].concat(shells)
+            }
+            currentIndex: {
+                if (!configGeneral.cfg_terminalShell) return 0
+                var shells = Plasmoid.availableShells ? Plasmoid.availableShells() : []
+                var idx = shells.indexOf(configGeneral.cfg_terminalShell)
+                return idx >= 0 ? idx + 1 : 0
+            }
+            onActivated: function(index) {
+                if (index === 0)
+                    configGeneral.cfg_terminalShell = ""
+                else {
+                    var shells = Plasmoid.availableShells ? Plasmoid.availableShells() : []
+                    configGeneral.cfg_terminalShell = shells[index - 1] || ""
+                }
+            }
+        }
+
         QQC2.CheckBox {
             id: showScrollbars
             Kirigami.FormData.label: i18n("Appearance:")
@@ -302,6 +327,8 @@ KCMUtils.SimpleKCM {
                 showActionLabels.checked = false
                 showRecentApps.checked = true
                 useExtraRunners.checked = true
+                configGeneral.cfg_terminalShell = ""
+                terminalShell.currentIndex = 0
             }
         }
 
