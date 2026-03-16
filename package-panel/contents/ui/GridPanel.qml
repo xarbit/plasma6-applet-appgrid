@@ -170,6 +170,7 @@ Kirigami.ShadowedRectangle {
     function resetState() {
         contextMenu.close()
         categoryBar.closeCategoryMenu()
+        powerButtons.closeMenus()
         searchBar.text = ""
         var startFav = Plasmoid.configuration.startWithFavorites || false
         categoryBar.favoritesActive = startFav
@@ -321,6 +322,7 @@ Kirigami.ShadowedRectangle {
             }
 
             PowerButtons {
+                id: powerButtons
                 onActionTriggered: panel.closeRequested()
             }
         }

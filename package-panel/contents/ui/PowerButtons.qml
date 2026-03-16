@@ -15,6 +15,7 @@ RowLayout {
     id: powerButtons
 
     signal actionTriggered()
+    function closeMenus() { sessionMenu.close() }
 
     spacing: Kirigami.Units.smallSpacing
     readonly property bool showLabels: Plasmoid.configuration.showActionLabels
@@ -43,7 +44,7 @@ RowLayout {
 
     PlasmaComponents.ToolButton {
         id: sessionButton
-        icon.name: "system-switch-user"
+        icon.name: "user-identity"
         text: powerButtons.showLabels ? i18n("Session") : ""
         display: powerButtons.showLabels ? PlasmaComponents.AbstractButton.TextBesideIcon
                                          : PlasmaComponents.AbstractButton.IconOnly
