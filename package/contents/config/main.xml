@@ -26,6 +26,10 @@
       <label>Whether to open on the screen with mouse focus (true) or the screen with the panel (false).</label>
       <default>true</default>
     </entry>
+    <entry name="showDividers" type="Bool">
+      <label>Whether to show divider lines between UI sections.</label>
+      <default>true</default>
+    </entry>
     <entry name="showScrollbars" type="Bool">
       <label>Whether to show scrollbars in the grid and search views.</label>
       <default>false</default>

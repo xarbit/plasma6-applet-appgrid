@@ -360,9 +360,9 @@ Kirigami.ShadowedRectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 1
-            color: Qt.rgba(Kirigami.Theme.textColor.r,
-                           Kirigami.Theme.textColor.g,
-                           Kirigami.Theme.textColor.b, 0.15)
+            color: Plasmoid.configuration.showDividers !== false
+                   ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.15)
+                   : "transparent"
             visible: panel.showCatBar
         }
 
@@ -388,9 +388,9 @@ Kirigami.ShadowedRectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 1
-            color: Qt.rgba(Kirigami.Theme.textColor.r,
-                           Kirigami.Theme.textColor.g,
-                           Kirigami.Theme.textColor.b, 0.15)
+            color: Plasmoid.configuration.showDividers !== false
+                   ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.15)
+                   : "transparent"
             visible: panel.showCatBar
         }
 

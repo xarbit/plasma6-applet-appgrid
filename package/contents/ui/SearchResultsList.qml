@@ -10,6 +10,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
+import org.kde.plasma.plasmoid
 
 ListView {
     id: listView
@@ -88,11 +89,10 @@ ListView {
         // Section divider between app results and runner results
         Rectangle {
             width: parent.width
-            height: 1
-            visible: model.isSectionBoundary
-            color: Qt.rgba(Kirigami.Theme.textColor.r,
-                           Kirigami.Theme.textColor.g,
-                           Kirigami.Theme.textColor.b, 0.15)
+            height: model.isSectionBoundary ? 1 : 0
+            color: Plasmoid.configuration.showDividers !== false
+                   ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.15)
+                   : "transparent"
         }
 
         PlasmaComponents.ItemDelegate {

@@ -28,6 +28,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_sortMode: sortMode.currentIndex
     property alias cfg_overrideRadius: overrideRadius.checked
     property alias cfg_cornerRadius: cornerRadius.value
+    property alias cfg_showDividers: showDividers.checked
     property alias cfg_showScrollbars: showScrollbars.checked
     property alias cfg_backgroundOpacity: backgroundOpacity.value
     property alias cfg_enableBlur: enableBlur.checked
@@ -243,8 +244,13 @@ KCMUtils.SimpleKCM {
         }
 
         QQC2.CheckBox {
-            id: showScrollbars
+            id: showDividers
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Appearance:")
+            text: i18nd("dev.xarbit.appgrid", "Show divider lines")
+        }
+
+        QQC2.CheckBox {
+            id: showScrollbars
             text: i18nd("dev.xarbit.appgrid", "Show scrollbars")
         }
 
@@ -335,6 +341,7 @@ KCMUtils.SimpleKCM {
                 sortMode.currentIndex = 1
                 overrideRadius.checked = false
                 cornerRadius.value = 24
+                showDividers.checked = true
                 showScrollbars.checked = false
                 backgroundOpacity.value = 85
                 enableBlur.checked = true
