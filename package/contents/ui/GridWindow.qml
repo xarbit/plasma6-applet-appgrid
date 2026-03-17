@@ -105,7 +105,6 @@ Window {
 
     MouseArea {
         anchors.fill: parent
-        visible: !root.isPopupMode
         onClicked: {
             if (root.appletInterface)
                 root.appletInterface.closeWindow()
