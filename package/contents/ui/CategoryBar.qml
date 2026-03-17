@@ -34,6 +34,7 @@ RowLayout {
     ]
 
     signal favoritesToggled(bool active)
+    signal categorySelected()
 
     // Rebuilds the category list from the model
     function refreshCategories() {
@@ -114,6 +115,7 @@ RowLayout {
             categoryBar.favoritesToggled(false)
         if (categoryBar.appsModel)
             categoryBar.appsModel.filterCategory = ""
+        categorySelected()
     }
 
     function selectCategory(name) {
@@ -121,6 +123,7 @@ RowLayout {
             categoryBar.favoritesToggled(false)
         if (categoryBar.appsModel)
             categoryBar.appsModel.filterCategory = name
+        categorySelected()
     }
 
     // Scroll the flickable so the currently selected category button is visible

@@ -379,7 +379,9 @@ Kirigami.ShadowedRectangle {
                     if (active)
                         panel.appsModel.filterCategory = ""
                 }
+                searchBar.field.forceActiveFocus()
             }
+            onCategorySelected: searchBar.field.forceActiveFocus()
         }
 
         Rectangle {
