@@ -115,6 +115,7 @@ void AppGridPlugin::configureWindow(QWindow *window)
 
 void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
 {
+#ifdef HAVE_LAYERSHELL_SCREEN_API
     if (!window)
         return;
 
@@ -134,6 +135,10 @@ void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
             layerWindow->setWantsToBeOnActiveScreen(true);
         }
     }
+#else
+    Q_UNUSED(window)
+    Q_UNUSED(useActiveScreen)
+#endif
 }
 
 void AppGridPlugin::setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius)
