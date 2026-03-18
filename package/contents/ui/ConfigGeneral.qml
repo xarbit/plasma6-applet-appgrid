@@ -31,6 +31,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showDividers: showDividers.checked
     property alias cfg_showScrollbars: showScrollbars.checked
     property alias cfg_backgroundOpacity: backgroundOpacity.value
+    property alias cfg_openAnimation: openAnimation.currentIndex
     property alias cfg_enableBlur: enableBlur.checked
     property alias cfg_openOnActiveScreen: openOnActiveScreen.checked
     property alias cfg_showCategoryBar: showCategoryBar.checked
@@ -255,6 +256,12 @@ KCMUtils.SimpleKCM {
             text: i18nd("dev.xarbit.appgrid", "Show scrollbars")
         }
 
+        QQC2.ComboBox {
+            id: openAnimation
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Open/close animation:")
+            model: [i18nd("dev.xarbit.appgrid", "None"), i18nd("dev.xarbit.appgrid", "Fade"), i18nd("dev.xarbit.appgrid", "Scale"), i18nd("dev.xarbit.appgrid", "Pop"), i18nd("dev.xarbit.appgrid", "Slide Up"), i18nd("dev.xarbit.appgrid", "Slide Down"), i18nd("dev.xarbit.appgrid", "Glide"), i18nd("dev.xarbit.appgrid", "Buzz"), i18nd("dev.xarbit.appgrid", "Twist"), i18nd("dev.xarbit.appgrid", "Slam")]
+        }
+
         QQC2.CheckBox {
             id: enableBlur
             text: i18nd("dev.xarbit.appgrid", "Enable background blur")
@@ -351,6 +358,7 @@ KCMUtils.SimpleKCM {
                 showDividers.checked = false
                 showScrollbars.checked = false
                 backgroundOpacity.value = 85
+                openAnimation.currentIndex = 2
                 enableBlur.checked = true
                 openOnActiveScreen.checked = true
                 showCategoryBar.checked = true

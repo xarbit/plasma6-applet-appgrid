@@ -60,8 +60,8 @@ Window {
         }
     }
 
-    onWidthChanged: if (visible) applyBlur()
-    onHeightChanged: if (visible) applyBlur()
+    onWidthChanged: if (visible && (!animLoader.item || animLoader.item.blurBeforeAnimation)) applyBlur()
+    onHeightChanged: if (visible && (!animLoader.item || animLoader.item.blurBeforeAnimation)) applyBlur()
 
     // -----------------------------------------------------------------------
     // Grid lifecycle
@@ -69,32 +69,84 @@ Window {
 
     readonly property bool animationsEnabled: Kirigami.Units.longDuration > 0
 
+    // Animation styles
+    readonly property var animationFiles: [
+        "animations/NoneAnimation.qml",      // 0
+        "animations/FadeAnimation.qml",       // 1
+        "animations/ScaleAnimation.qml",      // 2 (default)
+        "animations/PopAnimation.qml",        // 3
+        "animations/SlideUpAnimation.qml",    // 4
+        "animations/SlideDownAnimation.qml",  // 5
+        "animations/GlideAnimation.qml",      // 6
+        "animations/BuzzAnimation.qml",       // 7
+        "animations/TwistAnimation.qml",      // 8
+        "animations/SlamAnimation.qml"        // 9
+    ]
+    readonly property int animStyle: {
+        var idx = Plasmoid.configuration.openAnimation
+        if (idx === undefined || idx === null) idx = 2
+        return Math.max(0, Math.min(idx, animationFiles.length - 1))
+    }
+
+    Loader {
+        id: animLoader
+        source: animationFiles[animStyle]
+        onLoaded: {
+            item.target = panel
+            item.openFinished.connect(function() {
+                if (!item.blurBeforeAnimation)
+                    applyBlur()
+                if (Plasmoid.configuration.shakeOnOpen)
+                    panel.shakeAllIcons()
+            })
+            item.closeFinished.connect(function() {
+                root.visible = false
+                panel.opacity = 0.0
+                panel.scale = 1.0
+                panel.rotation = 0
+                panel.anchors.verticalCenterOffset = 0
+            })
+        }
+    }
+
     function showGrid() {
         if (!windowConfigured) {
             Plasmoid.configureWindow(root)
             windowConfigured = true
         }
         Plasmoid.updateWindowScreen(root, Plasmoid.configuration.openOnActiveScreen !== false)
+
+        // Reset all animatable properties to clean state
+        panel.scale = 1.0
+        panel.rotation = 0
+        panel.anchors.verticalCenterOffset = 0
+
         panel.resetState()
-        visible = true
-        applyBlur()
-        requestActivate()
-        if (animationsEnabled) {
-            openAnim.start()
-        } else {
-            panel.scale = 1.0
+
+        if (!animationsEnabled || animStyle === 0) {
+            // No animation — show instantly
             panel.opacity = 1.0
+            visible = true
+            requestActivate()
+            applyBlur()
             if (Plasmoid.configuration.shakeOnOpen)
                 panel.shakeAllIcons()
+        } else {
+            panel.opacity = 0.0
+            visible = true
+            if (animLoader.item.blurBeforeAnimation)
+                applyBlur()
+            requestActivate()
+            animLoader.item.open()
         }
     }
 
     function closeGrid() {
-        if (animationsEnabled) {
-            closeAnim.start()
+        Plasmoid.setBlurBehind(root, false, 0, 0, 0, 0, 0)
+        if (animationsEnabled && animStyle !== 0 && animLoader.item) {
+            animLoader.item.close()
         } else {
             root.visible = false
-            panel.scale = 1.15
             panel.opacity = 0.0
         }
     }
@@ -136,7 +188,6 @@ Window {
         id: panel
         anchors.centerIn: parent
         opacity: 0.0
-        scale: 1.15
         transformOrigin: Item.Center
         onCloseRequested: {
             if (root.appletInterface)
@@ -148,40 +199,4 @@ Window {
     // Animations
     // -----------------------------------------------------------------------
 
-    ParallelAnimation {
-        id: openAnim
-        NumberAnimation {
-            target: panel; property: "scale"
-            from: 1.15; to: 1.0; duration: Kirigami.Units.longDuration
-            easing.type: Easing.OutCubic
-        }
-        NumberAnimation {
-            target: panel; property: "opacity"
-            from: 0.0; to: 1.0; duration: Kirigami.Units.longDuration
-            easing.type: Easing.OutCubic
-        }
-        onFinished: {
-            if (Plasmoid.configuration.shakeOnOpen)
-                panel.shakeAllIcons()
-        }
-    }
-
-    ParallelAnimation {
-        id: closeAnim
-        NumberAnimation {
-            target: panel; property: "scale"
-            from: 1.0; to: 1.12; duration: Kirigami.Units.shortDuration
-            easing.type: Easing.InCubic
-        }
-        NumberAnimation {
-            target: panel; property: "opacity"
-            from: 1.0; to: 0.0; duration: Kirigami.Units.shortDuration
-            easing.type: Easing.InCubic
-        }
-        onFinished: {
-            root.visible = false
-            panel.scale = 1.15
-            panel.opacity = 0.0
-        }
-    }
 }

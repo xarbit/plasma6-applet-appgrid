@@ -35,17 +35,31 @@ Item {
 
     // 0=None, 1=Shake, 2=Grow, 3=Bounce, 4=Spin, 5=Shuffle
     readonly property int hoverAnimation: Plasmoid.configuration.hoverAnimation
+    readonly property var iconAnimFiles: [
+        "",                          // 0=None
+        "iconanims/ShakeAnim.qml",   // 1
+        "iconanims/GrowAnim.qml",    // 2
+        "iconanims/BounceAnim.qml",  // 3
+        "iconanims/SpinAnim.qml"     // 4
+        // 5=Shuffle handled separately via signal
+    ]
+
+    Loader {
+        id: iconAnimLoader
+        source: hoverAnimation > 0 && hoverAnimation < iconAnimFiles.length ? iconAnimFiles[hoverAnimation] : ""
+        onLoaded: item.target = delegateIcon
+    }
 
     function shake() {
         playAnimation()
     }
 
     function playAnimation() {
-        if (hoverAnimation === 1) shakeAnim.start()
-        else if (hoverAnimation === 2) growAnim.start()
-        else if (hoverAnimation === 3) bounceAnim.start()
-        else if (hoverAnimation === 4) spinAnim.start()
-        else if (hoverAnimation === 5) shuffleRequested()
+        if (hoverAnimation === 5) {
+            shuffleRequested()
+        } else if (iconAnimLoader.item) {
+            iconAnimLoader.item.start()
+        }
     }
 
     ColumnLayout {
@@ -164,37 +178,4 @@ Item {
         }
     }
 
-    // --- Shake animation ---
-    SequentialAnimation {
-        id: shakeAnim
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: 0;  to: 8;  duration: 50;  easing.type: Easing.InOutQuad }
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: 8;  to: -7; duration: 90;  easing.type: Easing.InOutQuad }
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: -7; to: 5;  duration: 80;  easing.type: Easing.InOutQuad }
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: 5;  to: -3; duration: 70;  easing.type: Easing.InOutQuad }
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: -3; to: 2;  duration: 60;  easing.type: Easing.InOutQuad }
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: 2;  to: 0;  duration: 50;  easing.type: Easing.OutQuad }
-    }
-
-    // --- Grow animation ---
-    SequentialAnimation {
-        id: growAnim
-        NumberAnimation { target: delegateIcon; property: "scale"; from: 1.0; to: 1.2; duration: 150; easing.type: Easing.OutBack }
-        NumberAnimation { target: delegateIcon; property: "scale"; from: 1.2; to: 1.0; duration: 200; easing.type: Easing.InOutQuad }
-    }
-
-    // --- Bounce animation ---
-    SequentialAnimation {
-        id: bounceAnim
-        NumberAnimation { target: delegateIcon; property: "scale"; from: 1.0; to: 0.85; duration: 80;  easing.type: Easing.InQuad }
-        NumberAnimation { target: delegateIcon; property: "scale"; from: 0.85; to: 1.15; duration: 120; easing.type: Easing.OutQuad }
-        NumberAnimation { target: delegateIcon; property: "scale"; from: 1.15; to: 0.95; duration: 100; easing.type: Easing.InOutQuad }
-        NumberAnimation { target: delegateIcon; property: "scale"; from: 0.95; to: 1.0;  duration: 100; easing.type: Easing.OutQuad }
-    }
-
-    // --- Spin animation ---
-    SequentialAnimation {
-        id: spinAnim
-        NumberAnimation { target: delegateIcon; property: "rotation"; from: 0; to: 360; duration: 400; easing.type: Easing.InOutCubic }
-        ScriptAction { script: delegateIcon.rotation = 0 }
-    }
 }

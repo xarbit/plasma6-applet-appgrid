@@ -30,6 +30,10 @@
       <label>Whether to show divider lines between UI sections.</label>
       <default>false</default>
     </entry>
+    <entry name="openAnimation" type="Int">
+      <label>Open/close animation style (0=None, 1=Fade, 2=Scale, 3=Pop, 4=Slide Up, 5=Glide, 6=Buzz, 7=Twist, 8=Slam).</label>
+      <default>2</default>
+    </entry>
     <entry name="showSessionButtons" type="Bool">
       <label>Whether to show power and session buttons (sleep, restart, shut down, lock, etc.).</label>
       <default>true</default>
