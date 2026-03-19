@@ -9,11 +9,11 @@ AppGrid ships as two plasmoids that share a common codebase:
 
 Both variants share the same app grid, search, categories, quick commands, and configuration — pick whichever fits your workflow. Requires version 1.2+.
 
-> **Note:** Starting with the 1.5.x release, AppGrid is considered feature complete. The focus going forward will be on stability, polish, and community-requested improvements. AppGrid is still a young project and may contain bugs or not work as expected on all setups. A big thank you to everyone who has been testing, reporting issues, and providing feedback — it has been invaluable in shaping the project. If you run into any issues, please [open an issue](https://github.com/xarbit/plasma6-applet-appgrid/issues) and report back.
+> **Note:** AppGrid is actively maintained with a focus on stability, polish, and community-requested improvements. If you run into any issues, please [open an issue](https://github.com/xarbit/plasma6-applet-appgrid/issues) — you can type `i:` in the search bar to copy your system info for the report.
 
 > **Compatibility:** AppGrid targets KDE Plasma 6 and supports a wide range of distributions. Multi-monitor screen selection works best with LayerShellQt 6.6+, but falls back to the older API on earlier versions. Pre-built packages are provided for Arch Linux (AUR), Fedora, openSUSE Tumbleweed, Ubuntu 25.04+, and Debian 13+.
 
-> **Wayland-first:** AppGrid is developed and tested on Wayland. The standalone launcher's fullscreen overlay, multi-monitor screen selection, and blur rely on LayerShellQt, which is Wayland-only. The **AppGrid (Panel)** variant uses Plasma's native popup and should work on both Wayland and X11. Full X11 support is [being evaluated](https://github.com/xarbit/plasma6-applet-appgrid/issues/44) — if you'd like to see it, please voice your interest on the issue.
+> **Wayland-first:** AppGrid is developed and tested on Wayland. X11 support is included but less tested — the standalone launcher uses frameless window flags and manual screen positioning on X11 instead of LayerShellQt. The **AppGrid (Panel)** variant uses Plasma's native popup and works on both. If you encounter X11 issues, please [report them](https://github.com/xarbit/plasma6-applet-appgrid/issues).
 
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
@@ -43,13 +43,18 @@ KDE Plasma ships with Kickoff and Kicker as its default application launchers. W
 - **Favorites** — add, remove, and reorder favorites with edit mode
 - **Categories** — scrollable bar with Alt+key mnemonics, or use KDE Menu Editor categories
 - **Application actions** — right-click any app to see jumplist actions (e.g., New Private Window)
-- **Quick commands** — terminal (`t:`), shell commands (`:`), file browser (`/`), configurable shell
-- **open/close animations** — Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam, or None
+- **Quick commands** — terminal (`t:`), shell commands (`:`), file browser (`/`), system info (`i:`), hidden apps manager (`h:`), help (`?`)
+- **Keyword search** — matches desktop file keywords (e.g., typing "browser" finds Firefox)
+- **Search ranking** — results ranked by match quality (name prefix > substring > generic name > keyword)
+- **Multi-category** — apps appear in all matching categories, not just the first
+- **By Category sort** — groups apps by category with section headers and scrollable navigation
+- **Open/close animations** — Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam, or None
 - **Icon animations** — shake, grow, bounce, spin, shuffle, or none
 - **Multi-monitor** — open on active screen or panel screen
 - **Customizable** — grid size, icon size, blur, opacity, corner radius, dividers, session buttons
 - **Respects KDE settings** — system animation speed, font size, Plasma theme corner radius
-- Sort by most used or alphabetically, new app detection with badge
+- **Dim background** — optional darkened overlay behind the launcher for focus
+- Sort by most used, alphabetically, or by category; new app detection with badge
 - Context menu with favorites, pin to Task Manager, add to Desktop, hide apps
 - Session management (sleep, restart, shut down, lock, log out, switch user)
 - Drop-in replacement via Plasma's Show Alternatives
@@ -130,6 +135,12 @@ There are two variants:
 | Arrow keys | Navigate results |
 | Tab | Cycle through search results (apps + KRunner unified) |
 | Type anywhere | Start searching |
+| `t:command` | Run command in terminal |
+| `:command` | Run shell command |
+| `/path` or `~/path` | Browse files |
+| `i:` | Show system info |
+| `h:` | Manage hidden apps |
+| `?` | Show quick commands help |
 
 ## Configuration
 
@@ -143,17 +154,20 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | **Icons per row** | Number of columns in the grid (Center only) | 7 |
 | **Visible rows** | Number of rows visible before scrolling (Center only) | 4 |
 | **Icon size** | Small, medium, or large | Large |
-| **Sort order** | Alphabetical or Most Used (by launch frequency) | Most Used |
+| **Sort order** | Alphabetical, Most Used, or By Category | Most Used |
 | **Open on active screen** | Open on mouse focus screen or panel screen | On |
 | **Show category bar** | Show or hide the category filter bar | On |
 | **Search all apps** | Search all apps regardless of active tab | On |
 | **Start with favorites** | Open showing favorites instead of all apps | Off |
 | **Use system categories** | Use KDE Menu Editor categories | Off |
 | **Terminal shell** | Shell for `t:` commands | /bin/sh |
-| **Show divider lines** | Show dividers between UI sections | Off |
+| **Show recently used** | Show recently used apps section | On |
+| **Hide empty categories** | Hide categories with no apps | On |
+| **Show divider lines** | Show dividers between UI sections | On |
 | **Show scrollbars** | Show scrollbars in grid and search | Off |
 | **Open/close animation** | None, Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam | Scale |
 | **Enable background blur** | Blur behind the launcher (Center only) | On |
+| **Dim background** | Darken the screen behind the launcher (Center only) | Off |
 | **Icon animation** | None, Shake, Grow, Bounce, Spin, Shuffle | Shake |
 | **Animate icons on open** | Play icon animation when launcher opens | On |
 | **Show session buttons** | Show power/session buttons | On |
