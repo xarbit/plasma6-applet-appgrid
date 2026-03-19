@@ -421,6 +421,7 @@ Kirigami.ShadowedRectangle {
             SearchResultsList {
                 id: searchResultsList
                 model: panel.isSearching ? Plasmoid.searchModel : null
+                iconSize: panel.gridIconSize
                 searchField: searchBar.field
                 onLaunched: function(index) { panel.launchSearchResult(index) }
                 onContextMenuRequested: function(index, storageId, desktopFile) {

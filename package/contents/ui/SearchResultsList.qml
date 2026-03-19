@@ -16,6 +16,7 @@ ListView {
     id: listView
 
     property PlasmaComponents.TextField searchField: null
+    property real iconSize: Kirigami.Units.iconSizes.huge
 
     signal launched(int index)
     signal contextMenuRequested(int index, string storageId, string desktopFile)
@@ -98,7 +99,7 @@ ListView {
         PlasmaComponents.ItemDelegate {
             id: resultDelegate
             width: listView.width
-            height: Kirigami.Units.iconSizes.huge + Kirigami.Units.smallSpacing * 2
+            height: listView.iconSize + Kirigami.Units.smallSpacing * 2
             highlighted: listView.currentIndex === model.index
 
             contentItem: RowLayout {
@@ -131,8 +132,8 @@ ListView {
                 }
 
                 Kirigami.Icon {
-                    implicitWidth: Kirigami.Units.iconSizes.huge
-                    implicitHeight: Kirigami.Units.iconSizes.huge
+                    implicitWidth: listView.iconSize
+                    implicitHeight: listView.iconSize
                     source: model.iconName || "application-x-executable"
                 }
 
