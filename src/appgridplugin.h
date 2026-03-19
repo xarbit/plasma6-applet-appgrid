@@ -10,6 +10,7 @@
 
 #include "appmodel.h"
 
+class QScreen;
 class QWindow;
 class SessionManagement;
 
@@ -111,7 +112,7 @@ public:
 
     // --- Window management ---
 
-    /** Configure @p window as a Wayland layer-shell overlay with alpha support. */
+    /** Configure @p window as an overlay (LayerShell on Wayland, flags on X11). */
     Q_INVOKABLE void configureWindow(QWindow *window);
 
     /** Update which screen the overlay appears on. */
@@ -173,6 +174,16 @@ protected:
     bool m_useNativeActivation = false;
 
 private:
+    // --- Platform-specific window helpers ---
+
+    QScreen *screenForCursor() const;
+    QScreen *screenForPanel() const;
+
+    void configureWayland(QWindow *window);
+    void configureX11(QWindow *window);
+    void updateScreenWayland(QWindow *window, QScreen *target, bool useActiveScreen);
+    void updateScreenX11(QWindow *window, QScreen *target);
+
     AppModel m_appModel;
     AppFilterModel m_filterModel;
     KRunner::ResultsModel *m_runnerModel = nullptr;

@@ -11,12 +11,15 @@
 #include <KService>
 #include <KTerminalLauncherJob>
 #include <KWindowEffects>
+#include <KWindowSystem>
+#include <KX11Extras>
 #include <LayerShellQt/window.h>
 #include <Plasma/Containment>
 #include <Plasma/Corona>
 #include <PlasmaQuick/AppletQuickItem>
 #include <algorithm>
 #include <QDir>
+#include <QCursor>
 #include <QGuiApplication>
 #include <QFile>
 #include <QTextStream>
@@ -97,6 +100,75 @@ bool AppGridPlugin::runRunnerResult(int index)
 
 // --- Window management ---
 
+// -- Screen helpers --
+
+QScreen *AppGridPlugin::screenForCursor() const
+{
+    const QPoint pos = QCursor::pos();
+    for (auto *screen : QGuiApplication::screens()) {
+        if (screen->geometry().contains(pos))
+            return screen;
+    }
+    return nullptr;
+}
+
+QScreen *AppGridPlugin::screenForPanel() const
+{
+    int idx = containment() ? containment()->screen() : -1;
+    const auto screens = QGuiApplication::screens();
+    return (idx >= 0 && idx < screens.size()) ? screens.at(idx) : nullptr;
+}
+
+// -- Wayland (LayerShellQt) --
+
+void AppGridPlugin::configureWayland(QWindow *window)
+{
+    auto *layer = LayerShellQt::Window::get(window);
+    layer->setLayer(LayerShellQt::Window::LayerOverlay);
+    layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
+    layer->setScope(QStringLiteral("appgrid"));
+}
+
+void AppGridPlugin::updateScreenWayland(QWindow *window, QScreen *target, bool useActiveScreen)
+{
+    auto *layer = LayerShellQt::Window::get(window);
+
+    // New API (LayerShellQt 6.6+)
+    if (layer->metaObject()->indexOfProperty("wantsToBeOnActiveScreen") >= 0) {
+        if (useActiveScreen || !target) {
+            layer->setProperty("wantsToBeOnActiveScreen", true);
+        } else {
+            layer->setProperty("wantsToBeOnActiveScreen", false);
+            layer->setProperty("screen", QVariant::fromValue(target));
+        }
+    } else {
+        // Old API (LayerShellQt < 6.6)
+        if (target)
+            window->setScreen(target);
+        layer->setScreenConfiguration(
+            useActiveScreen ? LayerShellQt::Window::ScreenFromCompositor
+                            : LayerShellQt::Window::ScreenFromQWindow);
+    }
+}
+
+// -- X11 fallback --
+
+void AppGridPlugin::configureX11(QWindow *window)
+{
+    window->setFlags(window->flags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    KX11Extras::setState(window->winId(), NET::SkipTaskbar | NET::SkipPager);
+}
+
+void AppGridPlugin::updateScreenX11(QWindow *window, QScreen *target)
+{
+    if (!target)
+        return;
+    window->setScreen(target);
+    window->setGeometry(target->geometry());
+}
+
+// -- Public API --
+
 void AppGridPlugin::configureWindow(QWindow *window)
 {
     if (!window)
@@ -106,11 +178,10 @@ void AppGridPlugin::configureWindow(QWindow *window)
     fmt.setAlphaBufferSize(8);
     window->setFormat(fmt);
 
-    if (auto *layerWindow = LayerShellQt::Window::get(window)) {
-        layerWindow->setLayer(LayerShellQt::Window::LayerOverlay);
-        layerWindow->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
-        layerWindow->setScope(QStringLiteral("appgrid"));
-    }
+    if (KWindowSystem::isPlatformWayland())
+        configureWayland(window);
+    else
+        configureX11(window);
 }
 
 void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
@@ -118,35 +189,12 @@ void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
     if (!window)
         return;
 
-    auto *layerWindow = LayerShellQt::Window::get(window);
-    if (!layerWindow)
-        return;
+    QScreen *target = useActiveScreen ? screenForCursor() : screenForPanel();
 
-    // Determine target screen
-    QScreen *targetScreen = nullptr;
-    if (!useActiveScreen) {
-        int screenNum = containment() ? containment()->screen() : -1;
-        const auto screens = QGuiApplication::screens();
-        if (screenNum >= 0 && screenNum < screens.size())
-            targetScreen = screens.at(screenNum);
-    }
-
-    // New API (LayerShellQt 6.6+)
-    if (layerWindow->metaObject()->indexOfProperty("wantsToBeOnActiveScreen") >= 0) {
-        if (useActiveScreen || !targetScreen) {
-            layerWindow->setProperty("wantsToBeOnActiveScreen", true);
-        } else {
-            layerWindow->setProperty("wantsToBeOnActiveScreen", false);
-            layerWindow->setProperty("screen", QVariant::fromValue(targetScreen));
-        }
-    } else {
-        // Old API (LayerShellQt < 6.6)
-        if (targetScreen)
-            window->setScreen(targetScreen);
-        layerWindow->setScreenConfiguration(
-            useActiveScreen ? LayerShellQt::Window::ScreenFromCompositor
-                            : LayerShellQt::Window::ScreenFromQWindow);
-    }
+    if (KWindowSystem::isPlatformWayland())
+        updateScreenWayland(window, target, useActiveScreen);
+    else
+        updateScreenX11(window, target);
 }
 
 void AppGridPlugin::setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius)
