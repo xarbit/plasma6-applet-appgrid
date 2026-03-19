@@ -179,12 +179,6 @@ KCMUtils.SimpleKCM {
             model: [i18nd("dev.xarbit.appgrid", "Alphabetical"), i18nd("dev.xarbit.appgrid", "Most Used")]
         }
 
-        QQC2.CheckBox {
-            id: showRecentApps
-            text: i18nd("dev.xarbit.appgrid", "Show recently used applications")
-            enabled: sortMode.currentIndex === 0 || startWithFavorites.checked
-        }
-
         // --- Appearance ---
 
         Item { Kirigami.FormData.isSection: true }
@@ -209,6 +203,12 @@ KCMUtils.SimpleKCM {
             id: startWithFavorites
             text: i18nd("dev.xarbit.appgrid", "Start with favorites tab")
             enabled: showCategoryBar.checked
+        }
+
+        QQC2.CheckBox {
+            id: showRecentApps
+            text: i18nd("dev.xarbit.appgrid", "Show recently used applications")
+            enabled: sortMode.currentIndex === 0 || startWithFavorites.checked
         }
 
         QQC2.CheckBox {
