@@ -193,7 +193,7 @@ RowLayout {
     }
 
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Kirigami.Units.smallSpacing
 
     // -- Favorites (left) --
     PlasmaComponents.ToolButton {
