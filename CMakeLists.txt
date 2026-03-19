@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 cmake_minimum_required(VERSION 3.20)
-project(AppGrid VERSION 1.7.0 LANGUAGES CXX)
+project(AppGrid VERSION 1.7.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -45,6 +45,7 @@ set(SHARED_QML_FILES
     AppGridView.qml
     AppIconDelegate.qml
     CategoryBar.qml
+    CategoryGridView.qml
     GridPanel.qml
     PowerButtons.qml
     PrefixModeView.qml
@@ -52,6 +53,14 @@ set(SHARED_QML_FILES
     SearchBar.qml
     SearchResultsList.qml
     ShuffleOverlay.qml
+)
+
+set(SHARED_PREFIX_QML_FILES
+    prefix/PrefixHelpView.qml
+    prefix/PrefixCommandView.qml
+    prefix/PrefixInfoView.qml
+    prefix/PrefixHiddenView.qml
+    prefix/PrefixFileBrowser.qml
 )
 
 # --- Main plasmoid (custom Window: fullscreen/centered) ---
@@ -110,6 +119,14 @@ configure_file(
 
 # Copy shared QML components into the popup package at build time
 foreach(qml_file ${SHARED_QML_FILES})
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/package/contents/ui/${qml_file}
+        ${CMAKE_CURRENT_SOURCE_DIR}/package-panel/contents/ui/${qml_file}
+        COPYONLY
+    )
+endforeach()
+
+foreach(qml_file ${SHARED_PREFIX_QML_FILES})
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/package/contents/ui/${qml_file}
         ${CMAKE_CURRENT_SOURCE_DIR}/package-panel/contents/ui/${qml_file}
