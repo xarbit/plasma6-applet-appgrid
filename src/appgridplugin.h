@@ -7,6 +7,7 @@
 
 #include <Plasma/Applet>
 #include <KRunner/ResultsModel>
+#include <QRect>
 
 #include "appmodel.h"
 
@@ -101,6 +102,7 @@ class AppGridPlugin : public Plasma::Applet {
     Q_PROPERTY(QAbstractItemModel *runnerModel READ runnerModel CONSTANT)
     Q_PROPERTY(KRunner::ResultsModel *runnerSourceModel READ runnerSourceModel CONSTANT)
     Q_PROPERTY(UnifiedSearchModel *searchModel READ searchModel CONSTANT)
+    Q_PROPERTY(bool isWayland READ isWayland CONSTANT)
 
 public:
     AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
@@ -109,14 +111,18 @@ public:
     QAbstractItemModel *runnerModel();
     KRunner::ResultsModel *runnerSourceModel();
     UnifiedSearchModel *searchModel();
+    bool isWayland() const;
 
     // --- Window management ---
 
     /** Configure @p window as an overlay (LayerShell on Wayland, flags on X11). */
     Q_INVOKABLE void configureWindow(QWindow *window);
 
-    /** Update which screen the overlay appears on. */
+    /** Update which screen the Wayland overlay appears on (no-op on X11). */
     Q_INVOKABLE void updateWindowScreen(QWindow *window, bool useActiveScreen);
+
+    /** Returns the target screen geometry for the overlay (used by QML on X11). */
+    Q_INVOKABLE QRect targetScreenGeometry(bool useActiveScreen);
 
     /** Set a rounded-rect blur region on @p window matching the panel geometry. */
     Q_INVOKABLE void setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius);
@@ -182,7 +188,6 @@ private:
     void configureWayland(QWindow *window);
     void configureX11(QWindow *window);
     void updateScreenWayland(QWindow *window, QScreen *target, bool useActiveScreen);
-    void updateScreenX11(QWindow *window, QScreen *target);
 
     AppModel m_appModel;
     AppFilterModel m_filterModel;

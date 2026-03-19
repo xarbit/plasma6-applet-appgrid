@@ -3,7 +3,10 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     Overlay window for fullscreen and centered popup display modes.
-    Uses LayerShellQt (via C++ configureWindow) for the fullscreen Wayland overlay.
+    Wayland: LayerShellQt (via C++ configureWindow/updateWindowScreen) handles
+             overlay layer, screen selection, and window sizing.
+    X11:     configureWindow sets frameless/stay-on-top/skip-taskbar flags;
+             showGrid() positions the window using targetScreenGeometry().
 */
 
 import QtQuick
@@ -33,11 +36,9 @@ Window {
     readonly property real estPanelWidth: estCellWidth * columns + Kirigami.Units.largeSpacing * 4
     readonly property real estPanelHeight: estCellHeight * rows + Kirigami.Units.largeSpacing * 4 + Kirigami.Units.gridUnit * 5
 
-    // LayerShell overlay covers the full screen; the panel centers itself within it
+    // Wayland: LayerShell overrides these. X11: showGrid() overrides via targetScreenGeometry().
     width: Screen.width
     height: Screen.height
-    x: 0
-    y: 0
     visible: false
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Tool
@@ -122,9 +123,21 @@ Window {
             Plasmoid.configureWindow(root)
             windowConfigured = true
         }
-        Plasmoid.updateWindowScreen(root, Plasmoid.configuration.openOnActiveScreen !== false)
 
-        // Delay close-on-deactivate to avoid LayerShell reconfig race
+        var useActive = Plasmoid.configuration.openOnActiveScreen !== false
+
+        if (Plasmoid.isWayland) {
+            Plasmoid.updateWindowScreen(root, useActive)
+        } else {
+            // X11: position window on the target screen manually
+            var geo = Plasmoid.targetScreenGeometry(useActive)
+            root.x = geo.x
+            root.y = geo.y
+            root.width = geo.width
+            root.height = geo.height
+        }
+
+        // Delay close-on-deactivate to avoid reconfig race
         closeOnDeactivate = false
         deactivateGuard.start()
 

@@ -88,6 +88,11 @@ UnifiedSearchModel *AppGridPlugin::searchModel()
     return &m_searchModel;
 }
 
+bool AppGridPlugin::isWayland() const
+{
+    return KWindowSystem::isPlatformWayland();
+}
+
 bool AppGridPlugin::runRunnerResult(int index)
 {
     if (!m_runnerModel || index < 0 || index >= m_runnerFilterModel.rowCount())
@@ -151,20 +156,12 @@ void AppGridPlugin::updateScreenWayland(QWindow *window, QScreen *target, bool u
     }
 }
 
-// -- X11 fallback --
+// -- X11 --
 
 void AppGridPlugin::configureX11(QWindow *window)
 {
     window->setFlags(window->flags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     KX11Extras::setState(window->winId(), NET::SkipTaskbar | NET::SkipPager);
-}
-
-void AppGridPlugin::updateScreenX11(QWindow *window, QScreen *target)
-{
-    if (!target)
-        return;
-    window->setScreen(target);
-    window->setGeometry(target->geometry());
 }
 
 // -- Public API --
@@ -186,15 +183,19 @@ void AppGridPlugin::configureWindow(QWindow *window)
 
 void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
 {
-    if (!window)
+    if (!window || !KWindowSystem::isPlatformWayland())
         return;
 
     QScreen *target = useActiveScreen ? screenForCursor() : screenForPanel();
+    updateScreenWayland(window, target, useActiveScreen);
+}
 
-    if (KWindowSystem::isPlatformWayland())
-        updateScreenWayland(window, target, useActiveScreen);
-    else
-        updateScreenX11(window, target);
+QRect AppGridPlugin::targetScreenGeometry(bool useActiveScreen)
+{
+    QScreen *target = useActiveScreen ? screenForCursor() : screenForPanel();
+    if (!target)
+        target = QGuiApplication::primaryScreen();
+    return target ? target->geometry() : QRect();
 }
 
 void AppGridPlugin::setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius)
