@@ -97,6 +97,16 @@ The AUR package is maintained by the author and is the only officially supported
 yay -S plasma6-applets-appgrid
 ```
 
+### Community packages
+
+The following packages are created and maintained by community members — we appreciate the effort and it helps make AppGrid available to more users! These are **not** officially supported by the AppGrid project, so please report any packaging issues to their respective maintainers.
+
+| Distribution | Package | Maintainer |
+|---|---|---|
+| openSUSE (OBS) | [plasma6-applet-appgrid](https://build.opensuse.org/package/show/home:JMarcosHP01/plasma6-applet-appgrid) | [@JMarcosHP01](https://build.opensuse.org/users/JMarcosHP01) |
+
+If you maintain a package for AppGrid on your distribution and would like it listed here, please open an issue or pull request.
+
 ## Building from source
 
 ```bash
