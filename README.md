@@ -61,8 +61,10 @@ KDE Plasma ships with Kickoff and Kicker as its default application launchers. W
 - **Quick commands** — terminal (`t:`), shell commands (`:`), file browser (`/`), system info (`i:`), hidden apps manager (`h:`), help (`?`)
 - **Keyword search** — matches desktop file keywords (e.g., typing "browser" finds Firefox)
 - **Search ranking** — results ranked by match quality (name prefix > substring > generic name > keyword)
+- **Install source detection** — search by "flatpak", "snap", or "web app"; source badges in search results and tooltips
+- **App tooltips** — hover for app description and install source (Flatpak, Snap, AppImage, Web App)
 - **Multi-category** — apps appear in all matching categories, not just the first
-- **By Category sort** — groups apps by category with section headers and scrollable navigation
+- **By Category sort** — groups apps by category with section headers, keyboard navigation, and scrollable category bar
 - **Open/close animations** — Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam, or None
 - **Icon animations** — shake, grow, bounce, spin, shuffle, or none
 - **Multi-monitor** — open on active screen or panel screen
@@ -190,6 +192,7 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | **Hide empty categories** | Hide categories with no apps | On |
 | **Show divider lines** | Show dividers between UI sections | On |
 | **Show scrollbars** | Show scrollbars in grid and search | Off |
+| **Show tooltips on hover** | Show app description and install source on hover | On |
 | **Open/close animation** | None, Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam | Scale |
 | **Enable background blur** | Blur behind the launcher (Center only) | On |
 | **Dim background** | Darken the screen behind the launcher (Center only) | Off |
