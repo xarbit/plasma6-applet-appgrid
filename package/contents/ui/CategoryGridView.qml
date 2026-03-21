@@ -4,6 +4,7 @@
 
     Scrollable grid view that groups applications by category.
     Each category has a label header, a Flow of app icons, and a separator.
+    Supports keyboard navigation across all categories via a flat index.
 */
 
 import QtQuick
@@ -22,6 +23,7 @@ Flickable {
     property real iconSize: Kirigami.Units.iconSizes.huge
     property bool showRecents: false
     property bool showDividers: true
+    property Item searchField: null
 
     signal launched(int proxyIndex)
     signal recentLaunched(string storageId)
@@ -30,6 +32,122 @@ Flickable {
     contentWidth: width
     contentHeight: contentColumn.implicitHeight
     boundsBehavior: Flickable.StopAtBounds
+    focus: true
+
+    // -- Keyboard navigation --
+
+    // Flat list of all apps across categories for index-based navigation
+    readonly property var flatApps: {
+        var list = []
+        for (var i = 0; i < groupedApps.length; i++) {
+            var apps = groupedApps[i].apps
+            for (var j = 0; j < apps.length; j++)
+                list.push(apps[j])
+        }
+        return list
+    }
+
+    property int currentIndex: -1
+    property int recentIndex: -1
+    readonly property int itemsPerRow: Math.max(1, Math.floor(width / cellWidth))
+    readonly property int recentCount: showRecents && appsModel ? appsModel.recentApps.length : 0
+
+    function selectFirst() {
+        if (showRecents && recentCount > 0) {
+            recentIndex = 0
+            currentIndex = -1
+        } else {
+            currentIndex = flatApps.length > 0 ? 0 : -1
+            recentIndex = -1
+        }
+        contentY = 0
+    }
+
+    function ensureVisible() {
+        // Find the delegate for the current index and scroll to it
+        if (currentIndex < 0) return
+        var globalIdx = 0
+        for (var i = 0; i < sectionRepeater.count; i++) {
+            var section = sectionRepeater.itemAt(i)
+            if (!section) continue
+            var apps = groupedApps[i].apps
+            if (globalIdx + apps.length > currentIndex) {
+                // The selected app is in this section
+                var localIdx = currentIndex - globalIdx
+                var row = Math.floor(localIdx / itemsPerRow)
+                var itemY = section.y + section.children[0].height + row * cellHeight
+                if (itemY < contentY)
+                    contentY = itemY
+                else if (itemY + cellHeight > contentY + height)
+                    contentY = itemY + cellHeight - height
+                return
+            }
+            globalIdx += apps.length
+        }
+    }
+
+    Keys.onLeftPressed: {
+        if (recentIndex > 0) { recentIndex-- }
+        else if (currentIndex > 0) { currentIndex--; ensureVisible() }
+    }
+    Keys.onRightPressed: {
+        if (recentIndex >= 0 && recentIndex < recentCount - 1) { recentIndex++ }
+        else if (currentIndex < flatApps.length - 1) { currentIndex++; ensureVisible() }
+    }
+    Keys.onUpPressed: {
+        if (recentIndex >= 0) {
+            var newIdx = recentIndex - itemsPerRow
+            if (newIdx >= 0) { recentIndex = newIdx }
+            else { recentIndex = -1; currentIndex = -1; if (searchField) searchField.forceActiveFocus() }
+        } else if (currentIndex >= itemsPerRow) {
+            currentIndex -= itemsPerRow; ensureVisible()
+        } else if (currentIndex >= 0 && showRecents && recentCount > 0) {
+            // Move from first row of categories into recents
+            var lastRow = Math.floor((recentCount - 1) / itemsPerRow)
+            recentIndex = Math.min(currentIndex + lastRow * itemsPerRow, recentCount - 1)
+            currentIndex = -1
+            contentY = 0
+        } else if (currentIndex >= 0) {
+            currentIndex = -1
+            if (searchField) searchField.forceActiveFocus()
+        }
+    }
+    Keys.onDownPressed: {
+        if (recentIndex >= 0) {
+            var newIdx = recentIndex + itemsPerRow
+            if (newIdx < recentCount) { recentIndex = newIdx }
+            else {
+                // Move from recents into first category row
+                currentIndex = Math.min(recentIndex % itemsPerRow, flatApps.length - 1)
+                recentIndex = -1
+                ensureVisible()
+            }
+        } else if (currentIndex < 0) {
+            selectFirst()
+        } else if (currentIndex + itemsPerRow < flatApps.length) {
+            currentIndex += itemsPerRow; ensureVisible()
+        }
+    }
+    Keys.onReturnPressed: {
+        if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
+            recentLaunched(appsModel.recentApps[recentIndex])
+        else if (currentIndex >= 0 && currentIndex < flatApps.length)
+            launched(flatApps[currentIndex].proxyIndex)
+    }
+    Keys.onEnterPressed: Keys.onReturnPressed(event)
+    Keys.onTabPressed: function(event) { event.accepted = true }
+    Keys.onBacktabPressed: function(event) { event.accepted = true }
+    Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
+            return
+        if (event.text.length > 0 && !event.modifiers && searchField) {
+            searchField.forceActiveFocus()
+            searchField.text += event.text
+            currentIndex = -1
+            recentIndex = -1
+            event.accepted = true
+        }
+    }
 
     function scrollToCategory(name) {
         for (var i = 0; i < sectionRepeater.count; i++) {
@@ -40,6 +158,8 @@ Flickable {
             }
         }
     }
+
+    // -- Content --
 
     Column {
         id: contentColumn
@@ -54,8 +174,8 @@ Flickable {
             cellWidth: categoryGrid.cellWidth
             cellHeight: categoryGrid.cellHeight
             iconSize: categoryGrid.iconSize
-            currentRecentIndex: -1
-            gridHasFocus: false
+            currentRecentIndex: categoryGrid.recentIndex
+            gridHasFocus: categoryGrid.activeFocus
             favoritesActive: false
             hideBottomLabel: true
             showDividers: categoryGrid.showDividers
@@ -70,8 +190,17 @@ Flickable {
             model: categoryGrid.groupedApps
 
             delegate: Column {
+                id: sectionColumn
                 width: contentColumn.width
                 spacing: Kirigami.Units.smallSpacing
+
+                // Track the global start index for this section
+                readonly property int globalStartIndex: {
+                    var idx = 0
+                    for (var i = 0; i < index; i++)
+                        idx += categoryGrid.groupedApps[i].apps.length
+                    return idx
+                }
 
                 PlasmaComponents.Label {
                     leftPadding: Kirigami.Units.largeSpacing
@@ -87,17 +216,40 @@ Flickable {
                     Repeater {
                         model: modelData.apps
 
-                        delegate: AppIconDelegate {
+                        delegate: Item {
                             width: categoryGrid.cellWidth
                             height: categoryGrid.cellHeight
-                            appName: modelData.name || ""
-                            appIcon: modelData.iconName || "application-x-executable"
-                            iconSize: categoryGrid.iconSize
-                            onClicked: function(mouse) {
-                                if (mouse.button === Qt.RightButton)
-                                    categoryGrid.contextMenuRequested(modelData.proxyIndex, modelData.storageId || "", modelData.desktopFile || "")
-                                else
-                                    categoryGrid.launched(modelData.proxyIndex)
+
+                            readonly property int flatIndex: sectionColumn.globalStartIndex + index
+
+                            // Highlight for keyboard navigation
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: categoryGrid.cellWidth - Kirigami.Units.smallSpacing * 2
+                                height: categoryGrid.cellHeight - Kirigami.Units.smallSpacing * 2
+                                radius: Kirigami.Units.cornerRadius
+                                color: Qt.rgba(Kirigami.Theme.highlightColor.r,
+                                               Kirigami.Theme.highlightColor.g,
+                                               Kirigami.Theme.highlightColor.b, 0.2)
+                                border.width: 1
+                                border.color: Qt.rgba(Kirigami.Theme.highlightColor.r,
+                                                      Kirigami.Theme.highlightColor.g,
+                                                      Kirigami.Theme.highlightColor.b, 0.6)
+                                visible: categoryGrid.activeFocus && categoryGrid.currentIndex === flatIndex
+                            }
+
+                            AppIconDelegate {
+                                anchors.fill: parent
+                                appName: modelData.name || ""
+                                appIcon: modelData.iconName || "application-x-executable"
+                                iconSize: categoryGrid.iconSize
+                                isCurrentItem: categoryGrid.currentIndex === parent.flatIndex
+                                onClicked: function(mouse) {
+                                    if (mouse.button === Qt.RightButton)
+                                        categoryGrid.contextMenuRequested(modelData.proxyIndex, modelData.storageId || "", modelData.desktopFile || "")
+                                    else
+                                        categoryGrid.launched(modelData.proxyIndex)
+                                }
                             }
                         }
                     }

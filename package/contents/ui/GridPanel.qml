@@ -210,6 +210,8 @@ Kirigami.ShadowedRectangle {
         appGrid.recentIndex = -1
         searchResultsList.contentY = searchResultsList.originY
         categoryGridView.contentY = 0
+        categoryGridView.currentIndex = -1
+        categoryGridView.recentIndex = -1
         _needsScrollToTop = true
         searchBar.field.forceActiveFocus()
     }
@@ -338,6 +340,10 @@ Kirigami.ShadowedRectangle {
                         } else if (searchResultsList.count === 1) {
                             searchResultsList.forceActiveFocus()
                         }
+                    } else if (panel.showCategoryGrid) {
+                        categoryGridView.forceActiveFocus()
+                        categoryGridView.contentY = 0
+                        categoryGridView.selectFirst()
                     } else if (!panel.isSearching) {
                         appGrid.forceActiveFocus()
                         if (appGrid.showRecents) {
@@ -395,6 +401,8 @@ Kirigami.ShadowedRectangle {
                     if (panel.isSortByCategory) {
                         categoryBar.scrollOnlySelected = ""
                         categoryGridView.contentY = 0
+        categoryGridView.currentIndex = -1
+        categoryGridView.recentIndex = -1
                     }
                 }
                 searchBar.field.forceActiveFocus()
@@ -408,6 +416,8 @@ Kirigami.ShadowedRectangle {
                         })
                     } else {
                         categoryGridView.contentY = 0
+        categoryGridView.currentIndex = -1
+        categoryGridView.recentIndex = -1
                     }
                 }
             }
@@ -467,6 +477,7 @@ Kirigami.ShadowedRectangle {
 
             CategoryGridView {
                 id: categoryGridView
+                searchField: searchBar.field
                 appsModel: panel.appsModel
                 groupedApps: panel.showCategoryGrid && panel.appsModel
                     ? panel.appsModel.groupedByCategory : []
