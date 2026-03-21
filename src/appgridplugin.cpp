@@ -12,7 +12,9 @@
 #include <KTerminalLauncherJob>
 #include <KWindowEffects>
 #include <KWindowSystem>
+#ifdef APPGRID_X11_SUPPORT
 #include <KX11Extras>
+#endif
 #include <kcoreaddons_version.h>
 #include <LayerShellQt/window.h>
 #include <plasma_version.h>
@@ -166,13 +168,15 @@ QT_WARNING_POP
     }
 }
 
-// -- X11 --
+// -- X11 (remove when targeting Plasma 6.8+ Wayland-only) --
 
+#ifdef APPGRID_X11_SUPPORT
 void AppGridPlugin::configureX11(QWindow *window)
 {
     window->setFlags(window->flags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     KX11Extras::setState(window->winId(), NET::SkipTaskbar | NET::SkipPager);
 }
+#endif
 
 // -- Public API --
 
@@ -185,10 +189,14 @@ void AppGridPlugin::configureWindow(QWindow *window)
     fmt.setAlphaBufferSize(8);
     window->setFormat(fmt);
 
-    if (KWindowSystem::isPlatformWayland())
+    if (KWindowSystem::isPlatformWayland()) {
         configureWayland(window);
-    else
+    }
+#ifdef APPGRID_X11_SUPPORT
+    else {
         configureX11(window);
+    }
+#endif
 }
 
 void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)

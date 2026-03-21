@@ -193,7 +193,9 @@ private:
     QScreen *screenForPanel() const;
 
     void configureWayland(QWindow *window);
+#ifdef APPGRID_X11_SUPPORT
     void configureX11(QWindow *window);
+#endif
     void updateScreenWayland(QWindow *window, QScreen *target, bool useActiveScreen);
 
     AppModel m_appModel;

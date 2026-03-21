@@ -10,6 +10,9 @@ set(CMAKE_AUTOMOC ON)
 
 include(GNUInstallDirs)
 
+# X11 support — disable when targeting Plasma 6.8+ (Wayland-only)
+option(ENABLE_X11 "Enable X11 session support" ON)
+
 find_package(Qt6 REQUIRED COMPONENTS Quick Gui DBus)
 find_package(KF6Service REQUIRED)
 find_package(KF6I18n REQUIRED)
@@ -83,6 +86,9 @@ add_library(dev.xarbit.appgrid SHARED
 )
 set_target_properties(dev.xarbit.appgrid PROPERTIES PREFIX "")
 target_link_libraries(dev.xarbit.appgrid PRIVATE ${APPGRID_COMMON_LIBS})
+if(ENABLE_X11)
+    target_compile_definitions(dev.xarbit.appgrid PRIVATE APPGRID_X11_SUPPORT)
+endif()
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/metadata.json.in
@@ -112,6 +118,9 @@ add_library(dev.xarbit.appgrid.panel SHARED
 )
 set_target_properties(dev.xarbit.appgrid.panel PROPERTIES PREFIX "")
 target_link_libraries(dev.xarbit.appgrid.panel PRIVATE ${APPGRID_COMMON_LIBS})
+if(ENABLE_X11)
+    target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE APPGRID_X11_SUPPORT)
+endif()
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/metadata-panel.json.in
@@ -179,6 +188,7 @@ endif()
 
 message(STATUS "AppGrid DEV_MODE=${DEV_MODE}")
 message(STATUS "AppGrid DEV_EXTRA_CATEGORIES=${DEV_EXTRA_CATEGORIES}")
+message(STATUS "AppGrid ENABLE_X11=${ENABLE_X11}")
 
 # Generate DevFlags.qml from template
 configure_file(
