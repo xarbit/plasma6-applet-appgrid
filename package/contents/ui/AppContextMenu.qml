@@ -8,9 +8,12 @@
 import QtQuick
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
+import org.kde.plasma.private.kicker as Kicker
 
 PlasmaComponents.Menu {
     id: contextMenu
+
+    Kicker.ProcessRunner { id: processRunner }
 
     property var appsModel: null
 
@@ -79,7 +82,7 @@ PlasmaComponents.Menu {
     PlasmaComponents.MenuItem {
         icon.name: "document-edit"
         text: i18nd("dev.xarbit.appgrid", "Edit Application")
-        onClicked: Plasmoid.editApplication(contextMenu.popupDesktopFile)
+        onClicked: processRunner.runMenuEditor(contextMenu.popupStorageId)
         Accessible.name: i18nd("dev.xarbit.appgrid", "Edit Application")
         Accessible.role: Accessible.MenuItem
     }

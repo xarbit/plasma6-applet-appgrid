@@ -66,7 +66,7 @@ PlasmaComponents.ScrollView {
             if (item.isDir) {
                 fileBrowser.directoryNavigated(item.path + "/")
             } else {
-                Plasmoid.openFile(item.path)
+                Qt.openUrlExternally("file://" + item.path)
                 fileBrowser.fileOpened()
             }
         }

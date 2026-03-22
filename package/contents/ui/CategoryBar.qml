@@ -10,10 +10,13 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
+import org.kde.plasma.private.kicker as Kicker
 import org.kde.plasma.plasmoid
 
 RowLayout {
     id: categoryBar
+
+    Kicker.ProcessRunner { id: processRunner }
 
     property var appsModel: null
     property bool favoritesActive: false
@@ -360,13 +363,13 @@ RowLayout {
             text: i18nd("dev.xarbit.appgrid", "Edit \"%1\" in Menu Editor…", catContextMenu.categoryName)
             onClicked: {
                 var menuPath = categoryBar.appsModel.categoryMenuPath(catContextMenu.categoryName)
-                Plasmoid.openMenuEditor(menuPath || "")
+                processRunner.runMenuEditor(menuPath || "")
             }
         }
         PlasmaComponents.MenuItem {
             icon.name: "kmenuedit"
             text: i18nd("dev.xarbit.appgrid", "Open Menu Editor…")
-            onClicked: Plasmoid.openMenuEditor("")
+            onClicked: processRunner.runMenuEditor()
         }
     }
 }

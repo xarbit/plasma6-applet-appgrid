@@ -148,19 +148,10 @@ public:
     /** Launch a specific app action by storageId and action index. */
     Q_INVOKABLE void launchAppAction(const QString &storageId, int actionIndex);
 
-    /** Launch KDE Menu Editor, optionally navigating to @p menuPath (e.g. "Education"). */
-    Q_INVOKABLE void openMenuEditor(const QString &menuPath = QString());
-
     /** List directory contents at @p path. Returns a list of {name, path, isDir, icon}. */
     Q_INVOKABLE QVariantList listDirectory(const QString &path);
 
-    /** Open @p filePath with the default application. */
-    Q_INVOKABLE void openFile(const QString &filePath);
-
     // --- Desktop integration ---
-
-    /** Open @p desktopFile in kmenuedit for editing. */
-    Q_INVOKABLE void editApplication(const QString &desktopFile);
 
     /** Pin an application to the task manager by its @p storageId. */
     Q_INVOKABLE void pinToTaskManager(const QString &storageId);

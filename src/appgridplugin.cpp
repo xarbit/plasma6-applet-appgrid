@@ -6,7 +6,6 @@
 #include "appgridplugin.h"
 
 #include <KIO/ApplicationLauncherJob>
-#include <KIO/OpenUrlJob>
 #include <KRunner/ResultsModel>
 #include <KService>
 #include <KTerminalLauncherJob>
@@ -340,14 +339,6 @@ void AppGridPlugin::launchAppAction(const QString &storageId, int actionIndex)
     job->start();
 }
 
-void AppGridPlugin::openMenuEditor(const QString &menuPath)
-{
-    QStringList args;
-    if (!menuPath.isEmpty())
-        args << menuPath;
-    QProcess::startDetached(QStringLiteral("kmenuedit"), args);
-}
-
 QVariantList AppGridPlugin::listDirectory(const QString &path)
 {
     QString expanded = path;
@@ -395,21 +386,8 @@ QVariantList AppGridPlugin::listDirectory(const QString &path)
     return result;
 }
 
-void AppGridPlugin::openFile(const QString &filePath)
-{
-    if (filePath.isEmpty())
-        return;
-
-    auto *job = new KIO::OpenUrlJob(QUrl::fromLocalFile(filePath));
-    job->start();
-}
-
 // --- Desktop integration ---
 
-void AppGridPlugin::editApplication(const QString &desktopFile)
-{
-    QProcess::startDetached(QStringLiteral("kmenuedit"), {QFileInfo(desktopFile).fileName()});
-}
 
 void AppGridPlugin::pinToTaskManager(const QString &storageId)
 {
