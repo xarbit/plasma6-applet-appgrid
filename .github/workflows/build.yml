@@ -2,26 +2,26 @@ name: Build Packages
 
 on:
   push:
-    branches: [main]
-    tags: ['v*']
+    branches: ["main", "fix/issue-62"]
+    tags: ["v*"]
     paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - 'screenshots/**'
-      - '.gitignore'
-      - 'dev.xarbit.appgrid.metainfo.xml'
-      - 'PKGBUILD'
-      - 'packages/**'
+      - "**.md"
+      - "LICENSE"
+      - "screenshots/**"
+      - ".gitignore"
+      - "dev.xarbit.appgrid.metainfo.xml"
+      - "PKGBUILD"
+      - "packages/**"
   pull_request:
     branches: [main]
     paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - 'screenshots/**'
-      - '.gitignore'
-      - 'dev.xarbit.appgrid.metainfo.xml'
-      - 'PKGBUILD'
-      - 'packages/**'
+      - "**.md"
+      - "LICENSE"
+      - "screenshots/**"
+      - ".gitignore"
+      - "dev.xarbit.appgrid.metainfo.xml"
+      - "PKGBUILD"
+      - "packages/**"
 
 permissions:
   contents: write
@@ -175,7 +175,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: fedora-package-${{ matrix.arch }}
-          path: '*.rpm'
+          path: "*.rpm"
 
   # openSUSE Tumbleweed — disabled, community-maintained package available via OBS:
   # https://build.opensuse.org/package/show/home:JMarcosHP01/plasma6-applet-appgrid
@@ -262,13 +262,13 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - {name: "Ubuntu 25.04", image: "ubuntu:25.04", id: "ubuntu-25.04"}
-          - {name: "Ubuntu 25.10", image: "ubuntu:25.10", id: "ubuntu-25.10"}
-          - {name: "Ubuntu 26.04", image: "ubuntu:26.04", id: "ubuntu-26.04"}
-          - {name: "Debian 13", image: "debian:13", id: "debian-13"}
+          - { name: "Ubuntu 25.04", image: "ubuntu:25.04", id: "ubuntu-25.04" }
+          - { name: "Ubuntu 25.10", image: "ubuntu:25.10", id: "ubuntu-25.10" }
+          - { name: "Ubuntu 26.04", image: "ubuntu:26.04", id: "ubuntu-26.04" }
+          - { name: "Debian 13", image: "debian:13", id: "debian-13" }
         arch:
-          - {name: "x86_64", platform: "linux/amd64", deb: "amd64"}
-          - {name: "aarch64", platform: "linux/arm64", deb: "arm64"}
+          - { name: "x86_64", platform: "linux/amd64", deb: "amd64" }
+          - { name: "aarch64", platform: "linux/arm64", deb: "arm64" }
     env:
       APP_VERSION: ${{ needs.version.outputs.version }}
     steps:
@@ -337,7 +337,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.distro.id }}-package-${{ matrix.arch.deb }}
-          path: '*.deb'
+          path: "*.deb"
 
   release:
     name: Create Release
