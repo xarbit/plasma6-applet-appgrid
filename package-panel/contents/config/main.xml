@@ -22,6 +22,10 @@
       <label>The URL of the custom image to use instead of an icon.</label>
       <default></default>
     </entry>
+    <entry name="menuLabel" type="String">
+      <label>Text label shown next to the panel icon.</label>
+      <default></default>
+    </entry>
     <entry name="showDividers" type="Bool">
       <label>Whether to show divider lines between UI sections.</label>
       <default>true</default>

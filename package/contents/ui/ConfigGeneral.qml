@@ -47,6 +47,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_useExtraRunners: useExtraRunners.checked
     property alias cfg_useSystemCategories: useSystemCategories.checked
     property alias cfg_hideEmptyCategories: hideEmptyCategories.checked
+    property string cfg_menuLabel: Plasmoid.configuration.menuLabel
     property string cfg_terminalShell: Plasmoid.configuration.terminalShell
     property var cfg_hiddenApps: Plasmoid.configuration.hiddenApps
 
@@ -151,6 +152,21 @@ KCMUtils.SimpleKCM {
                         configGeneral.cfg_useCustomButtonImage = false
                     }
                 }
+            }
+        }
+
+        Kirigami.ActionTextField {
+            id: menuLabel
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Text label:")
+            Layout.fillWidth: true
+            placeholderText: i18nd("dev.xarbit.appgrid", "Type here to add a text label")
+            text: configGeneral.cfg_menuLabel
+            onTextChanged: configGeneral.cfg_menuLabel = text
+            enabled: Plasmoid.formFactor !== PlasmaCore.Types.Vertical
+            rightActions: Kirigami.Action {
+                icon.name: "edit-clear"
+                visible: menuLabel.text.length > 0
+                onTriggered: configGeneral.cfg_menuLabel = ""
             }
         }
 
@@ -364,6 +380,7 @@ KCMUtils.SimpleKCM {
                 configGeneral.cfg_icon = "start-here-kde-symbolic"
                 configGeneral.cfg_useCustomButtonImage = false
                 configGeneral.cfg_customButtonImage = ""
+                configGeneral.cfg_menuLabel = ""
                 gridColumns.value = 7
                 gridRows.value = 4
                 iconSize.currentIndex = 2

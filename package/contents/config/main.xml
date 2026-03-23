@@ -22,6 +22,10 @@
       <label>The URL of the custom image to use instead of an icon.</label>
       <default></default>
     </entry>
+    <entry name="menuLabel" type="String">
+      <label>Text label shown next to the panel icon.</label>
+      <default></default>
+    </entry>
     <entry name="openOnActiveScreen" type="Bool">
       <label>Whether to open on the screen with mouse focus (true) or the screen with the panel (false).</label>
       <default>true</default>
