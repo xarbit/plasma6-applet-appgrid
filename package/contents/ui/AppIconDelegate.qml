@@ -66,10 +66,16 @@ Item {
         }
     }
 
+    // Fixed content width based on icon size — independent of cell width.
+    // The cell stretches during resize but the content block stays centered
+    // at a constant width, preventing text label shimmer from relayout.
+    readonly property real contentWidth: iconSize + Kirigami.Units.gridUnit * 2
+
     ColumnLayout {
         id: contentLayout
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
+        anchors.centerIn: parent
+        width: root.contentWidth
+        height: parent.height - Kirigami.Units.smallSpacing * 2
         spacing: Kirigami.Units.smallSpacing
 
         Item {
