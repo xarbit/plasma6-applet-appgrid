@@ -118,6 +118,7 @@ jobs:
           Summary:        A modern fullscreen application launcher for KDE Plasma
           License:        GPL-2.0-or-later
           URL:            https://github.com/xarbit/plasma6-applet-appgrid
+          Requires:       plasma-workspace plasma-desktop
 
           %description
           A modern fullscreen application launcher for KDE Plasma,
@@ -214,7 +215,7 @@ jobs:
           Section: kde
           Priority: optional
           Architecture: ${DEB_ARCH}
-          Depends: plasma-workspace, libkf6service6, libkf6i18n6
+          Depends: plasma-workspace, plasma-desktop, libkf6service6, libkf6i18n6
           Maintainer: Jason Scurtu <jscurtu@gmail.com>
           Description: A modern fullscreen application launcher for KDE Plasma
            A modern fullscreen application launcher for KDE Plasma,
