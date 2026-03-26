@@ -357,7 +357,13 @@ jobs:
       - name: List packages
         run: find artifacts -type f | sort
 
-      - name: Update development release
+      - name: Delete previous dev release
+        run: gh release delete latest --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+
+      - name: Create development release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
