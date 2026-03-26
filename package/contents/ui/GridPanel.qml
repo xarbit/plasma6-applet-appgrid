@@ -244,12 +244,18 @@ Kirigami.ShadowedRectangle {
     // Eat clicks so they don't pass through the panel
     MouseArea { anchors.fill: parent }
 
-    // Handle Alt+letter mnemonics for category bar (including overflow items)
+    // Handle Alt+letter mnemonics for category bar
     Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Alt)
+            categoryBar.altHeld = true
         if ((event.modifiers & Qt.AltModifier) && event.key >= Qt.Key_A && event.key <= Qt.Key_Z) {
             if (categoryBar.visible && categoryBar.selectByMnemonic(event.key))
                 event.accepted = true
         }
+    }
+    Keys.onReleased: function(event) {
+        if (event.key === Qt.Key_Alt)
+            categoryBar.altHeld = false
     }
 
     ColumnLayout {

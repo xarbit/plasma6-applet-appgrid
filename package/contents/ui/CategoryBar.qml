@@ -23,9 +23,6 @@ RowLayout {
     property bool devExtraCategories: false
     property bool favoritesFirst: false
 
-    // Mnemonic map: uppercase letter → { type: "all"|"favorites"|"category", name: string }
-    property var mnemonicMap: ({})
-
     // Reactive category list — updated when model categories change
     property var categoryList: []
 
@@ -61,7 +58,13 @@ RowLayout {
         categoryList = cats
     }
 
-    // -- Mnemonic helpers --
+    // -- Mnemonic system --
+    // Custom mnemonic handling — Plasma's built-in MnemonicData is unreliable
+    // with many dynamic buttons. We assign first unique letter per category
+    // and handle Alt+letter ourselves.
+
+    property var mnemonicMap: ({})
+    property bool altHeld: false
 
     function rebuildMnemonics() {
         var used = {}
@@ -88,16 +91,14 @@ RowLayout {
         mnemonicMap = map
     }
 
-    function mnemonicText(name) {
+    // Returns the mnemonic letter index for a name, or -1
+    function mnemonicIndex(name) {
         for (var letter in mnemonicMap) {
             var entry = mnemonicMap[letter]
-            if (entry.name === name) {
-                var idx = name.toUpperCase().indexOf(letter)
-                if (idx >= 0)
-                    return name.substring(0, idx) + "&" + name.substring(idx)
-            }
+            if (entry.name === name)
+                return name.toUpperCase().indexOf(letter)
         }
-        return name
+        return -1
     }
 
     function selectByMnemonic(key) {
@@ -121,6 +122,15 @@ RowLayout {
             return true
         }
         return false
+    }
+
+    // Returns rich text with the mnemonic letter underlined, or plain name
+    function mnemonicRichText(name) {
+        var idx = mnemonicIndex(name)
+        if (idx < 0) return name
+        return name.substring(0, idx)
+            + "<u>" + name.charAt(idx) + "</u>"
+            + name.substring(idx + 1)
     }
 
     // -- Category action helpers --
@@ -219,10 +229,20 @@ RowLayout {
     PlasmaComponents.ToolButton {
         id: allButton
         visible: !categoryBar.isSortByCategory
-        text: categoryBar.mnemonicText(i18nd("dev.xarbit.appgrid", "All"))
+        Kirigami.MnemonicData.enabled: false
+        text: ""
         font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
         leftPadding: Kirigami.Units.largeSpacing
         rightPadding: Kirigami.Units.largeSpacing
+        contentItem: PlasmaComponents.Label {
+            text: categoryBar.altHeld
+                ? categoryBar.mnemonicRichText(i18nd("dev.xarbit.appgrid", "All"))
+                : i18nd("dev.xarbit.appgrid", "All")
+            textFormat: categoryBar.altHeld ? Text.RichText : Text.PlainText
+            font: parent.font
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
         checked: !categoryBar.favoritesActive
                  && (scrollOnlyMode
                      ? scrollOnlySelected === ""
@@ -290,10 +310,20 @@ RowLayout {
                     Layout.fillWidth: true
                     required property int index
                     required property string modelData
+                    Kirigami.MnemonicData.enabled: false
                     leftPadding: Kirigami.Units.largeSpacing
                     rightPadding: Kirigami.Units.largeSpacing
-                    text: categoryBar.mnemonicText(modelData)
+                    text: ""
                     font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
+                    contentItem: PlasmaComponents.Label {
+                        text: categoryBar.altHeld
+                            ? categoryBar.mnemonicRichText(modelData)
+                            : modelData
+                        textFormat: categoryBar.altHeld ? Text.RichText : Text.PlainText
+                        font: parent.font
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
                     checked: !categoryBar.favoritesActive
                              && (scrollOnlyMode
                                  ? scrollOnlySelected === modelData
