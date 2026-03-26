@@ -153,12 +153,16 @@ Flickable {
     }
 
     function scrollToCategory(name) {
+        var globalIdx = 0
         for (var i = 0; i < sectionRepeater.count; i++) {
             var section = sectionRepeater.itemAt(i)
             if (section && groupedApps[i] && groupedApps[i].category === name) {
                 contentY = section.y
+                currentIndex = globalIdx
+                recentIndex = -1
                 return
             }
+            globalIdx += groupedApps[i].apps.length
         }
     }
 

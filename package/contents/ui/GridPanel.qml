@@ -349,8 +349,12 @@ Kirigami.ShadowedRectangle {
                         }
                     } else if (panel.showCategoryGrid) {
                         categoryGridView.forceActiveFocus()
-                        categoryGridView.contentY = 0
-                        categoryGridView.selectFirst()
+                        if (categoryGridView.currentIndex < 0) {
+                            categoryGridView.contentY = 0
+                            categoryGridView.selectFirst()
+                        } else {
+                            categoryGridView.ensureVisible()
+                        }
                     } else if (!panel.isSearching) {
                         appGrid.forceActiveFocus()
                         if (appGrid.showRecents) {
