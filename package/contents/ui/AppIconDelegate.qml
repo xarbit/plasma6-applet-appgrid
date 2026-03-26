@@ -22,6 +22,7 @@ Item {
     property bool showTooltip: false
     property bool isCurrentItem: false
     property bool isNew: false
+    property bool hideLabel: false
     property real iconSize: Kirigami.Units.iconSizes.huge
     signal clicked(var mouse)
 
@@ -73,7 +74,7 @@ Item {
         spacing: Kirigami.Units.smallSpacing
 
         Item {
-            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+            Layout.alignment: (root.hideLabel ? Qt.AlignVCenter : Qt.AlignTop) | Qt.AlignHCenter
             implicitWidth: root.iconSize
             implicitHeight: root.iconSize
 
@@ -104,6 +105,7 @@ Item {
         PlasmaComponents.Label {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: !root.hideLabel
             verticalAlignment: Text.AlignTop
             text: root.appName
             font: Kirigami.Theme.defaultFont

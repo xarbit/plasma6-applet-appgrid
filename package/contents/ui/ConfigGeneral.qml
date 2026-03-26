@@ -32,6 +32,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showScrollbars: showScrollbars.checked
     property alias cfg_showTooltips: showTooltips.checked
     property alias cfg_showNewAppBadge: showNewAppBadge.checked
+    property alias cfg_hideLabelsOnFavorites: hideLabelsOnFavorites.checked
     property alias cfg_backgroundOpacity: backgroundOpacity.value
     property alias cfg_openAnimation: openAnimation.currentIndex
     property alias cfg_enableBlur: enableBlur.checked
@@ -288,6 +289,12 @@ KCMUtils.SimpleKCM {
             text: i18nd("dev.xarbit.appgrid", "Show new app badge")
         }
 
+        QQC2.CheckBox {
+            id: hideLabelsOnFavorites
+            text: i18nd("dev.xarbit.appgrid", "Hide app labels on favorites tab")
+            enabled: showCategoryBar.checked
+        }
+
         QQC2.ComboBox {
             id: openAnimation
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Open/close animation:")
@@ -397,6 +404,7 @@ KCMUtils.SimpleKCM {
                 showScrollbars.checked = false
                 showTooltips.checked = true
                 showNewAppBadge.checked = true
+                hideLabelsOnFavorites.checked = false
                 backgroundOpacity.value = 85
                 openAnimation.currentIndex = 2
                 enableBlur.checked = true

@@ -137,10 +137,11 @@ GridView {
 
     clip: true
     cacheBuffer: Kirigami.Units.gridUnit * 4
+    readonly property bool labelsHidden: hideLabelsOnFavorites && favoritesActive
     cellWidth: Math.floor(width / effectiveColumns)
-    cellHeight: iconSize
-               + Kirigami.Units.gridUnit * 3
-               + Kirigami.Units.smallSpacing * 2
+    cellHeight: labelsHidden
+               ? cellWidth
+               : iconSize + Kirigami.Units.gridUnit * 3 + Kirigami.Units.smallSpacing * 2
     boundsBehavior: Flickable.StopAtBounds
     keyNavigationEnabled: true
     currentIndex: -1
@@ -168,6 +169,7 @@ GridView {
     property bool showDividers: true
     property bool showTooltips: true
     property bool showNewAppBadge: true
+    property bool hideLabelsOnFavorites: false
 
     // Show recently used apps in the grid header.
     //
@@ -340,6 +342,7 @@ GridView {
             appComment: model.comment || ""
             installSource: model.installSource || ""
             showTooltip: gridView.showTooltips
+            hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
             isCurrentItem: gridView.currentIndex === model.index
             iconSize: gridView.iconSize
             isNew: gridView.showNewAppBadge && gridView.appsModel ? gridView.appsModel.isNewApp(model.storageId || "") : false
