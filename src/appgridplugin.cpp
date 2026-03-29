@@ -122,7 +122,8 @@ QScreen *AppGridPlugin::screenForPanel() const
 void AppGridPlugin::configureWayland(QWindow *window)
 {
     auto *layer = LayerShellQt::Window::get(window);
-    layer->setLayer(LayerShellQt::Window::LayerOverlay);
+    // LayerTop: above normal windows but below OSD popups (like KRunner)
+    layer->setLayer(LayerShellQt::Window::LayerTop);
     layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
     layer->setScope(QStringLiteral("appgrid"));
     // Cover the full screen including panel exclusive zones
