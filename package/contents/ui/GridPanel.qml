@@ -619,7 +619,9 @@ Kirigami.ShadowedRectangle {
         id: editModeBtn
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: Kirigami.Units.largeSpacing
+        anchors.bottomMargin: Kirigami.Units.largeSpacing
+        anchors.rightMargin: Kirigami.Units.largeSpacing
+            + (panel.cfgShowScrollbars && appGrid.contentHeight > appGrid.height ? Kirigami.Units.gridUnit : 0)
         z: 100
         visible: panel.isFavoritesActive && !panel.isSearching
         icon.name: appGrid.editMode ? "dialog-ok-apply" : "document-edit"
