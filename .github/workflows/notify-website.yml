@@ -1,0 +1,27 @@
+name: Notify website of release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  dispatch:
+    name: Trigger appgrid.xarbit.dev rebuild
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::error::WEBSITE_DISPATCH_TOKEN secret is not configured"
+            exit 1
+          fi
+          # Fire a repository_dispatch on the website repo so its deploy
+          # workflow rebuilds with the new release data (version, assets,
+          # release notes pulled via the GitHub API at build time).
+          gh api repos/xarbit/appgrid.xarbit.dev/dispatches \
+            -X POST \
+            -f event_type="appgrid-release" \
+            -f client_payload[tag]="${{ github.event.release.tag_name || github.ref_name }}"
