@@ -28,6 +28,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showTooltips: showTooltips.checked
     property alias cfg_showNewAppBadge: showNewAppBadge.checked
     property alias cfg_hideLabelsOnFavorites: hideLabelsOnFavorites.checked
+    property alias cfg_sortFavoritesAlphabetically: sortFavoritesAlphabetically.checked
     property alias cfg_showCategoryBar: showCategoryBar.checked
     property alias cfg_searchAll: searchAll.checked
     property alias cfg_startWithFavorites: startWithFavorites.checked
@@ -271,6 +272,11 @@ KCMUtils.SimpleKCM {
             enabled: showCategoryBar.checked
         }
 
+        QQC2.CheckBox {
+            id: sortFavoritesAlphabetically
+            text: i18nd("dev.xarbit.appgrid", "Sort favorites alphabetically")
+        }
+
         QQC2.ComboBox {
             id: hoverAnimation
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icon animation:")
@@ -314,6 +320,7 @@ KCMUtils.SimpleKCM {
                 showTooltips.checked = true
                 showNewAppBadge.checked = true
                 hideLabelsOnFavorites.checked = false
+                sortFavoritesAlphabetically.checked = false
                 showCategoryBar.checked = true
                 searchAll.checked = true
                 startWithFavorites.checked = false

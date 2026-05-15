@@ -47,6 +47,9 @@ private slots:
     void recordRecentLaunchDeduplicatesPriorEntry();
     void recordRecentLaunchAddsToKnownApps();
     void recordRecentLaunchIgnoresEmptyId();
+    void swapFavoritesExchangesPositions();
+    void swapFavoritesIgnoresUnknownIds();
+    void swapFavoritesNoOpForSameId();
 
 private:
     StubAppModel m_source;
@@ -380,6 +383,38 @@ void TestAppFilterModel::recordRecentLaunchIgnoresEmptyId()
     m_filter.recordRecentLaunch(QString());
     QCOMPARE(spy.count(), 0);
     QVERIFY(m_filter.recentApps().isEmpty());
+}
+
+void TestAppFilterModel::swapFavoritesExchangesPositions()
+{
+    m_filter.setFavoriteApps({QStringLiteral("a"), QStringLiteral("b"),
+                              QStringLiteral("c"), QStringLiteral("d")});
+    QSignalSpy spy(&m_filter, &AppFilterModel::favoriteAppsChanged);
+    m_filter.swapFavorites(QStringLiteral("b"), QStringLiteral("d"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(m_filter.favoriteApps(), (QStringList{
+        QStringLiteral("a"), QStringLiteral("d"),
+        QStringLiteral("c"), QStringLiteral("b")}));
+}
+
+void TestAppFilterModel::swapFavoritesIgnoresUnknownIds()
+{
+    const QStringList before{QStringLiteral("a"), QStringLiteral("b")};
+    m_filter.setFavoriteApps(before);
+    QSignalSpy spy(&m_filter, &AppFilterModel::favoriteAppsChanged);
+    m_filter.swapFavorites(QStringLiteral("a"), QStringLiteral("missing"));
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(m_filter.favoriteApps(), before);
+}
+
+void TestAppFilterModel::swapFavoritesNoOpForSameId()
+{
+    const QStringList before{QStringLiteral("a"), QStringLiteral("b")};
+    m_filter.setFavoriteApps(before);
+    QSignalSpy spy(&m_filter, &AppFilterModel::favoriteAppsChanged);
+    m_filter.swapFavorites(QStringLiteral("a"), QStringLiteral("a"));
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(m_filter.favoriteApps(), before);
 }
 
 QTEST_MAIN(TestAppFilterModel)

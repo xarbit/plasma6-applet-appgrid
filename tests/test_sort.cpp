@@ -20,6 +20,7 @@ private slots:
     void mostUsedFallsBackToNameOnTie();
     void byCategorySortsByCategoryThenName();
     void favoritesOnlyPreservesOrder();
+    void favoritesOnlySortsAlphabeticallyWhenEnabled();
 
 private:
     QStringList nameOrder() const;
@@ -43,6 +44,7 @@ void TestSort::init()
     m_filter.setShowFavoritesOnly(false);
     m_filter.setSortMode(AppFilterModel::Alphabetical);
     m_filter.setLaunchCountsMap({});
+    m_filter.setSortFavoritesAlphabetically(false);
 }
 
 QStringList TestSort::nameOrder() const
@@ -121,6 +123,21 @@ void TestSort::favoritesOnlyPreservesOrder()
     m_filter.setShowFavoritesOnly(true);
     QCOMPARE(nameOrder(), (QStringList{
         QStringLiteral("C"), QStringLiteral("A"), QStringLiteral("B")}));
+}
+
+void TestSort::favoritesOnlySortsAlphabeticallyWhenEnabled()
+{
+    m_source.setApps({
+        {QStringLiteral("Zebra"), {}, {}, {}, {}, QStringLiteral("z"), {}, {}, {}},
+        {QStringLiteral("Apple"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("Mango"), {}, {}, {}, {}, QStringLiteral("m"), {}, {}, {}},
+    });
+    // Manual order says: z, a, m
+    m_filter.setFavoriteApps({QStringLiteral("z"), QStringLiteral("a"), QStringLiteral("m")});
+    m_filter.setShowFavoritesOnly(true);
+    m_filter.setSortFavoritesAlphabetically(true);
+    QCOMPARE(nameOrder(), (QStringList{
+        QStringLiteral("Apple"), QStringLiteral("Mango"), QStringLiteral("Zebra")}));
 }
 
 QTEST_MAIN(TestSort)

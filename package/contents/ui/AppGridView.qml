@@ -365,8 +365,9 @@ GridView {
                         var fromIndex = gridView.selectedSwapIndex
                         gridView.selectedSwapIndex = -1
                         var selectedData = gridView.appsModel.get(fromIndex)
-                        if (selectedData && gridView.appsModel) {
-                            gridView.appsModel.moveFavorite(selectedData.storageId, model.index)
+                        var targetData = gridView.appsModel.get(model.index)
+                        if (selectedData && targetData && gridView.appsModel) {
+                            gridView.appsModel.swapFavorites(selectedData.storageId, targetData.storageId)
                             gridView.favoritesOrderChanged()
                         }
                     }

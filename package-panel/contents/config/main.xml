@@ -42,6 +42,10 @@
       <label>Whether to show a green badge on newly installed apps.</label>
       <default>true</default>
     </entry>
+    <entry name="sortFavoritesAlphabetically" type="Bool">
+      <label>Whether to auto-sort favorites alphabetically instead of by manual order.</label>
+      <default>false</default>
+    </entry>
     <entry name="hideLabelsOnFavorites" type="Bool">
       <label>Whether to hide app name labels on the favorites tab.</label>
       <default>false</default>

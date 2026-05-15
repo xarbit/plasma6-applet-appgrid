@@ -149,6 +149,7 @@ Kirigami.ShadowedRectangle {
         appsModel.maxRecentApps = columns
         appsModel.sortMode = sortMode
         appsModel.useSystemCategories = Plasmoid.configuration.useSystemCategories !== false
+        appsModel.sortFavoritesAlphabetically = Plasmoid.configuration.sortFavoritesAlphabetically === true
         appsModel.launchCounts = launchCountsToMap(Plasmoid.configuration.launchCounts)
         appsModel.knownApps = Plasmoid.configuration.knownApps || []
         appsModel.recentApps = cfgShowRecentApps
@@ -610,6 +611,7 @@ Kirigami.ShadowedRectangle {
             + (panel.cfgShowScrollbars && appGrid.contentHeight > appGrid.height ? Kirigami.Units.gridUnit : 0)
         z: 100
         visible: panel.isFavoritesActive && !panel.isSearching
+                 && !Plasmoid.configuration.sortFavoritesAlphabetically
         icon.name: appGrid.editMode ? "dialog-ok-apply" : "document-edit"
         checked: appGrid.editMode
         onClicked: {

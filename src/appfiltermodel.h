@@ -33,6 +33,7 @@ class AppFilterModel : public QSortFilterProxyModel {
     Q_PROPERTY(QVariantMap launchCounts READ launchCountsMap WRITE setLaunchCountsMap NOTIFY launchCountsChanged)
     Q_PROPERTY(QStringList knownApps READ knownApps WRITE setKnownApps NOTIFY knownAppsChanged)
     Q_PROPERTY(bool showFavoritesOnly READ showFavoritesOnly WRITE setShowFavoritesOnly NOTIFY showFavoritesOnlyChanged)
+    Q_PROPERTY(bool sortFavoritesAlphabetically READ sortFavoritesAlphabetically WRITE setSortFavoritesAlphabetically NOTIFY sortFavoritesAlphabeticallyChanged)
     Q_PROPERTY(bool useSystemCategories READ useSystemCategories WRITE setUseSystemCategories NOTIFY useSystemCategoriesChanged)
     Q_PROPERTY(QVariantList groupedByCategory READ appsByCategory NOTIFY groupedByCategoryChanged)
     Q_PROPERTY(QStringList defaultApps READ defaultApps WRITE setDefaultApps NOTIFY defaultAppsChanged)
@@ -107,6 +108,12 @@ public:
     Q_INVOKABLE void toggleFavorite(const QString &storageId);
     Q_INVOKABLE bool isRecent(const QString &storageId) const;
     Q_INVOKABLE void moveFavorite(const QString &storageId, int toIndex);
+    // True position-exchange between two favorited apps. Both must already
+    // be favorites; otherwise no-op.
+    Q_INVOKABLE void swapFavorites(const QString &leftStorageId, const QString &rightStorageId);
+
+    bool sortFavoritesAlphabetically() const;
+    void setSortFavoritesAlphabetically(bool enabled);
     Q_INVOKABLE QVariantMap getByStorageId(const QString &storageId) const;
     Q_INVOKABLE bool isNewApp(const QString &storageId) const;
     Q_INVOKABLE QVariantList appsByCategory() const;
@@ -127,6 +134,7 @@ signals:
     void launchCountsChanged();
     void knownAppsChanged();
     void showFavoritesOnlyChanged();
+    void sortFavoritesAlphabeticallyChanged();
     void useSystemCategoriesChanged();
     void categoriesChanged();
     void groupedByCategoryChanged();
@@ -148,6 +156,7 @@ private:
     QHash<QString, int> m_launchCounts;
     QStringList m_knownApps;
     bool m_showFavoritesOnly = false;
+    bool m_sortFavoritesAlphabetically = false;
     QSet<QString> m_defaultAppsSet;
     QStringList m_defaultApps;
 };
