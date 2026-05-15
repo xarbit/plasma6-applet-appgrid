@@ -16,7 +16,7 @@
     "License": "GPL-2.0-or-later",
     "Name": "AppGrid Launcher Center",
     "Version": "@CMAKE_PROJECT_VERSION@",
-    "Website": "https://github.com/xarbit/plasma6-applet-appgrid",
+    "Website": "https://appgrid.xarbit.dev",
     "BugReportUrl": "https://github.com/xarbit/plasma6-applet-appgrid/issues"
   },
   "KLocalizedString": {

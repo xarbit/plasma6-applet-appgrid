@@ -117,7 +117,7 @@ jobs:
           Release:        1.fc${FEDORA_VER}
           Summary:        A modern fullscreen application launcher for KDE Plasma
           License:        GPL-2.0-or-later
-          URL:            https://github.com/xarbit/plasma6-applet-appgrid
+          URL:            https://appgrid.xarbit.dev
           Requires:       plasma-workspace plasma-desktop
 
           %description
@@ -221,7 +221,7 @@ jobs:
           Description: A modern fullscreen application launcher for KDE Plasma
            A modern fullscreen application launcher for KDE Plasma,
            inspired by macOS Launchpad and COSMIC.
-          Homepage: https://github.com/xarbit/plasma6-applet-appgrid
+          Homepage: https://appgrid.xarbit.dev
           EOF
               dpkg-deb --build pkg \
                 "/workspace/plasma-applet-appgrid_${PKG_SUFFIX}_${CODENAME}_${DEB_ARCH}.deb"
