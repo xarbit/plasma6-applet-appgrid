@@ -20,6 +20,11 @@ private slots:
     void genericBeatsKeyword();
     void launchCountTiebreaksWithinTier();
     void emptySearchUsesAlphabetical();
+    void defaultAppBeatsNonDefaultInSameTier();
+    void launchCountStillBeatsDefaultAcrossTiers();
+    void mostUsedJumpsOneTierUp();
+    void mostUsedCannotJumpTwoTiers();
+    void zeroCountDoesNotCrossTier();
 
 private:
     QString nameAt(int proxyRow) const;
@@ -43,6 +48,7 @@ void TestSearchRanking::init()
     m_filter.setShowFavoritesOnly(false);
     m_filter.setSortMode(AppFilterModel::Alphabetical);
     m_filter.setLaunchCountsMap({});
+    m_filter.setDefaultApps({});
 }
 
 QString TestSearchRanking::nameAt(int row) const
@@ -119,6 +125,92 @@ void TestSearchRanking::emptySearchUsesAlphabetical()
     QCOMPARE(nameAt(0), QStringLiteral("Apple"));
     QCOMPARE(nameAt(1), QStringLiteral("Mango"));
     QCOMPARE(nameAt(2), QStringLiteral("Zebra"));
+}
+
+void TestSearchRanking::defaultAppBeatsNonDefaultInSameTier()
+{
+    // Both names start with "fire" — same relevance tier (prefix).
+    // Firefox is the mime default; FireFly is not. Firefox should win.
+    m_source.setApps({
+        {QStringLiteral("FireFly"), {}, {}, {}, {}, QStringLiteral("firefly.desktop"), {}, {}, {}},
+        {QStringLiteral("Firefox"), {}, {}, {}, {}, QStringLiteral("firefox.desktop"), {}, {}, {}},
+    });
+    m_filter.setDefaultApps({QStringLiteral("firefox.desktop")});
+    m_filter.setSearchText(QStringLiteral("fire"));
+    QCOMPARE(nameAt(0), QStringLiteral("Firefox"));
+    QCOMPARE(nameAt(1), QStringLiteral("FireFly"));
+}
+
+void TestSearchRanking::launchCountStillBeatsDefaultAcrossTiers()
+{
+    // FireFly has higher relevance (name prefix), Firefox only matches via
+    // generic name. Even though Firefox is the default, the better tier
+    // (prefix) wins.
+    m_source.setApps({
+        {QStringLiteral("FireFly"), {}, {}, {}, QStringLiteral("Insect Sim"),
+         QStringLiteral("firefly.desktop"), {}, {}, {}},
+        {QStringLiteral("Mozilla"), {}, {}, {}, QStringLiteral("Web Browser, fire-tested"),
+         QStringLiteral("firefox.desktop"), {}, {}, {}},
+    });
+    m_filter.setDefaultApps({QStringLiteral("firefox.desktop")});
+    m_filter.setSearchText(QStringLiteral("fire"));
+    QCOMPARE(nameAt(0), QStringLiteral("FireFly")); // prefix tier wins over default boost
+}
+
+void TestSearchRanking::mostUsedJumpsOneTierUp()
+{
+    // Ghostty matches "terminal" only via keyword (tier 3), Alacritty via
+    // generic name (tier 2). Ghostty is used much more — it should win.
+    m_source.setApps({
+        {QStringLiteral("Alacritty"), {}, {}, {},
+         QStringLiteral("Terminal Emulator"), QStringLiteral("alacritty.desktop"),
+         {}, {}, {}},
+        {QStringLiteral("Ghostty"), {}, {}, {},
+         QStringLiteral("GPU-Accelerated Console"), QStringLiteral("ghostty.desktop"),
+         {QStringLiteral("terminal")}, {}, {}},
+    });
+    QVariantMap counts;
+    counts[QStringLiteral("ghostty.desktop")] = 50;
+    counts[QStringLiteral("alacritty.desktop")] = 1;
+    m_filter.setLaunchCountsMap(counts);
+    m_filter.setSearchText(QStringLiteral("terminal"));
+    QCOMPARE(m_filter.count(), 2);
+    QCOMPARE(nameAt(0), QStringLiteral("Ghostty"));
+    QCOMPARE(nameAt(1), QStringLiteral("Alacritty"));
+}
+
+void TestSearchRanking::mostUsedCannotJumpTwoTiers()
+{
+    // Calc has prefix match (tier 0). Calculator has only keyword match (tier 3).
+    // Even with huge launch count, Calculator cannot skip two tiers — Calc wins.
+    m_source.setApps({
+        {QStringLiteral("Calc-Pro"), {}, {}, {}, {},
+         QStringLiteral("calc-pro.desktop"), {}, {}, {}},
+        {QStringLiteral("MathBox"), {}, {}, {}, {},
+         QStringLiteral("mathbox.desktop"), {QStringLiteral("calc")}, {}, {}},
+    });
+    QVariantMap counts;
+    counts[QStringLiteral("mathbox.desktop")] = 500;
+    counts[QStringLiteral("calc-pro.desktop")] = 0;
+    m_filter.setLaunchCountsMap(counts);
+    m_filter.setSearchText(QStringLiteral("calc"));
+    QCOMPARE(nameAt(0), QStringLiteral("Calc-Pro"));
+    QCOMPARE(nameAt(1), QStringLiteral("MathBox"));
+}
+
+void TestSearchRanking::zeroCountDoesNotCrossTier()
+{
+    // Both unused: tier order wins as normal.
+    m_source.setApps({
+        {QStringLiteral("Alacritty"), {}, {}, {},
+         QStringLiteral("Terminal Emulator"), QStringLiteral("alacritty.desktop"),
+         {}, {}, {}},
+        {QStringLiteral("Ghostty"), {}, {}, {},
+         QStringLiteral("GPU-Accelerated Console"), QStringLiteral("ghostty.desktop"),
+         {QStringLiteral("terminal")}, {}, {}},
+    });
+    m_filter.setSearchText(QStringLiteral("terminal"));
+    QCOMPARE(nameAt(0), QStringLiteral("Alacritty")); // generic tier 2 beats keyword tier 3
 }
 
 QTEST_MAIN(TestSearchRanking)

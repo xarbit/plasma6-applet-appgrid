@@ -7,8 +7,12 @@
     tested without going through KService / KSycoca.
 */
 
+#include <QDir>
+#include <QFile>
+#include <QTemporaryDir>
 #include <QTest>
 
+#include "appfiltermodel.h"
 #include "appmodel.h"
 
 class TestAppModelHelpers : public QObject {
@@ -28,6 +32,11 @@ private slots:
     void mapsMultipleCategoriesToBucket();
     void unknownCategoriesFallToOther();
     void emptyInputReturnsOther();
+
+    void mimeAppsParserExtractsDefaults();
+    void mimeAppsParserIgnoresAddedAndRemovedSections();
+    void mimeAppsParserSplitsMultipleEntries();
+    void mimeAppsParserReturnsEmptyForMissingFile();
 };
 
 void TestAppModelHelpers::detectsFlatpakFromExec()
@@ -118,6 +127,63 @@ void TestAppModelHelpers::unknownCategoriesFallToOther()
 void TestAppModelHelpers::emptyInputReturnsOther()
 {
     QCOMPARE(AppModel::mapCategories({}), QStringList{QStringLiteral("Other")});
+}
+
+// --- mimeapps.list parser ---
+
+static QString writeMimeAppsFile(QTemporaryDir &dir, const QString &content)
+{
+    const QString path = dir.path() + QStringLiteral("/mimeapps.list");
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+        return {};
+    f.write(content.toUtf8());
+    return path;
+}
+
+void TestAppModelHelpers::mimeAppsParserExtractsDefaults()
+{
+    QTemporaryDir tmp;
+    const QString path = writeMimeAppsFile(tmp, QStringLiteral(
+        "[Default Applications]\n"
+        "text/html=firefox.desktop\n"
+        "image/png=org.kde.gwenview.desktop\n"));
+    const QStringList ids = AppFilterModel::parseMimeAppsDefaults(path);
+    QCOMPARE(ids.size(), 2);
+    QVERIFY(ids.contains(QStringLiteral("firefox.desktop")));
+    QVERIFY(ids.contains(QStringLiteral("org.kde.gwenview.desktop")));
+}
+
+void TestAppModelHelpers::mimeAppsParserIgnoresAddedAndRemovedSections()
+{
+    QTemporaryDir tmp;
+    const QString path = writeMimeAppsFile(tmp, QStringLiteral(
+        "[Added Associations]\n"
+        "text/plain=should-be-ignored.desktop\n"
+        "[Default Applications]\n"
+        "text/html=firefox.desktop\n"
+        "[Removed Associations]\n"
+        "text/html=other.desktop\n"));
+    const QStringList ids = AppFilterModel::parseMimeAppsDefaults(path);
+    QCOMPARE(ids, QStringList{QStringLiteral("firefox.desktop")});
+}
+
+void TestAppModelHelpers::mimeAppsParserSplitsMultipleEntries()
+{
+    QTemporaryDir tmp;
+    const QString path = writeMimeAppsFile(tmp, QStringLiteral(
+        "[Default Applications]\n"
+        "text/html=firefox.desktop;chromium.desktop;\n"));
+    const QStringList ids = AppFilterModel::parseMimeAppsDefaults(path);
+    QCOMPARE(ids.size(), 2);
+    QVERIFY(ids.contains(QStringLiteral("firefox.desktop")));
+    QVERIFY(ids.contains(QStringLiteral("chromium.desktop")));
+}
+
+void TestAppModelHelpers::mimeAppsParserReturnsEmptyForMissingFile()
+{
+    QCOMPARE(AppFilterModel::parseMimeAppsDefaults(QStringLiteral("/nonexistent/path")),
+             QStringList{});
 }
 
 QTEST_MAIN(TestAppModelHelpers)

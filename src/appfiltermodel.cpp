@@ -8,6 +8,12 @@
 #include <KIO/ApplicationLauncherJob>
 #include <KJob>
 
+#include <QFile>
+#include <QStandardPaths>
+#include <QTextStream>
+
+#include <cstdlib>
+
 // Qt 6.13 deprecated invalidateFilter() in favour of begin/endFilterChange().
 // Suppress the deprecation warning on older Qt where the replacement doesn't exist.
 // APPGRID_INVALIDATE_FILTER  — re-run filter only
@@ -32,6 +38,8 @@ AppFilterModel::AppFilterModel(QObject *parent)
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setFilterCaseSensitivity(Qt::CaseInsensitive);
     sort(0);
+
+    reloadDefaultApps();
 
     connect(this, &QAbstractItemModel::rowsInserted, this, &AppFilterModel::countChanged);
     connect(this, &QAbstractItemModel::rowsRemoved, this, &AppFilterModel::countChanged);
@@ -257,6 +265,67 @@ int AppFilterModel::getLaunchCount(const QString &storageId) const
     return m_launchCounts.value(storageId, 0);
 }
 
+// --- Default apps (mimeapps.list) ---
+
+QStringList AppFilterModel::defaultApps() const { return m_defaultApps; }
+
+void AppFilterModel::setDefaultApps(const QStringList &list)
+{
+    if (m_defaultApps == list)
+        return;
+    m_defaultApps = list;
+    m_defaultAppsSet = QSet<QString>(list.cbegin(), list.cend());
+    invalidate(); // search ranking depends on this
+    emit defaultAppsChanged();
+}
+
+QStringList AppFilterModel::parseMimeAppsDefaults(const QString &filePath)
+{
+    QSet<QString> result;
+    QFile f(filePath);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+
+    QTextStream in(&f);
+    bool inDefaults = false;
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.startsWith(QLatin1Char('['))) {
+            inDefaults = (line == QLatin1String("[Default Applications]"));
+            continue;
+        }
+        if (!inDefaults || line.isEmpty() || line.startsWith(QLatin1Char('#')))
+            continue;
+        const int eq = line.indexOf(QLatin1Char('='));
+        if (eq < 0)
+            continue;
+        // value may contain multiple .desktop entries separated by ';'
+        const auto values = line.mid(eq + 1).split(QLatin1Char(';'), Qt::SkipEmptyParts);
+        for (const auto &v : values) {
+            const QString trimmed = v.trimmed();
+            if (!trimmed.isEmpty())
+                result.insert(trimmed);
+        }
+    }
+    return QStringList(result.cbegin(), result.cend());
+}
+
+void AppFilterModel::reloadDefaultApps()
+{
+    QSet<QString> all;
+    const QStringList paths = {
+        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+            + QStringLiteral("/mimeapps.list"),
+        QStringLiteral("/usr/share/applications/mimeapps.list"),
+    };
+    for (const auto &path : paths) {
+        const auto ids = parseMimeAppsDefaults(path);
+        for (const auto &id : ids)
+            all.insert(id);
+    }
+    setDefaultApps(QStringList(all.cbegin(), all.cend()));
+}
+
 void AppFilterModel::recordLaunch(const QString &storageId)
 {
     if (storageId.isEmpty())
@@ -373,14 +442,29 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
     if (!m_searchText.isEmpty()) {
         const int leftRel = searchRelevance(left, m_searchText);
         const int rightRel = searchRelevance(right, m_searchText);
-        if (leftRel != rightRel)
-            return leftRel < rightRel;
 
-        // Within the same relevance tier, prefer more frequently launched apps
         const auto leftSid = left.data(AppModel::StorageIdRole).toString();
         const auto rightSid = right.data(AppModel::StorageIdRole).toString();
         const int leftCount = m_launchCounts.value(leftSid, 0);
         const int rightCount = m_launchCounts.value(rightSid, 0);
+
+        if (leftRel != rightRel) {
+            // Most-used apps can jump up exactly one relevance tier:
+            // e.g. a heavily used keyword-match beats a never-launched
+            // generic-match, but a strong prefix-match always wins over a
+            // distant keyword-match.
+            if (std::abs(leftRel - rightRel) <= 1 && leftCount != rightCount)
+                return leftCount > rightCount;
+            return leftRel < rightRel;
+        }
+
+        // Within the same relevance tier, prefer apps that are the user's
+        // mime defaults (e.g. default browser ranks above other browsers)
+        const bool leftIsDefault = m_defaultAppsSet.contains(leftSid);
+        const bool rightIsDefault = m_defaultAppsSet.contains(rightSid);
+        if (leftIsDefault != rightIsDefault)
+            return leftIsDefault; // true sorts before false
+
         if (leftCount != rightCount)
             return leftCount > rightCount;
     } else if (m_sortMode == MostUsed) {

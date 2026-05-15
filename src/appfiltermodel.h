@@ -5,7 +5,10 @@
 
 #pragma once
 
+#include <QHash>
+#include <QSet>
 #include <QSortFilterProxyModel>
+#include <QStringList>
 #include <QVariantMap>
 
 #include "appmodel.h"
@@ -32,6 +35,7 @@ class AppFilterModel : public QSortFilterProxyModel {
     Q_PROPERTY(bool showFavoritesOnly READ showFavoritesOnly WRITE setShowFavoritesOnly NOTIFY showFavoritesOnlyChanged)
     Q_PROPERTY(bool useSystemCategories READ useSystemCategories WRITE setUseSystemCategories NOTIFY useSystemCategoriesChanged)
     Q_PROPERTY(QVariantList groupedByCategory READ appsByCategory NOTIFY groupedByCategoryChanged)
+    Q_PROPERTY(QStringList defaultApps READ defaultApps WRITE setDefaultApps NOTIFY defaultAppsChanged)
 
 public:
     /** Sort modes for the grid view. */
@@ -85,6 +89,15 @@ public:
     // launch count, add to known. Public so tests can exercise it
     // without triggering KIO::ApplicationLauncherJob.
     Q_INVOKABLE void recordRecentLaunch(const QString &storageId);
+
+    QStringList defaultApps() const;
+    void setDefaultApps(const QStringList &list);
+    // Load defaults from system + user mimeapps.list and update m_defaultApps.
+    Q_INVOKABLE void reloadDefaultApps();
+
+    // Pure parser: extract storage IDs from the [Default Applications]
+    // section of a mimeapps.list file. Empty list on missing/invalid file.
+    static QStringList parseMimeAppsDefaults(const QString &filePath);
     Q_INVOKABLE QStringList categories() const;
     Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     Q_INVOKABLE QVariantMap get(int proxyRow) const;
@@ -102,6 +115,7 @@ public:
     Q_INVOKABLE int getLaunchCount(const QString &storageId) const;
 
 signals:
+    void defaultAppsChanged();
     void filterCategoryChanged();
     void searchTextChanged();
     void countChanged();
@@ -134,4 +148,6 @@ private:
     QHash<QString, int> m_launchCounts;
     QStringList m_knownApps;
     bool m_showFavoritesOnly = false;
+    QSet<QString> m_defaultAppsSet;
+    QStringList m_defaultApps;
 };
