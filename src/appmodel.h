@@ -55,6 +55,10 @@ public:
     Q_INVOKABLE QStringList categories() const;
     Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
 
+    // Pure helpers — testable without constructing the model.
+    static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
+    static QStringList mapCategories(const QStringList &categories);
+
     bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
     Q_PROPERTY(bool useSystemCategories READ useSystemCategories WRITE setUseSystemCategories NOTIFY useSystemCategoriesChanged)
@@ -67,7 +71,6 @@ private slots:
 
 private:
     void loadApplications();
-    QStringList mapCategories(const QStringList &categories) const;
 
     QVector<AppEntry> m_apps;
     QStringList m_categories;

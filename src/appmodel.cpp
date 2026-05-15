@@ -232,7 +232,7 @@ static QString translateCategory(const QString &name)
     return name;
 }
 
-QStringList AppModel::mapCategories(const QStringList &categories) const
+QStringList AppModel::mapCategories(const QStringList &categories)
 {
     const auto &map = categoryMap();
     QSet<QString> result;
@@ -244,6 +244,19 @@ QStringList AppModel::mapCategories(const QStringList &categories) const
     if (result.isEmpty())
         result.insert(translateCategory(QStringLiteral("Other")));
     return result.values();
+}
+
+QString AppModel::detectInstallSource(const QString &exec, const QString &resolvedPath)
+{
+    if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id=")))
+        return QStringLiteral("Web App");
+    if (exec.contains(QLatin1String("flatpak")) || resolvedPath.contains(QLatin1String("flatpak")))
+        return QStringLiteral("Flatpak");
+    if (exec.contains(QLatin1String("/snap/")) || resolvedPath.contains(QLatin1String("snap")))
+        return QStringLiteral("Snap");
+    if (exec.contains(QLatin1String("appimage"), Qt::CaseInsensitive))
+        return QStringLiteral("AppImage");
+    return QStringLiteral("System");
 }
 
 bool AppModel::useSystemCategories() const
@@ -345,20 +358,11 @@ void AppModel::loadApplications()
             appEntry.keywords = service->keywords();
             appEntry.comment = service->comment();
 
-            // Detect install source from exec line, resolved path, and storage ID
+            // Detect install source from exec line and resolved path
             const auto exec = service->exec();
             const auto resolvedPath = QStandardPaths::locate(
                 QStandardPaths::ApplicationsLocation, service->entryPath());
-            if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id=")))
-                appEntry.installSource = QStringLiteral("Web App");
-            else if (exec.contains(QLatin1String("flatpak")) || resolvedPath.contains(QLatin1String("flatpak")))
-                appEntry.installSource = QStringLiteral("Flatpak");
-            else if (exec.contains(QLatin1String("/snap/")) || resolvedPath.contains(QLatin1String("snap")))
-                appEntry.installSource = QStringLiteral("Snap");
-            else if (exec.contains(QLatin1String("appimage"), Qt::CaseInsensitive))
-                appEntry.installSource = QStringLiteral("AppImage");
-            else
-                appEntry.installSource = QStringLiteral("System");
+            appEntry.installSource = detectInstallSource(exec, resolvedPath);
 
             if (systemMode) {
                 auto cat = category.isEmpty() ? QStringLiteral("Other") : category;
