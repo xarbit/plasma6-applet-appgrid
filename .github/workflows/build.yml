@@ -116,7 +116,7 @@ jobs:
 
       - name: Lint QML
         run: |
-          qmllint -I /usr/lib/qt6/qml \
+          /usr/lib/qt6/bin/qmllint -I /usr/lib/qt6/qml \
             package/contents/ui/*.qml \
             package/contents/ui/iconanims/*.qml \
             package/contents/ui/prefix/*.qml
