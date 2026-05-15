@@ -115,10 +115,13 @@ GridView {
     }
 
     clip: true
-    // Expand cache while dragging so the source delegate survives an
-    // auto-scroll that would otherwise push it off-screen and free it.
-    cacheBuffer: favoritesDragProxy && favoritesDragProxy.Drag.active
-                 ? Math.max(contentHeight, Kirigami.Units.gridUnit * 32)
+    // Cache buffer: extra screens of delegates kept alive off-screen. Grown
+    // while a drag is in flight so an auto-scroll cannot recycle the source
+    // delegate (which would drop the pointer grab). One viewport of slack
+    // is enough — the row count of favorites that fit in a viewport is the
+    // upper bound on how far auto-scroll moves before the user lifts.
+    cacheBuffer: (favoritesDragProxy && favoritesDragProxy.Drag.active)
+                 ? Math.max(height, Kirigami.Units.gridUnit * 16)
                  : Kirigami.Units.gridUnit * 4
     readonly property bool labelsHidden: hideLabelsOnFavorites && favoritesActive
     cellWidth: Math.floor(width / effectiveColumns)
@@ -149,11 +152,12 @@ GridView {
     // Shared drag proxy from the plasmoid root; set by GridPanel.
     property var favoritesDragProxy: null
 
-    // Mirror of Kicker::FavoriteIdRole = Qt.UserRole + 3
-    readonly property int _favoriteIdRole: 259
+    // FavoriteId role index — pushed in by the owner once the shared model
+    // is ready (see GridPanel.sharedFavoritesLoader). -1 disables lookup.
+    property int _favoriteIdRole: -1
 
     function _findFavoriteRow(storageId) {
-        if (!sharedFavoritesModel) return -1
+        if (!sharedFavoritesModel || _favoriteIdRole < 0) return -1
         const prefixed = "applications:" + storageId
         for (let i = 0; i < sharedFavoritesModel.count; ++i) {
             const v = sharedFavoritesModel.data(sharedFavoritesModel.index(i, 0), _favoriteIdRole)

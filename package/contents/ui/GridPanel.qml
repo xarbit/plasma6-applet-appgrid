@@ -189,6 +189,24 @@ Kirigami.ShadowedRectangle {
             }
             if (status === Loader.Ready && item) {
                 item.initForClient("dev.xarbit.appgrid.favorites.instance-" + Plasmoid.id)
+                // The "favoriteId" role lives at Kicker::FavoriteIdRole
+                // (Qt::UserRole + 3 = 259) in current Plasma. roleNames() is
+                // not Q_INVOKABLE on QAbstractItemModel in Qt6, so we can't
+                // resolve it dynamically; check at runtime that data() at the
+                // assumed role returns a string before relying on it.
+                if (item.count > 0) {
+                    const probe = item.data(item.index(0, 0), 259)
+                    if (typeof probe === "string") {
+                        panel._favoriteIdRole = 259
+                    } else {
+                        console.warn("AppGrid: FavoriteIdRole probe failed (got " + typeof probe
+                                     + "); favorites reorder will be inert. Kicker enum may have shifted.")
+                    }
+                } else {
+                    // No entries yet — accept the well-known value; the probe
+                    // re-runs once entries land via onRowsInserted below.
+                    panel._favoriteIdRole = 259
+                }
                 // Migration + initial mirror are deferred until the model is
                 // 'enabled' — KAStats only honours portOldFavorites once
                 // kactivitymanagerd has finished initialising. See Connections
@@ -229,9 +247,14 @@ Kirigami.ShadowedRectangle {
     // ("returns nothing, it is here just to keep the API backwards-compatible"),
     // so we read favoriteIds row-by-row instead. AppFilterModel matches against
     // bare storage IDs, so strip the "applications:" scheme prefix when present.
-    readonly property int _favoriteIdRole: 259 // Kicker::FavoriteIdRole = Qt.UserRole + 3
+    // Resolved imperatively in sharedFavoritesLoader's onStatusChanged once
+    // the shared model's roleNames() is available. -1 means "not yet known";
+    // _findFavoriteRow and _mirrorFavorites guard on that.
+    property int _favoriteIdRole: -1
+
     function _mirrorFavorites() {
         if (!panel.appsModel || !panel.sharedFavoritesModel) return
+        if (_favoriteIdRole < 0) return
         const model = panel.sharedFavoritesModel
         const ids = []
         for (let i = 0; i < model.count; ++i) {
@@ -262,11 +285,15 @@ Kirigami.ShadowedRectangle {
     // KAStatsFavoritesModel does not emit `favoritesChanged` despite the
     // Q_PROPERTY declaration — upstream Kicker leaves it as a stub. We listen
     // to QAbstractItemModel signals instead, which fire on every change.
-    Connections {
-        target: panel.sharedFavoritesModel
-        ignoreUnknownSignals: true
-        function _onChanged() {
-            // Finalise migration once KAStats actually has entries.
+    // Coalesce bursts of model-change signals: when KAStats reorders or
+    // reloads, several of insert/remove/move/reset/layoutChanged/dataChanged
+    // can fire back-to-back. We schedule one mirror per event-loop turn
+    // instead of mirroring on every signal.
+    Timer {
+        id: mirrorCoalesce
+        interval: 0
+        repeat: false
+        onTriggered: {
             if (!Plasmoid.configuration.favoritesPortedToKAstats
                     && panel.sharedFavoritesModel
                     && panel.sharedFavoritesModel.count > 0) {
@@ -274,12 +301,18 @@ Kirigami.ShadowedRectangle {
             }
             panel._mirrorFavorites()
         }
-        function onRowsInserted() { _onChanged() }
-        function onRowsRemoved() { _onChanged() }
-        function onRowsMoved() { _onChanged() }
-        function onModelReset() { _onChanged() }
-        function onLayoutChanged() { _onChanged() }
-        function onDataChanged() { _onChanged() }
+    }
+
+    Connections {
+        target: panel.sharedFavoritesModel
+        ignoreUnknownSignals: true
+        function _scheduleMirror() { mirrorCoalesce.restart() }
+        function onRowsInserted() { _scheduleMirror() }
+        function onRowsRemoved() { _scheduleMirror() }
+        function onRowsMoved() { _scheduleMirror() }
+        function onModelReset() { _scheduleMirror() }
+        function onLayoutChanged() { _scheduleMirror() }
+        function onDataChanged() { _scheduleMirror() }
     }
 
 
@@ -642,6 +675,7 @@ Kirigami.ShadowedRectangle {
                               : panel.appsModel)
                     appsModel: panel.appsModel
                     sharedFavoritesModel: panel.sharedFavoritesModel
+                    _favoriteIdRole: panel._favoriteIdRole
                     favoritesDragProxy: panel.appletInterface
                                         ? panel.appletInterface.favoritesDragProxy : null
                     columns: panel.columns

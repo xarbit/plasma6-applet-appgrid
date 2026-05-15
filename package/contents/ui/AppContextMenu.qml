@@ -57,6 +57,11 @@ PlasmaComponents.Menu {
     PlasmaComponents.MenuItem {
         icon.name: contextMenu.popupIsFavorite ? "bookmark-remove" : "bookmark-new"
         text: contextMenu.popupIsFavorite ? i18nd("dev.xarbit.appgrid", "Remove from Favorites") : i18nd("dev.xarbit.appgrid", "Add to Favorites")
+        // Disabled while a drag-reorder is mid-flight to avoid clobbering
+        // KAStats state and stale-grabbing the in-progress move.
+        enabled: !(contextMenu.appletInterface
+                   && contextMenu.appletInterface.favoritesDragProxy
+                   && contextMenu.appletInterface.favoritesDragProxy.Drag.active)
         onClicked: {
             const sid = contextMenu.popupStorageId
             if (!sid) return
