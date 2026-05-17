@@ -37,12 +37,6 @@ GridView {
     // Emitted when the user right-clicks an app.
     signal contextMenuRequested(int index, string storageId, string desktopFile)
 
-    // Emitted when a drag with .desktop URLs enters from outside; the host
-    // should switch to the favorites tab so the drop lands there.
-    signal externalFavoriteDragReceived()
-
-    // Emitted when favorites order changes via drag reorder.
-
     // --- Shuffle animation state ---
     // Maps proxy index -> icon name override for visual-only icon swaps.
     property var iconSwaps: ({})

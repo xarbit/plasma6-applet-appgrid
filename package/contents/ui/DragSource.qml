@@ -27,8 +27,15 @@ Item {
 
     // The delegate Item currently being dragged. AppGridView's reorder
     // DropArea reads this via isOwnDrag(drag) and then inspects
-    // `sourceItem.storageId` / `.gridRow` to drive the reorder.
+    // `sourceItem.gridRow` to drive the reorder. The reference can become
+    // null mid-drag (delegate recycling when the model swaps tabs), so the
+    // identity bits are cached separately below.
     property Item sourceItem: null
+
+    // Cached at beginDrag() so the drop handler can still identify what was
+    // being dragged after the source delegate is gone.
+    property string sourceStorageId: ""
+    property string sourceDesktopFile: ""
 
     readonly property bool isDragInFlight: source.Drag.active
 
@@ -48,6 +55,8 @@ Item {
         iconItem.grabToImage(function(result) {
             if (!handler.active) return
             source.sourceItem = delegate
+            source.sourceStorageId = delegate.storageId || ""
+            source.sourceDesktopFile = delegate.desktopFile || ""
             source.Drag.imageSource = result.url
             source.Drag.mimeData = mimeData
             source.Drag.active = true
@@ -60,5 +69,7 @@ Item {
         source.Drag.active = false
         source.Drag.imageSource = ""
         source.sourceItem = null
+        source.sourceStorageId = ""
+        source.sourceDesktopFile = ""
     }
 }

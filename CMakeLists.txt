@@ -54,6 +54,7 @@ set(SHARED_QML_FILES
     DragSource.qml
     EdgeAutoScroller.qml
     FavoritesReorderArea.qml
+    FavoritesTabDragHover.qml
     KeyboardShortcuts.qml
     favoriteid.js
     SharedFavoritesProvider.qml

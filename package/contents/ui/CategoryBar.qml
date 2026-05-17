@@ -186,6 +186,8 @@ RowLayout {
 
         Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
         Accessible.role: Accessible.Button
+
+        FavoritesTabDragHover { target: categoryBar }
     }
 
     // -- "All" button (hidden in scrollOnly/ByCategory mode) --
@@ -344,6 +346,8 @@ RowLayout {
 
         Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
         Accessible.role: Accessible.Button
+
+        FavoritesTabDragHover { target: categoryBar }
     }
 
     // -- Category context menu (system categories mode only) --

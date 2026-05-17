@@ -761,14 +761,6 @@ Kirigami.ShadowedRectangle {
                     onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
                         shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
                     }
-                    onExternalFavoriteDragReceived: {
-                        // Force the favorites tab so the drop lands in the
-                        // KAStats-backed view. Clearing the search field too
-                        // so we leave search mode.
-                        searchBar.text = ""
-                        if (!panel.isFavoritesActive)
-                            categoryBar.favoritesActive = true
-                    }
                 }
             }
 

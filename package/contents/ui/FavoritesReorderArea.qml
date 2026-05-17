@@ -3,18 +3,19 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     Drop handler for the favorites grid. Sits behind the delegates (z
-    below them so clicks still reach icons) and handles two drag flavours:
+    below them so clicks still reach icons) and handles three drag flavours:
 
-      * Internal: drag.source is the shared DragSource carrying a reference
-        to the source delegate via `sourceItem`. We re-order the favorites
-        live as the cursor moves, pushing each move onto pendingMoves so
-        we can roll back if the user exits without dropping.
-      * External: .desktop file drag from Dolphin / elsewhere — added as a
-        new favorite at the cursor position.
-
-    On a non-favorites tab, an external file drag triggers
-    `gridView.externalFavoriteDragReceived()` so the host can switch tabs
-    before the drop lands.
+      * Reorder (own drag, source is already a favorite): re-order live as
+        the cursor moves, pushing each move onto pendingMoves so we can roll
+        back if the user exits without dropping.
+      * Add-from-other-tab (own drag, source is *not* yet a favorite): the
+        user dragged an icon out of All / a category / recents and dropped
+        while the favorites tab is active. Add it as a favorite at the
+        cursor position. We never auto-switch tabs during a drag — the user
+        must hover the favorites tab button to switch intentionally first
+        (see drag-hover handling in CategoryBar).
+      * External (.desktop file drag from Dolphin / elsewhere): same as
+        Add-from-other-tab but for arbitrary file URLs.
 */
 
 import QtQuick
@@ -25,8 +26,8 @@ DropArea {
     id: reorderArea
 
     // The owning GridView. We read its dragSource, sharedFavoritesModel,
-    // favoritesActive flag, findFavoriteRow() helper, externalFavoriteDragReceived
-    // signal, plus the standard GridView geometry/animation properties.
+    // favoritesActive flag, findFavoriteRow() helper, plus the standard
+    // GridView geometry/animation properties.
     required property GridView gridView
 
     // EdgeAutoScroller instance scrolling the same grid; we defer reorder
@@ -41,74 +42,128 @@ DropArea {
     enabled: gridView.sharedFavoritesModel !== null
 
     property var pendingMoves: []
+    // True when the live preview of an Add-from-other-tab is currently in
+    // the favorites model. We insert the source at the cursor position so
+    // the user sees a real ghost slot to drop into; on exit/cancel we pull
+    // it back out, on drop we leave it.
+    property bool addPreviewActive: false
 
     readonly property DragSource _source: gridView.dragSource
 
+    // The bare storage id of the active drag's source, cached on DragSource
+    // so it survives delegate recycling when the tab switches mid-drag.
+    readonly property string _sourceId: _source ? _source.sourceStorageId : ""
+
+    // True when the active own-drag's source is NOT already a favorite —
+    // i.e. the user dragged from All / a category / recents and we should
+    // treat the drop as "add to favorites" rather than "reorder".
+    function _isAddFromOtherTab(drag) {
+        if (!_source || !_source.isOwnDrag(drag) || !_sourceId)
+            return false
+        return gridView.findFavoriteRow(_sourceId) < 0
+    }
+
     onEntered: drag => {
         pendingMoves = []
-        // External drag (file URLs from Dolphin etc.) on a non-favorites
-        // tab — switch to favorites so the drop targets the right model.
-        // Skip our own drag-out events; those carry text/uri-list too but
-        // the user is dragging to leave AppGrid, not to add a favorite.
-        if (drag.hasUrls && !(_source && _source.isOwnDrag(drag))
-                && (!gridView.favoritesActive
-                    || Plasmoid.configuration.sortFavoritesAlphabetically)) {
-            gridView.externalFavoriteDragReceived()
-        }
+        addPreviewActive = false
+        // No tab auto-switch: an unsolicited tab flip during a drag is
+        // jarring. The user reaches the favorites tab by hovering its tab
+        // button (CategoryBar handles drag-hover switch).
     }
 
     onExited: {
-        // Undo every pending move when the cursor leaves without dropping.
+        // Undo every pending reorder when the cursor leaves without dropping.
         while (pendingMoves.length > 0) {
             const [from, to] = pendingMoves.pop()
             gridView.sharedFavoritesModel.moveRow(to, from)
         }
+        // Pull the live "add preview" back out if it was inserted.
+        if (addPreviewActive && _sourceId && gridView.sharedFavoritesModel) {
+            gridView.sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(_sourceId))
+        }
+        addPreviewActive = false
     }
 
     onPositionChanged: drag => {
-        if (!_source || !_source.isOwnDrag(drag)
-                || !_source.sourceItem
-                || !gridView.sharedFavoritesModel) {
+        if (!_source || !_source.isOwnDrag(drag) || !gridView.sharedFavoritesModel)
             return
-        }
         // Hold off on reorder while existing animations or auto-scroll are
         // settling. Subsequent positionChanged events will retry.
         if (gridView.move.running || gridView.moveDisplaced.running
                 || gridView.flicking || gridView.moving
                 || edgeScroller.active) {
-            drag.accept(Qt.MoveAction)
+            drag.accept(addPreviewActive || _isAddFromOtherTab(drag)
+                        ? Qt.CopyAction : Qt.MoveAction)
             return
         }
 
-        const source = _source.sourceItem
-        // Re-resolve the source's current row from the model rather than
-        // trusting the cached value — content may have shifted under us
-        // during a scroll or external favorites change.
-        const liveSourceRow = gridView.findFavoriteRow(source.storageId)
-        if (liveSourceRow < 0) return
-        source.gridRow = liveSourceRow
-
         const pos = mapToItem(gridView.contentItem, drag.x, drag.y)
         const target = gridView.indexAt(pos.x, pos.y)
+
+        // --- Add-from-other-tab: live ghost slot at the cursor position ---
+        // Only when the favorites tab is actually showing; on other tabs
+        // we leave the model alone and drop simply does nothing.
+        if (_isAddFromOtherTab(drag) && gridView.favoritesActive) {
+            const prefixed = FavoriteId.toPrefixed(_sourceId)
+            if (!addPreviewActive) {
+                const insertAt = target >= 0 ? target : gridView.sharedFavoritesModel.count
+                gridView.sharedFavoritesModel.addFavorite(prefixed, insertAt)
+                addPreviewActive = true
+            } else if (target >= 0) {
+                const liveRow = gridView.findFavoriteRow(_sourceId)
+                if (liveRow >= 0 && target !== liveRow)
+                    gridView.sharedFavoritesModel.moveRow(liveRow, target)
+            }
+            drag.accept(Qt.CopyAction)
+            return
+        }
+
+        // --- Reorder existing favorite (or move the just-inserted preview) ---
+        const liveSourceRow = _sourceId ? gridView.findFavoriteRow(_sourceId) : -1
+        if (liveSourceRow < 0) return
+        if (_source.sourceItem) _source.sourceItem.gridRow = liveSourceRow
+
+        // Keep the Copy cursor through the rest of the drag when we're still
+        // adding (preview already in the model) so the indicator doesn't flip
+        // from + to move-arrow once the preview makes us look like a reorder.
+        const action = addPreviewActive ? Qt.CopyAction : Qt.MoveAction
+
         if (target < 0 || target === liveSourceRow) {
-            drag.accept(Qt.MoveAction)
+            drag.accept(action)
             return
         }
 
         gridView.sharedFavoritesModel.moveRow(liveSourceRow, target)
-        pendingMoves.push([liveSourceRow, target])
-        source.gridRow = target
-        drag.accept(Qt.MoveAction)
+        if (!addPreviewActive)
+            pendingMoves.push([liveSourceRow, target])
+        if (_source.sourceItem) _source.sourceItem.gridRow = target
+        drag.accept(action)
     }
 
     onDropped: drag => {
-        // Internal reorder ended — KAStats persists itself.
+        if (!gridView.sharedFavoritesModel) return
+
+        // Add-from-other-tab: the live preview is already in the model at
+        // the cursor position. Just commit by clearing the preview flag so
+        // onExited won't roll it back. Falls through (returns) early.
+        if (addPreviewActive) {
+            addPreviewActive = false
+            drag.accept(Qt.CopyAction)
+            return
+        }
+
+        // Own drag of an existing favorite → reorder already happened live
+        // via onPositionChanged; clear the rollback log so a stray onExited
+        // doesn't undo it.
         if (_source && _source.isOwnDrag(drag)) {
             pendingMoves = []
             return
         }
-        // External drag (e.g. .desktop file from Dolphin) — add as favorite.
-        if (!gridView.sharedFavoritesModel || !drag.hasUrls) return
+
+        // External drag (e.g. .desktop file from Dolphin) — add as favorite,
+        // but only when the favorites tab is active. Dropping a .desktop on
+        // the All tab silently appearing in Favorites is confusing.
+        if (!drag.hasUrls || !gridView.favoritesActive) return
         const pos = mapToItem(gridView.contentItem, drag.x, drag.y)
         let insertAt = gridView.indexAt(pos.x, pos.y)
         for (const url of drag.urls) {
