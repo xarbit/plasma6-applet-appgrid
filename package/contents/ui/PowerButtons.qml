@@ -21,6 +21,34 @@ RowLayout {
     spacing: Kirigami.Units.smallSpacing
     readonly property bool showLabels: Plasmoid.configuration.showActionLabels
 
+    // Update indicator — only present on universal builds (distro packages
+    // surface their own update notifications via the system package manager).
+    PlasmaComponents.ToolButton {
+        id: updateButton
+        visible: Plasmoid.updateChecker !== null
+                 && Plasmoid.updateChecker.hasUpdate
+        icon.name: "system-software-update"
+        text: powerButtons.showLabels
+              ? i18nd("dev.xarbit.appgrid", "Update available")
+              : ""
+        display: powerButtons.showLabels ? PlasmaComponents.AbstractButton.TextBesideIcon
+                                         : PlasmaComponents.AbstractButton.IconOnly
+        PlasmaComponents.ToolTip.text: Plasmoid.updateChecker
+            ? i18nd("dev.xarbit.appgrid", "AppGrid %1 is available — click to view release notes",
+                    Plasmoid.updateChecker.latestVersion)
+            : ""
+        PlasmaComponents.ToolTip.visible: hovered
+        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+        onClicked: {
+            if (Plasmoid.updateChecker)
+                Plasmoid.updateChecker.openReleasePage()
+            powerButtons.actionTriggered()
+        }
+
+        Accessible.name: i18nd("dev.xarbit.appgrid", "AppGrid update available")
+        Accessible.role: Accessible.Button
+    }
+
     Sessions.SessionManagement {
         id: sm
     }

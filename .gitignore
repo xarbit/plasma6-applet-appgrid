@@ -47,6 +47,11 @@ package-panel/contents/ui/iconanims/
 *.pkg.tar.zst
 *.pkg.tar.xz
 
+# Universal package build output (packages/universal/build-package.sh)
+out/
+appgrid-universal-*.tar.gz
+appgrid-universal-*.tar.gz.sha256
+
 # Translation artifacts
 *.po~
 *.mo

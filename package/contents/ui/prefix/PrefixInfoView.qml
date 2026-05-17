@@ -33,6 +33,7 @@ ColumnLayout {
     Repeater {
         model: [
             { label: "AppGrid",  value: infoView.sysInfo.appgridVersion || "" },
+            { label: "Install",  value: infoView.sysInfo.installType || "" },
             { label: "Variant",  value: infoView.sysInfo.variant || "" },
             { label: "Session",  value: infoView.sysInfo.sessionType || "" },
             { label: "Plasma",   value: infoView.sysInfo.plasmaVersion || "" },
@@ -149,6 +150,7 @@ ColumnLayout {
             var info = infoView.sysInfo
             var lines = [
                 "AppGrid: " + (info.appgridVersion || ""),
+                "Install: " + (info.installType || ""),
                 "Variant: " + (info.variant || ""),
                 "Session: " + (info.sessionType || ""),
                 "Plasma: " + (info.plasmaVersion || ""),

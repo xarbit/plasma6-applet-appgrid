@@ -1,0 +1,88 @@
+# SPDX-FileCopyrightText: 2026 AppGrid Contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Per-distro runtime dependency declarations for the AppGrid universal
+# package. install.py reads this file and maps the local distro (via
+# /etc/os-release) to the right package set and install command.
+#
+# Adding a new distro: append a table with the four keys below.
+#   aliases   — values from /etc/os-release's ID and ID_LIKE we accept
+#   packages  — native package names users should install
+#   install   — the package-manager command, with `{packages}` placeholder
+#   display   — friendly name shown in installer messages
+
+[arch]
+aliases  = ["arch", "manjaro", "endeavouros", "cachyos"]
+display  = "Arch / Arch-derivative"
+packages = [
+    "qt6-base", "qt6-declarative",
+    "libplasma", "kpackage", "kio", "kservice", "ki18n",
+    "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
+    "layer-shell-qt", "plasma-activities", "plasma-workspace",
+]
+install  = "sudo pacman -S --needed {packages}"
+
+[fedora]
+aliases  = ["fedora", "rhel", "centos", "nobara"]
+display  = "Fedora"
+packages = [
+    "qt6-qtbase", "qt6-qtdeclarative",
+    "libplasma", "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
+    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
+    "layer-shell-qt", "kf6-plasma-activities", "plasma-workspace",
+]
+install  = "sudo dnf install {packages}"
+
+[debian]
+aliases  = ["debian", "ubuntu", "linuxmint", "pop", "kali"]
+display  = "Debian / Ubuntu"
+packages = [
+    "qt6-base-dev", "qt6-declarative-dev",
+    "libplasma6", "libkf6package6", "libkf6kio6", "libkf6service6",
+    "libkf6i18n6", "libkf6coreaddons6", "libkf6windowsystem6",
+    "libkf6runner6", "qml6-module-org-kde-kirigami",
+    "liblayershellqtinterface6", "libplasma-activities6",
+    "plasma-workspace",
+]
+install  = "sudo apt install {packages}"
+
+[suse]
+aliases  = ["opensuse", "opensuse-tumbleweed", "opensuse-leap", "suse", "sled", "sles"]
+display  = "openSUSE / SUSE"
+packages = [
+    "libQt6Quick6", "libQt6Gui6",
+    "libplasma6", "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
+    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
+    "layer-shell-qt", "kf6-plasma-activities", "plasma6-workspace",
+]
+install  = "sudo zypper install {packages}"
+
+# KDE Linux (formerly "Project Banana") — immutable Arch-based image with
+# Plasma 6 + KF6 baked in. /usr is read-only and there's no traditional
+# package manager, so the standard install command doesn't apply. AppGrid
+# installs cleanly into ~/.local/ on top of the base system.
+[kde-linux]
+aliases  = ["kde-linux", "kdelinux"]
+display  = "KDE Linux"
+packages = []  # base image already includes everything we need
+notes    = "KDE Linux ships with Plasma 6 + Qt 6 + KF6 in the base image. No package install needed; just run install.sh."
+
+# Fedora Kinoite — rpm-ostree immutable KDE variant of Fedora. Plasma 6 +
+# KF6 are part of the base image; layered packages need `rpm-ostree install`
+# and a reboot. Matched on VARIANT_ID so it takes precedence over plain
+# [fedora]. AppGrid's payload goes into ~/.local/ regardless of base layer.
+[kinoite]
+aliases  = ["kinoite"]
+display  = "Fedora Kinoite"
+packages = []  # base image includes Plasma + KF6
+notes    = "Fedora Kinoite ships with Plasma 6 + KF6 in the base image. Additional system packages would require `rpm-ostree install` + reboot, but AppGrid doesn't need any — the payload lives entirely under ~/.local/."
+
+# Fallback / unknown — surfaced as guidance only; no install command.
+[generic]
+display  = "Unknown distro"
+packages = [
+    "qt6-base", "qt6-declarative",
+    "plasma", "kpackage", "kio", "kservice", "ki18n",
+    "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
+    "layer-shell-qt", "plasma-activities", "plasma-workspace",
+]

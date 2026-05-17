@@ -12,6 +12,10 @@
 #include "appmodel.h"
 #include "appfiltermodel.h"
 
+#ifdef APPGRID_UNIVERSAL_BUILD
+#include "updatechecker.h"
+#endif
+
 class QScreen;
 class QWindow;
 
@@ -104,6 +108,15 @@ class AppGridPlugin : public Plasma::Applet {
     Q_PROPERTY(KRunner::ResultsModel *runnerSourceModel READ runnerSourceModel CONSTANT)
     Q_PROPERTY(UnifiedSearchModel *searchModel READ searchModel CONSTANT)
     Q_PROPERTY(bool isWayland READ isWayland CONSTANT)
+    // True when compiled with APPGRID_UNIVERSAL_BUILD. QML uses this to
+    // hide the "Check for updates" setting on distro-package builds.
+    // systemInfo() surfaces this as the "Install" row in the i: view.
+    Q_PROPERTY(bool isUniversalBuild READ isUniversalBuild CONSTANT)
+#ifdef APPGRID_UNIVERSAL_BUILD
+    // Only exposed on universal builds — non-universal builds don't carry
+    // QtNetwork or this class at all.
+    Q_PROPERTY(UpdateChecker *updateChecker READ updateChecker CONSTANT)
+#endif
 
 public:
     AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
@@ -112,6 +125,10 @@ public:
     QAbstractItemModel *runnerModel() const;
     KRunner::ResultsModel *runnerSourceModel() const;
     UnifiedSearchModel *searchModel() const;
+    bool isUniversalBuild() const;
+#ifdef APPGRID_UNIVERSAL_BUILD
+    UpdateChecker *updateChecker() const;
+#endif
     bool isWayland() const;
 
     // --- Window management ---
@@ -198,4 +215,7 @@ private:
     KRunner::ResultsModel *m_runnerModel = nullptr;
     RunnerFilterModel m_runnerFilterModel;
     UnifiedSearchModel m_searchModel;
+#ifdef APPGRID_UNIVERSAL_BUILD
+    mutable UpdateChecker *m_updateChecker = nullptr;
+#endif
 };

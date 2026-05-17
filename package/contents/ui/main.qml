@@ -30,6 +30,20 @@ PlasmoidItem {
     readonly property alias isDragInFlight: dragSourceImpl.isDragInFlight
     DragSource { id: dragSourceImpl }
 
+    // Update checker (universal builds only — Plasmoid.updateChecker is
+    // nullptr on distro packages where the package manager handles updates).
+    // We push the config's opt-in state into the checker on startup + on
+    // changes; the C++ side throttles + defers the first network request.
+    Component.onCompleted: _syncUpdateChecker()
+    Connections {
+        target: Plasmoid.configuration
+        function onCheckForUpdatesChanged() { kicker._syncUpdateChecker() }
+    }
+    function _syncUpdateChecker() {
+        if (Plasmoid.updateChecker)
+            Plasmoid.updateChecker.enabled = Plasmoid.configuration.checkForUpdates === true
+    }
+
     Component {
         id: compactRepresentationComponent
         CompactRepresentation {}

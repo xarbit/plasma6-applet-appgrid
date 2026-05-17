@@ -27,6 +27,17 @@ PlasmoidItem {
     readonly property alias isDragInFlight: dragSourceImpl.isDragInFlight
     DragSource { id: dragSourceImpl }
 
+    // Update checker (universal builds only) — see standalone main.qml.
+    Component.onCompleted: _syncUpdateChecker()
+    Connections {
+        target: Plasmoid.configuration
+        function onCheckForUpdatesChanged() { kicker._syncUpdateChecker() }
+    }
+    function _syncUpdateChecker() {
+        if (Plasmoid.updateChecker)
+            Plasmoid.updateChecker.enabled = Plasmoid.configuration.checkForUpdates === true
+    }
+
     Plasmoid.icon: Plasmoid.configuration.useCustomButtonImage
         ? Plasmoid.configuration.customButtonImage
         : Plasmoid.configuration.icon

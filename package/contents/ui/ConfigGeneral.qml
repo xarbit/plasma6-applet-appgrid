@@ -47,6 +47,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showSessionButtons: showSessionButtons.checked
     property alias cfg_showActionLabels: showActionLabels.checked
     property alias cfg_showRecentApps: showRecentApps.checked
+    property alias cfg_checkForUpdates: checkForUpdates.checked
     property alias cfg_useExtraRunners: useExtraRunners.checked
     property alias cfg_useSystemCategories: useSystemCategories.checked
     property alias cfg_hideEmptyCategories: hideEmptyCategories.checked
@@ -243,6 +244,21 @@ KCMUtils.SimpleKCM {
             id: hideEmptyCategories
             text: i18nd("dev.xarbit.appgrid", "Hide empty categories")
             enabled: showCategoryBar.checked
+        }
+
+        // Universal-build only: in-app update check. Distro-package builds
+        // expose `Plasmoid.isUniversalBuild === false` so this row stays
+        // hidden — their package manager handles updates.
+        QQC2.CheckBox {
+            id: checkForUpdates
+            visible: Plasmoid.isUniversalBuild === true
+            text: i18nd("dev.xarbit.appgrid", "Check the AppGrid website for new releases")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "Anonymous request once per day to https://appgrid.xarbit.dev/api/latest.json. "
+                + "Shows an indicator near the session buttons when a new version is available; "
+                + "no automatic install.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
 
         QQC2.ComboBox {

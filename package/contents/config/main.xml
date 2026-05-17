@@ -78,6 +78,10 @@
       <label>Whether existing local favorites have been migrated into the KActivities-backed favorites model.</label>
       <default>false</default>
     </entry>
+    <entry name="checkForUpdates" type="Bool">
+      <label>Whether to check the AppGrid website periodically for new releases. Universal-build only; ignored on distro packages where the package manager handles updates.</label>
+      <default>false</default>
+    </entry>
     <entry name="shakeOnOpen" type="Bool">
       <label>Whether to shake all icons when the grid opens.</label>
       <default>true</default>

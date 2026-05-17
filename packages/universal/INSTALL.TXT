@@ -1,0 +1,165 @@
+================================================================
+ AppGrid universal package — installation guide
+================================================================
+
+This tarball installs AppGrid into your user prefix (~/.local/). No
+root, no system package manager, nothing written under /usr. Works
+on immutable distros (KDE Linux, Fedora Kinoite) and on any normal
+distro where you prefer a user-local install.
+
+----------------------------------------------------------------
+ Requirements
+----------------------------------------------------------------
+
+  - Plasma 6 (KDE Frameworks 6)
+  - Python 3.11 or newer (uses stdlib `tomllib`)
+  - The runtime libraries AppGrid links against — Qt6 Quick/Gui/
+    DBus, KF6 Kirigami / Plasma / PlasmaActivities, LayerShellQt.
+    If anything is missing, install.sh detects it with `ldd` and
+    prints the exact command for your distro before aborting.
+
+If `plasmashell` is not on PATH, the installer refuses to proceed.
+
+----------------------------------------------------------------
+ Install
+----------------------------------------------------------------
+
+  tar -xzf appgrid-universal-<version>-<arch>.tar.gz
+  cd appgrid-universal-<version>-<arch>
+  ./install.sh
+
+The installer will:
+
+  1. Detect your distro from /etc/os-release.
+  2. Verify SHA256SUMS over the payload.
+  3. Run `ldd` over the bundled .so files. If any library is
+     unresolved, it prints the per-distro install command and
+     exits without touching anything.
+  4. Show a summary (file count, target prefix) and ask to
+     confirm. Pass `-y` to skip the prompt.
+  5. Copy files/ into ~/.local/.
+  6. Drop a small plasma-workspace env script at
+     ~/.config/plasma-workspace/env/appgrid-user-local.sh
+     so Qt's plugin loader finds the .so under ~/.local/.
+  7. Refresh KDE's service cache (kbuildsycoca6).
+  8. Write a manifest at ~/.local/share/appgrid/MANIFEST.
+
+After the FIRST install, log out and log back in. A plain
+plasmashell restart does NOT reload the session environment,
+so the env script's QT_PLUGIN_PATH update only takes effect on
+the next fresh session.
+
+After a subsequent upgrade or reinstall, no logout is needed —
+the session already has QT_PLUGIN_PATH set from the previous
+install. Plasmashell still has to restart so it drops the old
+.so from memory and loads the new one. The installer offers
+to do this for you (default: no on interactive runs, since it
+briefly blanks the panel and closes any open AppGrid popup).
+
+Pass -r (or --restart-plasmashell) to skip the prompt and
+restart automatically. Combine with -y for a fully unattended
+upgrade+restart. Manual command:
+
+    kquitapp6 plasmashell && kstart plasmashell
+
+----------------------------------------------------------------
+ Upgrade / reinstall
+----------------------------------------------------------------
+
+Just run ./install.sh from the new tarball. The installer reads
+the prior manifest, detects the transition (upgrade / reinstall
+/ downgrade), removes any files the previous version shipped
+that this version no longer ships, then writes the new payload.
+
+Your AppGrid settings live in ~/.config/plasmashell-appletsrc
+and are not touched by install or uninstall.
+
+----------------------------------------------------------------
+ Uninstall
+----------------------------------------------------------------
+
+  ./uninstall.sh
+
+Reads ~/.local/share/appgrid/MANIFEST and removes only the files
+listed there. Prunes empty AppGrid-specific directories. The
+plasma-workspace env script is removed too. Your plasmoid
+configuration in plasmashell-appletsrc is left alone — remove
+the AppGrid widget from your panel/desktop first if you want a
+fully clean state.
+
+----------------------------------------------------------------
+ Flags
+----------------------------------------------------------------
+
+  -y, --yes                  Skip all interactive confirms.
+                             Install only — does NOT restart
+                             plasmashell.
+  -r, --restart-plasmashell  On upgrade, restart plasmashell
+                             after install. Combine with -y for
+                             a fully unattended upgrade+restart.
+  --dry-run                  Print what would happen; no files
+                             changed.
+
+Quick reference:
+
+  ./install.sh         interactive; prompts for everything
+                       (proceed + restart-plasmashell on upgrade)
+  ./install.sh -y      unattended install; no prompts, no restart
+  ./install.sh -y -r   unattended install + plasmashell restart
+
+----------------------------------------------------------------
+ Troubleshooting
+----------------------------------------------------------------
+
+  "Plasma 6 not found"
+      No `plasmashell` on PATH. Install KDE Plasma 6 first.
+
+  "can't resolve these libraries on this system"
+      One or more runtime deps are missing. The installer
+      prints the package list and the install command for
+      your distro. Run that, then retry ./install.sh.
+
+  AppGrid does not appear in the widget chooser
+      Did you log out and back in? The env script only takes
+      effect on a fresh session. Check that
+      ~/.config/plasma-workspace/env/appgrid-user-local.sh
+      exists and is executable, then start a new session.
+
+  AppGrid was working, now broken after distro upgrade
+      A library it linked against may have changed soname.
+      Re-run ./install.sh with the matching tarball, or
+      rebuild from source.
+
+----------------------------------------------------------------
+ What lands where
+----------------------------------------------------------------
+
+  ~/.local/share/plasma/plasmoids/dev.xarbit.appgrid/
+  ~/.local/share/plasma/plasmoids/dev.xarbit.appgrid.panel/
+  ~/.local/lib/qt6/plugins/...           (the .so files)
+  ~/.local/share/appgrid/MANIFEST        (installer bookkeeping)
+  ~/.config/plasma-workspace/env/appgrid-user-local.sh
+
+Everything else under ~/.local/ is left untouched.
+
+----------------------------------------------------------------
+ Verifying the tarball
+----------------------------------------------------------------
+
+The release page ships a matching .sha256 file next to each
+tarball:
+
+  sha256sum -c appgrid-universal-<version>-<arch>.tar.gz.sha256
+
+The installer additionally verifies SHA256SUMS over each payload
+file before writing anything to disk.
+
+----------------------------------------------------------------
+ Reporting issues
+----------------------------------------------------------------
+
+  https://github.com/xarbit/plasma6-applet-appgrid/issues
+
+Include: distro + version, output of `./install.sh` (or
+`./install.sh --dry-run`), and the version stamped in
+~/.local/share/appgrid/MANIFEST.

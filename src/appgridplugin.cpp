@@ -13,6 +13,10 @@
 #include <KWindowSystem>
 
 #include <PlasmaActivities/ResourceInstance>
+
+#ifdef APPGRID_UNIVERSAL_BUILD
+#include "updatechecker.h"
+#endif
 #ifdef APPGRID_X11_SUPPORT
 #include <KX11Extras>
 #endif
@@ -87,6 +91,26 @@ bool AppGridPlugin::isWayland() const
 {
     return KWindowSystem::isPlatformWayland();
 }
+
+bool AppGridPlugin::isUniversalBuild() const
+{
+#ifdef APPGRID_UNIVERSAL_BUILD
+    return true;
+#else
+    return false;
+#endif
+}
+
+#ifdef APPGRID_UNIVERSAL_BUILD
+UpdateChecker *AppGridPlugin::updateChecker() const
+{
+    if (!m_updateChecker) {
+        const QString version = QString::fromUtf8(APPGRID_VERSION);
+        m_updateChecker = new UpdateChecker(version, const_cast<AppGridPlugin *>(this));
+    }
+    return m_updateChecker;
+}
+#endif
 
 bool AppGridPlugin::runRunnerResult(int index)
 {
@@ -421,6 +445,8 @@ QVariantMap AppGridPlugin::systemInfo()
         ? QStringLiteral("Wayland") : QStringLiteral("X11");
     info[QStringLiteral("variant")] = m_useNativeActivation
         ? QStringLiteral("Panel") : QStringLiteral("Center");
+    info[QStringLiteral("installType")] = isUniversalBuild()
+        ? QStringLiteral("Universal package") : QStringLiteral("Distribution package");
 
     // OS info from /etc/os-release
     QFile osRelease(QStringLiteral("/etc/os-release"));

@@ -15,7 +15,16 @@ option(ENABLE_X11 "Enable X11 session support" ON)
 
 option(BUILD_TESTING "Build the test suite" OFF)
 
+# Universal-build flag — enables the in-app update checker (notify-only,
+# opt-in via config). Distros that ship via their package manager should
+# leave this OFF so the package manager remains the source of truth for
+# updates. The universal tarball CI job turns it ON.
+option(APPGRID_UNIVERSAL_BUILD "Compile in the in-app update checker for universal tarball releases" OFF)
+
 find_package(Qt6 REQUIRED COMPONENTS Quick Gui DBus)
+if(APPGRID_UNIVERSAL_BUILD)
+    find_package(Qt6 REQUIRED COMPONENTS Network)
+endif()
 find_package(KF6Service REQUIRED)
 find_package(KF6I18n REQUIRED)
 find_package(KF6CoreAddons REQUIRED)
@@ -92,7 +101,7 @@ set(SHARED_ICONANIM_QML_FILES
 
 # --- Main plasmoid (Center variant: custom Window with centered popup) ---
 
-add_library(dev.xarbit.appgrid SHARED
+set(APPGRID_SOURCES
     src/appgridplugin_register.cpp
     src/appgridplugin.cpp
     src/appgridplugin.h
@@ -101,10 +110,21 @@ add_library(dev.xarbit.appgrid SHARED
     src/appfiltermodel.cpp
     src/appfiltermodel.h
 )
+if(APPGRID_UNIVERSAL_BUILD)
+    list(APPEND APPGRID_SOURCES src/updatechecker.cpp src/updatechecker.h)
+endif()
+
+add_library(dev.xarbit.appgrid SHARED ${APPGRID_SOURCES})
 set_target_properties(dev.xarbit.appgrid PROPERTIES PREFIX "")
 target_link_libraries(dev.xarbit.appgrid PRIVATE ${APPGRID_COMMON_LIBS})
 if(ENABLE_X11)
     target_compile_definitions(dev.xarbit.appgrid PRIVATE APPGRID_X11_SUPPORT)
+endif()
+if(APPGRID_UNIVERSAL_BUILD)
+    target_link_libraries(dev.xarbit.appgrid PRIVATE Qt6::Network)
+    target_compile_definitions(dev.xarbit.appgrid PRIVATE
+        APPGRID_UNIVERSAL_BUILD
+        "APPGRID_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
 endif()
 
 configure_file(
@@ -123,7 +143,7 @@ plasma_install_package(package dev.xarbit.appgrid)
 
 # --- Panel plasmoid (native Plasma popup near panel icon) ---
 
-add_library(dev.xarbit.appgrid.panel SHARED
+set(APPGRID_PANEL_SOURCES
     src/appgridpanelplugin.cpp
     src/appgridpanelplugin.h
     src/appgridplugin.cpp
@@ -133,10 +153,21 @@ add_library(dev.xarbit.appgrid.panel SHARED
     src/appfiltermodel.cpp
     src/appfiltermodel.h
 )
+if(APPGRID_UNIVERSAL_BUILD)
+    list(APPEND APPGRID_PANEL_SOURCES src/updatechecker.cpp src/updatechecker.h)
+endif()
+
+add_library(dev.xarbit.appgrid.panel SHARED ${APPGRID_PANEL_SOURCES})
 set_target_properties(dev.xarbit.appgrid.panel PROPERTIES PREFIX "")
 target_link_libraries(dev.xarbit.appgrid.panel PRIVATE ${APPGRID_COMMON_LIBS})
 if(ENABLE_X11)
     target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE APPGRID_X11_SUPPORT)
+endif()
+if(APPGRID_UNIVERSAL_BUILD)
+    target_link_libraries(dev.xarbit.appgrid.panel PRIVATE Qt6::Network)
+    target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE
+        APPGRID_UNIVERSAL_BUILD
+        "APPGRID_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
 endif()
 
 configure_file(
