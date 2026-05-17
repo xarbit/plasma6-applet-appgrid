@@ -208,10 +208,13 @@ jobs:
                 lib64LayerShellQtInterface-devel \
                 gettext rpm-build
               cd /workspace
-              # Pin plugin path to lib64/qt6/plugins so the resulting
-              # tree matches what packages/rpm/openmandriva.spec.in's
-              # %files block expects.
+              # CMAKE_PREFIX_PATH: OpenMandriva installs Qt6 under
+              # /usr/lib64/qt6/ (separate prefix from system /usr/lib64),
+              # which is not in CMake's default search path.
+              # KDE_INSTALL_QTPLUGINDIR: pin so the tree matches the
+              # openmandriva.spec.in %files block.
               cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+                -DCMAKE_PREFIX_PATH=/usr/lib64/qt6 \
                 -DKDE_INSTALL_QTPLUGINDIR=lib64/qt6/plugins \
                 -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
