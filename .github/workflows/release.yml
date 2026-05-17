@@ -146,33 +146,10 @@ jobs:
                 -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               DESTDIR="$PWD/pkg" cmake --install build
-              FEDORA_VER=$(rpm -E %fedora)
-              PKG_DIR="$PWD/pkg"
-              cat > appgrid.spec <<SPEC
-          Name:           plasma-applet-appgrid
-          Version:        ${APP_VERSION}
-          Release:        1.fc${FEDORA_VER}
-          Summary:        A modern fullscreen application launcher for KDE Plasma
-          License:        GPL-2.0-or-later
-          URL:            https://appgrid.xarbit.dev
-          Requires:       plasma-workspace plasma-desktop
-
-          %description
-          A modern fullscreen application launcher for KDE Plasma,
-          inspired by macOS Launchpad and COSMIC.
-
-          %install
-          cp -a ${PKG_DIR}/* %{buildroot}/
-
-          %files
-          /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
-          /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
-          /usr/share/plasma/plasmoids/dev.xarbit.appgrid/
-          /usr/share/plasma/plasmoids/dev.xarbit.appgrid.panel/
-          /usr/share/metainfo/dev.xarbit.appgrid.metainfo.xml
-          /usr/share/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
-          /usr/share/locale/*/LC_MESSAGES/dev.xarbit.appgrid.mo
-          SPEC
+              export DISTRO_VER=$(rpm -E %fedora)
+              export PKG_DIR="$PWD/pkg"
+              export PKG_VERSION="$APP_VERSION"
+              envsubst < packages/rpm/fedora.spec.in > appgrid.spec
               rpmbuild -bb \
                 --define "_topdir $PWD/rpmbuild" \
                 appgrid.spec
@@ -234,33 +211,10 @@ jobs:
                 -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               DESTDIR="$PWD/pkg" cmake --install build
-              OMV_VER=$(grep -oP "VERSION_ID=\"\K[^\"]+" /etc/os-release)
-              PKG_DIR="$PWD/pkg"
-              cat > appgrid.spec <<SPEC
-          Name:           plasma6-applet-appgrid
-          Version:        ${APP_VERSION}
-          Release:        1omv${OMV_VER}
-          Summary:        A modern fullscreen application launcher for KDE Plasma
-          License:        GPL-2.0-or-later
-          URL:            https://appgrid.xarbit.dev
-          Requires:       plasma-workspace
-
-          %description
-          A modern fullscreen application launcher for KDE Plasma,
-          inspired by macOS Launchpad and COSMIC.
-
-          %install
-          cp -a ${PKG_DIR}/* %{buildroot}/
-
-          %files
-          /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
-          /usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
-          /usr/share/plasma/plasmoids/dev.xarbit.appgrid/
-          /usr/share/plasma/plasmoids/dev.xarbit.appgrid.panel/
-          /usr/share/metainfo/dev.xarbit.appgrid.metainfo.xml
-          /usr/share/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
-          /usr/share/locale/*/LC_MESSAGES/dev.xarbit.appgrid.mo
-          SPEC
+              export DISTRO_VER=$(grep -oP "VERSION_ID=\"\K[^\"]+" /etc/os-release)
+              export PKG_DIR="$PWD/pkg"
+              export PKG_VERSION="$APP_VERSION"
+              envsubst < packages/rpm/openmandriva.spec.in > appgrid.spec
               rpmbuild -bb \
                 --define "_topdir $PWD/rpmbuild" \
                 appgrid.spec
@@ -333,23 +287,12 @@ jobs:
               VER_ID=$(grep -oP "VERSION_ID=\"\K[^\"]+" /etc/os-release)
               CODENAME=$(grep -oP "VERSION_CODENAME=\K.*" /etc/os-release)
               if [ "$DISTRO_ID" = "ubuntu" ]; then
-                PKG_SUFFIX="${APP_VERSION}-1ubuntu${VER_ID}"
+                export PKG_SUFFIX="${APP_VERSION}-1ubuntu${VER_ID}"
               else
-                PKG_SUFFIX="${APP_VERSION}-1${DISTRO_ID}${VER_ID}"
+                export PKG_SUFFIX="${APP_VERSION}-1${DISTRO_ID}${VER_ID}"
               fi
-              cat > pkg/DEBIAN/control <<EOF
-          Package: plasma-applet-appgrid
-          Version: ${PKG_SUFFIX}
-          Section: kde
-          Priority: optional
-          Architecture: ${DEB_ARCH}
-          Depends: plasma-workspace, plasma-desktop, libkf6service6, libkf6i18n6
-          Maintainer: Jason Scurtu <jscurtu@gmail.com>
-          Description: A modern fullscreen application launcher for KDE Plasma
-           A modern fullscreen application launcher for KDE Plasma,
-           inspired by macOS Launchpad and COSMIC.
-          Homepage: https://appgrid.xarbit.dev
-          EOF
+              export DEB_ARCH
+              envsubst < packages/deb/control.in > pkg/DEBIAN/control
               dpkg-deb --build pkg \
                 "/workspace/plasma-applet-appgrid_${PKG_SUFFIX}_${CODENAME}_${DEB_ARCH}.deb"
             '

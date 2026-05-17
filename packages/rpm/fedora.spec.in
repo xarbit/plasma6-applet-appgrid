@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 AppGrid Contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Fedora .spec template. CI substitutes the ${...} placeholders via
+# envsubst; RPM macros (%{...}, %install, %files) are left untouched
+# because envsubst only expands $-prefixed variables.
+#
+# Expected env at substitution time:
+#   PKG_VERSION    — version string (e.g. "1.8.0" or "1.8.0~dev.42")
+#   DISTRO_VER     — Fedora major version, used in Release tag
+#   PKG_DIR        — staging dir built by `cmake --install` (DESTDIR target)
+
+Name:           plasma-applet-appgrid
+Version:        ${PKG_VERSION}
+Release:        1.fc${DISTRO_VER}
+Summary:        A modern fullscreen application launcher for KDE Plasma
+License:        GPL-2.0-or-later
+URL:            https://appgrid.xarbit.dev
+Requires:       plasma-workspace plasma-desktop
+
+%description
+A modern fullscreen application launcher for KDE Plasma,
+inspired by macOS Launchpad and COSMIC.
+
+%install
+cp -a ${PKG_DIR}/* %{buildroot}/
+
+%files
+/usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
+/usr/lib64/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
+/usr/share/plasma/plasmoids/dev.xarbit.appgrid/
+/usr/share/plasma/plasmoids/dev.xarbit.appgrid.panel/
+/usr/share/metainfo/dev.xarbit.appgrid.metainfo.xml
+/usr/share/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
+/usr/share/locale/*/LC_MESSAGES/dev.xarbit.appgrid.mo

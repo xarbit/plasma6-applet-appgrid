@@ -1,0 +1,11 @@
+Package: plasma-applet-appgrid
+Version: ${PKG_SUFFIX}
+Section: kde
+Priority: optional
+Architecture: ${DEB_ARCH}
+Depends: plasma-workspace, plasma-desktop, libkf6service6, libkf6i18n6
+Maintainer: Jason Scurtu <jscurtu@gmail.com>
+Description: A modern fullscreen application launcher for KDE Plasma
+ A modern fullscreen application launcher for KDE Plasma,
+ inspired by macOS Launchpad and COSMIC.
+Homepage: https://appgrid.xarbit.dev
