@@ -196,7 +196,7 @@ Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
 | **Icon** | Panel icon or custom image | `start-here-kde-symbolic` |
 | **Icons per row** | Number of columns in the grid (Center only) | 7 |
 | **Visible rows** | Number of rows visible before scrolling (Center only) | 4 |
-| **Icon size** | Small, medium, or large | Large |
+| **Icon size** | Small (32 px), medium (48 px), or large (64 px) | Large |
 | **Sort order** | Alphabetical, Most Used, or By Category | Most Used |
 | **Open on active screen** | Open on mouse focus screen or panel screen | On |
 | **Show category bar** | Show or hide the category filter bar | On |
