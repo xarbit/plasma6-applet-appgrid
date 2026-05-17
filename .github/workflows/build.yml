@@ -213,7 +213,8 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+          cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+            -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
           cmake --build build -j$(nproc)
 
       - name: Package
@@ -272,7 +273,8 @@ jobs:
                 kf6-plasma-activities-devel plasma-workspace-devel \
                 gettext rpm-build
               cd /workspace
-              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+                -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               DESTDIR="$PWD/pkg" cmake --install build
               FEDORA_VER=$(rpm -E %fedora)
@@ -444,7 +446,8 @@ jobs:
                 plasma-workspace-dev \
                 gettext dpkg-dev
               cd /workspace
-              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+                -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               DESTDIR="$PWD/pkg" cmake --install build
               mkdir -p pkg/DEBIAN
@@ -522,7 +525,8 @@ jobs:
                 plasma-workspace
               cd /workspace
               cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-                  -DAPPGRID_UNIVERSAL_BUILD=ON
+                  -DAPPGRID_UNIVERSAL_BUILD=ON \
+                  -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               mkdir -p out
               bash packages/universal/build-package.sh \

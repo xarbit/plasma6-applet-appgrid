@@ -34,6 +34,24 @@ appgrid_add_test(test_filter ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
 appgrid_add_test(test_sort ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
 appgrid_add_test(test_appmodel_helpers)
 
+# UpdateChecker only exists in universal builds; gate the test to match so
+# distro-package CI runs (which don't compile updatechecker.cpp) don't try
+# to link against missing symbols.
+if(APPGRID_UNIVERSAL_BUILD)
+    find_package(Qt6 REQUIRED COMPONENTS Network)
+    add_executable(test_updatechecker
+        test_updatechecker.cpp
+        ${CMAKE_SOURCE_DIR}/src/updatechecker.cpp
+        ${CMAKE_SOURCE_DIR}/src/updatechecker.h
+    )
+    target_link_libraries(test_updatechecker PRIVATE
+        Qt6::Test Qt6::Core Qt6::Gui Qt6::Network)
+    target_compile_definitions(test_updatechecker PRIVATE
+        APPGRID_UNIVERSAL_BUILD
+        "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
+    add_test(NAME test_updatechecker COMMAND test_updatechecker)
+endif()
+
 # --- QML tests (QtQuickTest) ---
 
 find_package(Qt6 OPTIONAL_COMPONENTS QuickTest Quick Qml)

@@ -21,6 +21,79 @@ option(BUILD_TESTING "Build the test suite" OFF)
 # updates. The universal tarball CI job turns it ON.
 option(APPGRID_UNIVERSAL_BUILD "Compile in the in-app update checker for universal tarball releases" OFF)
 
+# Version string baked into the binary for the update checker and the i:
+# view. Three cases, in priority order:
+#
+#  1. APPGRID_VERSION_OVERRIDE explicitly passed (-DAPPGRID_VERSION_OVERRIDE=…)
+#     wins. CI uses this to inject the version it computes itself, so the
+#     binary string matches CI's tarball filename / release tag exactly.
+#
+#  2. Otherwise, if HEAD is exactly a release tag, use CMAKE_PROJECT_VERSION
+#     unchanged ("1.8.0"). Distro PKGBUILDs and CI release builds land here.
+#
+#  3. Otherwise it's a local dev build between releases — derive
+#     "${BASE}-dev.<commits-since-last-tag>+self.g<sha>". The "+self.g…"
+#     build-metadata suffix marks the binary as a hand-built one (not a CI
+#     artifact); per semver, build metadata is ignored for ordering so the
+#     update-indicator behavior is identical to the CI build of the same
+#     git state. Useful in bug reports for telling local vs CI binaries
+#     apart at a glance.
+set(APPGRID_VERSION_OVERRIDE "" CACHE STRING
+    "Explicit version string to bake into the binary (overrides git-derived)")
+if(APPGRID_VERSION_OVERRIDE)
+    set(APPGRID_VERSION_STRING "${APPGRID_VERSION_OVERRIDE}")
+else()
+    set(APPGRID_VERSION_STRING "${CMAKE_PROJECT_VERSION}")
+    find_package(Git QUIET)
+    if(Git_FOUND AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_QUIET ERROR_QUIET
+            RESULT_VARIABLE _appgrid_on_tag
+        )
+        if(NOT _appgrid_on_tag EQUAL 0)
+            # Find the most recent tag; count commits since (matches CI).
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE _appgrid_last_tag
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
+            if(_appgrid_last_tag)
+                execute_process(
+                    COMMAND ${GIT_EXECUTABLE} rev-list ${_appgrid_last_tag}..HEAD --count
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    OUTPUT_VARIABLE _appgrid_rev_count
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET
+                )
+            else()
+                execute_process(
+                    COMMAND ${GIT_EXECUTABLE} rev-list --count HEAD
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    OUTPUT_VARIABLE _appgrid_rev_count
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET
+                )
+            endif()
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} rev-parse --short=7 HEAD
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE _appgrid_git_sha
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
+            if(_appgrid_rev_count AND _appgrid_git_sha)
+                set(APPGRID_VERSION_STRING
+                    "${CMAKE_PROJECT_VERSION}-dev.${_appgrid_rev_count}+self.g${_appgrid_git_sha}")
+            endif()
+        endif()
+    endif()
+endif()
+message(STATUS "AppGrid version string: ${APPGRID_VERSION_STRING}")
+
 find_package(Qt6 REQUIRED COMPONENTS Quick Gui DBus)
 if(APPGRID_UNIVERSAL_BUILD)
     find_package(Qt6 REQUIRED COMPONENTS Network)
@@ -117,14 +190,14 @@ endif()
 add_library(dev.xarbit.appgrid SHARED ${APPGRID_SOURCES})
 set_target_properties(dev.xarbit.appgrid PROPERTIES PREFIX "")
 target_link_libraries(dev.xarbit.appgrid PRIVATE ${APPGRID_COMMON_LIBS})
+target_compile_definitions(dev.xarbit.appgrid PRIVATE
+    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
 if(ENABLE_X11)
     target_compile_definitions(dev.xarbit.appgrid PRIVATE APPGRID_X11_SUPPORT)
 endif()
 if(APPGRID_UNIVERSAL_BUILD)
     target_link_libraries(dev.xarbit.appgrid PRIVATE Qt6::Network)
-    target_compile_definitions(dev.xarbit.appgrid PRIVATE
-        APPGRID_UNIVERSAL_BUILD
-        "APPGRID_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
+    target_compile_definitions(dev.xarbit.appgrid PRIVATE APPGRID_UNIVERSAL_BUILD)
 endif()
 
 configure_file(
@@ -160,14 +233,14 @@ endif()
 add_library(dev.xarbit.appgrid.panel SHARED ${APPGRID_PANEL_SOURCES})
 set_target_properties(dev.xarbit.appgrid.panel PROPERTIES PREFIX "")
 target_link_libraries(dev.xarbit.appgrid.panel PRIVATE ${APPGRID_COMMON_LIBS})
+target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE
+    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
 if(ENABLE_X11)
     target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE APPGRID_X11_SUPPORT)
 endif()
 if(APPGRID_UNIVERSAL_BUILD)
     target_link_libraries(dev.xarbit.appgrid.panel PRIVATE Qt6::Network)
-    target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE
-        APPGRID_UNIVERSAL_BUILD
-        "APPGRID_VERSION=\"${CMAKE_PROJECT_VERSION}\"")
+    target_compile_definitions(dev.xarbit.appgrid.panel PRIVATE APPGRID_UNIVERSAL_BUILD)
 endif()
 
 configure_file(

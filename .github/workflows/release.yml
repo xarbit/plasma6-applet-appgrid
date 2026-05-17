@@ -26,9 +26,44 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/v}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
+  tests:
+    name: Tests
+    needs: version
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    env:
+      APP_VERSION: ${{ needs.version.outputs.version }}
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed \
+            base-devel git cmake extra-cmake-modules \
+            qt6-base qt6-declarative \
+            libplasma kpackage kio kservice ki18n \
+            kcoreaddons kwindowsystem krunner layer-shell-qt plasma-activities \
+            plasma-workspace
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Mark workspace as safe (container uid mismatch)
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Build with tests + universal flag
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -DBUILD_TESTING=ON -DAPPGRID_UNIVERSAL_BUILD=ON \
+            -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
+          cmake --build build -j$(nproc)
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
   arch:
     name: Arch Linux
-    needs: version
+    needs: [version, tests]
     runs-on: ubuntu-latest
     container: archlinux:latest
     env:
@@ -49,7 +84,8 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+          cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+            -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
           cmake --build build -j$(nproc)
 
       - name: Package
@@ -66,7 +102,7 @@ jobs:
 
   fedora:
     name: Fedora (${{ matrix.arch }})
-    needs: version
+    needs: [version, tests]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -106,7 +142,8 @@ jobs:
                 plasma-workspace-devel \
                 gettext rpm-build
               cd /workspace
-              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+                -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               DESTDIR="$PWD/pkg" cmake --install build
               FEDORA_VER=$(rpm -E %fedora)
@@ -150,7 +187,7 @@ jobs:
 
   deb-packages:
     name: ${{ matrix.distro.name }} (${{ matrix.arch.name }})
-    needs: version
+    needs: [version, tests]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -198,7 +235,8 @@ jobs:
                 plasma-workspace-dev \
                 gettext dpkg-dev
               cd /workspace
-              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
+              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr \
+                -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               DESTDIR="$PWD/pkg" cmake --install build
               mkdir -p pkg/DEBIAN
@@ -233,9 +271,66 @@ jobs:
           name: ${{ matrix.distro.id }}-package-${{ matrix.arch.deb }}
           path: '*.deb'
 
+  universal:
+    name: Universal package (${{ matrix.arch }})
+    needs: [version, tests]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            platform: linux/amd64
+          - arch: aarch64
+            platform: linux/arm64
+    env:
+      APP_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up QEMU
+        if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build and package
+        run: |
+          docker run --rm --platform ${{ matrix.platform }} \
+            -v ${{ github.workspace }}:/workspace \
+            -e APP_VERSION="${APP_VERSION}" \
+            -e BUILD_TYPE="${BUILD_TYPE}" \
+            -e ARCH="${{ matrix.arch }}" \
+            archlinux:latest bash -c '
+              set -e
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm --needed \
+                base-devel git cmake extra-cmake-modules \
+                qt6-base qt6-declarative \
+                libplasma kpackage kio kservice ki18n \
+                kcoreaddons kwindowsystem krunner layer-shell-qt plasma-activities \
+                plasma-workspace
+              cd /workspace
+              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+                  -DAPPGRID_UNIVERSAL_BUILD=ON \
+                  -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
+              cmake --build build -j$(nproc)
+              mkdir -p out
+              bash packages/universal/build-package.sh \
+                "$APP_VERSION" "$ARCH" build out
+            '
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: universal-package-${{ matrix.arch }}
+          path: out/*
+
   release:
     name: Create Release
-    needs: [version, arch, fedora, deb-packages]
+    needs: [version, arch, fedora, deb-packages, universal]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
