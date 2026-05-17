@@ -227,7 +227,28 @@ Window {
     // When a drag-out finishes, close the window if it had lost focus during
     // the drag. Without this, the window would linger after the user drops on
     // an external target.
+    //
+    // Also flip the window into pointer pass-through mode for the lifetime of
+    // the drag: AppGrid's layer-shell surface covers the full screen, so the
+    // taskbar/panel/desktop are *underneath* us. Without pass-through the
+    // user cannot reach those drop targets — the drag advertises mime fine
+    // but the only surface receiving pointer events is AppGrid itself, so
+    // the cursor never lands on an acceptor (verified via WAYLAND_DEBUG).
     on_DragInFlightChanged: {
+        if (_dragInFlight) {
+            // Shrink input region to the visible grid panel so the dim area
+            // around it becomes pass-through. The user can drop on the
+            // taskbar/panel/desktop underneath while internal favorites
+            // reorder still receives drag events inside the panel rect.
+            const pw = Math.round(panel.width)
+            const ph = Math.round(panel.height)
+            const px = Math.round((root.width - pw) / 2)
+            const py = Math.round((root.height - ph) / 2)
+            Plasmoid.setInputRect(root, px, py, pw, ph)
+        } else {
+            // Drag ended — restore full-window input.
+            Plasmoid.setInputRect(root, 0, 0, 0, 0)
+        }
         if (!_dragInFlight && !active && visible && closeOnDeactivate
                 && appletInterface) {
             appletInterface.closeWindow()

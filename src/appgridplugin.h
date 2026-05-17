@@ -128,6 +128,20 @@ public:
     /** Set a rounded-rect blur region on @p window matching the panel geometry. */
     Q_INVOKABLE void setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius);
 
+    /**
+     * Restrict pointer input on @p window to the rectangle (x,y,w,h). The
+     * rest of the window becomes pass-through — events fall through to the
+     * surface below (e.g. the panel/taskbar/desktop under our full-screen
+     * layer overlay). If @p w or @p h is zero, the mask is cleared and the
+     * entire window receives input again.
+     *
+     * Used while a drag-out is in flight: the centred grid panel keeps full
+     * input (so internal favorites reorder still works) while the surrounding
+     * dim overlay becomes pass-through so the user can drop on external
+     * targets that are otherwise covered by AppGrid.
+     */
+    Q_INVOKABLE void setInputRect(QWindow *window, int x, int y, int w, int h);
+
     // --- Prefix mode commands ---
 
     /** Run @p command in the user's preferred terminal emulator using @p shell. */

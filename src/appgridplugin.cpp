@@ -236,6 +236,21 @@ void AppGridPlugin::setBlurBehind(QWindow *window, bool enable, int x, int y, in
     KWindowEffects::enableBlurBehind(window, enable, region);
 }
 
+void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)
+{
+    if (!window)
+        return;
+
+    if (w <= 0 || h <= 0) {
+        // Empty region = "remove mask" per Qt docs, restores full-window input.
+        window->setMask(QRegion());
+        return;
+    }
+    // On Wayland this maps to wl_surface.set_input_region(rect). Areas outside
+    // the rect become pass-through, so events land on the surface below.
+    window->setMask(QRegion(QRect(x, y, w, h)));
+}
+
 // --- Prefix mode commands ---
 
 // Validate that the given shell path is listed in /etc/shells.
