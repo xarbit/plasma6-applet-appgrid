@@ -25,9 +25,9 @@ RowLayout {
     // null on distro packages).
     PlasmaComponents.ToolButton {
         id: updateButton
-        visible: Plasmoid.updateChecker !== null
-                 && Plasmoid.updateChecker.enabled
-                 && Plasmoid.updateChecker.hasUpdate
+        visible: !!Plasmoid.updateChecker
+                 && Plasmoid.updateChecker.enabled === true
+                 && Plasmoid.updateChecker.hasUpdate === true
         icon.name: "system-software-update"
         icon.color: Kirigami.Theme.neutralTextColor
         text: powerButtons.showLabels
