@@ -34,12 +34,18 @@ PlasmaComponents.Menu {
     property var popupActions: []
 
     // Multi-select payload — non-empty when the right-clicked item belongs
-    // to an active selection of 2+ favorites. In that case the menu hides
-    // single-item actions (pin/desktop/edit/hide/jumplist) since they don't
-    // generalise cleanly, and the "Remove from Favorites" entry becomes a
-    // batch op covering every selected sid.
+    // to an active selection of 2+ items. The menu hides single-item-only
+    // actions (pin/desktop/edit/hide/jumplist) and surfaces bulk Add and/or
+    // Remove rows whose counts reflect what each op would actually touch
+    // (mixed selections show both, uniform shows only the relevant one).
     property var popupSelectedSids: []
     readonly property bool isMultiSelect: popupSelectedSids.length >= 2
+    // Per-action counts — derived once at showForApp() rather than as live
+    // bindings, since the selection is a snapshot taken at right-click time
+    // and we don't want the menu re-counting if the model mutates while
+    // open (e.g. a sibling drag-add).
+    property int popupNonFavCount: 0
+    property int popupFavCount: 0
 
     function showForApp(index, storageId, desktopFile, selectedSids) {
         popupIndex = index
@@ -50,6 +56,18 @@ PlasmaComponents.Menu {
         popupIsFavorite = sharedFavoritesModel
                           ? sharedFavoritesModel.isFavorite(prefixed)
                           : false
+        // Partition the selection so each bulk menu row can show an
+        // accurate count of the items it would actually act on.
+        var favs = 0
+        if (isMultiSelect && sharedFavoritesModel) {
+            for (var i = 0; i < popupSelectedSids.length; ++i) {
+                if (sharedFavoritesModel.isFavorite(
+                        FavoriteId.toPrefixed(popupSelectedSids[i])))
+                    ++favs
+            }
+        }
+        popupFavCount = favs
+        popupNonFavCount = popupSelectedSids.length - favs
         popupActions = isMultiSelect ? [] : (Plasmoid.appActions(storageId) || [])
         popup()
     }
@@ -75,41 +93,15 @@ PlasmaComponents.Menu {
     // item below pins `height: visible ? implicitHeight : 0` so hidden rows
     // contribute zero vertical space. Same trick applied to separators.
 
-    // Bulk "Remove N favorites" — shown when the right-clicked item is
-    // itself a favorite (matching the popup direction the user expects).
-    // Removal iterates every selected sid that's currently in favorites
-    // and skips ones that aren't, so a mixed selection works idempotently.
-    PlasmaComponents.MenuItem {
-        icon.name: "bookmark-remove"
-        text: i18ndp("dev.xarbit.appgrid",
-                     "Remove %1 favorite", "Remove %1 favorites",
-                     contextMenu.popupSelectedSids.length)
-        visible: contextMenu.isMultiSelect && contextMenu.popupIsFavorite
-        height: visible ? implicitHeight : 0
-        enabled: !(contextMenu.appletInterface
-                   && contextMenu.appletInterface.isDragInFlight)
-        onClicked: {
-            if (!contextMenu.sharedFavoritesModel) return
-            const sids = contextMenu.popupSelectedSids
-            for (var i = 0; i < sids.length; ++i) {
-                const prefixed = FavoriteId.toPrefixed(sids[i])
-                if (contextMenu.sharedFavoritesModel.isFavorite(prefixed))
-                    contextMenu.sharedFavoritesModel.removeFavorite(prefixed)
-            }
-        }
-        Accessible.name: text
-        Accessible.role: Accessible.MenuItem
-    }
-
-    // Bulk "Add N to Favorites" — shown when the right-clicked item is not
-    // a favorite (selection drawn from All / category view). Already-faved
-    // sids in a mixed selection are skipped.
+    // Bulk "Add N to Favorites" — visible whenever the selection contains
+    // at least one non-favorite. Ordered before Remove because adding is
+    // the more common selection-driven flow (selecting in All/category).
     PlasmaComponents.MenuItem {
         icon.name: "bookmark-new"
         text: i18ndp("dev.xarbit.appgrid",
                      "Add %1 to Favorites", "Add %1 to Favorites",
-                     contextMenu.popupSelectedSids.length)
-        visible: contextMenu.isMultiSelect && !contextMenu.popupIsFavorite
+                     contextMenu.popupNonFavCount)
+        visible: contextMenu.isMultiSelect && contextMenu.popupNonFavCount > 0
         height: visible ? implicitHeight : 0
         enabled: !(contextMenu.appletInterface
                    && contextMenu.appletInterface.isDragInFlight)
@@ -120,6 +112,33 @@ PlasmaComponents.Menu {
                 const prefixed = FavoriteId.toPrefixed(sids[i])
                 if (!contextMenu.sharedFavoritesModel.isFavorite(prefixed))
                     contextMenu.sharedFavoritesModel.addFavorite(prefixed)
+            }
+        }
+        Accessible.name: text
+        Accessible.role: Accessible.MenuItem
+    }
+
+    // Bulk "Remove N from Favorites" — visible whenever the selection
+    // contains at least one favorite. Both rows appear simultaneously on a
+    // mixed selection (e.g. 5 chosen, 4 new + 1 existing) so the user
+    // picks intent explicitly instead of guessing based on which item
+    // they happened to right-click.
+    PlasmaComponents.MenuItem {
+        icon.name: "bookmark-remove"
+        text: i18ndp("dev.xarbit.appgrid",
+                     "Remove %1 from Favorites", "Remove %1 from Favorites",
+                     contextMenu.popupFavCount)
+        visible: contextMenu.isMultiSelect && contextMenu.popupFavCount > 0
+        height: visible ? implicitHeight : 0
+        enabled: !(contextMenu.appletInterface
+                   && contextMenu.appletInterface.isDragInFlight)
+        onClicked: {
+            if (!contextMenu.sharedFavoritesModel) return
+            const sids = contextMenu.popupSelectedSids
+            for (var i = 0; i < sids.length; ++i) {
+                const prefixed = FavoriteId.toPrefixed(sids[i])
+                if (contextMenu.sharedFavoritesModel.isFavorite(prefixed))
+                    contextMenu.sharedFavoritesModel.removeFavorite(prefixed)
             }
         }
         Accessible.name: text

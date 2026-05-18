@@ -68,13 +68,12 @@ Item {
 
     function rangeTo(idx) {
         if (idx < 0 || idx >= gridCount) return
-        const a = anchor >= 0 ? anchor : idx
         if (anchor < 0) {
             toggleAt(idx)
             return
         }
-        const lo = Math.min(a, idx)
-        const hi = Math.max(a, idx)
+        const lo = Math.min(anchor, idx)
+        const hi = Math.max(anchor, idx)
         var copy = Object.assign({}, selectionSids)
         for (var i = lo; i <= hi; ++i) {
             const sid = sidAt(i)
@@ -97,5 +96,68 @@ Item {
         if (selectionCount === 0 && anchor < 0) return
         selectionSids = ({})
         anchor = -1
+    }
+
+    // Esc clears any pending selection. Returns true if the key was
+    // consumed (selection existed) so the caller can stop event propagation;
+    // false lets the event bubble to the window's close handler.
+    function consumeEscape() {
+        if (selectionCount === 0 && anchor < 0) return false
+        clear()
+        return true
+    }
+
+    // Apply Ctrl / Shift modifier semantics to a left-click. Returns true if
+    // the click was consumed (toggle or range select), false for a plain
+    // click that should fall through to launch. Centralises the modifier
+    // branching that would otherwise duplicate across every view delegate.
+    function applyModClick(mouse, idx) {
+        if (mouse.modifiers & Qt.ControlModifier) { toggleAt(idx); return true }
+        if (mouse.modifiers & Qt.ShiftModifier)   { rangeTo(idx);  return true }
+        return false
+    }
+
+    // Right-click on an unselected item collapses any pending selection so
+    // the context menu operates on the clicked item only. Selected-item
+    // right-clicks pass through untouched (the menu's multi-aware branch
+    // picks up the live selection).
+    function purgeIfOutside(sid) {
+        if (selectionCount > 0 && !contains(sid)) clear()
+    }
+
+    // Drive an arrow-key navigation step that may double as a Shift-extend
+    // of the selection. With Shift held: anchor is fixed (set lazily from
+    // the pre-move cursor), the caller's `moveFn` advances the cursor, and
+    // the new cursor index extends the range. Without Shift: selection
+    // collapses and the cursor moves. Callers stay terse:
+    //
+    //     selection.extendOrMove(event,
+    //         function() { moveCurrentIndexDown() },
+    //         function() { return currentIndex })
+    function extendOrMove(event, moveFn, currentIdxFn) {
+        const shift = (event.modifiers & Qt.ShiftModifier) !== 0
+        if (shift) {
+            if (anchor < 0) anchor = currentIdxFn()
+            moveFn()
+            rangeTo(currentIdxFn())
+        } else {
+            clear()
+            moveFn()
+        }
+    }
+
+    // Parallel list of file:// URLs for the currently selected apps. The
+    // model lookup lives here (rather than at each view) so all callers
+    // resolve URLs the same way. `appsModel` must expose
+    // `getByStorageId(sid) -> { desktopFile, … }` (AppFilterModel does).
+    function desktopFileUrls(appsModel) {
+        var urls = []
+        if (!appsModel) return urls
+        const sids = sidList()
+        for (var i = 0; i < sids.length; ++i) {
+            const a = appsModel.getByStorageId(sids[i])
+            if (a && a.desktopFile) urls.push("file://" + a.desktopFile)
+        }
+        return urls
     }
 }

@@ -89,31 +89,17 @@ Flickable {
         if (multiSelectActive) selection.selectAll(currentIndex)
     }
     function clearSelection() { selection.clear() }
-
-    function selectedDesktopFileUrls() {
-        var urls = []
-        const sids = selectedSidList()
-        for (var i = 0; i < sids.length; ++i) {
-            const a = appsModel ? appsModel.getByStorageId(sids[i]) : null
-            if (a && a.desktopFile) urls.push("file://" + a.desktopFile)
-        }
-        return urls
-    }
+    function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
 
     // Clear selection whenever the grouped model is rebuilt (search, category
     // pick) so the user doesn't carry ghost selections across filter changes.
     onGroupedAppsChanged: clearSelection()
 
     function _arrowMoveWithSelection(event, moveFn) {
-        const shift = (event.modifiers & Qt.ShiftModifier) !== 0
-        if (multiSelectActive && shift) {
-            if (selectionAnchor < 0) selectionAnchor = currentIndex
+        if (multiSelectActive)
+            selection.extendOrMove(event, moveFn, function() { return currentIndex })
+        else
             moveFn()
-            rangeSelectTo(currentIndex)
-        } else {
-            if (!shift) clearSelection()
-            moveFn()
-        }
     }
 
     Shortcut {
@@ -209,19 +195,17 @@ Flickable {
             })
         }
     }
-    Keys.onReturnPressed: {
+    function _launchCurrent() {
         if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
             recentLaunched(appsModel.recentApps[recentIndex])
         else if (currentIndex >= 0 && currentIndex < flatApps.length)
             launched(flatApps[currentIndex].proxyIndex)
         clearSelection()
     }
-    Keys.onEnterPressed: Keys.onReturnPressed(event)
+    Keys.onReturnPressed: _launchCurrent()
+    Keys.onEnterPressed: _launchCurrent()
     Keys.onEscapePressed: function(event) {
-        if (selectionCount > 0 || selectionAnchor >= 0) {
-            clearSelection()
-            event.accepted = true
-        }
+        if (selection.consumeEscape()) event.accepted = true
     }
     Keys.onTabPressed: function(event) { event.accepted = true }
     Keys.onBacktabPressed: function(event) { event.accepted = true }
@@ -373,25 +357,14 @@ Flickable {
                                 onClicked: function(mouse) {
                                     const sid = modelData.storageId || ""
                                     if (mouse.button === Qt.RightButton) {
-                                        if (categoryGrid.multiSelectActive
-                                                && categoryGrid.selectionCount > 0
-                                                && !categoryGrid.selectionContainsSid(sid)) {
-                                            categoryGrid.clearSelection()
-                                        }
+                                        if (categoryGrid.multiSelectActive)
+                                            selection.purgeIfOutside(sid)
                                         categoryGrid.contextMenuRequested(modelData.proxyIndex, sid, modelData.desktopFile || "")
                                         return
                                     }
                                     if (categoryGrid.multiSelectActive) {
-                                        if (mouse.modifiers & Qt.ControlModifier) {
-                                            categoryGrid.currentIndex = parent.flatIndex
-                                            categoryGrid.toggleSelectionAt(parent.flatIndex)
-                                            return
-                                        }
-                                        if (mouse.modifiers & Qt.ShiftModifier) {
-                                            categoryGrid.currentIndex = parent.flatIndex
-                                            categoryGrid.rangeSelectTo(parent.flatIndex)
-                                            return
-                                        }
+                                        categoryGrid.currentIndex = parent.flatIndex
+                                        if (selection.applyModClick(mouse, parent.flatIndex)) return
                                     }
                                     categoryGrid.clearSelection()
                                     categoryGrid.launched(modelData.proxyIndex)

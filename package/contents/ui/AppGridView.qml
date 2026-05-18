@@ -253,20 +253,7 @@ GridView {
         if (multiSelectActive) selection.selectAll(currentIndex)
     }
     function clearSelection() { selection.clear() }
-
-    // Parallel list of file:// URLs for the currently selected apps,
-    // resolved through AppsModel (KAStats only carries the favoriteId, not
-    // the desktop file path). Consumed by AppIconDelegate to advertise a
-    // multi-entry text/uri-list when a drag starts on a selected item.
-    function selectedDesktopFileUrls() {
-        var urls = []
-        const sids = selectedSidList()
-        for (var i = 0; i < sids.length; ++i) {
-            const a = appsModel ? appsModel.getByStorageId(sids[i]) : null
-            if (a && a.desktopFile) urls.push("file://" + a.desktopFile)
-        }
-        return urls
-    }
+    function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
 
     function removeSelectedFromFavorites() {
         if (!_favoritesSelect || selectionCount === 0) return
@@ -309,19 +296,15 @@ GridView {
     Keys.onReturnPressed: { _launchCurrent(); clearSelection() }
     Keys.onEnterPressed: { _launchCurrent(); clearSelection() }
 
-    // Shift+Arrow extends the multi-selection from the anchor through the new
-    // current index. Plain arrow keys clear selection so range/anchor state
-    // doesn't drift behind the visible cursor.
+    // Shift+Arrow extends the multi-selection from the anchor through the
+    // new current index. Plain arrows clear selection so anchor state never
+    // drifts behind the visible cursor. Routed through SelectionState so
+    // the behaviour matches CategoryGridView byte-for-byte.
     function _arrowMoveWithSelection(event, moveFn) {
-        const shift = (event.modifiers & Qt.ShiftModifier) !== 0
-        if (multiSelectActive && shift) {
-            if (selectionAnchor < 0) selectionAnchor = currentIndex
+        if (multiSelectActive)
+            selection.extendOrMove(event, moveFn, function() { return currentIndex })
+        else
             moveFn()
-            rangeSelectTo(currentIndex)
-        } else {
-            if (!shift) clearSelection()
-            moveFn()
-        }
     }
 
     Keys.onUpPressed: function(event) {
@@ -368,13 +351,10 @@ GridView {
             _arrowMoveWithSelection(event, moveCurrentIndexRight)
     }
 
-    // Esc clears multi-selection first; only when there's no selection do we
-    // let the event bubble (the popup window closes on bare Esc).
+    // Esc clears multi-selection first; only when there's no selection do
+    // we let the event bubble (the popup window closes on bare Esc).
     Keys.onEscapePressed: function(event) {
-        if (selectionCount > 0 || selectionAnchor >= 0) {
-            clearSelection()
-            event.accepted = true
-        }
+        if (selection.consumeEscape()) event.accepted = true
     }
     // Consume Tab to prevent it from reaching the focus chain or search bar
     Keys.onTabPressed: function(event) { event.accepted = true }
@@ -523,37 +503,19 @@ GridView {
             multiSelectionUrls: selected ? gridView.selectedDesktopFileUrls() : []
 
             onClicked: function(mouse) {
+                const desktopFile = delegateRoot._fromShared
+                    ? (delegateRoot._appData ? delegateRoot._appData.desktopFile || "" : "")
+                    : (model.desktopFile || "")
                 if (mouse.button === Qt.RightButton) {
-                    const desktopFile = delegateRoot._fromShared
-                        ? (delegateRoot._appData ? delegateRoot._appData.desktopFile || "" : "")
-                        : (model.desktopFile || "")
-                    // Right-click on a non-selected item collapses any
-                    // existing selection so the menu acts on the clicked
-                    // item only. If the item *is* selected, keep the
-                    // selection — the multi-action menu picks it up.
-                    if (gridView.multiSelectActive
-                            && gridView.selectionCount > 0
-                            && !gridView.selectionContainsSid(delegateRoot._sid)) {
-                        gridView.clearSelection()
-                    }
+                    if (gridView.multiSelectActive)
+                        selection.purgeIfOutside(delegateRoot._sid)
                     gridView.contextMenuRequested(model.index, delegateRoot._sid, desktopFile)
                     return
                 }
-                // Ctrl/Shift+left-click in Favorites = selection ops, no launch.
                 if (gridView.multiSelectActive) {
-                    if (mouse.modifiers & Qt.ControlModifier) {
-                        gridView.currentIndex = model.index
-                        gridView.toggleSelectionAt(model.index)
-                        return
-                    }
-                    if (mouse.modifiers & Qt.ShiftModifier) {
-                        gridView.currentIndex = model.index
-                        gridView.rangeSelectTo(model.index)
-                        return
-                    }
+                    gridView.currentIndex = model.index
+                    if (selection.applyModClick(mouse, model.index)) return
                 }
-                // Plain click launches and clears any prior selection so the
-                // grid returns to single-item behavior.
                 gridView.clearSelection()
                 if (delegateRoot._fromShared) {
                     if (delegateRoot._sid) gridView.recentLaunched(delegateRoot._sid)
