@@ -1,280 +1,65 @@
-# AppGrid - KDE Plasma 6 Application Launcher
+# AppGrid — KDE Plasma 6 Application Launcher
 
-> **WARNING:** This project is still in early development and will likely break. Features may be added or removed. If you encounter issues, please report them at [GitHub Issues](https://github.com/xarbit/plasma6-applet-appgrid/issues).
+> **🧪 Release candidate: `v1.8.0-rc.1`** — universal package for immutable distros, opt-in in-app update checker, by-category drag-and-drop, hardened installer. Please [report regressions](https://github.com/xarbit/plasma6-applet-appgrid/issues) before 1.8.0 stable ships. Type `i:` in the search bar to copy your system info for a report.
 
-A modern application launcher for KDE Plasma, inspired by macOS Launchpad, COSMIC, and Pantheon.
-
-## Table of Contents
-
-- [Why AppGrid?](#why-appgrid)
-- [Screenshots](#screenshots)
-- [Features](#features)
-- [Dependencies](#dependencies)
-- [Installation](#installation)
-- [Building from source](#building-from-source)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [FAQ](#faq)
-- [Credits](#credits)
-- [Contributing](#contributing)
-- [License](#license)
-
-AppGrid ships as two plasmoids that share a common codebase:
-
-- **AppGrid** — a standalone window launcher with its own blur, opacity, and corner radius settings.
-- **AppGrid (Panel)** — a native Plasma panel popup that opens anchored to the panel icon, just like Kickoff. For those who prefer the traditional style.
-
-Both variants share the same app grid, search, categories, quick commands, and configuration — pick whichever fits your workflow. Requires version 1.2+.
-
-> **Note:** AppGrid is actively maintained with a focus on stability, polish, and community-requested improvements. If you run into any issues, please [open an issue](https://github.com/xarbit/plasma6-applet-appgrid/issues) — you can type `i:` in the search bar to copy your system info for the report.
-
-> **Compatibility:** AppGrid targets KDE Plasma 6 and supports a wide range of distributions. Multi-monitor screen selection works best with LayerShellQt 6.6+, but falls back to the older API on earlier versions. Pre-built packages are provided for Arch Linux (AUR), Fedora, Ubuntu 25.04+, and Debian 13+. openSUSE is available via a community-maintained OBS package.
-
-> **Wayland-first:** AppGrid is developed and tested on Wayland. X11 support is included but less tested — the standalone launcher uses frameless window flags and manual screen positioning on X11 instead of LayerShellQt. The **AppGrid (Panel)** variant uses Plasma's native popup and works on both. If you encounter X11 issues, please [report them](https://github.com/xarbit/plasma6-applet-appgrid/issues).
+A grid-style application launcher for KDE Plasma 6, inspired by macOS Launchpad, COSMIC, and Pantheon. Ships as two plasmoids — a standalone centered popup (**AppGrid**) and a native Plasma panel popup (**AppGrid Panel**) — both sharing the same grid, search, categories, and config.
 
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
 
 ![AppGrid](images/launcher.png)
 
-## Why AppGrid?
+Website with screenshots, features, FAQ, and install instructions: **[appgrid.xarbit.dev](https://appgrid.xarbit.dev)**. Build instructions, configuration reference, internals, and contributor notes: **[appgrid.xarbit.dev/docs](https://appgrid.xarbit.dev/docs)**.
 
-KDE Plasma ships with Kickoff and Kicker as its default application launchers. While they are feature-rich, I find them difficult to navigate and slower to use for everyday app launching. I've always preferred the simplicity of how COSMIC, macOS Launchpad, and Pantheon handle application launching — a clean grid where everything is visible at a glance. Since nothing like that existed for Plasma, I decided to build one that fits my workflow.
+## Install
 
-## Screenshots
+| Distro | Command |
+|---|---|
+| **Arch Linux + derivatives** (AUR — official) | `yay -S plasma6-applets-appgrid` |
+| **Fedora / Ubuntu / Debian** | Pre-built `.rpm` / `.deb` on the [Releases](https://github.com/xarbit/plasma6-applet-appgrid/releases) page |
+| **Immutable distros** (KDE Linux, Kinoite, Bazzite, Aurora, Kalpa, SteamOS) | Universal `~/.local/` tarball — see [INSTALL.TXT](packages/universal/INSTALL.TXT) |
+| **openSUSE** (community) | [OBS package by @JMarcosHP01](https://build.opensuse.org/package/show/home:JMarcosHP01/plasma6-applet-appgrid) |
+| **Gentoo** (community) | [Overlay by @mnalmahmud](https://github.com/mnalmahmud/mnalmahmud-overlay) |
 
-![App Grid](images/launcher-main.png)
+After install: right-click the panel launcher → **Show Alternatives** → **AppGrid**.
 
-![App Grid Dark](images/launcher-main-dark.png)
+Full per-distro guide with download links, checksums, and step-by-step terminal commands: **[appgrid.xarbit.dev/#install](https://appgrid.xarbit.dev/#install)**.
 
-![Search](images/search.png)
+## Build from source
 
-![Quick Commands](images/quick-commands.png)
-
-![Settings](images/settings.png)
-
-## Features
-
-- **Two plasmoid variants** — standalone centered popup or native Plasma panel popup (like Kickoff)
-- **Unified search** — app results and KRunner results merged into one list with Alt+1–9 shortcuts
-- **Favorites** — add, remove, and reorder favorites with edit mode
-- **Categories** — scrollable bar with Alt+key mnemonics, or use KDE Menu Editor categories
-- **Application actions** — right-click any app to see jumplist actions (e.g., New Private Window)
-- **Quick commands** — terminal (`t:`), shell commands (`:`), file browser (`/`), system info (`i:`), hidden apps manager (`h:`), help (`?`)
-- **Keyword search** — matches desktop file keywords (e.g., typing "browser" finds Firefox)
-- **Search ranking** — results ranked by match quality (name prefix > substring > generic name > keyword)
-- **Install source detection** — search by "flatpak", "snap", or "web app"; source badges in search results and tooltips
-- **App tooltips** — hover for app description and install source (Flatpak, Snap, AppImage, Web App)
-- **Multi-category** — apps appear in all matching categories, not just the first
-- **By Category sort** — groups apps by category with section headers, keyboard navigation, and scrollable category bar
-- **Open/close animations** — Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam, or None
-- **Icon animations** — shake, grow, bounce, spin, shuffle, or none
-- **Multi-monitor** — open on active screen or panel screen
-- **Customizable** — grid size, icon size, blur, opacity, corner radius, dividers, session buttons
-- **Respects KDE settings** — system animation speed, font size, Plasma theme corner radius
-- **Dim background** — optional darkened overlay behind the launcher for focus
-- Sort by most used, alphabetically, or by category; new app detection with badge
-- Context menu with favorites, pin to Task Manager, add to Desktop, hide apps
-- Session management (sleep, restart, shut down, lock, log out, switch user)
-- Drop-in replacement via Plasma's Show Alternatives
-
-## Dependencies
-
-### Runtime
-- plasma-workspace
-- kservice
-- ki18n
-- kio
-- krunner
-- layer-shell-qt
-
-### Build
-- cmake
-- extra-cmake-modules
-- qt6-base
-- qt6-declarative
-- libplasma
-- kpackage
-- kio
-- kcoreaddons
-- krunner
-- kwindowsystem
-- layer-shell-qt
-- gettext
-
-## Installation
-
-### Pre-built packages
-
-Pre-built packages for Fedora, Ubuntu, and Debian are available on the [Releases](https://github.com/xarbit/plasma6-applet-appgrid/releases) page. These are auto-generated and provided as is — I'm not a packager, and they may not follow all distro packaging standards. Ideally, distribution maintainers would pick up AppGrid for their official repositories. If you're a packager and want to maintain AppGrid for your distro, please reach out so I can link to your package and eventually retire these from the CI pipeline. openSUSE packages are available via the community-maintained OBS package (see below).
-
-### Arch Linux & derivatives (AUR) — officially supported
-
-The AUR package is maintained by the author and works on Arch Linux and Arch-based distributions such as EndeavourOS, CachyOS, Manjaro, and Garuda.
-
-```bash
-yay -S plasma6-applets-appgrid
-```
-
-### Community packages
-
-The following packages are created and maintained by community members — we appreciate the effort and it helps make AppGrid available to more users! These are **not** officially supported by the AppGrid project, so please report any packaging issues to their respective maintainers.
-
-| Distribution | Package | Maintainer |
-|---|---|---|
-| openSUSE (OBS) | [plasma6-applet-appgrid](https://build.opensuse.org/package/show/home:JMarcosHP01/plasma6-applet-appgrid) | [@JMarcosHP01](https://build.opensuse.org/users/JMarcosHP01) |
-| Gentoo | [kde-misc/plasma6-applet-appgrid](https://github.com/mnalmahmud/mnalmahmud-overlay) | [@mnalmahmud](https://github.com/mnalmahmud) |
-
-If you maintain a package for AppGrid on your distribution and would like it listed here, please open an issue or pull request.
-
-## Building from source
+Requires Plasma 6.0+ (6.4+ recommended) and the KDE Frameworks 6 development headers — see [`PKGBUILD`](PKGBUILD) for the Arch list or the spec files under [`packages/`](packages/) for Fedora / Debian / openSUSE equivalents.
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 cmake --build build -j$(nproc)
 sudo cmake --install build
-```
-
-After installing, restart Plasma:
-
-```bash
 kquitapp6 plasmashell && kstart plasmashell
 ```
 
-### Arch Linux: build and install from PKGBUILD
+Arch users can build a proper pacman package with `makepkg -sf` and install via `sudo pacman -U plasma6-applets-appgrid-*.pkg.tar.zst`.
 
-The repository includes a `PKGBUILD` for building a local Arch package:
+## Documentation
 
-```bash
-makepkg -sf
-sudo pacman -U plasma6-applets-appgrid-*.pkg.tar.zst
-kquitapp6 plasmashell && kstart plasmashell
-```
+Full docs live on the website: **[appgrid.xarbit.dev/docs](https://appgrid.xarbit.dev/docs)**.
 
-`-s` installs missing dependencies, `-f` overwrites any existing package file.
-
-## Usage
-
-1. Right-click your current application launcher in the panel
-2. Select **Show Alternatives**
-3. Choose **AppGrid**
-
-Or add it as a new widget: right-click the panel → **Add Widgets** → search for **AppGrid**.
-
-There are two variants:
-- **AppGrid** — opens as a standalone window
-- **AppGrid (Panel)** — opens as a native Plasma popup anchored to the panel icon, like Kickoff
-
-### Keyboard shortcuts
-
-| Key | Action |
-|-----|--------|
-| Super | Toggle AppGrid |
-| Escape | Close |
-| Enter | Launch top search result |
-| Alt+1–9 | Launch numbered search result (apps and KRunner results) |
-| Alt+letter | Jump to category by mnemonic |
-| Arrow keys | Navigate results |
-| Ctrl+Shift+Arrow | Reorder highlighted favorite (favorites tab) |
-| Tab | Cycle through search results (apps + KRunner unified) |
-| Type anywhere | Start searching |
-| `t:command` | Run command in terminal |
-| `:command` | Run shell command |
-| `/path` or `~/path` | Browse files |
-| `i:` | Show system info |
-| `h:` | Manage hidden apps |
-| `?` | Show quick commands help |
-
-## Configuration
-
-Right-click the AppGrid panel icon → **Configure AppGrid** → **General**.
-
-![Settings](images/settings.png)
-
-| Setting | Description | Default |
-|---------|-------------|---------|
-| **Icon** | Panel icon or custom image | `start-here-kde-symbolic` |
-| **Icons per row** | Number of columns in the grid (Center only) | 7 |
-| **Visible rows** | Number of rows visible before scrolling (Center only) | 4 |
-| **Icon size** | Small (32 px), medium (48 px), or large (64 px) | Large |
-| **Sort order** | Alphabetical, Most Used, or By Category | Most Used |
-| **Open on active screen** | Open on mouse focus screen or panel screen | On |
-| **Show category bar** | Show or hide the category filter bar | On |
-| **Search all apps** | Search all apps regardless of active tab | On |
-| **Start with favorites** | Open showing favorites instead of all apps | Off |
-| **Use system categories** | Use KDE Menu Editor categories | Off |
-| **Terminal shell** | Shell for `t:` commands | /bin/sh |
-| **Show recently used** | Show recently used apps section | On |
-| **Hide empty categories** | Hide categories with no apps | On |
-| **Show divider lines** | Show dividers between UI sections | On |
-| **Show scrollbars** | Show scrollbars in grid and search | Off |
-| **Show tooltips on hover** | Show app description and install source on hover | On |
-| **Open/close animation** | None, Fade, Scale, Pop, Slide Up/Down, Glide, Buzz, Twist, Slam | Scale |
-| **Enable background blur** | Blur behind the launcher (Center only) | On |
-| **Dim background** | Darken the screen behind the launcher (Center only) | Off |
-| **Icon animation** | None, Shake, Grow, Bounce, Spin, Shuffle | Shake |
-| **Animate icons on open** | Play icon animation when launcher opens | On |
-| **Show session buttons** | Show power/session buttons | On |
-| **Show button labels** | Text labels on session buttons | Off |
-| **KRunner plugins** | Search bookmarks, files, websites | On |
-| **Background opacity** | Launcher background opacity (Center only) | 85% |
-| **Corner radius** | Custom corner radius (Center only) | Off (uses Plasma theme) |
-
-> **Note:** The **AppGrid Panel** variant shares most settings but does not include grid size, blur, opacity, corner radius, multi-monitor, or open/close animation — those are managed by Plasma's native popup. Settings marked **(Center only)** apply exclusively to the AppGrid Center variant.
-
-## FAQ
-
-**Why isn't there a `.plasmoid` file I can install from the KDE Store?**
-
-AppGrid uses a C++ backend for app discovery, window management, blur effects, and session actions. The `.plasmoid` format only supports pure QML plasmoids — it has no mechanism to install the compiled plugin (`.so`) to the system plugin path where Plasma expects it. AppGrid provides packages for Arch, Fedora, Ubuntu, and Debian. openSUSE is available via a community OBS package.
-
-**How do I reorder my favorites?**
-
-Switch to the favorites tab and drag any icon to its new position. The grid reflows as you drag; release to drop. Dragging near the top or bottom auto-scrolls. Order is saved automatically. To remove a favorite, right-click it and pick "Remove from Favorites".
-
-**Can I drag apps from AppGrid to my taskbar, panel, or desktop?**
-
-Yes. Drag any app icon out of AppGrid onto the KDE task manager (to pin it), the panel (to add a launcher), the desktop (to place an icon), or a Dolphin window (to create a `.desktop` shortcut). The drag carries a standard `text/uri-list` reference to the app's `.desktop` file, so any KDE drop target that accepts launcher files will accept it.
-
-**Where are favorites stored?**
-
-AppGrid stores favorites in KDE's activity-aware favorites backend (`KAStatsFavoritesModel`, backed by `KActivitiesStats` from KDE Frameworks). Each AppGrid instance writes to its own namespace (`dev.xarbit.appgrid.favorites.instance-<id>`), which means:
-
-- Favorites are activity-aware (KActivities-linked) and sync via standard KDE sync mechanisms if configured
-- AppGrid does **not** share favorites with Kickoff or Kicker — each launcher uses its own client namespace (the same convention Kickoff and Kicker follow for each other)
-- AppGrid does **not** override or modify Kickoff/Kicker settings
-- If you upgrade from an older AppGrid version (≤1.7.x), your existing local favorites are migrated to the new backend automatically on first launch. No manual action required.
-
-**How does "Recently Used" work?**
-
-The recently used section shows apps you've launched recently. Where it appears depends on your settings:
-
-- **Start with Favorites OFF** — recently used shows in the "All" tab (Alphabetical sort only, since Most Used already surfaces frequent apps)
-- **Start with Favorites ON** — recently used shows in the Favorites tab instead (any sort order)
-- **By Category sort** — recently used shows at the top of the category view (unless Start with Favorites is on)
-
-The setting is only greyed out when it has no effect (Most Used sort without Start with Favorites). When you turn it off, the recent apps list is cleared. Turning it back on starts fresh — apps will appear as you launch them.
-
-**What are the two category modes?**
-
-By default, AppGrid uses a simplified built-in category mapping that groups apps into clean categories like Development, Graphics, Internet, Multimedia, Office, System, and Utilities. If you enable "Use system categories" in settings, AppGrid reads categories directly from the KDE menu system. This respects any changes made in KDE Menu Editor — you can rename, reorganize, or create custom categories and AppGrid will reflect them automatically. Right-click any category to open the Menu Editor.
-
-## Credits
-
-- **Jason Scurtu** — Author
-- **[@claude](https://github.com/claude)** — AI pair programming assistant
-
-Disclaimer:
-This project uses [Claude Code](https://claude.ai/claude-code) as an AI pair programmer and AI assistant. To be clear: this is **not** vibe-coded — it is context engineered and reviewed. Nevertheless, if AI-assisted code gives you the ick, this might not be the launcher for you.
+- **[Build from source](https://appgrid.xarbit.dev/docs#build-from-source)** + **[Dependencies (per distro)](https://appgrid.xarbit.dev/docs#dependencies)** + **[CMake build options](https://appgrid.xarbit.dev/docs#cmake-options)**
+- **[Configuration reference](https://appgrid.xarbit.dev/docs#configuration)** — every setting with default + effect
+- **[Plasmoid variants & IDs](https://appgrid.xarbit.dev/docs#plasmoid-variants)** · **[Favorites storage](https://appgrid.xarbit.dev/docs#favorites-storage)** · **[Universal package internals](https://appgrid.xarbit.dev/docs#universal-internals)** · **[Update checker internals](https://appgrid.xarbit.dev/docs#update-checker)** · **[Versioning scheme](https://appgrid.xarbit.dev/docs#versioning)**
+- **[State file locations](https://appgrid.xarbit.dev/docs#state-files)** · **[Running the test suite](https://appgrid.xarbit.dev/docs#tests)** · **[Translations workflow](https://appgrid.xarbit.dev/docs#translations)**
+- **[Help & troubleshooting](https://appgrid.xarbit.dev/docs#help)** — 1.7.x upgrade, distro ↔ universal switching, logs / debugging, bug-reporting
 
 ## Contributing
 
-Contributions are welcome! Here's how you can help:
+- **Bugs / ideas** — [open an issue](https://github.com/xarbit/plasma6-applet-appgrid/issues) with steps to reproduce and your Plasma version (`i:` in the search bar copies your system info)
+- **Translations** — `.po` files live in [`po/`](po/); add or improve a language and open a PR
+- **Code** — fork, branch, PR. Keep changes focused; test against both AppGrid Center and AppGrid Panel
+- **Packaging** — if you maintain AppGrid for a distro not listed above, open an issue and I'll add it
 
-- **Bug reports** — [open an issue](https://github.com/xarbit/plasma6-applet-appgrid/issues) with steps to reproduce, your Plasma version, and any relevant screenshots
-- **Translations** — translation files are in `po/`. Add or improve translations for your language and submit a pull request
-- **Packaging** — if you maintain packages for a Linux distribution and want to package AppGrid, please reach out
-- **Code** — fork the repo, create a feature branch, and submit a pull request. Please keep changes focused and test on both plasmoid variants (AppGrid Center and AppGrid Panel)
+## Credits
+
+- **Jason Scurtu** — author
+
+This project is developed with [Claude Code](https://claude.ai/claude-code) as an AI pair programmer. Context-engineered and reviewed, not vibe-coded — but if AI-assisted code gives you the ick, this might not be the launcher for you.
 
 ## License
 
