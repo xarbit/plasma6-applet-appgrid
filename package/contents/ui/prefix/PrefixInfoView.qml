@@ -139,11 +139,7 @@ ColumnLayout {
             visible: infoView._migrated
             icon.name: "edit-undo"
             text: i18nd("dev.xarbit.appgrid", "Re-run migration")
-            PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid",
-                "Clears the migration flag. On next open, AppGrid recomputes the "
-                + "favorites list as the union of the legacy backup and current "
-                + "KAStats entries. Nothing is lost; missing legacy items are "
-                + "re-added.")
+            PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Clears the migration flag. On next open, AppGrid recomputes the favorites list as the union of the legacy backup and current KAStats entries. Nothing is lost; missing legacy items are re-added.")
             PlasmaComponents.ToolTip.visible: hovered
             PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
             onClicked: {

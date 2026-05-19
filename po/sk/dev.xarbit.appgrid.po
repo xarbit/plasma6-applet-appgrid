@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 17:14+0100\n"
+"POT-Creation-Date: 2026-05-19 14:58+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Slovak\n"
@@ -17,352 +17,643 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
 
-#: package/contents/ui/AppContextMenu.qml:32
-#: package/contents/ui/AppIconDelegate.qml:115
+#: package/contents/ui/AppContextMenu.qml:156
 msgid "Remove from Favorites"
 msgstr "Odstrániť z Obľúbených"
 
-#: package/contents/ui/AppContextMenu.qml:32
+#: package/contents/ui/AppContextMenu.qml:157
 msgid "Add to Favorites"
 msgstr "Pridať do Obľúbených"
 
-#: package/contents/ui/AppContextMenu.qml:47
-#: package/contents/ui/AppContextMenu.qml:49
+#: package/contents/ui/AppContextMenu.qml:174
+#: package/contents/ui/AppContextMenu.qml:298
+msgid "Remove from Selection"
+msgstr "Odobrať z výberu"
+
+#: package/contents/ui/AppContextMenu.qml:175
+msgid "Add to Selection"
+msgstr "Pridať do výberu"
+
+#: package/contents/ui/AppContextMenu.qml:183
 msgid "Pin to Task Manager"
 msgstr "Pripnúť na Správcu úloh"
 
-#: package/contents/ui/AppContextMenu.qml:55
-#: package/contents/ui/AppContextMenu.qml:57
+#: package/contents/ui/AppContextMenu.qml:192
 msgid "Add to Desktop"
 msgstr "Pridať na Plochu"
 
-#: package/contents/ui/AppContextMenu.qml:63
-#: package/contents/ui/AppContextMenu.qml:65
+#: package/contents/ui/AppContextMenu.qml:201
 msgid "Edit Application"
 msgstr "Upraviť aplikáciu"
 
-#: package/contents/ui/AppContextMenu.qml:73
-#: package/contents/ui/AppContextMenu.qml:80
+#: package/contents/ui/AppContextMenu.qml:209
 msgid "Hide Application"
 msgstr "Skryť aplikáciu"
 
-#: package/contents/ui/AppIconDelegate.qml:147
+#: package/contents/ui/AppContextMenu.qml:228
+msgid "Add %1 to Favorites"
+msgid_plural "Add %1 to Favorites"
+msgstr[0] "Pridať %1 do obľúbených"
+msgstr[1] "Pridať %1 do obľúbených"
+msgstr[2] "Pridať %1 do obľúbených"
+
+#: package/contents/ui/AppContextMenu.qml:242
+msgid "Remove %1 from Favorites"
+msgid_plural "Remove %1 from Favorites"
+msgstr[0] "Odobrať %1 z obľúbených"
+msgstr[1] "Odobrať %1 z obľúbených"
+msgstr[2] "Odobrať %1 z obľúbených"
+
+#: package/contents/ui/AppContextMenu.qml:255
+msgid "Pin %1 to Task Manager"
+msgid_plural "Pin %1 to Task Manager"
+msgstr[0] "Pripnúť %1 na panel úloh"
+msgstr[1] "Pripnúť %1 na panel úloh"
+msgstr[2] "Pripnúť %1 na panel úloh"
+
+#: package/contents/ui/AppContextMenu.qml:263
+msgid "Add %1 to Desktop"
+msgid_plural "Add %1 to Desktop"
+msgstr[0] "Pridať %1 na plochu"
+msgstr[1] "Pridať %1 na plochu"
+msgstr[2] "Pridať %1 na plochu"
+
+#: package/contents/ui/AppContextMenu.qml:271
+msgid "Launch %1 application"
+msgid_plural "Launch %1 applications"
+msgstr[0] "Spustiť %1 aplikáciu"
+msgstr[1] "Spustiť %1 aplikácie"
+msgstr[2] "Spustiť %1 aplikácií"
+
+#: package/contents/ui/AppContextMenu.qml:281
+msgid "Copy %1 path"
+msgid_plural "Copy %1 paths"
+msgstr[0] "Skopírovať cestu %1"
+msgstr[1] "Skopírovať cesty %1"
+msgstr[2] "Skopírovať cesty %1"
+
+#: package/contents/ui/AppContextMenu.qml:289
+msgid "Hide %1 application"
+msgid_plural "Hide %1 applications"
+msgstr[0] "Skryť %1 aplikáciu"
+msgstr[1] "Skryť %1 aplikácie"
+msgstr[2] "Skryť %1 aplikácií"
+
+#: package/contents/ui/AppIconDelegate.qml:213
 msgid "new"
 msgstr "nové"
 
-#: package/contents/ui/CategoryBar.qml:58
-#: package/contents/ui/CategoryBar.qml:194
+#: package/contents/ui/AppIconDelegate.qml:214
+msgid "selected"
+msgstr "vybrané"
+
+#: package/contents/ui/CategoryBar.qml:67
+#: package/contents/ui/CategoryBar.qml:204
+#: package/contents/ui/CategoryBar.qml:205
 msgid "All"
 msgstr "Všetko"
 
-#: package/contents/ui/CategoryBar.qml:62
+#: package/contents/ui/CategoryBar.qml:68
 #: package/contents/ui/CategoryBar.qml:183
 #: package/contents/ui/CategoryBar.qml:187
-#: package/contents/ui/CategoryBar.qml:314
-#: package/contents/ui/CategoryBar.qml:318
+#: package/contents/ui/CategoryBar.qml:343
+#: package/contents/ui/CategoryBar.qml:347
+#: package/contents/ui/prefix/PrefixInfoView.qml:121
+#: package/contents/ui/RecentAppsHeader.qml:111
 msgid "Favorites"
 msgstr "Obľúbené"
 
-#: package/contents/ui/CategoryBar.qml:203
+#: package/contents/ui/CategoryBar.qml:220
 msgid "All applications"
 msgstr "Všetky aplikácie"
 
-#: package/contents/ui/CategoryBar.qml:217
+#: package/contents/ui/CategoryBar.qml:234
 msgid "Scroll categories left"
 msgstr "Posunúť doľava"
 
-#: package/contents/ui/CategoryBar.qml:302
+#: package/contents/ui/CategoryBar.qml:331
 msgid "Scroll categories right"
 msgstr "Posunúť doprava"
 
-#: package/contents/ui/CategoryBar.qml:329
+#: package/contents/ui/CategoryBar.qml:360
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr "Upraviť \"%1\" v editore ponúk…"
 
-#: package/contents/ui/CategoryBar.qml:337
+#: package/contents/ui/CategoryBar.qml:368
 msgid "Open Menu Editor…"
 msgstr "Otvoriť editor ponúk…"
 
-#: package/contents/ui/ConfigGeneral.qml:74
+#: package/contents/ui/ConfigGeneral.qml:85
 msgid "Icon:"
 msgstr "Ikona:"
 
-#: package/contents/ui/ConfigGeneral.qml:135
+#: package/contents/ui/ConfigGeneral.qml:146
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Vybrať…"
 
-#: package/contents/ui/ConfigGeneral.qml:140
+#: package/contents/ui/ConfigGeneral.qml:151
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Vymazať ikonu"
 
-#: package/contents/ui/ConfigGeneral.qml:157
+#: package/contents/ui/ConfigGeneral.qml:164
+msgid "Text label:"
+msgstr "Textový popis:"
+
+#: package/contents/ui/ConfigGeneral.qml:166
+msgid "Type here to add a text label"
+msgstr "Píšte sem pre pridanie textového popisu"
+
+#: package/contents/ui/ConfigGeneral.qml:183
 msgid "Icons per row:"
 msgstr "Ikon na riadok:"
 
-#: package/contents/ui/ConfigGeneral.qml:163
+#: package/contents/ui/ConfigGeneral.qml:189
 msgid "Visible rows:"
 msgstr "Viditeľné riadky:"
 
-#: package/contents/ui/ConfigGeneral.qml:169
+#: package/contents/ui/ConfigGeneral.qml:195
 msgid "Icon size:"
 msgstr "Veľkosť ikon:"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Small"
 msgstr "Malá"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Medium"
 msgstr "Stredná"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Large"
 msgstr "Veľká"
 
-#: package/contents/ui/ConfigGeneral.qml:174
+#: package/contents/ui/ConfigGeneral.qml:201
 msgid "Sort order:"
 msgstr "Radenie:"
 
-#: package/contents/ui/ConfigGeneral.qml:179
+#: package/contents/ui/ConfigGeneral.qml:202
 msgid "Alphabetical"
 msgstr "Podľa abecedy"
 
-#: package/contents/ui/ConfigGeneral.qml:179
+#: package/contents/ui/ConfigGeneral.qml:202
 msgid "Most Used"
 msgstr "Najpoužívanejšie"
 
-#: package/contents/ui/ConfigGeneral.qml:184
-msgid "Show recently used applications"
-msgstr "Zobraziť naposledy použité aplikácie"
+#: package/contents/ui/ConfigGeneral.qml:202
+msgid "By Category"
+msgstr "Podľa kategórie"
 
-#: package/contents/ui/ConfigGeneral.qml:195
+#: package/contents/ui/ConfigGeneral.qml:211
 msgid "Behavior:"
 msgstr "Správanie:"
 
-#: package/contents/ui/ConfigGeneral.qml:196
+#: package/contents/ui/ConfigGeneral.qml:212
 msgid "Show category bar"
 msgstr "Zobraziť lištu kategórií"
 
-#: package/contents/ui/ConfigGeneral.qml:201
+#: package/contents/ui/ConfigGeneral.qml:217
+msgid "Open on screen with mouse focus (otherwise on panel screen)"
+msgstr "Otvoriť na obrazovke so zameraním myši (inak na obrazovke panela)"
+
+#: package/contents/ui/ConfigGeneral.qml:222
 msgid "Search all apps regardless of active tab"
 msgstr "Hľadať vo všetkých aplikáciách"
 
-#: package/contents/ui/ConfigGeneral.qml:206
+#: package/contents/ui/ConfigGeneral.qml:227
 msgid "Start with favorites tab"
 msgstr "Začať s kartou obľúbených"
 
-#: package/contents/ui/ConfigGeneral.qml:212
+#: package/contents/ui/ConfigGeneral.qml:233
+msgid "Show recently used applications"
+msgstr "Zobraziť naposledy použité aplikácie"
+
+#: package/contents/ui/ConfigGeneral.qml:239
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Systémové kategórie (KDE Editor ponúk)"
 
-#: package/contents/ui/ConfigGeneral.qml:218
+#: package/contents/ui/ConfigGeneral.qml:245
+msgid "Hide empty categories"
+msgstr "Skryť prázdne kategórie"
+
+#: package/contents/ui/ConfigGeneral.qml:253
+msgid "Check the AppGrid website for new releases"
+msgstr "Skontrolovať nové verzie na webe AppGrid"
+
+#: package/contents/ui/ConfigGeneral.qml:255
+msgid ""
+"Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+"latest.json. "
+msgstr ""
+"Anonymná požiadavka raz denne na https://appgrid.xarbit.dev/api/latest.json. "
+
+#: package/contents/ui/ConfigGeneral.qml:264
 msgid "Terminal shell:"
 msgstr "Shell terminálu:"
 
-#: package/contents/ui/ConfigGeneral.qml:222
+#: package/contents/ui/ConfigGeneral.qml:268
 msgid "Default (/bin/sh)"
 msgstr "Predvolená (/bin/sh)"
 
-#: package/contents/ui/ConfigGeneral.qml:242
+#: package/contents/ui/ConfigGeneral.qml:288
 msgid "Appearance:"
 msgstr "Vzhľad:"
 
-#: package/contents/ui/ConfigGeneral.qml:243
+#: package/contents/ui/ConfigGeneral.qml:289
+msgid "Show divider lines"
+msgstr "Zobraziť oddeľovacie čiary"
+
+#: package/contents/ui/ConfigGeneral.qml:294
 msgid "Show scrollbars"
 msgstr "Zobraziť posúvače"
 
-#: package/contents/ui/ConfigGeneral.qml:248
-msgid "Enable background blur"
-msgstr "Povoliť rozostrenie pozadia"
+#: package/contents/ui/ConfigGeneral.qml:299
+msgid "Show tooltips on hover"
+msgstr "Zobraziť tipy po nabehnutí"
 
-#: package/contents/ui/ConfigGeneral.qml:253
-msgid "Icon animation:"
-msgstr "Animácia ikon:"
+#: package/contents/ui/ConfigGeneral.qml:304
+msgid "Show new app badge"
+msgstr "Zobraziť odznak nových aplikácií"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:309
+msgid "Hide app labels on favorites tab"
+msgstr "Skryť názvy aplikácií v karte obľúbených"
+
+#: package/contents/ui/ConfigGeneral.qml:315
+msgid "Sort favorites alphabetically"
+msgstr "Zoradiť obľúbené abecedne"
+
+#: package/contents/ui/ConfigGeneral.qml:320
+msgid "Open/close animation:"
+msgstr "Animácia otvorenia/zatvorenia:"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "None"
 msgstr "Žiadna"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Fade"
+msgstr "Prelínanie"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Scale"
+msgstr "Mierka"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Pop"
+msgstr "Vyskočenie"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slide Up"
+msgstr "Vysunutie nahor"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slide Down"
+msgstr "Vysunutie nadol"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Glide"
+msgstr "Klzanie"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Buzz"
+msgstr "Trasenie"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Twist"
+msgstr "Otočenie"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slam"
+msgstr "Buchnutie"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Grow Up"
+msgstr "Rásť nahor"
+
+#: package/contents/ui/ConfigGeneral.qml:326
+msgid "Enable background blur"
+msgstr "Povoliť rozostrenie pozadia"
+
+#: package/contents/ui/ConfigGeneral.qml:331
+msgid "Dim background behind launcher"
+msgstr "Stlmiť pozadie za spúšťačom"
+
+#: package/contents/ui/ConfigGeneral.qml:336
+msgid "Icon animation:"
+msgstr "Animácia ikon:"
+
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Shake"
 msgstr "Trasenie"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Grow"
 msgstr "Zväčšenie"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Bounce"
 msgstr "Odskočenie"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Spin"
 msgstr "Otáčanie"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Shuffle"
 msgstr "Zamiešanie"
 
-#: package/contents/ui/ConfigGeneral.qml:259
+#: package/contents/ui/ConfigGeneral.qml:342
 msgid "Animate icons on open"
 msgstr "Animovať ikony pri otvorení"
 
-#: package/contents/ui/ConfigGeneral.qml:265
+#: package/contents/ui/ConfigGeneral.qml:348
+msgid "Show power/session buttons"
+msgstr "Zobraziť tlačidlá napájania/relácie"
+
+#: package/contents/ui/ConfigGeneral.qml:353
 msgid "Show labels on power/session buttons"
 msgstr "Zobraziť popisky na tlačidlách napájania/relácie"
 
-#: package/contents/ui/ConfigGeneral.qml:270
+#: package/contents/ui/ConfigGeneral.qml:359
 msgid "Expand search to bookmarks, files, and websites"
 msgstr "Rozšíriť vyhľadávanie na záložky, súbory a webové stránky"
 
-#: package/contents/ui/ConfigGeneral.qml:274
+#: package/contents/ui/ConfigGeneral.qml:363
 msgid "Configure Search Plugins…"
 msgstr "Nastaviť zásuvné moduly vyhľadávania…"
 
-#: package/contents/ui/ConfigGeneral.qml:281
+#: package/contents/ui/ConfigGeneral.qml:370
 msgid "Background opacity:"
 msgstr "Krytie pozadia:"
 
-#: package/contents/ui/ConfigGeneral.qml:297
+#: package/contents/ui/ConfigGeneral.qml:386
 msgid "Corner radius:"
 msgstr "Polomer rohov:"
 
-#: package/contents/ui/ConfigGeneral.qml:298
+#: package/contents/ui/ConfigGeneral.qml:387
 msgid "Use custom corner radius"
 msgstr "Použiť vlastný polomer rohov"
 
-#: package/contents/ui/ConfigGeneral.qml:310
+#: package/contents/ui/ConfigGeneral.qml:399
 msgid "px"
 msgstr "px"
 
-#: package/contents/ui/ConfigGeneral.qml:322
+#: package/contents/ui/ConfigGeneral.qml:411
 msgid "Reset to Defaults"
 msgstr "Obnoviť predvolené"
 
-#: package/contents/ui/ConfigGeneral.qml:355
-msgid "Hidden Applications"
-msgstr "Skryté aplikácie"
+#: package/contents/ui/ConfigGeneral.qml:455
+msgid "Hidden apps:"
+msgstr "Skryté aplikácie:"
 
-#: package/contents/ui/ConfigGeneral.qml:362
+#: package/contents/ui/ConfigGeneral.qml:462
 msgid ""
-"Right-click any application in the grid and choose \"Hide Application\" to "
-"add it here."
+"Right-click any app in the grid to hide it, or type h: in the search bar."
 msgstr ""
-"Kliknite pravým tlačidlom na ľubovoľnú aplikáciu v mriežke a zvoľte \"Skryť "
-"aplikáciu\" pre pridanie sem."
+"Kliknite pravým tlačidlom na akúkoľvek aplikáciu v mriežke pre skrytie, "
+"alebo napíšte h: do vyhľadávacieho poľa."
 
-#: package/contents/ui/ConfigGeneral.qml:370
+#: package/contents/ui/ConfigGeneral.qml:469
 msgid "No hidden applications."
 msgstr "Žiadne skryté aplikácie."
 
-#: package/contents/ui/ConfigGeneral.qml:400
+#: package/contents/ui/ConfigGeneral.qml:515
+#: package/contents/ui/prefix/PrefixHiddenView.qml:127
 msgid "Unhide"
 msgstr "Zobraziť"
 
-#: package/contents/ui/GridPanel.qml:433
-msgid "More Results"
-msgstr "Ďalšie výsledky"
+#: package/contents/ui/ConfigGeneral.qml:532
+#: package/contents/ui/prefix/PrefixHiddenView.qml:35
+msgid "Unhide All"
+msgstr "Zobraziť všetko"
 
-#: package/contents/ui/GridPanel.qml:530
-msgid "Click an icon to select it, then click another to swap positions"
-msgstr "Kliknite ikonu pre výber, potom inú pre výmenu"
+#: package/contents/ui/GridPanel.qml:868
+msgid "Launch all selected?"
+msgstr "Spustiť všetky vybrané?"
 
-#: package/contents/ui/GridPanel.qml:531
-msgid "Now click another icon to swap, or click again to deselect"
-msgstr "Kliknite inú ikonu pre výmenu alebo znova pre zrušenie"
+#: package/contents/ui/GridPanel.qml:870
+msgid "Open %1 application at once?"
+msgid_plural "Open %1 applications at once?"
+msgstr[0] "Otvoriť %1 aplikáciu naraz?"
+msgstr[1] "Otvoriť %1 aplikácie naraz?"
+msgstr[2] "Otvoriť %1 aplikácií naraz?"
 
-#: package/contents/ui/GridPanel.qml:553
-msgid "Done"
-msgstr "Hotovo"
+#: package/contents/ui/GridPanel.qml:880
+msgid "Hide selected applications?"
+msgstr "Skryť vybrané aplikácie?"
 
-#: package/contents/ui/GridPanel.qml:553
-msgid "Reorder favorites"
-msgstr "Preusporiadať obľúbené"
+#: package/contents/ui/GridPanel.qml:882
+msgid ""
+"Hide %1 application from AppGrid? You can unhide it later in Settings → "
+"Hidden Applications."
+msgid_plural ""
+"Hide %1 applications from AppGrid? You can unhide them later in Settings → "
+"Hidden Applications."
+msgstr[0] ""
+"Skryť %1 aplikáciu z AppGrid? Môžete ju neskôr zobraziť v Nastavenia → "
+"Skryté aplikácie."
+msgstr[1] ""
+"Skryť %1 aplikácie z AppGrid? Môžete ich neskôr zobraziť v Nastavenia → "
+"Skryté aplikácie."
+msgstr[2] ""
+"Skryť %1 aplikácií z AppGrid? Môžete ich neskôr zobraziť v Nastavenia → "
+"Skryté aplikácie."
 
-#: package/contents/ui/PowerButtons.qml:25
+#: package/contents/ui/PowerButtons.qml:34
+msgid "Update available"
+msgstr "Dostupná aktualizácia"
+
+#: package/contents/ui/PowerButtons.qml:39
+msgid "AppGrid %1 is available — click to view release notes"
+msgstr "AppGrid %1 je k dispozícii — kliknutím zobrazíte poznámky k vydaniu"
+
+#: package/contents/ui/PowerButtons.qml:50
+msgid "AppGrid update available"
+msgstr "Dostupná aktualizácia AppGrid"
+
+#: package/contents/ui/PowerButtons.qml:66
+#: package/contents/ui/PowerButtons.qml:69
+#: package/contents/ui/PowerButtons.qml:73
 msgid "Sleep"
 msgstr "Uspať"
 
-#: package/contents/ui/PowerButtons.qml:26
+#: package/contents/ui/PowerButtons.qml:80
+#: package/contents/ui/PowerButtons.qml:83
+#: package/contents/ui/PowerButtons.qml:87
 msgid "Restart"
 msgstr "Reštartovať"
 
-#: package/contents/ui/PowerButtons.qml:27
+#: package/contents/ui/PowerButtons.qml:94
+#: package/contents/ui/PowerButtons.qml:97
+#: package/contents/ui/PowerButtons.qml:101
 msgid "Shut Down"
 msgstr "Vypnúť"
 
-#: package/contents/ui/PowerButtons.qml:48
-#: package/contents/ui/PowerButtons.qml:51
-#: package/contents/ui/PowerButtons.qml:57
+#: package/contents/ui/PowerButtons.qml:110
+#: package/contents/ui/PowerButtons.qml:113
+#: package/contents/ui/PowerButtons.qml:119
 msgid "Session"
 msgstr "Relácia"
 
-#: package/contents/ui/PowerButtons.qml:66
-#: package/contents/ui/PowerButtons.qml:68
+#: package/contents/ui/PowerButtons.qml:129
 msgid "Lock"
 msgstr "Zamknúť"
 
-#: package/contents/ui/PowerButtons.qml:73
-#: package/contents/ui/PowerButtons.qml:75
+#: package/contents/ui/PowerButtons.qml:136
 msgid "Log Out"
 msgstr "Odhlásiť sa"
 
-#: package/contents/ui/PowerButtons.qml:80
-#: package/contents/ui/PowerButtons.qml:82
+#: package/contents/ui/PowerButtons.qml:143
 msgid "Switch User"
 msgstr "Prepnúť používateľa"
 
-#: package/contents/ui/PrefixModeView.qml:41
-msgid "Quick Commands"
-msgstr "Rýchle príkazy"
-
-#: package/contents/ui/PrefixModeView.qml:50
-msgid "Terminal"
-msgstr "Terminál"
-
-#: package/contents/ui/PrefixModeView.qml:51
-msgid "Run Command"
-msgstr "Spustiť príkaz"
-
-#: package/contents/ui/PrefixModeView.qml:52
-msgid "Browse Files"
-msgstr "Prehľadávať súbory"
-
-#: package/contents/ui/PrefixModeView.qml:53
-msgid "Browse Home"
-msgstr "Prehľadávať domovský priečinok"
-
-#: package/contents/ui/PrefixModeView.qml:54
-msgid "This Help"
-msgstr "Táto pomoc"
-
-#: package/contents/ui/PrefixModeView.qml:130
-msgid "Alt+1 – Alt+9 launches search results instantly"
-msgstr "Alt+1 – Alt+9 okamžite spustí výsledky vyhľadávania"
-
-#: package/contents/ui/PrefixModeView.qml:156
+#: package/contents/ui/prefix/PrefixCommandView.qml:33
 msgid "Type a command to run in terminal"
 msgstr "Zadajte príkaz na spustenie v termináli"
 
-#: package/contents/ui/PrefixModeView.qml:157
+#: package/contents/ui/prefix/PrefixCommandView.qml:34
 msgid "Type a command to execute"
 msgstr "Zadajte príkaz na vykonanie"
 
-#: package/contents/ui/PrefixModeView.qml:159
+#: package/contents/ui/prefix/PrefixCommandView.qml:36
 msgid "Press Enter to run in terminal"
 msgstr "Stlačte Enter pre spustenie v termináli"
 
-#: package/contents/ui/PrefixModeView.qml:160
+#: package/contents/ui/prefix/PrefixCommandView.qml:37
 msgid "Press Enter to execute"
 msgstr "Stlačte Enter pre vykonanie"
 
-#: package/contents/ui/RecentAppsHeader.qml:30
+#: package/contents/ui/prefix/PrefixHelpView.qml:17
+msgid "Quick Commands"
+msgstr "Rýchle príkazy"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:25
+msgid "Run"
+msgstr "Spustiť"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:26
+msgid "Terminal"
+msgstr "Terminál"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:27
+msgid "Run Command"
+msgstr "Spustiť príkaz"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:29
+msgid "Browse"
+msgstr "Prehľadávať"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:30
+msgid "Browse Files"
+msgstr "Prehľadávať súbory"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:31
+msgid "Browse Home"
+msgstr "Prehľadávať domovský priečinok"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:33
+msgid "Tools"
+msgstr "Nástroje"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:34
+msgid "System Info"
+msgstr "Info o systéme"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:35
+msgid "Hidden Apps"
+msgstr "Skryté aplikácie"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:36
+msgid "This Help"
+msgstr "Táto pomoc"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:124
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 okamžite spustí výsledky vyhľadávania"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:26
+msgid "Hidden Applications"
+msgstr "Skryté aplikácie"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:63
+msgid "No hidden applications"
+msgstr "Žiadne skryté aplikácie"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:69
+msgid "Right-click any app in the grid to hide it"
+msgstr "Kliknite pravým tlačidlom na akúkoľvek aplikáciu v mriežke pre skrytie"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:144
+msgid "%1 hidden application(s)"
+msgstr "%1 skrytých aplikácií"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:27
+msgid "System Information"
+msgstr "Informácie o systéme"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:77
+msgid "Update %1 available"
+msgstr "Dostupná aktualizácia %1"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:79
+msgid "Check for updates"
+msgstr "Skontrolovať aktualizácie"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:83
+msgid "Click to open release notes for %1"
+msgstr "Kliknutím otvorte poznámky k vydaniu %1"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:86
+msgid ""
+"Force an immediate check against the AppGrid website (bypasses the 24h "
+"schedule)."
+msgstr "Vynútiť okamžitú kontrolu webu AppGrid (obíde 24h plán)."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:131
+msgid "KAStats (%1 entries; legacy backup: %2)"
+msgstr "KAStats (%1 položiek; staršia záloha: %2)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:133
+msgid "Not migrated (legacy: %1 entries)"
+msgstr "Nepresunuté (staršie: %1 položiek)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:141
+msgid "Re-run migration"
+msgstr "Znova spustiť migráciu"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:142
+msgid ""
+"Clears the migration flag. On next open, AppGrid recomputes the favorites "
+"list as the union of the legacy backup and current KAStats entries. Nothing "
+"is lost; missing legacy items are re-added."
+msgstr "Vymaže príznak migrácie. Pri ďalšom otvorení AppGrid prepočíta "
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:156
+msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
+msgstr ""
+"Príznak migrácie vymazaný. Znova otvorte AppGrid pre opätovné spustenie "
+"prenosu."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:174
+msgid "Copied!"
+msgstr "Skopírované!"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:175
+msgid "Copy to Clipboard"
+msgstr "Skopírovať do schránky"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:212
+msgid "Include this info when reporting issues on GitHub"
+msgstr "Pri hlásení problémov na GitHube uveďte tieto informácie"
+
+#: package/contents/ui/RecentAppsHeader.qml:38
 msgid "Recently Used"
 msgstr "Naposledy použité"
 
-#: package/contents/ui/RecentAppsHeader.qml:92
+#: package/contents/ui/RecentAppsHeader.qml:112
 msgid "All Apps"
 msgstr "Všetky aplikácie"
 
@@ -378,49 +669,70 @@ msgstr "Hľadať aplikácie"
 msgid "Clear search"
 msgstr "Vymazať vyhľadávanie"
 
-#: package/contents/ui/SearchResultsList.qml:160
-msgid "Alt+%1: "
-msgstr "Alt+%1: "
+#: package/contents/ui/SearchResultsList.qml:183
+msgid "Application"
+msgstr "Aplikácia"
 
-#: src/appmodel.cpp:167
+#: src/appmodel.cpp:239
 msgid "Utilities"
 msgstr "Nástroje"
 
-#: src/appmodel.cpp:168
+#: src/appmodel.cpp:240
 msgid "Development"
 msgstr "Vývoj"
 
-#: src/appmodel.cpp:169
+#: src/appmodel.cpp:241
 msgid "Graphics"
 msgstr "Grafika"
 
-#: src/appmodel.cpp:170
+#: src/appmodel.cpp:242
 msgid "Internet"
 msgstr "Internet"
 
-#: src/appmodel.cpp:171
+#: src/appmodel.cpp:243
 msgid "Multimedia"
 msgstr "Multimédiá"
 
-#: src/appmodel.cpp:172
+#: src/appmodel.cpp:244
 msgid "Office"
 msgstr "Kancelária"
 
-#: src/appmodel.cpp:173
+#: src/appmodel.cpp:245
 msgid "Games"
 msgstr "Hry"
 
-#: src/appmodel.cpp:174
+#: src/appmodel.cpp:246
 msgid "Education"
 msgstr "Vzdelávanie"
 
-#: src/appmodel.cpp:175
+#: src/appmodel.cpp:247
 msgid "System"
 msgstr "Systém"
 
-#: src/appmodel.cpp:176
+#: src/appmodel.cpp:248
 msgid "Other"
 msgstr "Ostatné"
+
+#~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
+#~ msgstr "Vymaže príznak migrácie. Pri ďalšom otvorení AppGrid prepočíta "
+
+#~ msgid "More Results"
+#~ msgstr "Ďalšie výsledky"
+
+#~ msgid "Click an icon to select it, then click another to swap positions"
+#~ msgstr "Kliknite ikonu pre výber, potom inú pre výmenu"
+
+#~ msgid "Now click another icon to swap, or click again to deselect"
+#~ msgstr "Kliknite inú ikonu pre výmenu alebo znova pre zrušenie"
+
+#~ msgid "Done"
+#~ msgstr "Hotovo"
+
+#~ msgid "Reorder favorites"
+#~ msgstr "Preusporiadať obľúbené"
+
+#~ msgid "Alt+%1: "
+#~ msgstr "Alt+%1: "
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Zatriasť ikonami pri otvorení"
@@ -439,9 +751,6 @@ msgstr "Ostatné"
 
 #~ msgid "Browse files from home"
 #~ msgstr "Prechádzať súbory od domovského adresára"
-
-#~ msgid "Show this help"
-#~ msgstr "Zobraziť túto pomoc"
 
 #~ msgid "Search"
 #~ msgstr "Hľadať"

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 17:14+0100\n"
+"POT-Creation-Date: 2026-05-19 14:58+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
@@ -17,352 +17,639 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: package/contents/ui/AppContextMenu.qml:32
-#: package/contents/ui/AppIconDelegate.qml:115
+#: package/contents/ui/AppContextMenu.qml:156
 msgid "Remove from Favorites"
 msgstr "Retirer des favoris"
 
-#: package/contents/ui/AppContextMenu.qml:32
+#: package/contents/ui/AppContextMenu.qml:157
 msgid "Add to Favorites"
 msgstr "Ajouter aux favoris"
 
-#: package/contents/ui/AppContextMenu.qml:47
-#: package/contents/ui/AppContextMenu.qml:49
+#: package/contents/ui/AppContextMenu.qml:174
+#: package/contents/ui/AppContextMenu.qml:298
+msgid "Remove from Selection"
+msgstr "Retirer de la sélection"
+
+#: package/contents/ui/AppContextMenu.qml:175
+msgid "Add to Selection"
+msgstr "Ajouter à la sélection"
+
+#: package/contents/ui/AppContextMenu.qml:183
 msgid "Pin to Task Manager"
 msgstr "Épingler au gestionnaire des tâches"
 
-#: package/contents/ui/AppContextMenu.qml:55
-#: package/contents/ui/AppContextMenu.qml:57
+#: package/contents/ui/AppContextMenu.qml:192
 msgid "Add to Desktop"
 msgstr "Ajouter au bureau"
 
-#: package/contents/ui/AppContextMenu.qml:63
-#: package/contents/ui/AppContextMenu.qml:65
+#: package/contents/ui/AppContextMenu.qml:201
 msgid "Edit Application"
 msgstr "Modifier l'application"
 
-#: package/contents/ui/AppContextMenu.qml:73
-#: package/contents/ui/AppContextMenu.qml:80
+#: package/contents/ui/AppContextMenu.qml:209
 msgid "Hide Application"
 msgstr "Masquer l'application"
 
-#: package/contents/ui/AppIconDelegate.qml:147
+#: package/contents/ui/AppContextMenu.qml:228
+msgid "Add %1 to Favorites"
+msgid_plural "Add %1 to Favorites"
+msgstr[0] "Ajouter %1 aux favoris"
+msgstr[1] "Ajouter %1 aux favoris"
+
+#: package/contents/ui/AppContextMenu.qml:242
+msgid "Remove %1 from Favorites"
+msgid_plural "Remove %1 from Favorites"
+msgstr[0] "Retirer %1 des favoris"
+msgstr[1] "Retirer %1 des favoris"
+
+#: package/contents/ui/AppContextMenu.qml:255
+msgid "Pin %1 to Task Manager"
+msgid_plural "Pin %1 to Task Manager"
+msgstr[0] "Épingler %1 au gestionnaire de tâches"
+msgstr[1] "Épingler %1 au gestionnaire de tâches"
+
+#: package/contents/ui/AppContextMenu.qml:263
+msgid "Add %1 to Desktop"
+msgid_plural "Add %1 to Desktop"
+msgstr[0] "Ajouter %1 au bureau"
+msgstr[1] "Ajouter %1 au bureau"
+
+#: package/contents/ui/AppContextMenu.qml:271
+msgid "Launch %1 application"
+msgid_plural "Launch %1 applications"
+msgstr[0] "Lancer %1 application"
+msgstr[1] "Lancer %1 applications"
+
+#: package/contents/ui/AppContextMenu.qml:281
+msgid "Copy %1 path"
+msgid_plural "Copy %1 paths"
+msgstr[0] "Copier le chemin de %1"
+msgstr[1] "Copier les chemins de %1"
+
+#: package/contents/ui/AppContextMenu.qml:289
+msgid "Hide %1 application"
+msgid_plural "Hide %1 applications"
+msgstr[0] "Masquer %1 application"
+msgstr[1] "Masquer %1 applications"
+
+#: package/contents/ui/AppIconDelegate.qml:213
 msgid "new"
 msgstr "nouveau"
 
-#: package/contents/ui/CategoryBar.qml:58
-#: package/contents/ui/CategoryBar.qml:194
+#: package/contents/ui/AppIconDelegate.qml:214
+msgid "selected"
+msgstr "sélectionné"
+
+#: package/contents/ui/CategoryBar.qml:67
+#: package/contents/ui/CategoryBar.qml:204
+#: package/contents/ui/CategoryBar.qml:205
 msgid "All"
 msgstr "Toutes"
 
-#: package/contents/ui/CategoryBar.qml:62
+#: package/contents/ui/CategoryBar.qml:68
 #: package/contents/ui/CategoryBar.qml:183
 #: package/contents/ui/CategoryBar.qml:187
-#: package/contents/ui/CategoryBar.qml:314
-#: package/contents/ui/CategoryBar.qml:318
+#: package/contents/ui/CategoryBar.qml:343
+#: package/contents/ui/CategoryBar.qml:347
+#: package/contents/ui/prefix/PrefixInfoView.qml:121
+#: package/contents/ui/RecentAppsHeader.qml:111
 msgid "Favorites"
 msgstr "Favoris"
 
-#: package/contents/ui/CategoryBar.qml:203
+#: package/contents/ui/CategoryBar.qml:220
 msgid "All applications"
 msgstr "Toutes les applications"
 
-#: package/contents/ui/CategoryBar.qml:217
+#: package/contents/ui/CategoryBar.qml:234
 msgid "Scroll categories left"
 msgstr "Défiler vers la gauche"
 
-#: package/contents/ui/CategoryBar.qml:302
+#: package/contents/ui/CategoryBar.qml:331
 msgid "Scroll categories right"
 msgstr "Défiler vers la droite"
 
-#: package/contents/ui/CategoryBar.qml:329
+#: package/contents/ui/CategoryBar.qml:360
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr "Modifier \"%1\" dans l’éditeur de menus…"
 
-#: package/contents/ui/CategoryBar.qml:337
+#: package/contents/ui/CategoryBar.qml:368
 msgid "Open Menu Editor…"
 msgstr "Ouvrir l’éditeur de menus…"
 
-#: package/contents/ui/ConfigGeneral.qml:74
+#: package/contents/ui/ConfigGeneral.qml:85
 msgid "Icon:"
 msgstr "Icône :"
 
-#: package/contents/ui/ConfigGeneral.qml:135
+#: package/contents/ui/ConfigGeneral.qml:146
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Choisir…"
 
-#: package/contents/ui/ConfigGeneral.qml:140
+#: package/contents/ui/ConfigGeneral.qml:151
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Réinitialiser l'icône"
 
-#: package/contents/ui/ConfigGeneral.qml:157
+#: package/contents/ui/ConfigGeneral.qml:164
+msgid "Text label:"
+msgstr "Étiquette de texte :"
+
+#: package/contents/ui/ConfigGeneral.qml:166
+msgid "Type here to add a text label"
+msgstr "Saisissez ici pour ajouter une étiquette de texte"
+
+#: package/contents/ui/ConfigGeneral.qml:183
 msgid "Icons per row:"
 msgstr "Icônes par ligne :"
 
-#: package/contents/ui/ConfigGeneral.qml:163
+#: package/contents/ui/ConfigGeneral.qml:189
 msgid "Visible rows:"
 msgstr "Lignes visibles :"
 
-#: package/contents/ui/ConfigGeneral.qml:169
+#: package/contents/ui/ConfigGeneral.qml:195
 msgid "Icon size:"
 msgstr "Taille des icônes :"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Small"
 msgstr "Petite"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Medium"
 msgstr "Moyenne"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Large"
 msgstr "Grande"
 
-#: package/contents/ui/ConfigGeneral.qml:174
+#: package/contents/ui/ConfigGeneral.qml:201
 msgid "Sort order:"
 msgstr "Ordre de tri :"
 
-#: package/contents/ui/ConfigGeneral.qml:179
+#: package/contents/ui/ConfigGeneral.qml:202
 msgid "Alphabetical"
 msgstr "Alphabétique"
 
-#: package/contents/ui/ConfigGeneral.qml:179
+#: package/contents/ui/ConfigGeneral.qml:202
 msgid "Most Used"
 msgstr "Les plus utilisées"
 
-#: package/contents/ui/ConfigGeneral.qml:184
-msgid "Show recently used applications"
-msgstr "Afficher les applications récemment utilisées"
+#: package/contents/ui/ConfigGeneral.qml:202
+msgid "By Category"
+msgstr "Par catégorie"
 
-#: package/contents/ui/ConfigGeneral.qml:195
+#: package/contents/ui/ConfigGeneral.qml:211
 msgid "Behavior:"
 msgstr "Comportement :"
 
-#: package/contents/ui/ConfigGeneral.qml:196
+#: package/contents/ui/ConfigGeneral.qml:212
 msgid "Show category bar"
 msgstr "Afficher la barre de catégories"
 
-#: package/contents/ui/ConfigGeneral.qml:201
+#: package/contents/ui/ConfigGeneral.qml:217
+msgid "Open on screen with mouse focus (otherwise on panel screen)"
+msgstr ""
+"Ouvrir sur l'écran avec le focus de la souris (sinon sur l'écran du panneau)"
+
+#: package/contents/ui/ConfigGeneral.qml:222
 msgid "Search all apps regardless of active tab"
 msgstr "Rechercher dans toutes les applications"
 
-#: package/contents/ui/ConfigGeneral.qml:206
+#: package/contents/ui/ConfigGeneral.qml:227
 msgid "Start with favorites tab"
 msgstr "Démarrer avec l'onglet favoris"
 
-#: package/contents/ui/ConfigGeneral.qml:212
+#: package/contents/ui/ConfigGeneral.qml:233
+msgid "Show recently used applications"
+msgstr "Afficher les applications récemment utilisées"
+
+#: package/contents/ui/ConfigGeneral.qml:239
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Catégories système (éditeur de menus KDE)"
 
-#: package/contents/ui/ConfigGeneral.qml:218
+#: package/contents/ui/ConfigGeneral.qml:245
+msgid "Hide empty categories"
+msgstr "Masquer les catégories vides"
+
+#: package/contents/ui/ConfigGeneral.qml:253
+msgid "Check the AppGrid website for new releases"
+msgstr "Vérifier les nouvelles versions sur le site AppGrid"
+
+#: package/contents/ui/ConfigGeneral.qml:255
+msgid ""
+"Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+"latest.json. "
+msgstr ""
+"Requête anonyme une fois par jour à https://appgrid.xarbit.dev/api/"
+"latest.json. "
+
+#: package/contents/ui/ConfigGeneral.qml:264
 msgid "Terminal shell:"
 msgstr "Shell du terminal :"
 
-#: package/contents/ui/ConfigGeneral.qml:222
+#: package/contents/ui/ConfigGeneral.qml:268
 msgid "Default (/bin/sh)"
 msgstr "Par défaut (/bin/sh)"
 
-#: package/contents/ui/ConfigGeneral.qml:242
+#: package/contents/ui/ConfigGeneral.qml:288
 msgid "Appearance:"
 msgstr "Apparence :"
 
-#: package/contents/ui/ConfigGeneral.qml:243
+#: package/contents/ui/ConfigGeneral.qml:289
+msgid "Show divider lines"
+msgstr "Afficher les lignes de séparation"
+
+#: package/contents/ui/ConfigGeneral.qml:294
 msgid "Show scrollbars"
 msgstr "Afficher les barres de défilement"
 
-#: package/contents/ui/ConfigGeneral.qml:248
-msgid "Enable background blur"
-msgstr "Activer le flou d'arrière-plan"
+#: package/contents/ui/ConfigGeneral.qml:299
+msgid "Show tooltips on hover"
+msgstr "Afficher les info-bulles au survol"
 
-#: package/contents/ui/ConfigGeneral.qml:253
-msgid "Icon animation:"
-msgstr "Animation des icônes :"
+#: package/contents/ui/ConfigGeneral.qml:304
+msgid "Show new app badge"
+msgstr "Afficher le badge des nouvelles applications"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:309
+msgid "Hide app labels on favorites tab"
+msgstr "Masquer les étiquettes d'applications dans l'onglet favoris"
+
+#: package/contents/ui/ConfigGeneral.qml:315
+msgid "Sort favorites alphabetically"
+msgstr "Trier les favoris par ordre alphabétique"
+
+#: package/contents/ui/ConfigGeneral.qml:320
+msgid "Open/close animation:"
+msgstr "Animation d'ouverture/fermeture :"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "None"
 msgstr "Aucune"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Fade"
+msgstr "Fondu"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Scale"
+msgstr "Échelle"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Pop"
+msgstr "Pop"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slide Up"
+msgstr "Glissement vers le haut"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slide Down"
+msgstr "Glissement vers le bas"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Glide"
+msgstr "Planer"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Buzz"
+msgstr "Vibrer"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Twist"
+msgstr "Torsion"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slam"
+msgstr "Claquement"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Grow Up"
+msgstr "Croissance vers le haut"
+
+#: package/contents/ui/ConfigGeneral.qml:326
+msgid "Enable background blur"
+msgstr "Activer le flou d'arrière-plan"
+
+#: package/contents/ui/ConfigGeneral.qml:331
+msgid "Dim background behind launcher"
+msgstr "Atténuer l'arrière-plan derrière le lanceur"
+
+#: package/contents/ui/ConfigGeneral.qml:336
+msgid "Icon animation:"
+msgstr "Animation des icônes :"
+
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Shake"
 msgstr "Secousse"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Grow"
 msgstr "Agrandissement"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Bounce"
 msgstr "Rebond"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Spin"
 msgstr "Rotation"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Shuffle"
 msgstr "Mélange"
 
-#: package/contents/ui/ConfigGeneral.qml:259
+#: package/contents/ui/ConfigGeneral.qml:342
 msgid "Animate icons on open"
 msgstr "Animer les icônes à l'ouverture"
 
-#: package/contents/ui/ConfigGeneral.qml:265
+#: package/contents/ui/ConfigGeneral.qml:348
+msgid "Show power/session buttons"
+msgstr "Afficher les boutons d'alimentation/session"
+
+#: package/contents/ui/ConfigGeneral.qml:353
 msgid "Show labels on power/session buttons"
 msgstr "Afficher les étiquettes sur les boutons d'alimentation et de session"
 
-#: package/contents/ui/ConfigGeneral.qml:270
+#: package/contents/ui/ConfigGeneral.qml:359
 msgid "Expand search to bookmarks, files, and websites"
 msgstr "Étendre la recherche aux signets, fichiers et sites web"
 
-#: package/contents/ui/ConfigGeneral.qml:274
+#: package/contents/ui/ConfigGeneral.qml:363
 msgid "Configure Search Plugins…"
 msgstr "Configurer les modules de recherche…"
 
-#: package/contents/ui/ConfigGeneral.qml:281
+#: package/contents/ui/ConfigGeneral.qml:370
 msgid "Background opacity:"
 msgstr "Opacité de l'arrière-plan :"
 
-#: package/contents/ui/ConfigGeneral.qml:297
+#: package/contents/ui/ConfigGeneral.qml:386
 msgid "Corner radius:"
 msgstr "Rayon des coins :"
 
-#: package/contents/ui/ConfigGeneral.qml:298
+#: package/contents/ui/ConfigGeneral.qml:387
 msgid "Use custom corner radius"
 msgstr "Utiliser un rayon de coins personnalisé"
 
-#: package/contents/ui/ConfigGeneral.qml:310
+#: package/contents/ui/ConfigGeneral.qml:399
 msgid "px"
 msgstr "px"
 
-#: package/contents/ui/ConfigGeneral.qml:322
+#: package/contents/ui/ConfigGeneral.qml:411
 msgid "Reset to Defaults"
 msgstr "Réinitialiser"
 
-#: package/contents/ui/ConfigGeneral.qml:355
-msgid "Hidden Applications"
-msgstr "Applications masquées"
+#: package/contents/ui/ConfigGeneral.qml:455
+msgid "Hidden apps:"
+msgstr "Applications masquées :"
 
-#: package/contents/ui/ConfigGeneral.qml:362
+#: package/contents/ui/ConfigGeneral.qml:462
 msgid ""
-"Right-click any application in the grid and choose \"Hide Application\" to "
-"add it here."
+"Right-click any app in the grid to hide it, or type h: in the search bar."
 msgstr ""
-"Faites un clic droit sur une application dans la grille et choisissez "
-"« Masquer l'application » pour l'ajouter ici."
+"Faites un clic droit sur n'importe quelle application de la grille pour la "
+"masquer, ou tapez h: dans la barre de recherche."
 
-#: package/contents/ui/ConfigGeneral.qml:370
+#: package/contents/ui/ConfigGeneral.qml:469
 msgid "No hidden applications."
 msgstr "Aucune application masquée."
 
-#: package/contents/ui/ConfigGeneral.qml:400
+#: package/contents/ui/ConfigGeneral.qml:515
+#: package/contents/ui/prefix/PrefixHiddenView.qml:127
 msgid "Unhide"
 msgstr "Afficher"
 
-#: package/contents/ui/GridPanel.qml:433
-msgid "More Results"
-msgstr "Plus de résultats"
+#: package/contents/ui/ConfigGeneral.qml:532
+#: package/contents/ui/prefix/PrefixHiddenView.qml:35
+msgid "Unhide All"
+msgstr "Tout afficher"
 
-#: package/contents/ui/GridPanel.qml:530
-msgid "Click an icon to select it, then click another to swap positions"
-msgstr "Cliquez sur une icône pour la sélectionner, puis sur une autre pour échanger"
+#: package/contents/ui/GridPanel.qml:868
+msgid "Launch all selected?"
+msgstr "Lancer toutes les sélections ?"
 
-#: package/contents/ui/GridPanel.qml:531
-msgid "Now click another icon to swap, or click again to deselect"
-msgstr "Cliquez sur une autre icône pour échanger ou à nouveau pour désélectionner"
+#: package/contents/ui/GridPanel.qml:870
+msgid "Open %1 application at once?"
+msgid_plural "Open %1 applications at once?"
+msgstr[0] "Ouvrir %1 application en même temps ?"
+msgstr[1] "Ouvrir %1 applications en même temps ?"
 
-#: package/contents/ui/GridPanel.qml:553
-msgid "Done"
-msgstr "Terminé"
+#: package/contents/ui/GridPanel.qml:880
+msgid "Hide selected applications?"
+msgstr "Masquer les applications sélectionnées ?"
 
-#: package/contents/ui/GridPanel.qml:553
-msgid "Reorder favorites"
-msgstr "Réorganiser les favoris"
+#: package/contents/ui/GridPanel.qml:882
+msgid ""
+"Hide %1 application from AppGrid? You can unhide it later in Settings → "
+"Hidden Applications."
+msgid_plural ""
+"Hide %1 applications from AppGrid? You can unhide them later in Settings → "
+"Hidden Applications."
+msgstr[0] ""
+"Masquer %1 application d'AppGrid ? Vous pourrez l'afficher plus tard dans "
+"Paramètres → Applications masquées."
+msgstr[1] ""
+"Masquer %1 applications d'AppGrid ? Vous pourrez les afficher plus tard dans "
+"Paramètres → Applications masquées."
 
-#: package/contents/ui/PowerButtons.qml:25
+#: package/contents/ui/PowerButtons.qml:34
+msgid "Update available"
+msgstr "Mise à jour disponible"
+
+#: package/contents/ui/PowerButtons.qml:39
+msgid "AppGrid %1 is available — click to view release notes"
+msgstr "AppGrid %1 est disponible — cliquez pour voir les notes de version"
+
+#: package/contents/ui/PowerButtons.qml:50
+msgid "AppGrid update available"
+msgstr "Mise à jour d'AppGrid disponible"
+
+#: package/contents/ui/PowerButtons.qml:66
+#: package/contents/ui/PowerButtons.qml:69
+#: package/contents/ui/PowerButtons.qml:73
 msgid "Sleep"
 msgstr "Veille"
 
-#: package/contents/ui/PowerButtons.qml:26
+#: package/contents/ui/PowerButtons.qml:80
+#: package/contents/ui/PowerButtons.qml:83
+#: package/contents/ui/PowerButtons.qml:87
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: package/contents/ui/PowerButtons.qml:27
+#: package/contents/ui/PowerButtons.qml:94
+#: package/contents/ui/PowerButtons.qml:97
+#: package/contents/ui/PowerButtons.qml:101
 msgid "Shut Down"
 msgstr "Éteindre"
 
-#: package/contents/ui/PowerButtons.qml:48
-#: package/contents/ui/PowerButtons.qml:51
-#: package/contents/ui/PowerButtons.qml:57
+#: package/contents/ui/PowerButtons.qml:110
+#: package/contents/ui/PowerButtons.qml:113
+#: package/contents/ui/PowerButtons.qml:119
 msgid "Session"
 msgstr "Session"
 
-#: package/contents/ui/PowerButtons.qml:66
-#: package/contents/ui/PowerButtons.qml:68
+#: package/contents/ui/PowerButtons.qml:129
 msgid "Lock"
 msgstr "Verrouiller"
 
-#: package/contents/ui/PowerButtons.qml:73
-#: package/contents/ui/PowerButtons.qml:75
+#: package/contents/ui/PowerButtons.qml:136
 msgid "Log Out"
 msgstr "Déconnexion"
 
-#: package/contents/ui/PowerButtons.qml:80
-#: package/contents/ui/PowerButtons.qml:82
+#: package/contents/ui/PowerButtons.qml:143
 msgid "Switch User"
 msgstr "Changer d'utilisateur"
 
-#: package/contents/ui/PrefixModeView.qml:41
-msgid "Quick Commands"
-msgstr "Commandes rapides"
-
-#: package/contents/ui/PrefixModeView.qml:50
-msgid "Terminal"
-msgstr "Terminal"
-
-#: package/contents/ui/PrefixModeView.qml:51
-msgid "Run Command"
-msgstr "Exécuter une commande"
-
-#: package/contents/ui/PrefixModeView.qml:52
-msgid "Browse Files"
-msgstr "Parcourir les fichiers"
-
-#: package/contents/ui/PrefixModeView.qml:53
-msgid "Browse Home"
-msgstr "Parcourir le dossier personnel"
-
-#: package/contents/ui/PrefixModeView.qml:54
-msgid "This Help"
-msgstr "Cette aide"
-
-#: package/contents/ui/PrefixModeView.qml:130
-msgid "Alt+1 – Alt+9 launches search results instantly"
-msgstr "Alt+1 – Alt+9 lance les résultats de recherche instantanément"
-
-#: package/contents/ui/PrefixModeView.qml:156
+#: package/contents/ui/prefix/PrefixCommandView.qml:33
 msgid "Type a command to run in terminal"
 msgstr "Saisissez une commande à exécuter dans le terminal"
 
-#: package/contents/ui/PrefixModeView.qml:157
+#: package/contents/ui/prefix/PrefixCommandView.qml:34
 msgid "Type a command to execute"
 msgstr "Saisissez une commande à exécuter"
 
-#: package/contents/ui/PrefixModeView.qml:159
+#: package/contents/ui/prefix/PrefixCommandView.qml:36
 msgid "Press Enter to run in terminal"
 msgstr "Appuyez sur Entrée pour exécuter dans le terminal"
 
-#: package/contents/ui/PrefixModeView.qml:160
+#: package/contents/ui/prefix/PrefixCommandView.qml:37
 msgid "Press Enter to execute"
 msgstr "Appuyez sur Entrée pour exécuter"
 
-#: package/contents/ui/RecentAppsHeader.qml:30
+#: package/contents/ui/prefix/PrefixHelpView.qml:17
+msgid "Quick Commands"
+msgstr "Commandes rapides"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:25
+msgid "Run"
+msgstr "Exécuter"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:26
+msgid "Terminal"
+msgstr "Terminal"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:27
+msgid "Run Command"
+msgstr "Exécuter une commande"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:29
+msgid "Browse"
+msgstr "Parcourir"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:30
+msgid "Browse Files"
+msgstr "Parcourir les fichiers"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:31
+msgid "Browse Home"
+msgstr "Parcourir le dossier personnel"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:33
+msgid "Tools"
+msgstr "Outils"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:34
+msgid "System Info"
+msgstr "Infos système"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:35
+msgid "Hidden Apps"
+msgstr "Applications masquées"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:36
+msgid "This Help"
+msgstr "Cette aide"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:124
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 lance les résultats de recherche instantanément"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:26
+msgid "Hidden Applications"
+msgstr "Applications masquées"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:63
+msgid "No hidden applications"
+msgstr "Aucune application masquée"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:69
+msgid "Right-click any app in the grid to hide it"
+msgstr ""
+"Faites un clic droit sur n'importe quelle application de la grille pour la "
+"masquer"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:144
+msgid "%1 hidden application(s)"
+msgstr "%1 application(s) masquée(s)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:27
+msgid "System Information"
+msgstr "Informations système"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:77
+msgid "Update %1 available"
+msgstr "Mise à jour %1 disponible"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:79
+msgid "Check for updates"
+msgstr "Vérifier les mises à jour"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:83
+msgid "Click to open release notes for %1"
+msgstr "Cliquez pour ouvrir les notes de version de %1"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:86
+msgid ""
+"Force an immediate check against the AppGrid website (bypasses the 24h "
+"schedule)."
+msgstr ""
+"Forcer une vérification immédiate sur le site AppGrid (contourne la "
+"planification de 24 h)."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:131
+msgid "KAStats (%1 entries; legacy backup: %2)"
+msgstr "KAStats (%1 entrées ; sauvegarde héritée : %2)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:133
+msgid "Not migrated (legacy: %1 entries)"
+msgstr "Non migré (ancien : %1 entrées)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:141
+msgid "Re-run migration"
+msgstr "Relancer la migration"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:142
+msgid ""
+"Clears the migration flag. On next open, AppGrid recomputes the favorites "
+"list as the union of the legacy backup and current KAStats entries. Nothing "
+"is lost; missing legacy items are re-added."
+msgstr ""
+"Efface l'indicateur de migration. À la prochaine ouverture, AppGrid "
+"recalcule la "
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:156
+msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
+msgstr ""
+"Indicateur de migration effacé. Rouvrez AppGrid pour relancer le portage."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:174
+msgid "Copied!"
+msgstr "Copié !"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:175
+msgid "Copy to Clipboard"
+msgstr "Copier dans le presse-papiers"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:212
+msgid "Include this info when reporting issues on GitHub"
+msgstr "Inclure ces informations lors du signalement de problèmes sur GitHub"
+
+#: package/contents/ui/RecentAppsHeader.qml:38
 msgid "Recently Used"
 msgstr "Récemment utilisées"
 
-#: package/contents/ui/RecentAppsHeader.qml:92
+#: package/contents/ui/RecentAppsHeader.qml:112
 msgid "All Apps"
 msgstr "Toutes les applis"
 
@@ -378,49 +665,75 @@ msgstr "Rechercher des applications"
 msgid "Clear search"
 msgstr "Effacer la recherche"
 
-#: package/contents/ui/SearchResultsList.qml:160
-msgid "Alt+%1: "
-msgstr "Alt+%1 : "
+#: package/contents/ui/SearchResultsList.qml:183
+msgid "Application"
+msgstr "Application"
 
-#: src/appmodel.cpp:167
+#: src/appmodel.cpp:239
 msgid "Utilities"
 msgstr "Utilitaires"
 
-#: src/appmodel.cpp:168
+#: src/appmodel.cpp:240
 msgid "Development"
 msgstr "Développement"
 
-#: src/appmodel.cpp:169
+#: src/appmodel.cpp:241
 msgid "Graphics"
 msgstr "Graphisme"
 
-#: src/appmodel.cpp:170
+#: src/appmodel.cpp:242
 msgid "Internet"
 msgstr "Internet"
 
-#: src/appmodel.cpp:171
+#: src/appmodel.cpp:243
 msgid "Multimedia"
 msgstr "Multimédia"
 
-#: src/appmodel.cpp:172
+#: src/appmodel.cpp:244
 msgid "Office"
 msgstr "Bureautique"
 
-#: src/appmodel.cpp:173
+#: src/appmodel.cpp:245
 msgid "Games"
 msgstr "Jeux"
 
-#: src/appmodel.cpp:174
+#: src/appmodel.cpp:246
 msgid "Education"
 msgstr "Éducation"
 
-#: src/appmodel.cpp:175
+#: src/appmodel.cpp:247
 msgid "System"
 msgstr "Système"
 
-#: src/appmodel.cpp:176
+#: src/appmodel.cpp:248
 msgid "Other"
 msgstr "Autres"
+
+#~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
+#~ msgstr ""
+#~ "Efface l'indicateur de migration. À la prochaine ouverture, AppGrid "
+#~ "recalcule la "
+
+#~ msgid "More Results"
+#~ msgstr "Plus de résultats"
+
+#~ msgid "Click an icon to select it, then click another to swap positions"
+#~ msgstr ""
+#~ "Cliquez sur une icône pour la sélectionner, puis sur une autre pour "
+#~ "échanger"
+
+#~ msgid "Now click another icon to swap, or click again to deselect"
+#~ msgstr ""
+#~ "Cliquez sur une autre icône pour échanger ou à nouveau pour désélectionner"
+
+#~ msgid "Done"
+#~ msgstr "Terminé"
+
+#~ msgid "Reorder favorites"
+#~ msgstr "Réorganiser les favoris"
+
+#~ msgid "Alt+%1: "
+#~ msgstr "Alt+%1 : "
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Secouer les icônes à l'ouverture"
@@ -439,9 +752,6 @@ msgstr "Autres"
 
 #~ msgid "Browse files from home"
 #~ msgstr "Parcourir les fichiers depuis le dossier personnel"
-
-#~ msgid "Show this help"
-#~ msgstr "Afficher cette aide"
 
 #~ msgid "Search"
 #~ msgstr "Rechercher"

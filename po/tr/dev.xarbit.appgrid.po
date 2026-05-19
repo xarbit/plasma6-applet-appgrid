@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-03-16 17:14+0100\n"
+"POT-Creation-Date: 2026-05-19 14:58+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
@@ -16,352 +16,635 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: package/contents/ui/AppContextMenu.qml:32
-#: package/contents/ui/AppIconDelegate.qml:115
+#: package/contents/ui/AppContextMenu.qml:156
 msgid "Remove from Favorites"
 msgstr "Sık Kullanılanlardan Kaldır"
 
-#: package/contents/ui/AppContextMenu.qml:32
+#: package/contents/ui/AppContextMenu.qml:157
 msgid "Add to Favorites"
 msgstr "Sık Kullanılanlara Ekle"
 
-#: package/contents/ui/AppContextMenu.qml:47
-#: package/contents/ui/AppContextMenu.qml:49
+#: package/contents/ui/AppContextMenu.qml:174
+#: package/contents/ui/AppContextMenu.qml:298
+msgid "Remove from Selection"
+msgstr "Seçimden kaldır"
+
+#: package/contents/ui/AppContextMenu.qml:175
+msgid "Add to Selection"
+msgstr "Seçime ekle"
+
+#: package/contents/ui/AppContextMenu.qml:183
 msgid "Pin to Task Manager"
 msgstr "Görev Yöneticisine Sabitle"
 
-#: package/contents/ui/AppContextMenu.qml:55
-#: package/contents/ui/AppContextMenu.qml:57
+#: package/contents/ui/AppContextMenu.qml:192
 msgid "Add to Desktop"
 msgstr "Masaüstüne Ekle"
 
-#: package/contents/ui/AppContextMenu.qml:63
-#: package/contents/ui/AppContextMenu.qml:65
+#: package/contents/ui/AppContextMenu.qml:201
 msgid "Edit Application"
 msgstr "Uygulamayı Düzenle"
 
-#: package/contents/ui/AppContextMenu.qml:73
-#: package/contents/ui/AppContextMenu.qml:80
+#: package/contents/ui/AppContextMenu.qml:209
 msgid "Hide Application"
 msgstr "Uygulamayı Gizle"
 
-#: package/contents/ui/AppIconDelegate.qml:147
+#: package/contents/ui/AppContextMenu.qml:228
+msgid "Add %1 to Favorites"
+msgid_plural "Add %1 to Favorites"
+msgstr[0] "%1 sık kullanılanlara ekle"
+msgstr[1] "%1 sık kullanılanlara ekle"
+
+#: package/contents/ui/AppContextMenu.qml:242
+msgid "Remove %1 from Favorites"
+msgid_plural "Remove %1 from Favorites"
+msgstr[0] "%1 sık kullanılanlardan kaldır"
+msgstr[1] "%1 sık kullanılanlardan kaldır"
+
+#: package/contents/ui/AppContextMenu.qml:255
+msgid "Pin %1 to Task Manager"
+msgid_plural "Pin %1 to Task Manager"
+msgstr[0] "%1 görev yöneticisine sabitle"
+msgstr[1] "%1 görev yöneticisine sabitle"
+
+#: package/contents/ui/AppContextMenu.qml:263
+msgid "Add %1 to Desktop"
+msgid_plural "Add %1 to Desktop"
+msgstr[0] "%1 masaüstüne ekle"
+msgstr[1] "%1 masaüstüne ekle"
+
+#: package/contents/ui/AppContextMenu.qml:271
+msgid "Launch %1 application"
+msgid_plural "Launch %1 applications"
+msgstr[0] "%1 uygulamayı başlat"
+msgstr[1] "%1 uygulamayı başlat"
+
+#: package/contents/ui/AppContextMenu.qml:281
+msgid "Copy %1 path"
+msgid_plural "Copy %1 paths"
+msgstr[0] "%1 yolunu kopyala"
+msgstr[1] "%1 yollarını kopyala"
+
+#: package/contents/ui/AppContextMenu.qml:289
+msgid "Hide %1 application"
+msgid_plural "Hide %1 applications"
+msgstr[0] "%1 uygulamayı gizle"
+msgstr[1] "%1 uygulamayı gizle"
+
+#: package/contents/ui/AppIconDelegate.qml:213
 msgid "new"
 msgstr "yeni"
 
-#: package/contents/ui/CategoryBar.qml:58
-#: package/contents/ui/CategoryBar.qml:194
+#: package/contents/ui/AppIconDelegate.qml:214
+msgid "selected"
+msgstr "seçildi"
+
+#: package/contents/ui/CategoryBar.qml:67
+#: package/contents/ui/CategoryBar.qml:204
+#: package/contents/ui/CategoryBar.qml:205
 msgid "All"
 msgstr "Tümü"
 
-#: package/contents/ui/CategoryBar.qml:62
+#: package/contents/ui/CategoryBar.qml:68
 #: package/contents/ui/CategoryBar.qml:183
 #: package/contents/ui/CategoryBar.qml:187
-#: package/contents/ui/CategoryBar.qml:314
-#: package/contents/ui/CategoryBar.qml:318
+#: package/contents/ui/CategoryBar.qml:343
+#: package/contents/ui/CategoryBar.qml:347
+#: package/contents/ui/prefix/PrefixInfoView.qml:121
+#: package/contents/ui/RecentAppsHeader.qml:111
 msgid "Favorites"
 msgstr "Sık Kullanılanlar"
 
-#: package/contents/ui/CategoryBar.qml:203
+#: package/contents/ui/CategoryBar.qml:220
 msgid "All applications"
 msgstr "Tüm uygulamalar"
 
-#: package/contents/ui/CategoryBar.qml:217
+#: package/contents/ui/CategoryBar.qml:234
 msgid "Scroll categories left"
 msgstr "Sola kaydır"
 
-#: package/contents/ui/CategoryBar.qml:302
+#: package/contents/ui/CategoryBar.qml:331
 msgid "Scroll categories right"
 msgstr "Sağa kaydır"
 
-#: package/contents/ui/CategoryBar.qml:329
+#: package/contents/ui/CategoryBar.qml:360
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr "\"%1\" öğesini Menü Düzenleyici’de düzenle…"
 
-#: package/contents/ui/CategoryBar.qml:337
+#: package/contents/ui/CategoryBar.qml:368
 msgid "Open Menu Editor…"
 msgstr "Menü Düzenleyici’yi aç…"
 
-#: package/contents/ui/ConfigGeneral.qml:74
+#: package/contents/ui/ConfigGeneral.qml:85
 msgid "Icon:"
 msgstr "Simge:"
 
-#: package/contents/ui/ConfigGeneral.qml:135
+#: package/contents/ui/ConfigGeneral.qml:146
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Seç…"
 
-#: package/contents/ui/ConfigGeneral.qml:140
+#: package/contents/ui/ConfigGeneral.qml:151
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Simgeyi Temizle"
 
-#: package/contents/ui/ConfigGeneral.qml:157
+#: package/contents/ui/ConfigGeneral.qml:164
+msgid "Text label:"
+msgstr "Metin etiketi:"
+
+#: package/contents/ui/ConfigGeneral.qml:166
+msgid "Type here to add a text label"
+msgstr "Metin etiketi eklemek için buraya yazın"
+
+#: package/contents/ui/ConfigGeneral.qml:183
 msgid "Icons per row:"
 msgstr "Satır başına simge:"
 
-#: package/contents/ui/ConfigGeneral.qml:163
+#: package/contents/ui/ConfigGeneral.qml:189
 msgid "Visible rows:"
 msgstr "Görünür satırlar:"
 
-#: package/contents/ui/ConfigGeneral.qml:169
+#: package/contents/ui/ConfigGeneral.qml:195
 msgid "Icon size:"
 msgstr "Simge boyutu:"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Small"
 msgstr "Küçük"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Medium"
 msgstr "Orta"
 
-#: package/contents/ui/ConfigGeneral.qml:170
+#: package/contents/ui/ConfigGeneral.qml:196
 msgid "Large"
 msgstr "Büyük"
 
-#: package/contents/ui/ConfigGeneral.qml:174
+#: package/contents/ui/ConfigGeneral.qml:201
 msgid "Sort order:"
 msgstr "Sıralama düzeni:"
 
-#: package/contents/ui/ConfigGeneral.qml:179
+#: package/contents/ui/ConfigGeneral.qml:202
 msgid "Alphabetical"
 msgstr "Alfabetik"
 
-#: package/contents/ui/ConfigGeneral.qml:179
+#: package/contents/ui/ConfigGeneral.qml:202
 msgid "Most Used"
 msgstr "En çok kullanılan"
 
-#: package/contents/ui/ConfigGeneral.qml:184
-msgid "Show recently used applications"
-msgstr "Son kullanılan uygulamaları göster"
+#: package/contents/ui/ConfigGeneral.qml:202
+msgid "By Category"
+msgstr "Kategoriye göre"
 
-#: package/contents/ui/ConfigGeneral.qml:195
+#: package/contents/ui/ConfigGeneral.qml:211
 msgid "Behavior:"
 msgstr "Davranış:"
 
-#: package/contents/ui/ConfigGeneral.qml:196
+#: package/contents/ui/ConfigGeneral.qml:212
 msgid "Show category bar"
 msgstr "Kategori çubuğunu göster"
 
-#: package/contents/ui/ConfigGeneral.qml:201
+#: package/contents/ui/ConfigGeneral.qml:217
+msgid "Open on screen with mouse focus (otherwise on panel screen)"
+msgstr "Fare odaklı ekranda aç (aksi takdirde panel ekranında)"
+
+#: package/contents/ui/ConfigGeneral.qml:222
 msgid "Search all apps regardless of active tab"
 msgstr "Tüm uygulamalarda ara"
 
-#: package/contents/ui/ConfigGeneral.qml:206
+#: package/contents/ui/ConfigGeneral.qml:227
 msgid "Start with favorites tab"
 msgstr "Sık kullanılanlar sekmesiyle başla"
 
-#: package/contents/ui/ConfigGeneral.qml:212
+#: package/contents/ui/ConfigGeneral.qml:233
+msgid "Show recently used applications"
+msgstr "Son kullanılan uygulamaları göster"
+
+#: package/contents/ui/ConfigGeneral.qml:239
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Sistem kategorileri (KDE Menü Düzenleyici)"
 
-#: package/contents/ui/ConfigGeneral.qml:218
+#: package/contents/ui/ConfigGeneral.qml:245
+msgid "Hide empty categories"
+msgstr "Boş kategorileri gizle"
+
+#: package/contents/ui/ConfigGeneral.qml:253
+msgid "Check the AppGrid website for new releases"
+msgstr "Yeni sürümler için AppGrid web sitesini kontrol et"
+
+#: package/contents/ui/ConfigGeneral.qml:255
+msgid ""
+"Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+"latest.json. "
+msgstr ""
+"Günde bir kez https://appgrid.xarbit.dev/api/latest.json adresine anonim "
+"istek. "
+
+#: package/contents/ui/ConfigGeneral.qml:264
 msgid "Terminal shell:"
 msgstr "Terminal kabuğu:"
 
-#: package/contents/ui/ConfigGeneral.qml:222
+#: package/contents/ui/ConfigGeneral.qml:268
 msgid "Default (/bin/sh)"
 msgstr "Varsayılan (/bin/sh)"
 
-#: package/contents/ui/ConfigGeneral.qml:242
+#: package/contents/ui/ConfigGeneral.qml:288
 msgid "Appearance:"
 msgstr "Görünüm:"
 
-#: package/contents/ui/ConfigGeneral.qml:243
+#: package/contents/ui/ConfigGeneral.qml:289
+msgid "Show divider lines"
+msgstr "Ayraç çizgilerini göster"
+
+#: package/contents/ui/ConfigGeneral.qml:294
 msgid "Show scrollbars"
 msgstr "Kaydırma çubuklarını göster"
 
-#: package/contents/ui/ConfigGeneral.qml:248
-msgid "Enable background blur"
-msgstr "Arka plan bulanıklığını etkinleştir"
+#: package/contents/ui/ConfigGeneral.qml:299
+msgid "Show tooltips on hover"
+msgstr "Üzerine gelindiğinde ipuçlarını göster"
 
-#: package/contents/ui/ConfigGeneral.qml:253
-msgid "Icon animation:"
-msgstr "Simge canlandırması:"
+#: package/contents/ui/ConfigGeneral.qml:304
+msgid "Show new app badge"
+msgstr "Yeni uygulama rozetini göster"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:309
+msgid "Hide app labels on favorites tab"
+msgstr "Sık kullanılanlar sekmesinde uygulama etiketlerini gizle"
+
+#: package/contents/ui/ConfigGeneral.qml:315
+msgid "Sort favorites alphabetically"
+msgstr "Sık kullanılanları alfabetik sırala"
+
+#: package/contents/ui/ConfigGeneral.qml:320
+msgid "Open/close animation:"
+msgstr "Açma/kapatma animasyonu:"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "None"
 msgstr "Yok"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Fade"
+msgstr "Solma"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Scale"
+msgstr "Ölçek"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Pop"
+msgstr "Pop"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slide Up"
+msgstr "Yukarı kaydır"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slide Down"
+msgstr "Aşağı kaydır"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Glide"
+msgstr "Süzülme"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Buzz"
+msgstr "Titreşim"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Twist"
+msgstr "Burulma"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Slam"
+msgstr "Çarpma"
+
+#: package/contents/ui/ConfigGeneral.qml:321
+msgid "Grow Up"
+msgstr "Yukarı büyüt"
+
+#: package/contents/ui/ConfigGeneral.qml:326
+msgid "Enable background blur"
+msgstr "Arka plan bulanıklığını etkinleştir"
+
+#: package/contents/ui/ConfigGeneral.qml:331
+msgid "Dim background behind launcher"
+msgstr "Başlatıcının arkasındaki arka planı karart"
+
+#: package/contents/ui/ConfigGeneral.qml:336
+msgid "Icon animation:"
+msgstr "Simge canlandırması:"
+
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Shake"
 msgstr "Sallama"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Grow"
 msgstr "Büyüme"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Bounce"
 msgstr "Zıplama"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Spin"
 msgstr "Dönme"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/ConfigGeneral.qml:337
 msgid "Shuffle"
 msgstr "Karıştırma"
 
-#: package/contents/ui/ConfigGeneral.qml:259
+#: package/contents/ui/ConfigGeneral.qml:342
 msgid "Animate icons on open"
 msgstr "Açılışta simgeleri canlandır"
 
-#: package/contents/ui/ConfigGeneral.qml:265
+#: package/contents/ui/ConfigGeneral.qml:348
+msgid "Show power/session buttons"
+msgstr "Güç/oturum düğmelerini göster"
+
+#: package/contents/ui/ConfigGeneral.qml:353
 msgid "Show labels on power/session buttons"
 msgstr "Güç/oturum düğmelerinde etiketleri göster"
 
-#: package/contents/ui/ConfigGeneral.qml:270
+#: package/contents/ui/ConfigGeneral.qml:359
 msgid "Expand search to bookmarks, files, and websites"
 msgstr "Aramayı yer imlerine, dosyalara ve web sitelerine genişlet"
 
-#: package/contents/ui/ConfigGeneral.qml:274
+#: package/contents/ui/ConfigGeneral.qml:363
 msgid "Configure Search Plugins…"
 msgstr "Arama Eklentilerini Yapılandır…"
 
-#: package/contents/ui/ConfigGeneral.qml:281
+#: package/contents/ui/ConfigGeneral.qml:370
 msgid "Background opacity:"
 msgstr "Arka plan saydamlığı:"
 
-#: package/contents/ui/ConfigGeneral.qml:297
+#: package/contents/ui/ConfigGeneral.qml:386
 msgid "Corner radius:"
 msgstr "Köşe yarıçapı:"
 
-#: package/contents/ui/ConfigGeneral.qml:298
+#: package/contents/ui/ConfigGeneral.qml:387
 msgid "Use custom corner radius"
 msgstr "Özel köşe yarıçapı kullan"
 
-#: package/contents/ui/ConfigGeneral.qml:310
+#: package/contents/ui/ConfigGeneral.qml:399
 msgid "px"
 msgstr "px"
 
-#: package/contents/ui/ConfigGeneral.qml:322
+#: package/contents/ui/ConfigGeneral.qml:411
 msgid "Reset to Defaults"
 msgstr "Varsayılanlara sıfırla"
 
-#: package/contents/ui/ConfigGeneral.qml:355
-msgid "Hidden Applications"
-msgstr "Gizli Uygulamalar"
+#: package/contents/ui/ConfigGeneral.qml:455
+msgid "Hidden apps:"
+msgstr "Gizli uygulamalar:"
 
-#: package/contents/ui/ConfigGeneral.qml:362
+#: package/contents/ui/ConfigGeneral.qml:462
 msgid ""
-"Right-click any application in the grid and choose \"Hide Application\" to "
-"add it here."
+"Right-click any app in the grid to hide it, or type h: in the search bar."
 msgstr ""
-"Izgaradaki herhangi bir uygulamaya sağ tıklayın ve buraya eklemek için "
-"\"Uygulamayı Gizle\" seçeneğini seçin."
+"Bir uygulamayı gizlemek için ızgaradaki uygulamaya sağ tıklayın veya arama "
+"çubuğuna h: yazın."
 
-#: package/contents/ui/ConfigGeneral.qml:370
+#: package/contents/ui/ConfigGeneral.qml:469
 msgid "No hidden applications."
 msgstr "Gizli uygulama yok."
 
-#: package/contents/ui/ConfigGeneral.qml:400
+#: package/contents/ui/ConfigGeneral.qml:515
+#: package/contents/ui/prefix/PrefixHiddenView.qml:127
 msgid "Unhide"
 msgstr "Göster"
 
-#: package/contents/ui/GridPanel.qml:433
-msgid "More Results"
-msgstr "Daha Fazla Sonuç"
+#: package/contents/ui/ConfigGeneral.qml:532
+#: package/contents/ui/prefix/PrefixHiddenView.qml:35
+msgid "Unhide All"
+msgstr "Tümünü göster"
 
-#: package/contents/ui/GridPanel.qml:530
-msgid "Click an icon to select it, then click another to swap positions"
-msgstr "Seçmek için bir simgeye tıklayın, değiştirmek için başka birine"
+#: package/contents/ui/GridPanel.qml:868
+msgid "Launch all selected?"
+msgstr "Seçilenlerin tümü başlatılsın mı?"
 
-#: package/contents/ui/GridPanel.qml:531
-msgid "Now click another icon to swap, or click again to deselect"
-msgstr "Değiştirmek için başka simgeye veya seçimi kaldırmak için yeniden tıklayın"
+#: package/contents/ui/GridPanel.qml:870
+msgid "Open %1 application at once?"
+msgid_plural "Open %1 applications at once?"
+msgstr[0] "%1 uygulama aynı anda açılsın mı?"
+msgstr[1] "%1 uygulama aynı anda açılsın mı?"
 
-#: package/contents/ui/GridPanel.qml:553
-msgid "Done"
-msgstr "Bitti"
+#: package/contents/ui/GridPanel.qml:880
+msgid "Hide selected applications?"
+msgstr "Seçili uygulamalar gizlensin mi?"
 
-#: package/contents/ui/GridPanel.qml:553
-msgid "Reorder favorites"
-msgstr "Sık kullanılanları yeniden sırala"
+#: package/contents/ui/GridPanel.qml:882
+msgid ""
+"Hide %1 application from AppGrid? You can unhide it later in Settings → "
+"Hidden Applications."
+msgid_plural ""
+"Hide %1 applications from AppGrid? You can unhide them later in Settings → "
+"Hidden Applications."
+msgstr[0] ""
+"%1 uygulama AppGrid'den gizlensin mi? Daha sonra Ayarlar → Gizli Uygulamalar "
+"bölümünden gösterebilirsiniz."
+msgstr[1] ""
+"%1 uygulama AppGrid'den gizlensin mi? Daha sonra Ayarlar → Gizli Uygulamalar "
+"bölümünden gösterebilirsiniz."
 
-#: package/contents/ui/PowerButtons.qml:25
+#: package/contents/ui/PowerButtons.qml:34
+msgid "Update available"
+msgstr "Güncelleme mevcut"
+
+#: package/contents/ui/PowerButtons.qml:39
+msgid "AppGrid %1 is available — click to view release notes"
+msgstr "AppGrid %1 mevcut — sürüm notlarını görüntülemek için tıklayın"
+
+#: package/contents/ui/PowerButtons.qml:50
+msgid "AppGrid update available"
+msgstr "AppGrid güncellemesi mevcut"
+
+#: package/contents/ui/PowerButtons.qml:66
+#: package/contents/ui/PowerButtons.qml:69
+#: package/contents/ui/PowerButtons.qml:73
 msgid "Sleep"
 msgstr "Uyku"
 
-#: package/contents/ui/PowerButtons.qml:26
+#: package/contents/ui/PowerButtons.qml:80
+#: package/contents/ui/PowerButtons.qml:83
+#: package/contents/ui/PowerButtons.qml:87
 msgid "Restart"
 msgstr "Yeniden Başlat"
 
-#: package/contents/ui/PowerButtons.qml:27
+#: package/contents/ui/PowerButtons.qml:94
+#: package/contents/ui/PowerButtons.qml:97
+#: package/contents/ui/PowerButtons.qml:101
 msgid "Shut Down"
 msgstr "Kapat"
 
-#: package/contents/ui/PowerButtons.qml:48
-#: package/contents/ui/PowerButtons.qml:51
-#: package/contents/ui/PowerButtons.qml:57
+#: package/contents/ui/PowerButtons.qml:110
+#: package/contents/ui/PowerButtons.qml:113
+#: package/contents/ui/PowerButtons.qml:119
 msgid "Session"
 msgstr "Oturum"
 
-#: package/contents/ui/PowerButtons.qml:66
-#: package/contents/ui/PowerButtons.qml:68
+#: package/contents/ui/PowerButtons.qml:129
 msgid "Lock"
 msgstr "Kilitle"
 
-#: package/contents/ui/PowerButtons.qml:73
-#: package/contents/ui/PowerButtons.qml:75
+#: package/contents/ui/PowerButtons.qml:136
 msgid "Log Out"
 msgstr "Oturumu Kapat"
 
-#: package/contents/ui/PowerButtons.qml:80
-#: package/contents/ui/PowerButtons.qml:82
+#: package/contents/ui/PowerButtons.qml:143
 msgid "Switch User"
 msgstr "Kullanıcı Değiştir"
 
-#: package/contents/ui/PrefixModeView.qml:41
-msgid "Quick Commands"
-msgstr "Hızlı komutlar"
-
-#: package/contents/ui/PrefixModeView.qml:50
-msgid "Terminal"
-msgstr "Uçbirim"
-
-#: package/contents/ui/PrefixModeView.qml:51
-msgid "Run Command"
-msgstr "Komut çalıştır"
-
-#: package/contents/ui/PrefixModeView.qml:52
-msgid "Browse Files"
-msgstr "Dosyalara göz at"
-
-#: package/contents/ui/PrefixModeView.qml:53
-msgid "Browse Home"
-msgstr "Ev dizinine göz at"
-
-#: package/contents/ui/PrefixModeView.qml:54
-msgid "This Help"
-msgstr "Bu yardım"
-
-#: package/contents/ui/PrefixModeView.qml:130
-msgid "Alt+1 – Alt+9 launches search results instantly"
-msgstr "Alt+1 – Alt+9 arama sonuçlarını anında başlatır"
-
-#: package/contents/ui/PrefixModeView.qml:156
+#: package/contents/ui/prefix/PrefixCommandView.qml:33
 msgid "Type a command to run in terminal"
 msgstr "Uçbirimde çalıştırılacak bir komut yazın"
 
-#: package/contents/ui/PrefixModeView.qml:157
+#: package/contents/ui/prefix/PrefixCommandView.qml:34
 msgid "Type a command to execute"
 msgstr "Çalıştırılacak bir komut yazın"
 
-#: package/contents/ui/PrefixModeView.qml:159
+#: package/contents/ui/prefix/PrefixCommandView.qml:36
 msgid "Press Enter to run in terminal"
 msgstr "Uçbirimde çalıştırmak için Enter tuşuna basın"
 
-#: package/contents/ui/PrefixModeView.qml:160
+#: package/contents/ui/prefix/PrefixCommandView.qml:37
 msgid "Press Enter to execute"
 msgstr "Çalıştırmak için Enter tuşuna basın"
 
-#: package/contents/ui/RecentAppsHeader.qml:30
+#: package/contents/ui/prefix/PrefixHelpView.qml:17
+msgid "Quick Commands"
+msgstr "Hızlı komutlar"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:25
+msgid "Run"
+msgstr "Çalıştır"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:26
+msgid "Terminal"
+msgstr "Uçbirim"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:27
+msgid "Run Command"
+msgstr "Komut çalıştır"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:29
+msgid "Browse"
+msgstr "Gözat"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:30
+msgid "Browse Files"
+msgstr "Dosyalara göz at"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:31
+msgid "Browse Home"
+msgstr "Ev dizinine göz at"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:33
+msgid "Tools"
+msgstr "Araçlar"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:34
+msgid "System Info"
+msgstr "Sistem Bilgisi"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:35
+msgid "Hidden Apps"
+msgstr "Gizli Uygulamalar"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:36
+msgid "This Help"
+msgstr "Bu yardım"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:124
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 arama sonuçlarını anında başlatır"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:26
+msgid "Hidden Applications"
+msgstr "Gizli Uygulamalar"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:63
+msgid "No hidden applications"
+msgstr "Gizli uygulama yok"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:69
+msgid "Right-click any app in the grid to hide it"
+msgstr "Bir uygulamayı gizlemek için ızgaradaki uygulamaya sağ tıklayın"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:144
+msgid "%1 hidden application(s)"
+msgstr "%1 gizli uygulama"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:27
+msgid "System Information"
+msgstr "Sistem Bilgisi"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:77
+msgid "Update %1 available"
+msgstr "%1 güncellemesi mevcut"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:79
+msgid "Check for updates"
+msgstr "Güncellemeleri kontrol et"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:83
+msgid "Click to open release notes for %1"
+msgstr "%1 sürüm notlarını açmak için tıklayın"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:86
+msgid ""
+"Force an immediate check against the AppGrid website (bypasses the 24h "
+"schedule)."
+msgstr ""
+"AppGrid web sitesine karşı anlık kontrolü zorla (24h zamanlamasını atlar)."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:131
+msgid "KAStats (%1 entries; legacy backup: %2)"
+msgstr "KAStats (%1 girdi; eski yedek: %2)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:133
+msgid "Not migrated (legacy: %1 entries)"
+msgstr "Taşınmadı (eski: %1 girdi)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:141
+msgid "Re-run migration"
+msgstr "Geçişi yeniden çalıştır"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:142
+msgid ""
+"Clears the migration flag. On next open, AppGrid recomputes the favorites "
+"list as the union of the legacy backup and current KAStats entries. Nothing "
+"is lost; missing legacy items are re-added."
+msgstr ""
+"Geçiş bayrağını temizler. Bir sonraki açılışta AppGrid yeniden hesaplar "
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:156
+msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
+msgstr ""
+"Geçiş bayrağı temizlendi. Geçişi yeniden çalıştırmak için AppGrid'i yeniden "
+"açın."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:174
+msgid "Copied!"
+msgstr "Kopyalandı!"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:175
+msgid "Copy to Clipboard"
+msgstr "Panoya kopyala"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:212
+msgid "Include this info when reporting issues on GitHub"
+msgstr "GitHub'da sorun bildirirken bu bilgileri ekleyin"
+
+#: package/contents/ui/RecentAppsHeader.qml:38
 msgid "Recently Used"
 msgstr "Son Kullanılanlar"
 
-#: package/contents/ui/RecentAppsHeader.qml:92
+#: package/contents/ui/RecentAppsHeader.qml:112
 msgid "All Apps"
 msgstr "Tüm Uygulamalar"
 
@@ -377,49 +660,72 @@ msgstr "Uygulama ara"
 msgid "Clear search"
 msgstr "Aramayı temizle"
 
-#: package/contents/ui/SearchResultsList.qml:160
-msgid "Alt+%1: "
-msgstr "Alt+%1: "
+#: package/contents/ui/SearchResultsList.qml:183
+msgid "Application"
+msgstr "Uygulama"
 
-#: src/appmodel.cpp:167
+#: src/appmodel.cpp:239
 msgid "Utilities"
 msgstr "Araçlar"
 
-#: src/appmodel.cpp:168
+#: src/appmodel.cpp:240
 msgid "Development"
 msgstr "Geliştirme"
 
-#: src/appmodel.cpp:169
+#: src/appmodel.cpp:241
 msgid "Graphics"
 msgstr "Grafik"
 
-#: src/appmodel.cpp:170
+#: src/appmodel.cpp:242
 msgid "Internet"
 msgstr "İnternet"
 
-#: src/appmodel.cpp:171
+#: src/appmodel.cpp:243
 msgid "Multimedia"
 msgstr "Çoklu Ortam"
 
-#: src/appmodel.cpp:172
+#: src/appmodel.cpp:244
 msgid "Office"
 msgstr "Ofis"
 
-#: src/appmodel.cpp:173
+#: src/appmodel.cpp:245
 msgid "Games"
 msgstr "Oyunlar"
 
-#: src/appmodel.cpp:174
+#: src/appmodel.cpp:246
 msgid "Education"
 msgstr "Eğitim"
 
-#: src/appmodel.cpp:175
+#: src/appmodel.cpp:247
 msgid "System"
 msgstr "Sistem"
 
-#: src/appmodel.cpp:176
+#: src/appmodel.cpp:248
 msgid "Other"
 msgstr "Diğer"
+
+#~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
+#~ msgstr ""
+#~ "Geçiş bayrağını temizler. Bir sonraki açılışta AppGrid yeniden hesaplar "
+
+#~ msgid "More Results"
+#~ msgstr "Daha Fazla Sonuç"
+
+#~ msgid "Click an icon to select it, then click another to swap positions"
+#~ msgstr "Seçmek için bir simgeye tıklayın, değiştirmek için başka birine"
+
+#~ msgid "Now click another icon to swap, or click again to deselect"
+#~ msgstr ""
+#~ "Değiştirmek için başka simgeye veya seçimi kaldırmak için yeniden tıklayın"
+
+#~ msgid "Done"
+#~ msgstr "Bitti"
+
+#~ msgid "Reorder favorites"
+#~ msgstr "Sık kullanılanları yeniden sırala"
+
+#~ msgid "Alt+%1: "
+#~ msgstr "Alt+%1: "
 
 #~ msgid "Shake icons on open"
 #~ msgstr "Açılışta simgeleri salla"
@@ -438,9 +744,6 @@ msgstr "Diğer"
 
 #~ msgid "Browse files from home"
 #~ msgstr "Ev dizininden dosyalara göz at"
-
-#~ msgid "Show this help"
-#~ msgstr "Bu yardımı göster"
 
 #~ msgid "Search"
 #~ msgstr "Ara"
