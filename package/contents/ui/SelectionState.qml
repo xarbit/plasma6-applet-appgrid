@@ -158,7 +158,10 @@ Item {
             moveFn()
             rangeTo(currentIdxFn())
         } else {
-            clear()
+            // Plain arrow just moves the cursor — selection stays put.
+            // Matches Dolphin/Nautilus: arrow past a selected item leaves
+            // it selected so the user can build up selection via Space and
+            // arrow-walking without losing items.
             moveFn()
         }
     }
