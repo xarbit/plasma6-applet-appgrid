@@ -2,7 +2,10 @@ name: Build Packages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'hotfix-*'
+      - 'patch-*'
     paths-ignore:
       - "**.md"
       - "LICENSE"
@@ -65,7 +68,7 @@ jobs:
           pacman -S --noconfirm --needed \
             base-devel git cmake extra-cmake-modules \
             qt6-base qt6-declarative \
-            libplasma kpackage kio kservice ki18n \
+            libplasma kpackage kio kservice ki18n kiconthemes \
             kcoreaddons kwindowsystem krunner layer-shell-qt plasma-activities \
             plasma-workspace appstream namcap \
             python-pip clang
