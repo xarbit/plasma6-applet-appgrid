@@ -333,9 +333,25 @@ jobs:
           name: universal-package-${{ matrix.arch }}
           path: out/*
 
+  nix:
+    name: Nix flake build
+    needs: [version, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - name: Build flake
+        run: nix build --print-build-logs .#default
+      - name: Verify output
+        # Nix's Qt6 plugin dir is lib/qt-6/ (hyphenated).
+        run: |
+          test -f result/lib/qt-6/plugins/plasma/applets/dev.xarbit.appgrid.so
+          test -f result/lib/qt-6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
+
   release:
     name: Create Release
-    needs: [version, arch, fedora, deb-packages, universal]
+    needs: [version, arch, fedora, deb-packages, universal, nix]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts

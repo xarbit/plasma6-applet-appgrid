@@ -451,6 +451,35 @@ jobs:
           name: universal-package-${{ matrix.arch }}
           path: out/*
 
+  nix:
+    name: Nix flake build
+    needs: [version, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Cached Nix install — eliminates ~3min cold-start per build. The
+      # determinate-systems action keeps recent nixpkgs eval cached
+      # between workflow runs.
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Build flake
+        # `nix build` resolves packages.x86_64-linux.default from
+        # flake.nix. Sanity-checks that the derivation evaluates and
+        # compiles cleanly on a fresh nixpkgs-unstable; doesn't push
+        # the result to a binary cache.
+        run: nix build --print-build-logs .#default
+
+      - name: Inspect output
+        # Nix's Qt6 installs plugins under lib/qt-6/ (hyphenated), not the
+        # lib/qt6/ that distro packages use.
+        run: |
+          ls -la result/lib/qt-6/plugins/plasma/applets/
+          ls -la result/share/plasma/plasmoids/ || true
+          test -f result/lib/qt-6/plugins/plasma/applets/dev.xarbit.appgrid.so
+          test -f result/lib/qt-6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
+
   dev-release:
     name: Update Development Release
     needs: [version, arch, fedora, deb-packages, universal]
