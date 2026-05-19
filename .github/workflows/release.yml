@@ -40,7 +40,7 @@ jobs:
           pacman -S --noconfirm --needed \
             base-devel git cmake extra-cmake-modules \
             qt6-base qt6-declarative \
-            libplasma kpackage kio kservice ki18n \
+            libplasma kpackage kio kservice ki18n kiconthemes \
             kcoreaddons kwindowsystem krunner layer-shell-qt \
             plasma-workspace
 
@@ -102,6 +102,7 @@ jobs:
                 qt6-qtbase-devel qt6-qtdeclarative-devel \
                 libplasma-devel kf6-kpackage-devel kf6-kio-devel \
                 kf6-kservice-devel kf6-ki18n-devel kf6-kcoreaddons-devel \
+                kf6-kiconthemes-devel \
                 kf6-kwindowsystem-devel kf6-krunner-devel layer-shell-qt-devel \
                 plasma-workspace-devel \
                 gettext rpm-build
@@ -118,7 +119,7 @@ jobs:
           Summary:        A modern fullscreen application launcher for KDE Plasma
           License:        GPL-2.0-or-later
           URL:            https://github.com/xarbit/plasma6-applet-appgrid
-          Requires:       plasma-workspace plasma-desktop
+          Requires:       plasma-workspace plasma-desktop kf6-kiconthemes
 
           %description
           A modern fullscreen application launcher for KDE Plasma,
@@ -192,6 +193,7 @@ jobs:
                 qt6-base-dev qt6-declarative-dev \
                 libplasma-dev libkf6package-dev libkf6kio-dev \
                 libkf6service-dev libkf6i18n-dev libkf6coreaddons-dev \
+                libkf6iconthemes-dev \
                 libkf6windowsystem-dev libkf6runner-dev \
                 liblayershellqtinterface-dev \
                 plasma-workspace-dev \
@@ -215,7 +217,7 @@ jobs:
           Section: kde
           Priority: optional
           Architecture: ${DEB_ARCH}
-          Depends: plasma-workspace, plasma-desktop, libkf6service6, libkf6i18n6
+          Depends: plasma-workspace, plasma-desktop, libkf6service6, libkf6i18n6, libkf6iconthemes6
           Maintainer: Jason Scurtu <jscurtu@gmail.com>
           Description: A modern fullscreen application launcher for KDE Plasma
            A modern fullscreen application launcher for KDE Plasma,
