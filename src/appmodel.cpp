@@ -5,6 +5,7 @@
 
 #include "appmodel.h"
 
+#include <KIconLoader>
 #include <KLocalizedString>
 #include <KService>
 #include <KServiceGroup>
@@ -160,6 +161,22 @@ AppModel::AppModel(QObject *parent)
 {
     loadApplications();
     connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppModel::reload);
+    // Refresh delegate icons on either:
+    //   * #86 — icon file replaced on disk (menu editor, package upgrade
+    //     touching /usr/share/icons/...). KIconLoader::emitChange() fires
+    //     iconChanged after flushing its own caches.
+    //   * #103 — user switches icon theme in System Settings → Icons.
+    //     The KCM emits iconChanged via the same signal.
+    // We re-emit dataChanged on IconRole so Kirigami.Icon delegates
+    // re-resolve via the now-fresh pixmap cache. Replaces the older
+    // QIcon::setThemeName(QIcon::themeName()) trick that fixed #86 by
+    // setting a global theme-name override on Qt's icon engine — which
+    // blocked subsequent system theme changes from propagating (#103).
+    connect(KIconLoader::global(), &KIconLoader::iconChanged, this, [this]() {
+        if (m_apps.isEmpty())
+            return;
+        emit dataChanged(index(0, 0), index(m_apps.size() - 1, 0), {IconRole});
+    });
 }
 
 int AppModel::rowCount(const QModelIndex &parent) const
@@ -414,11 +431,10 @@ QStringList AppModel::categories() const
 
 void AppModel::reload()
 {
-    // Re-set the icon theme to invalidate Qt's internal icon pixmap cache,
-    // so changed icons are picked up without restarting.
-    // The KDE-native alternative is KIconLoader::emitChange() from KIconThemes,
-    // but this avoids adding that dependency.
-    QIcon::setThemeName(QIcon::themeName());
+    // Cache-busting for icon changes lives in the constructor's
+    // KIconLoader::iconChanged hookup, not here — reload() is for app-list
+    // changes (KSycoca databaseChanged). See ctor + issues #86 / #103 for
+    // why we dropped the older QIcon::setThemeName trick.
     beginResetModel();
     m_apps.clear();
     m_categories.clear();

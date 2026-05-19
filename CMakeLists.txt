@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 cmake_minimum_required(VERSION 3.20)
-project(AppGrid VERSION 1.7.9 LANGUAGES CXX)
+project(AppGrid VERSION 1.7.10 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,6 +20,7 @@ find_package(KF6CoreAddons REQUIRED)
 find_package(KF6KIO REQUIRED)
 find_package(KF6WindowSystem REQUIRED)
 find_package(KF6Package REQUIRED)
+find_package(KF6IconThemes REQUIRED)
 find_package(LayerShellQt REQUIRED)
 # LibKWorkspace no longer required — session actions use Kicker.SystemModel
 # find_package(LibKWorkspace REQUIRED)
@@ -37,6 +38,7 @@ set(APPGRID_COMMON_LIBS
     KF6::CoreAddons
     KF6::KIOGui
     KF6::WindowSystem
+    KF6::IconThemes
     LayerShellQt::Interface
     Plasma::PlasmaQuick
     KF6::Runner
@@ -208,3 +210,11 @@ ki18n_install(po)
 
 install(FILES dev.xarbit.appgrid.metainfo.xml
         DESTINATION ${KDE_INSTALL_METAINFODIR})
+
+# --- Tests ---
+
+option(BUILD_TESTING "Build unit tests" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(src/tests)
+endif()

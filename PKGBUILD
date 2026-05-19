@@ -1,6 +1,6 @@
 # Maintainer: Jason Scurtu <jscurtu@gmail.com>
 pkgname=plasma6-applets-appgrid
-pkgver=1.7.9
+pkgver=1.7.10
 pkgrel=1
 pkgdesc="A modern fullscreen application launcher for KDE Plasma"
 arch=('x86_64')
@@ -13,6 +13,7 @@ depends=(
     'plasma-workspace'
     'kservice'
     'ki18n'
+    'kiconthemes'
     'layer-shell-qt'
 )
 makedepends=(
@@ -26,6 +27,7 @@ makedepends=(
     'kcoreaddons'
     'krunner'
     'kwindowsystem'
+    'kiconthemes'
     'gettext'
 )
 source=()
