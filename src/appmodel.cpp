@@ -294,6 +294,12 @@ void AppModel::setUseSystemCategories(bool enabled)
 void AppModel::loadApplications()
 {
     QSet<QString> seen;
+    // Index storageId → m_apps row for O(1) "merge category into existing
+    // entry" lookups when an app appears in multiple menu groups (system
+    // categories mode). Without this the merge loop scans m_apps linearly
+    // for each duplicate hit — quadratic on large + heavily-categorized
+    // installs (Office;Calendar;Documentation, etc.).
+    QHash<QString, int> seenIndex;
     QSet<QString> categorySet;
 
     // Traverse the XDG menu hierarchy via KServiceGroup.
@@ -351,11 +357,12 @@ void AppModel::loadApplications()
             if (seen.contains(storageId)) {
                 if (systemMode) {
                     auto cat = category.isEmpty() ? QStringLiteral("Other") : category;
-                    for (auto &existing : m_apps) {
-                        if (existing.storageId == storageId && !existing.categories.contains(cat)) {
+                    const int existingIdx = seenIndex.value(storageId, -1);
+                    if (existingIdx >= 0) {
+                        auto &existing = m_apps[existingIdx];
+                        if (!existing.categories.contains(cat)) {
                             existing.categories.append(cat);
                             categorySet.insert(cat);
-                            break;
                         }
                     }
                 }
@@ -391,6 +398,7 @@ void AppModel::loadApplications()
 
             for (const auto &cat : std::as_const(appEntry.categories))
                 categorySet.insert(cat);
+            seenIndex.insert(storageId, m_apps.size());
             m_apps.append(appEntry);
         }
     };

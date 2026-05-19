@@ -659,7 +659,11 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
 
 QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
 {
-    return {
+    // Qt calls roleNames() once per delegate role read from QML — across a
+    // 20-row search-results view that's ~120 calls per keystroke. Hand back
+    // a reference to a static map so we don't allocate a fresh QHash each
+    // time. Roles are compile-time constant so the table never changes.
+    static const QHash<int, QByteArray> kRoleNames = {
         {ResultTypeRole, "resultType"},
         {NameRole, "name"},
         {IconRole, "iconName"},
@@ -673,4 +677,5 @@ QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
         {SourceIndexRole, "sourceIndex"},
         {InstallSourceRole, "installSource"},
     };
+    return kRoleNames;
 }

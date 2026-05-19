@@ -40,11 +40,12 @@ Item {
     // and Shift+Arrow range selection. -1 = no anchor.
     property int anchor: -1
 
-    readonly property int selectionCount: {
-        var n = 0
-        for (var k in selectionSids) if (selectionSids[k]) ++n
-        return n
-    }
+    // Cached count maintained by the mutation helpers below. Previously a
+    // derived property that ran `for...in selectionSids` on every read —
+    // and every AppIconDelegate's `selectionAnchor` binding reads it, so a
+    // 300-delegate viewport ate O(N_selected × 300) loop iterations per
+    // toggle. Now O(1) reads from a tracked integer.
+    property int selectionCount: 0
 
     function contains(sid) {
         return sid && selectionSids[sid] === true
@@ -63,8 +64,13 @@ Item {
     function toggleSid(sid, anchorIdx) {
         if (!sid) return
         var copy = Object.assign({}, selectionSids)
-        if (copy[sid]) delete copy[sid]
-        else copy[sid] = true
+        if (copy[sid]) {
+            delete copy[sid]
+            --selectionCount
+        } else {
+            copy[sid] = true
+            ++selectionCount
+        }
         selectionSids = copy
         if (anchorIdx !== undefined && anchorIdx >= 0)
             anchor = anchorIdx
@@ -83,26 +89,37 @@ Item {
         const lo = Math.min(anchor, idx)
         const hi = Math.max(anchor, idx)
         var copy = Object.assign({}, selectionSids)
+        var added = 0
         for (var i = lo; i <= hi; ++i) {
             const sid = sidAt(i)
-            if (sid) copy[sid] = true
+            if (sid && !copy[sid]) {
+                copy[sid] = true
+                ++added
+            }
         }
         selectionSids = copy
+        selectionCount += added
     }
 
     function selectAll(currentIdx) {
         var copy = {}
+        var n = 0
         for (var i = 0; i < gridCount; ++i) {
             const sid = sidAt(i)
-            if (sid) copy[sid] = true
+            if (sid && !copy[sid]) {
+                copy[sid] = true
+                ++n
+            }
         }
         selectionSids = copy
+        selectionCount = n
         if (anchor < 0) anchor = currentIdx >= 0 ? currentIdx : 0
     }
 
     function clear() {
         if (selectionCount === 0 && anchor < 0) return
         selectionSids = ({})
+        selectionCount = 0
         anchor = -1
     }
 

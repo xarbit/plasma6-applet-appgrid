@@ -13,6 +13,7 @@
 #include <QTextStream>
 
 #include <cstdlib>
+#include <limits>
 
 // Qt 6.13 deprecated invalidateFilter() in favour of begin/endFilterChange().
 // Suppress the deprecation warning on older Qt where the replacement doesn't exist.
@@ -41,16 +42,91 @@ AppFilterModel::AppFilterModel(QObject *parent)
 
     reloadDefaultApps();
 
+    // countChanged: modelReset covers invalidate() / setSourceModel; the row
+    // signals cover incremental row insertion/removal. Earlier code also
+    // connected layoutChanged, which fired alongside modelReset for sort
+    // changes and double-emitted countChanged on every filter refresh.
     connect(this, &QAbstractItemModel::rowsInserted, this, &AppFilterModel::countChanged);
     connect(this, &QAbstractItemModel::rowsRemoved, this, &AppFilterModel::countChanged);
     connect(this, &QAbstractItemModel::modelReset, this, &AppFilterModel::countChanged);
-    connect(this, &QAbstractItemModel::layoutChanged, this, &AppFilterModel::countChanged);
 
-    // groupedByCategory depends on visible rows — re-emit when filter state changes
-    connect(this, &AppFilterModel::hiddenAppsChanged, this, &AppFilterModel::groupedByCategoryChanged);
-    connect(this, &AppFilterModel::showFavoritesOnlyChanged, this, &AppFilterModel::groupedByCategoryChanged);
-    connect(this, &AppFilterModel::filterCategoryChanged, this, &AppFilterModel::groupedByCategoryChanged);
-    connect(this, &QAbstractItemModel::modelReset, this, &AppFilterModel::groupedByCategoryChanged);
+    // groupedByCategory depends on visible rows — re-emit when filter state
+    // changes. The lambda marks the cache dirty before the signal travels
+    // to QML so the next groupedByCategory read recomputes.
+    auto markGroupedDirty = [this]() {
+        m_groupedByCategoryDirty = true;
+        emit groupedByCategoryChanged();
+    };
+    connect(this, &AppFilterModel::hiddenAppsChanged, this, markGroupedDirty);
+    connect(this, &AppFilterModel::showFavoritesOnlyChanged, this, markGroupedDirty);
+    connect(this, &AppFilterModel::filterCategoryChanged, this, markGroupedDirty);
+    connect(this, &QAbstractItemModel::modelReset, this, markGroupedDirty);
+
+    // storageId → source-row cache: rebuilt lazily on first read,
+    // invalidated whenever the source model changes shape. Hooks attached
+    // via sourceModelChanged so we don't need to override setSourceModel
+    // (moc generates a duplicate definition for QSortFilterProxyModel
+    // overrides that don't carry Q_INVOKABLE).
+    connect(this, &QSortFilterProxyModel::sourceModelChanged, this, [this]() {
+        invalidateStorageIdCache();
+        auto *src = sourceModel();
+        if (!src)
+            return;
+        connect(src, &QAbstractItemModel::modelReset, this,
+                &AppFilterModel::invalidateStorageIdCache);
+        connect(src, &QAbstractItemModel::rowsInserted, this,
+                &AppFilterModel::invalidateStorageIdCache);
+        connect(src, &QAbstractItemModel::rowsRemoved, this,
+                &AppFilterModel::invalidateStorageIdCache);
+    });
+}
+
+void AppFilterModel::invalidateStorageIdCache()
+{
+    m_storageIdToSourceRow.clear();
+    m_storageIdCacheDirty = true;
+}
+
+void AppFilterModel::ensureStorageIdCache() const
+{
+    if (!m_storageIdCacheDirty)
+        return;
+    m_storageIdToSourceRow.clear();
+    auto *src = sourceModel();
+    if (src) {
+        const int n = src->rowCount();
+        m_storageIdToSourceRow.reserve(n);
+        for (int i = 0; i < n; ++i) {
+            const auto sid = src->index(i, 0).data(AppModel::StorageIdRole).toString();
+            if (!sid.isEmpty())
+                m_storageIdToSourceRow.insert(sid, i);
+        }
+    }
+    m_storageIdCacheDirty = false;
+}
+
+void AppFilterModel::rebuildHiddenSet()
+{
+    m_hiddenAppsSet = QSet<QString>(m_hiddenApps.cbegin(), m_hiddenApps.cend());
+}
+
+void AppFilterModel::rebuildFavoriteSet()
+{
+    m_favoriteAppsSet = QSet<QString>(m_favoriteApps.cbegin(), m_favoriteApps.cend());
+    m_favoritePositions.clear();
+    m_favoritePositions.reserve(m_favoriteApps.size());
+    for (int i = 0; i < m_favoriteApps.size(); ++i)
+        m_favoritePositions.insert(m_favoriteApps.at(i), i);
+}
+
+void AppFilterModel::rebuildRecentSet()
+{
+    m_recentAppsSet = QSet<QString>(m_recentApps.cbegin(), m_recentApps.cend());
+}
+
+void AppFilterModel::rebuildKnownSet()
+{
+    m_knownAppsSet = QSet<QString>(m_knownApps.cbegin(), m_knownApps.cend());
 }
 
 // --- Property accessors ---
@@ -86,6 +162,7 @@ void AppFilterModel::setHiddenApps(const QStringList &list)
     if (m_hiddenApps == list)
         return;
     m_hiddenApps = list;
+    rebuildHiddenSet();
     APPGRID_INVALIDATE_FILTER();
     emit hiddenAppsChanged();
 }
@@ -96,8 +173,9 @@ void AppFilterModel::hideApp(int proxyIndex)
     if (!idx.isValid())
         return;
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
-    if (!sid.isEmpty() && !m_hiddenApps.contains(sid)) {
+    if (!sid.isEmpty() && !m_hiddenAppsSet.contains(sid)) {
         m_hiddenApps.append(sid);
+        m_hiddenAppsSet.insert(sid);
         APPGRID_INVALIDATE_FILTER();
         emit hiddenAppsChanged();
     }
@@ -105,16 +183,17 @@ void AppFilterModel::hideApp(int proxyIndex)
 
 void AppFilterModel::hideByStorageId(const QString &storageId)
 {
-    if (storageId.isEmpty() || m_hiddenApps.contains(storageId))
+    if (storageId.isEmpty() || m_hiddenAppsSet.contains(storageId))
         return;
     m_hiddenApps.append(storageId);
+    m_hiddenAppsSet.insert(storageId);
     APPGRID_INVALIDATE_FILTER();
     emit hiddenAppsChanged();
 }
 
 void AppFilterModel::unhideApp(const QString &storageId)
 {
-    if (m_hiddenApps.contains(storageId)) {
+    if (m_hiddenAppsSet.remove(storageId)) {
         m_hiddenApps.removeAll(storageId);
         APPGRID_INVALIDATE_FILTER();
         emit hiddenAppsChanged();
@@ -128,6 +207,7 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
     if (m_favoriteApps == list)
         return;
     m_favoriteApps = list;
+    rebuildFavoriteSet();
     if (m_showFavoritesOnly)
         invalidate();
     emit favoriteAppsChanged();
@@ -135,7 +215,7 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
 
 bool AppFilterModel::isFavorite(const QString &storageId) const
 {
-    return m_favoriteApps.contains(storageId);
+    return m_favoriteAppsSet.contains(storageId);
 }
 
 QStringList AppFilterModel::recentApps() const { return m_recentApps; }
@@ -144,6 +224,7 @@ void AppFilterModel::setRecentApps(const QStringList &list)
 {
     bool changed = (m_recentApps != list);
     m_recentApps = list;
+    rebuildRecentSet();
     invalidate();
     if (changed)
         emit recentAppsChanged();
@@ -161,7 +242,7 @@ void AppFilterModel::setMaxRecentApps(int max)
 
 bool AppFilterModel::isRecent(const QString &storageId) const
 {
-    return m_recentApps.contains(storageId);
+    return m_recentAppsSet.contains(storageId);
 }
 
 int AppFilterModel::sortMode() const { return m_sortMode; }
@@ -200,12 +281,13 @@ void AppFilterModel::setKnownApps(const QStringList &list)
     if (m_knownApps == list)
         return;
     m_knownApps = list;
+    rebuildKnownSet();
     emit knownAppsChanged();
 }
 
 bool AppFilterModel::isNewApp(const QString &storageId) const
 {
-    return !m_knownApps.isEmpty() && !m_knownApps.contains(storageId);
+    return !m_knownAppsSet.isEmpty() && !m_knownAppsSet.contains(storageId);
 }
 
 void AppFilterModel::markAllKnown()
@@ -325,8 +407,9 @@ void AppFilterModel::recordLaunch(const QString &storageId)
     m_launchCounts[storageId] = m_launchCounts.value(storageId, 0) + 1;
     emit launchCountsChanged();
 
-    if (!m_knownApps.contains(storageId)) {
+    if (!m_knownAppsSet.contains(storageId)) {
         m_knownApps.append(storageId);
+        m_knownAppsSet.insert(storageId);
         emit knownAppsChanged();
     }
 }
@@ -339,12 +422,12 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 
     // Hide hidden apps
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
-    if (!sid.isEmpty() && m_hiddenApps.contains(sid))
+    if (!sid.isEmpty() && m_hiddenAppsSet.contains(sid))
         return false;
 
     // Favorites-only filter
     if (m_showFavoritesOnly) {
-        if (sid.isEmpty() || !m_favoriteApps.contains(sid))
+        if (sid.isEmpty() || !m_favoriteAppsSet.contains(sid))
             return false;
     }
 
@@ -387,7 +470,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     // Skip when: sorting by most-used, showing favorites, or filtering by category/search.
     if (m_sortMode == Alphabetical && !m_showFavoritesOnly
         && m_filterCategory.isEmpty() && m_searchText.isEmpty()
-        && !m_recentApps.isEmpty() && m_recentApps.contains(sid))
+        && !m_recentAppsSet.isEmpty() && m_recentAppsSet.contains(sid))
         return false;
 
     return true;
@@ -433,7 +516,10 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
         }
         const auto leftSid = left.data(AppModel::StorageIdRole).toString();
         const auto rightSid = right.data(AppModel::StorageIdRole).toString();
-        return m_favoriteApps.indexOf(leftSid) < m_favoriteApps.indexOf(rightSid);
+        // O(1) position lookup; m_favoritePositions kept in sync by
+        // rebuildFavoriteSet(). Missing sid → sort to end via INT_MAX.
+        return m_favoritePositions.value(leftSid, std::numeric_limits<int>::max())
+             < m_favoritePositions.value(rightSid, std::numeric_limits<int>::max());
     }
 
     // When searching, rank by match relevance first
@@ -489,6 +575,9 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
 
 QVariantList AppFilterModel::appsByCategory() const
 {
+    if (!m_groupedByCategoryDirty)
+        return m_groupedByCategoryCache;
+
     QMap<QString, QVariantList> catMap;
     for (int i = 0; i < rowCount(); ++i) {
         const auto idx = index(i, 0);
@@ -514,7 +603,9 @@ QVariantList AppFilterModel::appsByCategory() const
         section[QStringLiteral("apps")] = it.value();
         result.append(section);
     }
-    return result;
+    m_groupedByCategoryCache = result;
+    m_groupedByCategoryDirty = false;
+    return m_groupedByCategoryCache;
 }
 
 QStringList AppFilterModel::nonEmptyCategories() const
@@ -527,7 +618,7 @@ QStringList AppFilterModel::nonEmptyCategories() const
     for (int i = 0; i < src->rowCount(); ++i) {
         const auto idx = src->index(i, 0);
         const auto sid = idx.data(AppModel::StorageIdRole).toString();
-        if (!sid.isEmpty() && m_hiddenApps.contains(sid))
+        if (!sid.isEmpty() && m_hiddenAppsSet.contains(sid))
             continue;
         const auto appCats = idx.data(AppModel::CategoriesRole).toStringList();
         for (const auto &c : appCats)
@@ -552,21 +643,20 @@ QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
 {
     QVariantMap map;
     auto *src = sourceModel();
-    if (!src)
+    if (!src || storageId.isEmpty())
         return map;
-    for (int i = 0; i < src->rowCount(); ++i) {
-        const auto idx = src->index(i, 0);
-        if (idx.data(AppModel::StorageIdRole).toString() == storageId) {
-            map[QStringLiteral("name")] = idx.data(AppModel::NameRole);
-            map[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
-            map[QStringLiteral("desktopFile")] = idx.data(AppModel::DesktopFileRole);
-            map[QStringLiteral("storageId")] = idx.data(AppModel::StorageIdRole);
-            map[QStringLiteral("genericName")] = idx.data(AppModel::GenericNameRole);
-            map[QStringLiteral("comment")] = idx.data(AppModel::CommentRole);
-            map[QStringLiteral("installSource")] = idx.data(AppModel::InstallSourceRole);
-            break;
-        }
-    }
+    ensureStorageIdCache();
+    const int row = m_storageIdToSourceRow.value(storageId, -1);
+    if (row < 0)
+        return map;
+    const auto idx = src->index(row, 0);
+    map[QStringLiteral("name")] = idx.data(AppModel::NameRole);
+    map[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
+    map[QStringLiteral("desktopFile")] = idx.data(AppModel::DesktopFileRole);
+    map[QStringLiteral("storageId")] = idx.data(AppModel::StorageIdRole);
+    map[QStringLiteral("genericName")] = idx.data(AppModel::GenericNameRole);
+    map[QStringLiteral("comment")] = idx.data(AppModel::CommentRole);
+    map[QStringLiteral("installSource")] = idx.data(AppModel::InstallSourceRole);
     return map;
 }
 
@@ -602,8 +692,10 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
         return;
     m_recentApps.removeAll(storageId);
     m_recentApps.prepend(storageId);
-    while (m_recentApps.size() > m_maxRecentApps)
+    while (m_recentApps.size() > m_maxRecentApps) {
         m_recentApps.removeLast();
+    }
+    rebuildRecentSet();
     invalidate();
     emit recentAppsChanged();
     recordLaunch(storageId);
@@ -626,15 +718,12 @@ void AppFilterModel::launch(int proxyIndex)
 void AppFilterModel::launchByStorageId(const QString &storageId)
 {
     auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (!model)
+    if (!model || storageId.isEmpty())
         return;
-
-    for (int i = 0; i < model->rowCount(); ++i) {
-        const auto idx = model->index(i, 0);
-        if (idx.data(AppModel::StorageIdRole).toString() == storageId) {
-            recordRecentLaunch(storageId);
-            model->launch(i);
-            return;
-        }
-    }
+    ensureStorageIdCache();
+    const int row = m_storageIdToSourceRow.value(storageId, -1);
+    if (row < 0)
+        return;
+    recordRecentLaunch(storageId);
+    model->launch(row);
 }

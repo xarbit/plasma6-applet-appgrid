@@ -144,6 +144,12 @@ protected:
 
 private:
     void recordLaunch(const QString &storageId);
+    void rebuildHiddenSet();
+    void rebuildFavoriteSet();
+    void rebuildRecentSet();
+    void rebuildKnownSet();
+    void invalidateStorageIdCache();
+    void ensureStorageIdCache() const;
 
     QString m_filterCategory;
     QString m_searchText;
@@ -158,4 +164,29 @@ private:
     bool m_sortFavoritesAlphabetically = false;
     QSet<QString> m_defaultAppsSet;
     QStringList m_defaultApps;
+
+    // Parallel-set lookups for the QStringList membership tests that hit
+    // every filterAcceptsRow / lessThan call (N apps × per filter refresh).
+    // Kept in sync via setters + the rebuild* helpers.
+    QSet<QString> m_hiddenAppsSet;
+    QSet<QString> m_favoriteAppsSet;
+    QSet<QString> m_recentAppsSet;
+    QSet<QString> m_knownAppsSet;
+    // Position lookup for favorites sort — O(1) replacement for the
+    // QStringList::indexOf calls that made lessThan O(N²) per comparison.
+    QHash<QString, int> m_favoritePositions;
+
+    // storageId → source-row cache for getByStorageId(). Built lazily on
+    // first call; invalidated when the source model resets or rows shift
+    // (KSycoca changes). Mutable because getByStorageId is const.
+    mutable QHash<QString, int> m_storageIdToSourceRow;
+    mutable bool m_storageIdCacheDirty = true;
+
+    // Lazy cache for the groupedByCategory Q_PROPERTY. Rebuilds on next
+    // read after any filter/visibility change that flips the dirty flag.
+    // Skips the O(N) QVariantMap-construction loop when QML isn't actually
+    // reading the property (e.g. when in Alphabetical sort and the
+    // CategoryGridView binding short-circuits).
+    mutable QVariantList m_groupedByCategoryCache;
+    mutable bool m_groupedByCategoryDirty = true;
 };
