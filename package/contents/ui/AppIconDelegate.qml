@@ -52,6 +52,9 @@ Item {
     // drag started here. Empty/length-1 falls back to single-item drag.
     property var multiSelectionSids: []
     property var multiSelectionUrls: []
+    // Icon names parallel to multiSelectionSids — DragSource uses these to
+    // render the stacked drag-preview pixmap for multi-item drags.
+    property var multiSelectionIcons: []
     signal clicked(var mouse)
 
     // Visual icon override for shuffle animation (set externally by the grid)
@@ -255,7 +258,8 @@ Item {
             mime["text/uri-list"] = [root.desktopFileUrl]
         }
         const sids = isMulti ? root.multiSelectionSids : []
-        root.dragSource.beginDrag(root, delegateIcon, mime, handler, sids)
+        const icons = isMulti ? root.multiSelectionIcons : []
+        root.dragSource.beginDrag(root, delegateIcon, mime, handler, sids, icons)
     }
 
     DragHandler {

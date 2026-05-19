@@ -180,4 +180,17 @@ Item {
         }
         return urls
     }
+
+    // Parallel list of icon name strings (e.g. "firefox") for the selected
+    // apps. Consumed by DragSource to render the multi-drag stack preview.
+    function iconNames(appsModel) {
+        var icons = []
+        if (!appsModel) return icons
+        const sids = sidList()
+        for (var i = 0; i < sids.length; ++i) {
+            const a = appsModel.getByStorageId(sids[i])
+            if (a && a.iconName) icons.push(a.iconName)
+        }
+        return icons
+    }
 }

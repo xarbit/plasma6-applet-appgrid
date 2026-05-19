@@ -93,6 +93,7 @@ Flickable {
     }
     function clearSelection() { selection.clear() }
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
+    function selectedIconNames() { return selection.iconNames(appsModel) }
 
     // Clear selection whenever the grouped model is rebuilt (search, category
     // pick) so the user doesn't carry ghost selections across filter changes.
@@ -356,6 +357,7 @@ Flickable {
                                                  && categoryGrid.selectionCount > 0
                                 multiSelectionSids: selected ? categoryGrid.selectedSidList() : []
                                 multiSelectionUrls: selected ? categoryGrid.selectedDesktopFileUrls() : []
+                                multiSelectionIcons: selected ? categoryGrid.selectedIconNames() : []
 
                                 onClicked: function(mouse) {
                                     const sid = modelData.storageId || ""

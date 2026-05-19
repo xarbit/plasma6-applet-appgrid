@@ -21,6 +21,7 @@
 */
 
 import QtQuick
+import org.kde.kirigami as Kirigami
 
 Item {
     id: source
@@ -52,12 +53,83 @@ Item {
         return drag && drag.source === source
     }
 
+    // Off-screen composite for multi-drag stack preview. Up to 3 icons drawn
+    // diagonally offset (Dolphin's convention) plus a "+N" badge in the
+    // bottom-right when the selection is larger. KDE doesn't expose this
+    // helper publicly — every app that wants it (Dolphin, Kickoff, …)
+    // reimplements locally, so do the same here.
+    Item {
+        id: stackComposite
+        x: -9999  // off-screen, never visually rendered to the user
+        width: 64
+        height: 64
+        visible: true
+        property var icons: []
+
+        Repeater {
+            model: Math.min(stackComposite.icons.length, 3)
+            delegate: Kirigami.Icon {
+                required property int index
+                x: index * 8
+                y: index * 8
+                width: 48
+                height: 48
+                source: stackComposite.icons[index] || "application-x-executable"
+            }
+        }
+
+        Rectangle {
+            visible: stackComposite.icons.length > 3
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            width: Math.max(height, countLabel.contentWidth + Kirigami.Units.largeSpacing)
+            height: Kirigami.Units.iconSizes.small
+            radius: height / 2
+            color: Kirigami.Theme.highlightColor
+            border.color: Kirigami.Theme.backgroundColor
+            border.width: 1
+            Text {
+                id: countLabel
+                anchors.centerIn: parent
+                text: "+" + (stackComposite.icons.length - 3)
+                color: Kirigami.Theme.highlightedTextColor
+                font.pixelSize: parent.height * 0.65
+                font.bold: true
+            }
+        }
+    }
+
     // Begin a drag on behalf of `delegate` (the delegate Item being dragged),
-    // taking the drag pixmap from `iconItem` and advertising `mimeData`. The
-    // `handler` parameter is the originating DragHandler — its active flag
-    // is re-checked once grabToImage completes so we don't activate a stale
-    // drag if the user released before the snapshot was ready.
-    function beginDrag(delegate, iconItem, mimeData, handler, sids) {
+    // taking the drag pixmap from `iconItem` (single-item) or rendering a
+    // stacked preview (multi-item) and advertising `mimeData`. The `handler`
+    // parameter is the originating DragHandler — its active flag is re-
+    // checked once grabToImage completes so we don't activate a stale drag
+    // if the user released before the snapshot was ready.
+    function beginDrag(delegate, iconItem, mimeData, handler, sids, iconNames) {
+        const multi = sids && sids.length > 1
+        if (multi && iconNames && iconNames.length > 1) {
+            stackComposite.icons = iconNames
+            // Defer the grab one tick so Kirigami.Icon's source resolution
+            // has time to populate. If icons are missing from the theme cache
+            // the rendered pixmap may show fallback glyphs — acceptable.
+            Qt.callLater(function() {
+                stackComposite.grabToImage(function(result) {
+                    if (!handler.active) {
+                        stackComposite.icons = []
+                        return
+                    }
+                    source.sourceItem = delegate
+                    source.sourceStorageId = delegate.storageId || ""
+                    source.sourceDesktopFile = delegate.desktopFile || ""
+                    source.sourceStorageIds = sids
+                    source.Drag.imageSource = result.url
+                    source.Drag.mimeData = mimeData
+                    source.Drag.active = true
+                    stackComposite.icons = []
+                })
+            })
+            return
+        }
         iconItem.grabToImage(function(result) {
             if (!handler.active) return
             source.sourceItem = delegate

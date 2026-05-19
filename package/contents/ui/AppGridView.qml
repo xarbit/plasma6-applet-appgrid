@@ -257,6 +257,7 @@ GridView {
     }
     function clearSelection() { selection.clear() }
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
+    function selectedIconNames() { return selection.iconNames(appsModel) }
 
     function removeSelectedFromFavorites() {
         if (!_favoritesSelect || selectionCount === 0) return
@@ -504,6 +505,7 @@ GridView {
             // delegate is itself selected.
             multiSelectionSids: selected ? gridView.selectedSidList() : []
             multiSelectionUrls: selected ? gridView.selectedDesktopFileUrls() : []
+            multiSelectionIcons: selected ? gridView.selectedIconNames() : []
 
             onClicked: function(mouse) {
                 const desktopFile = delegateRoot._fromShared
