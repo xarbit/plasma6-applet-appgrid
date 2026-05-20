@@ -144,6 +144,7 @@ set(SHARED_QML_FILES
     RecentAppsHeader.qml
     SearchBar.qml
     SearchResultsList.qml
+    SelectionState.qml
     ShuffleOverlay.qml
 )
 
