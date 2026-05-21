@@ -61,6 +61,14 @@ Kirigami.ShadowedRectangle {
     readonly property bool showAppGrid: !isSearching && !isPrefixMode && !showCategoryGrid
     readonly property bool showSearchResults: isSearching && !isPrefixMode
 
+    readonly property string currentResultIcon: {
+        if (!showSearchResults || !Plasmoid.searchModel || searchResultsList.count <= 0)
+            return ""
+        const idx = searchResultsList.currentIndex >= 0 ? searchResultsList.currentIndex : 0
+        const item = Plasmoid.searchModel.get(idx)
+        return item ? (item.iconName || "application-x-executable") : ""
+    }
+
     // Whichever grid view currently owns a SelectionState — used to route
     // menu-driven selection toggles. Search and prefix views resolve to
     // null because they don't host multi-select; callers treat that as a
@@ -589,8 +597,19 @@ Kirigami.ShadowedRectangle {
 
             PowerButtons {
                 id: powerButtons
-                visible: Plasmoid.configuration.showSessionButtons !== false
+                visible: !panel.isSearching
+                         && (Plasmoid.configuration.showSessionButtons !== false)
                 onActionTriggered: panel.closeRequested()
+            }
+
+            Kirigami.Icon {
+                visible: panel.showSearchResults && panel.currentResultIcon !== ""
+                source: panel.currentResultIcon
+                // Fixed size — a fillHeight icon rounds to different standard
+                // sizes as the header reflows, making it visibly jump.
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: Kirigami.Units.iconSizes.medium
+                Layout.preferredHeight: Kirigami.Units.iconSizes.medium
             }
         }
 
