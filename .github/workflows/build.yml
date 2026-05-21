@@ -98,7 +98,6 @@ jobs:
 
       - name: Check trailing whitespace
         run: |
-          # Scan tracked source/doc files for trailing whitespace
           set -e
           files=$(git ls-files '*.cpp' '*.h' '*.qml' '*.xml' '*.json' '*.md' 'CMakeLists.txt')
           if [ -z "$files" ]; then
@@ -138,7 +137,6 @@ jobs:
         run: |
           # Strip gcc-only flags that clang-tidy (clang-based) doesn't recognize
           sed -i 's/-mno-direct-extern-access//g' build/compile_commands.json
-          # Run on our sources only; non-fatal initially.
           for src in src/appmodel.cpp src/appfiltermodel.cpp src/appgridplugin.cpp; do
             clang-tidy -p build "$src" \
               --quiet \
@@ -260,18 +258,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
-      # Cached Nix install — eliminates ~3min cold-start per build. The
-      # determinate-systems action keeps recent nixpkgs eval cached
-      # between workflow runs.
       - uses: DeterminateSystems/nix-installer-action@v16
       - uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Build flake
-        # `nix build` resolves packages.x86_64-linux.default from
-        # flake.nix. Sanity-checks that the derivation evaluates and
-        # compiles cleanly on a fresh nixpkgs-unstable; doesn't push
-        # the result to a binary cache.
         run: nix build --print-build-logs .#default
 
       - name: Inspect output
