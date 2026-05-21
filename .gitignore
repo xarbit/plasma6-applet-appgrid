@@ -49,6 +49,7 @@ package-panel/contents/ui/RecentAppsHeader.qml
 package-panel/contents/ui/SearchBar.qml
 package-panel/contents/ui/SearchResultsList.qml
 package-panel/contents/ui/SelectionState.qml
+package-panel/contents/ui/ShadowedIcon.qml
 package-panel/contents/ui/SharedFavoritesProvider.qml
 package-panel/contents/ui/ShuffleOverlay.qml
 package-panel/contents/ui/prefix/

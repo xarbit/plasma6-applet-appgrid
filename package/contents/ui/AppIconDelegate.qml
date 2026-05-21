@@ -137,7 +137,7 @@ Item {
             implicitWidth: root.iconSize
             implicitHeight: root.iconSize
 
-            Kirigami.Icon {
+            ShadowedIcon {
                 id: delegateIcon
                 anchors.fill: parent
                 source: root.displayIcon || root.appIcon || "application-x-executable"

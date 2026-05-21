@@ -491,6 +491,11 @@ Kirigami.ShadowedRectangle {
         RowLayout {
             Layout.fillWidth: true
             spacing: Kirigami.Units.largeSpacing
+            // Pin the row height so it does not shrink when the power
+            // buttons hide on search — implicitHeight ignores hidden
+            // children, so derive it from both regardless of visibility.
+            Layout.preferredHeight: Math.max(searchBar.implicitHeight,
+                                             powerButtons.implicitHeight)
 
             SearchBar {
                 id: searchBar
@@ -612,11 +617,13 @@ Kirigami.ShadowedRectangle {
                 onActionTriggered: panel.closeRequested()
             }
 
-            Kirigami.Icon {
+            // Current search-result icon, shown in place of the power
+            // buttons while searching. Fixed size — a fillHeight icon rounds
+            // to different standard sizes as the header reflows, making it
+            // visibly jump.
+            ShadowedIcon {
                 visible: panel.showSearchResults && panel.currentResultIcon !== ""
                 source: panel.currentResultIcon
-                // Fixed size — a fillHeight icon rounds to different standard
-                // sizes as the header reflows, making it visibly jump.
                 Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: Kirigami.Units.iconSizes.medium
                 Layout.preferredHeight: Kirigami.Units.iconSizes.medium

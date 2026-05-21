@@ -27,6 +27,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showScrollbars: showScrollbars.checked
     property alias cfg_showTooltips: showTooltips.checked
     property alias cfg_showNewAppBadge: showNewAppBadge.checked
+    property alias cfg_iconShadow: iconShadow.checked
     property alias cfg_hideLabelsOnFavorites: hideLabelsOnFavorites.checked
     property alias cfg_sortFavoritesAlphabetically: sortFavoritesAlphabetically.checked
     property alias cfg_showCategoryBar: showCategoryBar.checked
@@ -268,6 +269,11 @@ KCMUtils.SimpleKCM {
         }
 
         QQC2.CheckBox {
+            id: iconShadow
+            text: i18nd("dev.xarbit.appgrid", "Drop shadow behind app icons")
+        }
+
+        QQC2.CheckBox {
             id: hideLabelsOnFavorites
             text: i18nd("dev.xarbit.appgrid", "Hide app labels on favorites tab")
             enabled: showCategoryBar.checked
@@ -326,6 +332,7 @@ KCMUtils.SimpleKCM {
                 showScrollbars.checked = false
                 showTooltips.checked = true
                 showNewAppBadge.checked = true
+                iconShadow.checked = true
                 hideLabelsOnFavorites.checked = false
                 sortFavoritesAlphabetically.checked = false
                 showCategoryBar.checked = true

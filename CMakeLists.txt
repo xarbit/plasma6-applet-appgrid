@@ -146,6 +146,7 @@ set(SHARED_QML_FILES
     SearchBar.qml
     SearchResultsList.qml
     SelectionState.qml
+    ShadowedIcon.qml
     ShuffleOverlay.qml
 )
 

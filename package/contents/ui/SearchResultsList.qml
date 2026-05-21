@@ -131,7 +131,7 @@ ListView {
                     Accessible.ignored: true
                 }
 
-                Kirigami.Icon {
+                ShadowedIcon {
                     implicitWidth: listView.iconSize
                     implicitHeight: listView.iconSize
                     source: model.iconName || "application-x-executable"

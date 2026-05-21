@@ -78,6 +78,10 @@
       <label>Whether to show a green badge on newly installed apps.</label>
       <default>true</default>
     </entry>
+    <entry name="iconShadow" type="Bool">
+      <label>Whether to draw a soft drop shadow behind app icons in the grid.</label>
+      <default>true</default>
+    </entry>
     <entry name="sortFavoritesAlphabetically" type="Bool">
       <label>Whether to auto-sort favorites alphabetically instead of by manual order.</label>
       <default>false</default>
