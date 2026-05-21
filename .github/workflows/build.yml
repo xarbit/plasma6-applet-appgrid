@@ -26,7 +26,7 @@ on:
       - "packages/**"
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   BUILD_TYPE: Release
@@ -479,50 +479,3 @@ jobs:
           ls -la result/share/plasma/plasmoids/ || true
           test -f result/lib/qt-6/plugins/plasma/applets/dev.xarbit.appgrid.so
           test -f result/lib/qt-6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
-
-  dev-release:
-    name: Update Development Release
-    needs: [version, arch, fedora, deb-packages, universal]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v5
-        with:
-          path: artifacts
-          merge-multiple: true
-
-      - name: List packages
-        run: find artifacts -type f | sort
-
-      # SHA256 sidecars next to every .rpm/.deb so the website (and end
-      # users) can verify downloads. Universal already ships its own
-      # .tar.gz.sha256 via build-package.sh — skip .tar.gz here.
-      - name: Generate SHA256 sidecars for distro packages
-        run: |
-          set -e
-          find artifacts -type f \( -name '*.rpm' -o -name '*.deb' -o -name '*.pkg.tar.zst' \) | while read -r f; do
-            ( cd "$(dirname "$f")" && sha256sum "$(basename "$f")" > "$(basename "$f").sha256" )
-          done
-
-      - name: Delete previous dev release
-        run: gh release delete latest --yes --cleanup-tag || true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-
-      - name: Create development release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: "Development Build v${{ needs.version.outputs.version }}"
-          prerelease: true
-          body: |
-            **Latest development build from `main` branch.**
-
-            Version: `${{ needs.version.outputs.version }}`
-            Commit: `${{ github.sha }}`
-
-            > ⚠️ This is an automated pre-release build. It may contain bugs or incomplete features. For stable releases, see the [latest release](https://github.com/${{ github.repository }}/releases/latest).
-          files: |
-            artifacts/*
