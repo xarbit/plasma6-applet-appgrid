@@ -152,6 +152,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          # Full history — the dev (-git) channel derives its version
+          # from `git rev-list --count`.
+          fetch-depth: 0
 
       - name: Render PKGBUILD and .SRCINFO
         run: |
@@ -175,7 +179,12 @@ jobs:
               ;;
             dev)
               echo "aur_pkg=plasma6-applets-appgrid-git" >> "$GITHUB_ENV"
-              cp packages/aur/PKGBUILD-git PKGBUILD
+              git config --global --add safe.directory "$GITHUB_WORKSPACE"
+              # Same version pkgver() computes at build time, baked in so
+              # the AUR page shows it: base.r<commit-count>.g<short-sha>.
+              BASE="$(grep -oP 'project\(AppGrid VERSION \K[0-9.]+' CMakeLists.txt)"
+              export PKGVER="${BASE}.r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+              envsubst '$PKGVER' < packages/aur/PKGBUILD-git.in > PKGBUILD
               ;;
             *) echo "::error::unknown channel ${{ inputs.channel }}"; exit 1 ;;
           esac
