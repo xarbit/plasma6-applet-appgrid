@@ -39,6 +39,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_openAnimation: openAnimation.currentIndex
     property alias cfg_enableBlur: enableBlur.checked
     property alias cfg_dimBackground: dimBackground.checked
+    property alias cfg_verticalOffset: verticalOffset.value
     property alias cfg_openOnActiveScreen: openOnActiveScreen.checked
     property alias cfg_showCategoryBar: showCategoryBar.checked
     property alias cfg_searchAll: searchAll.checked
@@ -335,6 +336,26 @@ KCMUtils.SimpleKCM {
             text: i18nd("dev.xarbit.appgrid", "Dim background behind launcher")
         }
 
+        RowLayout {
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Vertical position:")
+
+            QQC2.Slider {
+                id: verticalOffset
+                from: -100; to: 100; stepSize: 25
+                snapMode: QQC2.Slider.SnapAlways
+                Layout.fillWidth: true
+            }
+
+            QQC2.Label {
+                text: verticalOffset.value === 0
+                      ? i18nd("dev.xarbit.appgrid", "Centered")
+                      : verticalOffset.value < 0
+                        ? i18nd("dev.xarbit.appgrid", "Up %1%", Math.round(-verticalOffset.value))
+                        : i18nd("dev.xarbit.appgrid", "Down %1%", Math.round(verticalOffset.value))
+                Layout.minimumWidth: Kirigami.Units.gridUnit * 5
+            }
+        }
+
         QQC2.ComboBox {
             id: hoverAnimation
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icon animation:")
@@ -441,6 +462,7 @@ KCMUtils.SimpleKCM {
                 openAnimation.currentIndex = 2
                 enableBlur.checked = true
                 dimBackground.checked = false
+                verticalOffset.value = 0
                 openOnActiveScreen.checked = true
                 showCategoryBar.checked = true
                 searchAll.checked = true

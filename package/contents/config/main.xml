@@ -70,6 +70,10 @@
       <label>Whether to dim the screen behind the launcher overlay.</label>
       <default>false</default>
     </entry>
+    <entry name="verticalOffset" type="Int">
+      <label>Vertical position of the centered launcher as a percent of the free space (-100 = top, 0 = centered, 100 = bottom).</label>
+      <default>0</default>
+    </entry>
     <entry name="showTooltips" type="Bool">
       <label>Whether to show tooltips on app icon hover.</label>
       <default>true</default>

@@ -41,6 +41,16 @@ Window {
     readonly property real estPanelWidth: estCellWidth * columns + Kirigami.Units.largeSpacing * 4
     readonly property real estPanelHeight: estCellHeight * rows + Kirigami.Units.largeSpacing * 4 + Kirigami.Units.gridUnit * 5
 
+    // User vertical nudge for the centered panel. The config value is a
+    // percent (-100 = top, 0 = centered, +100 = bottom) of the free space
+    // between the panel and the screen edge, so it scales across screen
+    // sizes and can never push the panel off-screen.
+    readonly property real panelVerticalOffset: {
+        var pct = Plasmoid.configuration.verticalOffset || 0
+        var slack = Math.max(0, (root.height - panel.height) / 2)
+        return Math.round(pct / 100 * slack)
+    }
+
     // Wayland: LayerShell overrides these. X11: showGrid() overrides via targetScreenGeometry().
     width: Screen.width
     height: Screen.height
@@ -54,13 +64,23 @@ Window {
     // Blur management
     // -----------------------------------------------------------------------
 
+    // Geometry of the centered panel within the overlay window, including the
+    // user vertical offset. Shared by the blur region and the drag input rect.
+    function _panelRect() {
+        const pw = Math.round(panel.width)
+        const ph = Math.round(panel.height)
+        return {
+            x: Math.round((root.width - pw) / 2),
+            y: Math.round((root.height - ph) / 2) + root.panelVerticalOffset,
+            w: pw,
+            h: ph
+        }
+    }
+
     function applyBlur() {
         if (Plasmoid.configuration.enableBlur && visible) {
-            var pw = Math.round(panel.width)
-            var ph = Math.round(panel.height)
-            var px = Math.round((root.width - pw) / 2)
-            var py = Math.round((root.height - ph) / 2)
-            Plasmoid.setBlurBehind(root, true, px, py, pw, ph, panel.radius)
+            const r = _panelRect()
+            Plasmoid.setBlurBehind(root, true, r.x, r.y, r.w, r.h, panel.radius)
         } else {
             Plasmoid.setBlurBehind(root, false, 0, 0, 0, 0, 0)
         }
@@ -239,11 +259,8 @@ Window {
     // (orientation change, dynamic content) the input rect follows.
     function _applyDragInputRect() {
         if (_dragInFlight) {
-            const pw = Math.round(panel.width)
-            const ph = Math.round(panel.height)
-            const px = Math.round((root.width - pw) / 2)
-            const py = Math.round((root.height - ph) / 2)
-            Plasmoid.setInputRect(root, px, py, pw, ph)
+            const r = _panelRect()
+            Plasmoid.setInputRect(root, r.x, r.y, r.w, r.h)
         } else {
             Plasmoid.setInputRect(root, 0, 0, 0, 0)
         }
@@ -298,6 +315,9 @@ Window {
     GridPanel {
         id: panel
         anchors.centerIn: parent
+        // Static user offset, kept out of the anchor system so the open/close
+        // animations (which drive anchors.verticalCenterOffset) are unaffected.
+        transform: Translate { y: root.panelVerticalOffset }
         opacity: 0.0
         transformOrigin: Item.Center
         appletInterface: root.appletInterface
