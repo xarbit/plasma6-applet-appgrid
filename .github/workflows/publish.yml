@@ -34,7 +34,6 @@ on:
       LAUNCHPAD_GPG_KEY:
         required: true
       AUR_SSH_KEY:
-        # Only the stable-channel AUR job needs it; rc / dev skip that job.
         required: false
 
 jobs:
@@ -93,7 +92,6 @@ jobs:
       matrix:
         series:
           - { codename: noble, ver: "24.04" }
-          - { codename: plucky, ver: "25.04" }
           - { codename: questing, ver: "25.10" }
           - { codename: resolute, ver: "26.04" }
           - { codename: stonking, ver: "26.10" }
