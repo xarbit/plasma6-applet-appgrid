@@ -47,10 +47,11 @@ Kirigami.ShadowedRectangle {
     readonly property bool cfgHideLabelsOnFavorites: Plasmoid.configuration.hideLabelsOnFavorites === true
     readonly property bool cfgShowScrollbars: Plasmoid.configuration.showScrollbars !== false
     readonly property bool cfgUseExtraRunners: Plasmoid.configuration.useExtraRunners !== false
-    // AlwaysOn rather than AsNeeded: an AsNeeded bar reserves width only
-    // while visible, and that width change feeds back into the grid's
-    // column / cell sizing — an oscillation that can hard-freeze the view
-    // (issue #110). A constant-width bar removes the feedback edge.
+    // AlwaysOn, not AsNeeded: an AsNeeded bar reserves width only while
+    // visible, and that width change feeds the grid's column sizing — an
+    // oscillation that can hard-freeze the view (#110). AlwaysOn keeps the
+    // gutter constant; the scroll views below hide the bar via opacity
+    // when content fits, so it still only shows when needed.
     readonly property int scrollBarPolicy: cfgShowScrollbars
                                            ? PlasmaComponents.ScrollBar.AlwaysOn : PlasmaComponents.ScrollBar.AlwaysOff
 
@@ -715,6 +716,7 @@ Kirigami.ShadowedRectangle {
             Layout.fillHeight: true
             PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
             PlasmaComponents.ScrollBar.vertical.policy: panel.scrollBarPolicy
+            PlasmaComponents.ScrollBar.vertical.opacity: PlasmaComponents.ScrollBar.vertical.size < 1.0 ? 1.0 : 0.0
             visible: panel.showSearchResults
 
             SearchResultsList {
@@ -738,6 +740,7 @@ Kirigami.ShadowedRectangle {
             Layout.fillHeight: true
             PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
             PlasmaComponents.ScrollBar.vertical.policy: panel.scrollBarPolicy
+            PlasmaComponents.ScrollBar.vertical.opacity: PlasmaComponents.ScrollBar.vertical.size < 1.0 ? 1.0 : 0.0
             visible: panel.showCategoryGrid
 
             CategoryGridView {
@@ -780,6 +783,7 @@ Kirigami.ShadowedRectangle {
                 anchors.fill: parent
                 PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
                 PlasmaComponents.ScrollBar.vertical.policy: panel.scrollBarPolicy
+                PlasmaComponents.ScrollBar.vertical.opacity: PlasmaComponents.ScrollBar.vertical.size < 1.0 ? 1.0 : 0.0
 
                 AppGridView {
                     id: appGrid
