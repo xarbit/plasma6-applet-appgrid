@@ -144,6 +144,7 @@ set(SHARED_QML_FILES
     PrefixDetector.qml
     PrefixModeView.qml
     RecentAppsHeader.qml
+    ScrollableColumn.qml
     SearchBar.qml
     SearchResultsList.qml
     SelectionState.qml

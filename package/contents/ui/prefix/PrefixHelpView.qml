@@ -8,11 +8,9 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 
-ColumnLayout {
-    anchors.fill: parent
-    anchors.margins: Kirigami.Units.largeSpacing * 2
-    spacing: 0
+import ".."
 
+ScrollableColumn {
     PlasmaComponents.Label {
         text: i18nd("dev.xarbit.appgrid", "Quick Commands")
         font.bold: true
@@ -116,12 +114,10 @@ ColumnLayout {
         }
     }
 
-    Item { Layout.fillHeight: true }
-
     PlasmaComponents.Label {
         Layout.fillWidth: true
         Layout.topMargin: Kirigami.Units.largeSpacing
-        text: i18nd("dev.xarbit.appgrid", "Alt+1\u2009\u2013\u2009Alt+9 launches search results instantly")
+        text: i18nd("dev.xarbit.appgrid", "Alt+1 – Alt+9 launches search results instantly")
         font: Kirigami.Theme.smallFont
         opacity: 0.35
         horizontalAlignment: Text.AlignHCenter

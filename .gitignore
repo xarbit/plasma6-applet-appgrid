@@ -47,6 +47,7 @@ package-panel/contents/ui/PowerButtonsConfig.qml
 package-panel/contents/ui/PrefixDetector.qml
 package-panel/contents/ui/PrefixModeView.qml
 package-panel/contents/ui/RecentAppsHeader.qml
+package-panel/contents/ui/ScrollableColumn.qml
 package-panel/contents/ui/SearchBar.qml
 package-panel/contents/ui/SearchResultsList.qml
 package-panel/contents/ui/SelectionState.qml

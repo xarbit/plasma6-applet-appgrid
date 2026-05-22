@@ -9,7 +9,9 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
-ColumnLayout {
+import ".."
+
+ScrollableColumn {
     id: infoView
 
     property var sysInfo: Plasmoid.systemInfo()
@@ -18,10 +20,6 @@ ColumnLayout {
     readonly property bool _migrated: Plasmoid.configuration.favoritesPortedToKAstats === true
     readonly property int _kastatsCount: sharedFavoritesModel ? sharedFavoritesModel.count : 0
     readonly property int _localCount: (Plasmoid.configuration.favoriteApps || []).length
-
-    anchors.fill: parent
-    anchors.margins: Kirigami.Units.largeSpacing * 2
-    spacing: 0
 
     PlasmaComponents.Label {
         text: i18nd("dev.xarbit.appgrid", "System Information")
@@ -163,8 +161,6 @@ ColumnLayout {
         id: migrateHintTimer
         interval: 5000
     }
-
-    Item { Layout.fillHeight: true }
 
     PlasmaComponents.Button {
         Layout.alignment: Qt.AlignHCenter
