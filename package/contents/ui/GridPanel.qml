@@ -45,15 +45,7 @@ Kirigami.ShadowedRectangle {
     readonly property bool cfgShowTooltips: Plasmoid.configuration.showTooltips !== false
     readonly property bool cfgShowNewAppBadge: Plasmoid.configuration.showNewAppBadge !== false
     readonly property bool cfgHideLabelsOnFavorites: Plasmoid.configuration.hideLabelsOnFavorites === true
-    readonly property bool cfgShowScrollbars: Plasmoid.configuration.showScrollbars !== false
     readonly property bool cfgUseExtraRunners: Plasmoid.configuration.useExtraRunners !== false
-    // AlwaysOn, not AsNeeded: an AsNeeded bar reserves width only while
-    // visible, and that width change feeds the grid's column sizing — an
-    // oscillation that can hard-freeze the view (#110). AlwaysOn keeps the
-    // gutter constant; the scroll views below hide the bar via opacity
-    // when content fits, so it still only shows when needed.
-    readonly property int scrollBarPolicy: cfgShowScrollbars
-                                           ? PlasmaComponents.ScrollBar.AlwaysOn : PlasmaComponents.ScrollBar.AlwaysOff
 
     // -- Sort helpers --
     readonly property bool isSortByCategory: sortMode === 2
@@ -711,65 +703,55 @@ Kirigami.ShadowedRectangle {
         }
 
         // -- Unified search results --
-        PlasmaComponents.ScrollView {
+        SearchResultsList {
+            id: searchResultsList
             Layout.fillWidth: true
             Layout.fillHeight: true
-            PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
-            PlasmaComponents.ScrollBar.vertical.policy: panel.scrollBarPolicy
-            PlasmaComponents.ScrollBar.vertical.opacity: PlasmaComponents.ScrollBar.vertical.size < 1.0 ? 1.0 : 0.0
             visible: panel.showSearchResults
-
-            SearchResultsList {
-                id: searchResultsList
-                model: panel.isSearching ? Plasmoid.searchModel : null
-                iconSize: panel.gridIconSize
-                showDividers: panel.cfgShowDividers
-                animateHighlight: (Plasmoid.configuration.hoverAnimation || 0) > 0
-                searchField: searchBar.field
-                onLaunched: function(index) { panel.launchSearchResult(index) }
-                onContextMenuRequested: function(index, storageId, desktopFile) {
-                    if (storageId)
-                        contextMenu.showForApp(-1, storageId, desktopFile)
-                }
+            PlasmaComponents.ScrollBar.vertical: OverlayScrollBar {}
+            model: panel.isSearching ? Plasmoid.searchModel : null
+            iconSize: panel.gridIconSize
+            showDividers: panel.cfgShowDividers
+            animateHighlight: (Plasmoid.configuration.hoverAnimation || 0) > 0
+            searchField: searchBar.field
+            onLaunched: function(index) { panel.launchSearchResult(index) }
+            onContextMenuRequested: function(index, storageId, desktopFile) {
+                if (storageId)
+                    contextMenu.showForApp(-1, storageId, desktopFile)
             }
         }
 
         // -- Category grid (By Category sort) --
-        PlasmaComponents.ScrollView {
+        CategoryGridView {
+            id: categoryGridView
             Layout.fillWidth: true
             Layout.fillHeight: true
-            PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
-            PlasmaComponents.ScrollBar.vertical.policy: panel.scrollBarPolicy
-            PlasmaComponents.ScrollBar.vertical.opacity: PlasmaComponents.ScrollBar.vertical.size < 1.0 ? 1.0 : 0.0
             visible: panel.showCategoryGrid
-
-            CategoryGridView {
-                id: categoryGridView
-                searchField: searchBar.field
-                appsModel: panel.appsModel
-                groupedApps: panel.showCategoryGrid && panel.appsModel
-                    ? panel.appsModel.groupedByCategory : []
-                cellWidth: Math.floor(categoryGridView.width / panel.columns)
-                cellHeight: panel.gridIconSize
-                            + Kirigami.Units.gridUnit * 3
-                            + Kirigami.Units.smallSpacing * 2
-                iconSize: panel.gridIconSize
-                showDividers: panel.cfgShowDividers
-                showTooltips: panel.cfgShowTooltips
-                showNewAppBadge: panel.cfgShowNewAppBadge
-                dragSource: panel.appletInterface
-                                    ? panel.appletInterface.dragSource : null
-                showRecents: panel.cfgShowRecentApps
-                             && panel.appsModel
-                             && panel.appsModel.recentApps.length > 0
-                             && !panel.isFavoritesActive
-                             && !panel.cfgStartWithFavorites
-                onLaunched: function(proxyIndex) { panel.launchApp(proxyIndex) }
-                onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
-                onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
-                    contextMenu.showForApp(proxyIndex, storageId, desktopFile,
-                                           categoryGridView.selectedSidList())
-                }
+            PlasmaComponents.ScrollBar.vertical: OverlayScrollBar {}
+            searchField: searchBar.field
+            appsModel: panel.appsModel
+            groupedApps: panel.showCategoryGrid && panel.appsModel
+                ? panel.appsModel.groupedByCategory : []
+            cellWidth: Math.floor(categoryGridView.width / panel.columns)
+            cellHeight: panel.gridIconSize
+                        + Kirigami.Units.gridUnit * 3
+                        + Kirigami.Units.smallSpacing * 2
+            iconSize: panel.gridIconSize
+            showDividers: panel.cfgShowDividers
+            showTooltips: panel.cfgShowTooltips
+            showNewAppBadge: panel.cfgShowNewAppBadge
+            dragSource: panel.appletInterface
+                                ? panel.appletInterface.dragSource : null
+            showRecents: panel.cfgShowRecentApps
+                         && panel.appsModel
+                         && panel.appsModel.recentApps.length > 0
+                         && !panel.isFavoritesActive
+                         && !panel.cfgStartWithFavorites
+            onLaunched: function(proxyIndex) { panel.launchApp(proxyIndex) }
+            onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
+            onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
+                contextMenu.showForApp(proxyIndex, storageId, desktopFile,
+                                       categoryGridView.selectedSidList())
             }
         }
 
@@ -779,61 +761,56 @@ Kirigami.ShadowedRectangle {
             Layout.fillHeight: true
             visible: panel.showAppGrid
 
-            PlasmaComponents.ScrollView {
+            AppGridView {
+                id: appGrid
                 anchors.fill: parent
-                PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
-                PlasmaComponents.ScrollBar.vertical.policy: panel.scrollBarPolicy
-                PlasmaComponents.ScrollBar.vertical.opacity: PlasmaComponents.ScrollBar.vertical.size < 1.0 ? 1.0 : 0.0
-
-                AppGridView {
-                    id: appGrid
-                    // In favorites tab, drive the grid from KAStats directly so
-                    // reorder animations and pointer grabs work natively.
-                    // Elsewhere, or when alphabetical sort is enabled (which
-                    // KAStats does not support), use the filter proxy.
-                    model: panel.isSearching ? null
-                           : (panel.isFavoritesActive
-                              && panel.sharedFavoritesModel
-                              && !Plasmoid.configuration.sortFavoritesAlphabetically
-                              ? panel.sharedFavoritesModel
-                              : panel.appsModel)
-                    appsModel: panel.appsModel
-                    sharedFavoritesModel: panel.sharedFavoritesModel
-                    favoriteIdRole: panel.favoriteIdRole
-                    dragSource: panel.appletInterface
-                                        ? panel.appletInterface.dragSource : null
-                    columns: panel.columns
-                    adaptiveColumns: panel.nativePopup
-                    iconSize: panel.gridIconSize
-                    searchField: searchBar.field
-                    showRecentApps: panel.cfgShowRecentApps
-                    startWithFavorites: panel.cfgStartWithFavorites
-                    favoritesActive: panel.isFavoritesActive
-                    showDividers: panel.cfgShowDividers
-                    showTooltips: panel.cfgShowTooltips
-                    showNewAppBadge: panel.cfgShowNewAppBadge
-                    hideLabelsOnFavorites: panel.cfgHideLabelsOnFavorites
-                    animateHighlight: (Plasmoid.configuration.hoverAnimation || 0) > 0
-                    shuffleOverlayParent: shuffleOverlay
-                    onOriginYChanged: {
-                        if (panel._needsScrollToTop) {
-                            contentY = originY
-                            panel._needsScrollToTop = false
-                        }
+                PlasmaComponents.ScrollBar.vertical: OverlayScrollBar {}
+                // In favorites tab, drive the grid from KAStats directly so
+                // reorder animations and pointer grabs work natively.
+                // Elsewhere, or when alphabetical sort is enabled (which
+                // KAStats does not support), use the filter proxy.
+                model: panel.isSearching ? null
+                       : (panel.isFavoritesActive
+                          && panel.sharedFavoritesModel
+                          && !Plasmoid.configuration.sortFavoritesAlphabetically
+                          ? panel.sharedFavoritesModel
+                          : panel.appsModel)
+                appsModel: panel.appsModel
+                sharedFavoritesModel: panel.sharedFavoritesModel
+                favoriteIdRole: panel.favoriteIdRole
+                dragSource: panel.appletInterface
+                                    ? panel.appletInterface.dragSource : null
+                columns: panel.columns
+                adaptiveColumns: panel.nativePopup
+                iconSize: panel.gridIconSize
+                searchField: searchBar.field
+                showRecentApps: panel.cfgShowRecentApps
+                startWithFavorites: panel.cfgStartWithFavorites
+                favoritesActive: panel.isFavoritesActive
+                showDividers: panel.cfgShowDividers
+                showTooltips: panel.cfgShowTooltips
+                showNewAppBadge: panel.cfgShowNewAppBadge
+                hideLabelsOnFavorites: panel.cfgHideLabelsOnFavorites
+                animateHighlight: (Plasmoid.configuration.hoverAnimation || 0) > 0
+                shuffleOverlayParent: shuffleOverlay
+                onOriginYChanged: {
+                    if (panel._needsScrollToTop) {
+                        contentY = originY
+                        panel._needsScrollToTop = false
                     }
-                    onLaunched: function(index) { panel.launchApp(index) }
-                    onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
-                    onContextMenuRequested: function(index, storageId, desktopFile) {
-                        // Forward the full live selection — the menu derives
-                        // both popupIsSelected (for the toggle item) and the
-                        // bulk-mode counts from it. Empty when nothing is
-                        // selected.
-                        contextMenu.showForApp(index, storageId, desktopFile,
-                                               appGrid.selectedSidList())
-                    }
-                    onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
-                        shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
-                    }
+                }
+                onLaunched: function(index) { panel.launchApp(index) }
+                onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
+                onContextMenuRequested: function(index, storageId, desktopFile) {
+                    // Forward the full live selection — the menu derives
+                    // both popupIsSelected (for the toggle item) and the
+                    // bulk-mode counts from it. Empty when nothing is
+                    // selected.
+                    contextMenu.showForApp(index, storageId, desktopFile,
+                                           appGrid.selectedSidList())
+                }
+                onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
+                    shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
                 }
             }
 

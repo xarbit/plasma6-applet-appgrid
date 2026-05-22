@@ -138,6 +138,7 @@ set(SHARED_QML_FILES
     SharedFavoritesProvider.qml
     GridPanel.qml
     MnemonicResolver.qml
+    OverlayScrollBar.qml
     PowerButtons.qml
     PowerButtonsConfig.qml
     PrefixDetector.qml

@@ -16,6 +16,8 @@ import org.kde.plasma.plasmoid
 Flickable {
     id: categoryGrid
 
+    clip: true
+
     property var appsModel: null
     property var groupedApps: []
     property real cellWidth: 100
