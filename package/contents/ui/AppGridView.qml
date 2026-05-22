@@ -37,6 +37,10 @@ GridView {
     // Emitted when the user right-clicks an app.
     signal contextMenuRequested(int index, string storageId, string desktopFile)
 
+    // Alt+Left/Right while the grid has focus — keyNavigationEnabled would
+    // otherwise eat the arrows, so route category paging out explicitly.
+    signal categoryNavRequested(int direction)
+
     // --- Shuffle animation state ---
     // Maps proxy index -> icon name override for visual-only icon swaps.
     property var iconSwaps: ({})
@@ -346,15 +350,22 @@ GridView {
         }
     }
     Keys.onLeftPressed: function(event) {
-        // Alt+Left belongs to the category bar — let it bubble up.
-        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
+        if (event.modifiers & Qt.AltModifier) {
+            categoryNavRequested(-1)
+            event.accepted = true
+            return
+        }
         if (recentIndex > 0)
             recentIndex--
         else if (recentIndex < 0)
             _arrowMoveWithSelection(event, moveCurrentIndexLeft)
     }
     Keys.onRightPressed: function(event) {
-        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
+        if (event.modifiers & Qt.AltModifier) {
+            categoryNavRequested(1)
+            event.accepted = true
+            return
+        }
         if (recentIndex >= 0 && recentIndex < recentCount - 1)
             recentIndex++
         else if (recentIndex < 0)

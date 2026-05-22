@@ -461,6 +461,14 @@ Kirigami.ShadowedRectangle {
     // Eat clicks so they don't pass through the panel
     MouseArea { anchors.fill: parent }
 
+    // Page the category bar by direction (-1 / +1) when it is visible —
+    // the single entry point for panel Alt+Left/Right and the grid's
+    // categoryNavRequested signal.
+    function navigateCategory(direction) {
+        if (categoryBar.visible)
+            categoryBar.selectAdjacentCategory(direction)
+    }
+
     // Category bar keyboard navigation: Alt+letter mnemonics, Alt+Left/Right.
     Keys.onPressed: function(event) {
         if (event.key === Qt.Key_Alt)
@@ -471,7 +479,7 @@ Kirigami.ShadowedRectangle {
             if (categoryBar.selectByMnemonic(event.key))
                 event.accepted = true
         } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
-            categoryBar.selectAdjacentCategory(event.key === Qt.Key_Right ? 1 : -1)
+            navigateCategory(event.key === Qt.Key_Right ? 1 : -1)
             event.accepted = true
         }
     }
@@ -800,6 +808,7 @@ Kirigami.ShadowedRectangle {
                     }
                 }
                 onLaunched: function(index) { panel.launchApp(index) }
+                onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
                 onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
                 onContextMenuRequested: function(index, storageId, desktopFile) {
                     // Forward the full live selection — the menu derives
