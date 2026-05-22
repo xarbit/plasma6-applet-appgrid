@@ -40,31 +40,35 @@ ListView {
     property bool mouseMovedSinceReset: false
     onCountChanged: mouseMovedSinceReset = false
 
-    // Short window after a hover-triggered selection where new hover
-    // events are ignored. Prevents the cascade where revealing a clipped
-    // row scrolls the list under a stationary cursor, fires hover on the
-    // row that just slid into place, and chains. Issue #114.
-    property bool _hoverCooldown: false
+    // After revealing a clipped row, ignore hover entries caused by the list
+    // moving under a stationary cursor at the viewport edge.
+    property bool _hoverRevealSettling: false
     Timer {
-        id: hoverCooldownTimer
-        interval: 200
-        onTriggered: listView._hoverCooldown = false
+        id: hoverRevealSettlingTimer
+        interval: Math.max(Kirigami.Units.shortDuration, 120)
+        onTriggered: listView._hoverRevealSettling = false
     }
 
-    function _tryHoverSelect(row, localY, idx) {
+    function _tryHoverSelect(row, pointerY, idx) {
         if (!mouseMovedSinceReset) {
             mouseMovedSinceReset = true
             return
         }
-        if (_hoverCooldown)
+        if (_hoverRevealSettling)
             return
-        const rowY = row.mapToItem(listView, 0, 0).y
-        const clippedAtBottom = rowY + row.height > height
-        if (clippedAtBottom && localY > row.height - Kirigami.Units.gridUnit)
-            return
-        currentIndex = idx
-        _hoverCooldown = true
-        hoverCooldownTimer.restart()
+
+        const top = row.mapToItem(listView, 0, 0).y
+        const bottom = row.mapToItem(listView, 0, row.height).y
+        const clipped = top < 0 || bottom > height
+        const mouseYInList = row.mapToItem(listView, 0, pointerY).y
+        const inBottomEdge = mouseYInList > height - Kirigami.Units.smallSpacing * 2
+
+        if (!clipped || !inBottomEdge)
+            currentIndex = idx
+        if (clipped) {
+            _hoverRevealSettling = true
+            hoverRevealSettlingTimer.restart()
+        }
     }
 
     // PgDn lands on the partially-clipped bottom row so the user never
