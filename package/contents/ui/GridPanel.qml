@@ -46,6 +46,7 @@ Kirigami.ShadowedRectangle {
     readonly property bool cfgShowNewAppBadge: Plasmoid.configuration.showNewAppBadge !== false
     readonly property bool cfgHideLabelsOnFavorites: Plasmoid.configuration.hideLabelsOnFavorites === true
     readonly property bool cfgShowScrollbars: Plasmoid.configuration.showScrollbars !== false
+    readonly property bool cfgUseExtraRunners: Plasmoid.configuration.useExtraRunners !== false
     // AlwaysOn rather than AsNeeded: an AsNeeded bar reserves width only
     // while visible, and that width change feeds back into the grid's
     // column / cell sizing — an oscillation that can hard-freeze the view
@@ -515,6 +516,7 @@ Kirigami.ShadowedRectangle {
                         if (Plasmoid.runnerSourceModel) {
                             var q = searchBar.text
                             var searching = q.length > 0 && !panel.isPrefixMode
+                                            && panel.cfgUseExtraRunners
                             Plasmoid.runnerSourceModel.queryString = searching ? q : ""
                         }
                     }
@@ -545,8 +547,9 @@ Kirigami.ShadowedRectangle {
                     if (panel.appsModel)
                         panel.appsModel.searchText = panel.isPrefixMode ? "" : text
 
-                    // KRunner query is debounced (expensive D-Bus calls)
-                    if (searching)
+                    // KRunner query is debounced (expensive D-Bus calls), and
+                    // only runs when the user opted into extra runners.
+                    if (searching && panel.cfgUseExtraRunners)
                         runnerDebounce.restart()
                     else if (Plasmoid.runnerSourceModel)
                         Plasmoid.runnerSourceModel.queryString = ""
