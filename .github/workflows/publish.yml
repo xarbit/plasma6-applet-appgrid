@@ -91,7 +91,8 @@ jobs:
       fail-fast: false
       matrix:
         series:
-          - { codename: noble, ver: "24.04" }
+          # 24.04 LTS (noble) is omitted — it ships Plasma 5.27; AppGrid
+          # needs Plasma 6, first available on Ubuntu in 24.10.
           - { codename: questing, ver: "25.10" }
           - { codename: resolute, ver: "26.04" }
           - { codename: stonking, ver: "26.10" }
