@@ -76,6 +76,9 @@ Item {
 
     Loader {
         id: iconAnimLoader
+        // Async so building a screenful of delegates on open does not block
+        // on instantiating one animation object per icon.
+        asynchronous: true
         source: hoverAnimation > 0 && hoverAnimation < iconAnimFiles.length ? iconAnimFiles[hoverAnimation] : ""
         onLoaded: {
             item.target = delegateIcon

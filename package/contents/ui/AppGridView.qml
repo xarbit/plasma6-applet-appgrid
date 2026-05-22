@@ -114,6 +114,9 @@ GridView {
     }
 
     clip: true
+    // Safe to recycle: AppIconDelegate is purely binding-driven (no
+    // Component.onCompleted), so reuse rebinds it cleanly.
+    reuseItems: true
     // Cache buffer: extra screens of delegates kept alive off-screen. Grown
     // while a drag is in flight so an auto-scroll cannot recycle the source
     // delegate (which would drop the pointer grab). One viewport of slack

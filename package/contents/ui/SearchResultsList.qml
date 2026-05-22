@@ -23,6 +23,7 @@ ListView {
     signal contextMenuRequested(int index, string storageId, string desktopFile)
 
     clip: true
+    reuseItems: true
     currentIndex: count > 0 ? 0 : -1
     property bool animateHighlight: true
     highlightMoveDuration: animateHighlight ? Kirigami.Units.shortDuration : 0
