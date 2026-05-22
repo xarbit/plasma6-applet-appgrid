@@ -195,6 +195,18 @@ KCMUtils.SimpleKCM {
         }
 
         QQC2.CheckBox {
+            id: useExtraRunners
+            text: i18nd("dev.xarbit.appgrid", "Expand search to bookmarks, files, and websites")
+        }
+
+        QQC2.Button {
+            text: i18nd("dev.xarbit.appgrid", "Configure Search Plugins…")
+            icon.name: "settings-configure"
+            enabled: useExtraRunners.checked
+            onClicked: KCMUtils.KCMLauncher.openSystemSettings("kcm_plasmasearch")
+        }
+
+        QQC2.CheckBox {
             id: startWithFavorites
             text: i18nd("dev.xarbit.appgrid", "Start with favorites tab")
             enabled: showCategoryBar.checked
@@ -306,18 +318,6 @@ KCMUtils.SimpleKCM {
         QQC2.CheckBox {
             id: showActionLabels
             text: i18nd("dev.xarbit.appgrid", "Show labels on power/session buttons")
-        }
-
-        QQC2.CheckBox {
-            id: useExtraRunners
-            text: i18nd("dev.xarbit.appgrid", "Expand search to bookmarks, files, and websites")
-        }
-
-        QQC2.Button {
-            text: i18nd("dev.xarbit.appgrid", "Configure Search Plugins…")
-            icon.name: "settings-configure"
-            enabled: useExtraRunners.checked
-            onClicked: KCMUtils.KCMLauncher.openSystemSettings("kcm_plasmasearch")
         }
 
         // --- Reset ---
