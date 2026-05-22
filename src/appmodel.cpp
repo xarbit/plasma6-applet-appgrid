@@ -17,6 +17,7 @@
 #include <QIcon>
 
 #include <QStandardPaths>
+#include <QTimer>
 
 #include <QCollator>
 #include <algorithm>
@@ -159,7 +160,10 @@ static const QHash<QString, QString> &categoryMap()
 AppModel::AppModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-    loadApplications();
+    // Defer the .desktop scan out of the constructor so it does not block
+    // plasmashell startup. The model is empty only until the first event
+    // loop pass — long before the launcher window can be opened.
+    QTimer::singleShot(0, this, &AppModel::reload);
     connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppModel::reload);
     // Refresh delegate icons on either:
     //   * #86 — icon file replaced on disk (menu editor, package upgrade

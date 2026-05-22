@@ -118,6 +118,10 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
 
+        // Build the launcher window ahead of the click, while the cursor is
+        // still travelling to the icon.
+        onContainsMouseChanged: if (containsMouse) kicker.preloadWindow()
+
         Accessible.name: Plasmoid.title
         Accessible.role: Accessible.Button
 

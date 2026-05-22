@@ -24,6 +24,8 @@ PlasmoidItem {
 
     property GridWindow gridWindow: null
     property bool gridOpen: false
+    // Set while the window is being built asynchronously; see preloadWindow().
+    property var _gridWindowIncubator: null
 
     // Shared drag source for all app drags — see DragSource.qml.
     readonly property alias dragSource: dragSourceImpl
@@ -53,6 +55,8 @@ PlasmoidItem {
 
 
     function destroyGridWindow() {
+        if (_gridWindowIncubator)
+            _gridWindowIncubator.forceCompletion()
         if (gridWindow) {
             gridWindow.visible = false
             gridWindow.destroy()
@@ -69,10 +73,34 @@ PlasmoidItem {
         }
     }
 
+    // Build the window off the click path. Triggered by panel-icon hover, so
+    // the tree is usually ready before the click; openWindow() forces the
+    // build to finish if the click wins the race.
+    function preloadWindow() {
+        if (gridWindow || _gridWindowIncubator)
+            return
+        const incubator = gridWindowComponent.incubateObject(
+            kicker, { appletInterface: kicker }, Qt.Asynchronous)
+        if (incubator.status === Component.Ready) {
+            gridWindow = incubator.object
+            return
+        }
+        _gridWindowIncubator = incubator
+        incubator.onStatusChanged = function(status) {
+            if (status === Component.Ready) {
+                kicker.gridWindow = incubator.object
+                kicker._gridWindowIncubator = null
+            }
+        }
+    }
+
     function openWindow() {
         gridOpen = true
-        if (!gridWindow)
-            gridWindow = gridWindowComponent.createObject(kicker, { appletInterface: kicker })
+        if (!gridWindow) {
+            preloadWindow()
+            if (_gridWindowIncubator)
+                _gridWindowIncubator.forceCompletion()
+        }
         gridWindow.showGrid()
     }
 
