@@ -279,14 +279,14 @@ RowLayout {
         flickableDirection: Flickable.HorizontalFlick
         boundsBehavior: Flickable.StopAtBounds
 
-        // Scroll wheel support — translate vertical wheel to horizontal scroll
-        WheelHandler {
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-            onWheel: function(event) {
-                var delta = event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x
+        Kirigami.WheelHandler {
+            target: catFlick
+            onWheel: function(wheel) {
+                const delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
                 catFlick.contentX = Math.max(0, Math.min(
                     catFlick.contentWidth - catFlick.width,
                     catFlick.contentX - delta))
+                wheel.accepted = true
             }
         }
 
