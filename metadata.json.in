@@ -15,7 +15,7 @@
     "Id": "dev.xarbit.appgrid",
     "License": "GPL-2.0-or-later",
     "Name": "AppGrid Launcher Center",
-    "Version": "@CMAKE_PROJECT_VERSION@",
+    "Version": "@APPGRID_VERSION_STRING@",
     "Website": "https://appgrid.xarbit.dev",
     "BugReportUrl": "https://github.com/xarbit/plasma6-applet-appgrid/issues"
   },
