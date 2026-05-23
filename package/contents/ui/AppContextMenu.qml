@@ -55,7 +55,27 @@ Item {
     readonly property bool _favsLocked: appletInterface
                                         && appletInterface.isDragInFlight
 
+    // Same-row reclick guard. Menu's onAboutToHide fires synchronously on
+    // click-outside dismissal, then the same click continues to the source
+    // and re-emits contextMenuRequested. Storing the just-closed storageId
+    // turns that into a clean toggle inside the 250 ms window.
+    property string _lastClosedStorageId: ""
+    Timer {
+        id: reopenGuard
+        interval: 250
+        onTriggered: contextMenu._lastClosedStorageId = ""
+    }
+    function _trackClose() {
+        _lastClosedStorageId = popupStorageId
+        reopenGuard.restart()
+    }
+
     function showForApp(index, storageId, desktopFile, selectedSids) {
+        if (storageId && _lastClosedStorageId === storageId) {
+            _lastClosedStorageId = ""
+            reopenGuard.stop()
+            return
+        }
         popupIndex = index
         popupStorageId = storageId
         popupDesktopFile = desktopFile
@@ -135,6 +155,8 @@ Item {
 
     PlasmaComponents.Menu {
         id: singleMenu
+
+        onAboutToHide: contextMenu._trackClose()
 
         Instantiator {
             model: contextMenu.popupActions
@@ -219,6 +241,8 @@ Item {
 
     PlasmaComponents.Menu {
         id: bulkMenu
+
+        onAboutToHide: contextMenu._trackClose()
 
         // Add N inserts at 0 (top). Remove N lands at 0 or 1 based on
         // whether Add N is already present — both at top, Add N above.

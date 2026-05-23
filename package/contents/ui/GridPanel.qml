@@ -617,6 +617,10 @@ Kirigami.ShadowedRectangle {
                     navigateToResults()
                 }
                 onTabPressed: navigateToResults()
+                onPageUp: if (panel.showSearchResults) searchResultsList.pageUp()
+                onPageDown: if (panel.showSearchResults) searchResultsList.pageDown()
+                onHome: if (panel.showSearchResults) searchResultsList.goHome()
+                onEnd: if (panel.showSearchResults) searchResultsList.goEnd()
             }
 
             PowerButtons {

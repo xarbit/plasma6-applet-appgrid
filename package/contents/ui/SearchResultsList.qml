@@ -3,7 +3,9 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     Unified search results list — renders app results and KRunner results
-    in a single ListView with continuous keyboard navigation.
+    in a single ListView with continuous keyboard navigation. Sections are
+    grouped under Kirigami.ListSectionHeader with per-section counts; the
+    list shows a Kirigami.PlaceholderMessage when a search returns nothing.
 */
 
 import QtQuick
@@ -27,36 +29,175 @@ ListView {
 
     WheelScroller { target: listView }
     currentIndex: count > 0 ? 0 : -1
+    keyNavigationEnabled: true
+
     property bool animateHighlight: true
     highlightMoveDuration: animateHighlight ? Kirigami.Units.shortDuration : 0
 
-    // Track mouse movement to prevent hover stealing focus when results appear under cursor
+    // Suppress hover-select for the first hover after the result set
+    // changes — stops the new top row from being re-selected because the
+    // cursor happens to be parked over it.
     property bool mouseMovedSinceReset: false
     onCountChanged: mouseMovedSinceReset = false
 
+    // Short window after a hover-triggered selection where new hover
+    // events are ignored. Prevents the cascade where revealing a clipped
+    // row scrolls the list under a stationary cursor, fires hover on the
+    // row that just slid into place, and chains. Issue #114.
     property bool _hoverCooldown: false
-    function _beginHoverCooldown() {
-        _hoverCooldown = true
-        hoverCooldownTimer.restart()
-    }
     Timer {
         id: hoverCooldownTimer
         interval: 200
         onTriggered: listView._hoverCooldown = false
     }
 
+    function _tryHoverSelect(row, localY, idx) {
+        if (!mouseMovedSinceReset) {
+            mouseMovedSinceReset = true
+            return
+        }
+        if (_hoverCooldown)
+            return
+        const rowY = row.mapToItem(listView, 0, 0).y
+        const clippedAtBottom = rowY + row.height > height
+        if (clippedAtBottom && localY > row.height - Kirigami.Units.gridUnit)
+            return
+        currentIndex = idx
+        _hoverCooldown = true
+        hoverCooldownTimer.restart()
+    }
+
+    // PgDn lands on the partially-clipped bottom row so the user never
+    // loses a result; if the bottom fits fully, step past it. PgUp goes
+    // the symmetric distance back from the current top, so a PgDn/PgUp
+    // pair returns to the previous viewport.
+    function pageDown() {
+        if (count === 0) return
+        const { top, bottom } = _viewportEdges()
+        const next = _rowExceedsViewport(bottom, true)
+            ? bottom
+            : Math.min(count - 1, bottom + 1)
+        _navTo(next)
+    }
+    function pageUp() {
+        if (count === 0) return
+        const { top, bottom } = _viewportEdges()
+        const next = _rowExceedsViewport(top, false)
+            ? top
+            : Math.max(0, top - Math.max(1, bottom - top))
+        _navTo(next)
+    }
+    function goHome() {
+        if (count === 0) return
+        currentIndex = 0
+        positionViewAtBeginning()
+    }
+    function goEnd() {
+        if (count === 0) return
+        currentIndex = count - 1
+        positionViewAtEnd()
+    }
+
+    // indexAt() returns -1 when the probe pixel is past the content,
+    // which happens whenever the list is shorter than the viewport.
+    // Clamp so navigation still works in that case.
+    function _viewportEdges() {
+        let top = indexAt(width / 2, contentY)
+        let bottom = indexAt(width / 2, contentY + height - 1)
+        if (top < 0) top = 0
+        if (bottom < 0) bottom = count - 1
+        return { top, bottom }
+    }
+    function _rowExceedsViewport(idx, atBottom) {
+        const item = itemAtIndex(idx)
+        if (!item) return false
+        return atBottom
+            ? item.y + item.height > contentY + height
+            : item.y < contentY
+    }
+    function _navTo(idx) {
+        if (idx === currentIndex) return
+        currentIndex = idx
+        positionViewAtIndex(idx, ListView.Beginning)
+    }
+
+    function _sectionLabel(section) {
+        const m = listView.model
+        if (section === "app")
+            return i18nd("dev.xarbit.appgrid", "Applications") +
+                   (m ? " (" + m.appResultCount + ")" : "")
+        if (section === "runner")
+            return i18nd("dev.xarbit.appgrid", "Search Plugins") +
+                   (m ? " (" + m.runnerResultCount + ")" : "")
+        return section
+    }
+
+    section.property: "resultType"
+    section.criteria: ViewSection.FullString
+    section.delegate: Kirigami.ListSectionHeader {
+        width: listView.width
+        text: listView._sectionLabel(section)
+    }
+
+    component InfoChip: Kirigami.Chip {
+        checkable: false
+        closable: false
+        interactive: false
+    }
+
+    component ShortcutBadge: Rectangle {
+        property int number: 0
+        visible: number > 0
+        implicitWidth: badgeLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
+        implicitHeight: Kirigami.Units.gridUnit * 1.5
+        radius: Kirigami.Units.cornerRadius
+        color: Qt.rgba(Kirigami.Theme.highlightColor.r,
+                       Kirigami.Theme.highlightColor.g,
+                       Kirigami.Theme.highlightColor.b, 0.15)
+        border.width: 1
+        border.color: Qt.rgba(Kirigami.Theme.textColor.r,
+                              Kirigami.Theme.textColor.g,
+                              Kirigami.Theme.textColor.b, 0.2)
+        Accessible.ignored: true
+
+        PlasmaComponents.Label {
+            id: badgeLabel
+            anchors.centerIn: parent
+            text: "Alt+" + parent.number
+            font.bold: true
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.7
+        }
+    }
+
+    Kirigami.PlaceholderMessage {
+        anchors.centerIn: parent
+        width: parent.width - Kirigami.Units.gridUnit * 4
+        icon.name: "system-search-symbolic"
+        text: searchField && searchField.text.length > 0
+              ? i18nd("dev.xarbit.appgrid", "No results for \"%1\"", searchField.text)
+              : ""
+        visible: listView.count === 0 && searchField && searchField.text.length > 0
+    }
+
     Keys.onReturnPressed: if (currentIndex >= 0) listView.launched(currentIndex)
     Keys.onEnterPressed: if (currentIndex >= 0) listView.launched(currentIndex)
 
     Keys.onPressed: function(event) {
-        // Alt+1 through Alt+9 shortcuts
         if (event.modifiers & Qt.AltModifier) {
-            var num = event.key - Qt.Key_0
-            if (num >= 1 && num <= 9 && num <= listView.count) {
-                listView.launched(num - 1)
+            const num = event.key - Qt.Key_0
+            if (num >= 1 && num <= 9 && num <= count) {
+                launched(num - 1)
                 event.accepted = true
                 return
             }
+        }
+
+        switch (event.key) {
+        case Qt.Key_PageDown: pageDown(); event.accepted = true; return
+        case Qt.Key_PageUp:   pageUp();   event.accepted = true; return
+        case Qt.Key_Home:     goHome();   event.accepted = true; return
+        case Qt.Key_End:      goEnd();    event.accepted = true; return
         }
 
         if (event.key === Qt.Key_Backspace || event.key === Qt.Key_Delete) {
@@ -100,154 +241,102 @@ ListView {
         if (searchField) searchField.forceActiveFocus()
     }
 
-    delegate: Column {
+    delegate: PlasmaComponents.ItemDelegate {
+        id: resultDelegate
         width: listView.width
+        height: Math.max(listView.iconSize, contentItem.implicitHeight) + Kirigami.Units.smallSpacing * 2
+        highlighted: listView.currentIndex === model.index
+        readonly property color labelColor: highlighted
+            ? Kirigami.Theme.highlightedTextColor
+            : Kirigami.Theme.textColor
 
-        // Section divider between app results and runner results
-        Kirigami.Separator {
-            width: parent.width
-            visible: model.isSectionBoundary
-            opacity: listView.showDividers ? 1 : 0
+        Accessible.name: (model.shortcutNumber > 0 ? "Alt+" + model.shortcutNumber + ": " : "") + (model.name || "")
+        Accessible.role: Accessible.Button
+        Accessible.description: model.subtext || ""
+        Accessible.focusable: true
+
+        onClicked: listView.launched(model.index)
+
+        TapHandler {
+            acceptedButtons: Qt.RightButton
+            onTapped: listView.contextMenuRequested(model.index, model.storageId || "", model.desktopFile || "")
         }
 
-        PlasmaComponents.ItemDelegate {
-            id: resultDelegate
-            width: listView.width
-            height: Math.max(listView.iconSize, contentItem.implicitHeight) + Kirigami.Units.smallSpacing * 2
-            highlighted: listView.currentIndex === model.index
+        HoverHandler {
+            id: rowHover
+            cursorShape: Qt.PointingHandCursor
+            onHoveredChanged: if (hovered)
+                listView._tryHoverSelect(resultDelegate, point.position.y, model.index)
+        }
 
-            contentItem: RowLayout {
-                spacing: Kirigami.Units.largeSpacing
+        contentItem: RowLayout {
+            spacing: Kirigami.Units.largeSpacing
 
-                // Alt+number shortcut badge
-                Rectangle {
-                    visible: model.shortcutNumber > 0
-                    implicitWidth: shortcutLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                    implicitHeight: Kirigami.Units.gridUnit * 1.5
-                    radius: Kirigami.Units.cornerRadius
-                    color: Qt.rgba(Kirigami.Theme.highlightColor.r,
-                                   Kirigami.Theme.highlightColor.g,
-                                   Kirigami.Theme.highlightColor.b, 0.15)
-                    border.width: 1
-                    border.color: Qt.rgba(Kirigami.Theme.textColor.r,
-                                          Kirigami.Theme.textColor.g,
-                                          Kirigami.Theme.textColor.b, 0.2)
+            ShortcutBadge { number: model.shortcutNumber }
 
-                    PlasmaComponents.Label {
-                        id: shortcutLabel
-                        anchors.centerIn: parent
-                        text: "Alt+" + model.shortcutNumber
-                        font.bold: true
-                        font.pointSize: Kirigami.Theme.smallFont.pointSize
-                        opacity: 0.7
-                    }
+            ShadowedIcon {
+                implicitWidth: listView.iconSize
+                implicitHeight: listView.iconSize
+                source: model.iconName || "application-x-executable"
+            }
 
-                    Accessible.ignored: true
-                }
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 0
 
-                ShadowedIcon {
-                    implicitWidth: listView.iconSize
-                    implicitHeight: listView.iconSize
-                    source: model.iconName || "application-x-executable"
-                }
-
-                ColumnLayout {
+                RowLayout {
                     Layout.fillWidth: true
-                    spacing: 0
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        PlasmaComponents.Label {
-                            Layout.fillWidth: true
-                            text: model.name || ""
-                            elide: Text.ElideRight
-                            color: resultDelegate.highlighted
-                                   ? Kirigami.Theme.highlightedTextColor
-                                   : Kirigami.Theme.textColor
-                        }
-                        Rectangle {
-                            visible: model.installSource !== undefined && model.installSource.length > 0 && model.installSource !== "System"
-                            implicitWidth: sourceLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                            implicitHeight: sourceLabel.implicitHeight + Kirigami.Units.smallSpacing
-                            radius: Kirigami.Units.cornerRadius
-                            color: Qt.rgba(Kirigami.Theme.textColor.r,
-                                           Kirigami.Theme.textColor.g,
-                                           Kirigami.Theme.textColor.b, 0.08)
-
-                            PlasmaComponents.Label {
-                                id: sourceLabel
-                                anchors.centerIn: parent
-                                text: model.installSource || ""
-                                font: Kirigami.Theme.smallFont
-                                opacity: 0.6
-                            }
-                        }
-
-                        Rectangle {
-                            implicitWidth: typeLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-                            implicitHeight: typeLabel.implicitHeight + Kirigami.Units.smallSpacing
-                            radius: Kirigami.Units.cornerRadius
-                            color: Qt.rgba(Kirigami.Theme.textColor.r,
-                                           Kirigami.Theme.textColor.g,
-                                           Kirigami.Theme.textColor.b, 0.08)
-
-                            PlasmaComponents.Label {
-                                id: typeLabel
-                                anchors.centerIn: parent
-                                text: model.category || i18nd("dev.xarbit.appgrid", "Application")
-                                font: Kirigami.Theme.smallFont
-                                opacity: 0.6
-                            }
-                        }
-                    }
-
                     PlasmaComponents.Label {
                         Layout.fillWidth: true
-                        text: model.subtext || ""
+                        text: model.name || ""
                         elide: Text.ElideRight
-                        font: Kirigami.Theme.smallFont
-                        opacity: 0.6
-                        visible: text.length > 0
-                        color: resultDelegate.highlighted
-                               ? Kirigami.Theme.highlightedTextColor
-                               : Kirigami.Theme.textColor
+                        color: resultDelegate.labelColor
                     }
+                    InfoChip {
+                        visible: model.installSource !== undefined
+                                 && model.installSource.length > 0
+                                 && model.installSource !== "System"
+                        text: model.installSource || ""
+                    }
+                    InfoChip {
+                        text: model.category || i18nd("dev.xarbit.appgrid", "Application")
+                    }
+                }
+
+                PlasmaComponents.Label {
+                    Layout.fillWidth: true
+                    text: model.subtext || ""
+                    elide: Text.ElideRight
+                    font: Kirigami.Theme.smallFont
+                    opacity: 0.6
+                    visible: text.length > 0
+                    color: resultDelegate.labelColor
                 }
             }
 
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                cursorShape: Qt.PointingHandCursor
-                onEntered: {
-                    if (!listView.mouseMovedSinceReset) {
-                        listView.mouseMovedSinceReset = true
-                        return
-                    }
-                    if (listView._hoverCooldown)
-                        return
-
-                    const rowY = parent.mapToItem(listView, 0, 0).y
-                    const clippedAtBottom = rowY + parent.height > listView.height
-                    const edgeStrip = Kirigami.Units.gridUnit
-                    if (clippedAtBottom && mouseY > parent.height - edgeStrip)
-                        return
-                    listView.currentIndex = model.index
-                    listView._beginHoverCooldown()
-                }
-                onClicked: function(mouse) {
-                    if (mouse.button === Qt.RightButton)
-                        listView.contextMenuRequested(model.index, model.storageId || "", model.desktopFile || "")
-                    else
-                        listView.launched(model.index)
-                }
-
-                Accessible.name: (model.shortcutNumber > 0 ? "Alt+" + model.shortcutNumber + ": " : "") + (model.name || "")
-                Accessible.role: Accessible.Button
-                Accessible.description: model.subtext || ""
-                Accessible.focusable: true
+            PlasmaComponents.ToolButton {
+                visible: resultDelegate.highlighted
+                Layout.alignment: Qt.AlignVCenter
+                icon.name: "overflow-menu"
+                PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "More options")
+                PlasmaComponents.ToolTip.visible: hovered
+                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+                onClicked: listView.contextMenuRequested(model.index,
+                                                        model.storageId || "",
+                                                        model.desktopFile || "")
             }
+        }
+
+        // Keyboard-focus ring — only visible when the row was selected via
+        // arrow keys (highlighted but cursor isn't on it). Distinguishes
+        // keyboard nav from mouse hover.
+        Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            border.width: 1
+            border.color: Kirigami.Theme.focusColor
+            radius: Kirigami.Units.cornerRadius
+            visible: resultDelegate.highlighted && !rowHover.hovered
         }
     }
 }

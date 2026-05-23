@@ -19,6 +19,10 @@ RowLayout {
     signal accepted()
     signal moveDown()
     signal tabPressed()
+    signal pageUp()
+    signal pageDown()
+    signal home()
+    signal end()
     signal altNumberPressed(int number)
     signal altLetterPressed(int key)
 
@@ -49,6 +53,12 @@ RowLayout {
         Keys.onDownPressed: searchBar.moveDown()
         Keys.onTabPressed: searchBar.tabPressed()
         Keys.onPressed: function(event) {
+            switch (event.key) {
+            case Qt.Key_PageUp:   searchBar.pageUp();   event.accepted = true; return
+            case Qt.Key_PageDown: searchBar.pageDown(); event.accepted = true; return
+            case Qt.Key_Home:     searchBar.home();     event.accepted = true; return
+            case Qt.Key_End:      searchBar.end();      event.accepted = true; return
+            }
             if (event.modifiers & Qt.AltModifier) {
                 var num = event.key - Qt.Key_0
                 if (num >= 1 && num <= 9) {
