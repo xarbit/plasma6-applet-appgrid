@@ -275,7 +275,7 @@ RowLayout {
             anchors.fill: parent
             visible: catFlick.contentX > 0
             icon.name: "arrow-left"
-            onClicked: catFlick.contentX = Math.max(0, catFlick.contentX - catFlick.width * 0.5)
+            onClicked: catFlick.contentX = Math.max(0, catFlick.contentX - catFlick.width)
 
             Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
             Accessible.role: Accessible.Button
