@@ -33,33 +33,23 @@ ListView {
     keyNavigationEnabled: true
 
     property bool animateHighlight: true
-    highlightMoveDuration: animateHighlight ? Kirigami.Units.shortDuration : 0
+    // Keyboard nav animates the highlight; hover-driven selects snap so the
+    // highlight tracks the cursor crisply across rows.
+    property bool _suppressHighlightAnim: false
+    highlightMoveDuration: (animateHighlight && !_suppressHighlightAnim)
+        ? Kirigami.Units.shortDuration : 0
     highlightResizeDuration: 0
     // One themed renderer per row, so hover and keyboard-focus never
     // stack visually (would otherwise reveal a corner mismatch).
     highlight: PlasmaExtras.Highlight {}
 
-    // Suppress hover-select for the first hover after the result set
-    // changes — stops the new top row from being re-selected because the
-    // cursor happens to be parked over it.
-    property bool mouseMovedSinceReset: false
-    onCountChanged: mouseMovedSinceReset = false
-
-    // After revealing a clipped row, ignore hover entries caused by the list
-    // moving under a stationary cursor at the viewport edge.
-    property bool _hoverRevealSettling: false
-    Timer {
-        id: hoverRevealSettlingTimer
-        interval: Math.max(Kirigami.Units.shortDuration, 120)
-        onTriggered: listView._hoverRevealSettling = false
-    }
+    // Reject hover-selects while the list is scrolling — rows passing under
+    // a stationary cursor would otherwise trigger spurious selects.
+    property double _lastScrollTime: 0
+    onContentYChanged: _lastScrollTime = Date.now()
 
     function _tryHoverSelect(row, pointerY, idx) {
-        if (!mouseMovedSinceReset) {
-            mouseMovedSinceReset = true
-            return
-        }
-        if (_hoverRevealSettling)
+        if (Date.now() - _lastScrollTime < 100)
             return
 
         const top = row.mapToItem(listView, 0, 0).y
@@ -68,11 +58,10 @@ ListView {
         const mouseYInList = row.mapToItem(listView, 0, pointerY).y
         const inBottomEdge = mouseYInList > height - Kirigami.Units.smallSpacing * 2
 
-        if (!clipped || !inBottomEdge)
+        if (!clipped || !inBottomEdge) {
+            _suppressHighlightAnim = true
             currentIndex = idx
-        if (clipped) {
-            _hoverRevealSettling = true
-            hoverRevealSettlingTimer.restart()
+            Qt.callLater(() => _suppressHighlightAnim = false)
         }
     }
 
