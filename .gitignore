@@ -27,6 +27,13 @@ package-panel/metadata.json
 package/contents/ui/DevFlags.qml
 package-panel/contents/ui/DevFlags.qml
 
+# Shared config copied from package/ to package-panel/ at build time
+package-panel/contents/config/config.qml
+package-panel/contents/config/main.xml
+
+# Shared icon copied from package/ to package-panel/ at build time
+package-panel/contents/icons/dev.xarbit.appgrid.svg
+
 # Shared QML copied from package/ to package-panel/ at build time
 package-panel/contents/ui/AppContextMenu.qml
 package-panel/contents/ui/AppGridView.qml

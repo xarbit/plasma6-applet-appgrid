@@ -266,6 +266,25 @@ foreach(qml_file ${SHARED_QML_FILES})
     )
 endforeach()
 
+# Config schema and category list are single-sourced; panel ignores
+# center-only entries at runtime/UI.
+foreach(config_file main.xml config.qml)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/package/contents/config/${config_file}
+        ${CMAKE_CURRENT_SOURCE_DIR}/package-panel/contents/config/${config_file}
+        COPYONLY
+    )
+endforeach()
+
+# Plasmoid icon — single source.
+foreach(icon_file dev.xarbit.appgrid.svg)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/package/contents/icons/${icon_file}
+        ${CMAKE_CURRENT_SOURCE_DIR}/package-panel/contents/icons/${icon_file}
+        COPYONLY
+    )
+endforeach()
+
 foreach(qml_file ${SHARED_PREFIX_QML_FILES})
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/package/contents/ui/${qml_file}
