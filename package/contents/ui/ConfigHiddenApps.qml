@@ -7,16 +7,15 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 
-import org.kde.kcmutils as KCMUtils
+import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
-KCMUtils.SimpleKCM {
+KCM.SimpleKCM {
     id: page
 
     property var cfg_hiddenApps: Plasmoid.configuration.hiddenApps
 
-    // ListModel mirror — StringList isn't usable directly as a Repeater model.
     ListModel { id: hiddenAppsModel }
     Component.onCompleted: syncHiddenModel()
     onCfg_hiddenAppsChanged: syncHiddenModel()
@@ -25,33 +24,29 @@ KCMUtils.SimpleKCM {
         hiddenAppsModel.clear()
         var apps = cfg_hiddenApps
         if (apps && apps.length) {
-            for (var i = 0; i < apps.length; i++) {
+            for (var i = 0; i < apps.length; i++)
                 if (apps[i] !== "")
                     hiddenAppsModel.append({ storageId: apps[i] })
-            }
         }
     }
 
     ColumnLayout {
-        anchors.left: parent.left
-        anchors.leftMargin: Kirigami.Units.gridUnit
-        anchors.rightMargin: Kirigami.Units.gridUnit
-        anchors.right: parent.right
         spacing: Kirigami.Units.smallSpacing
 
         QQC2.Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: i18nd("dev.xarbit.appgrid", "Right-click any app in the grid to hide it, or type h: in the search bar.")
             font: Kirigami.Theme.smallFont
-            opacity: 0.5
+            opacity: 0.7
+            text: i18nd("dev.xarbit.appgrid", "Right-click any app in the grid to hide it, or type h: in the search bar.")
         }
 
-        QQC2.Label {
+        Kirigami.PlaceholderMessage {
+            Layout.fillWidth: true
+            Layout.topMargin: Kirigami.Units.gridUnit * 2
             visible: hiddenAppsModel.count === 0
-            text: i18nd("dev.xarbit.appgrid", "No hidden applications.")
-            opacity: 0.5
-            Layout.topMargin: Kirigami.Units.smallSpacing
+            icon.name: "view-visible"
+            text: i18nd("dev.xarbit.appgrid", "No hidden applications")
         }
 
         Repeater {
@@ -72,7 +67,6 @@ KCMUtils.SimpleKCM {
                         implicitHeight: Kirigami.Units.iconSizes.smallMedium
                         source: appInfo.iconName || "application-x-executable"
                     }
-
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 0
@@ -82,7 +76,6 @@ KCMUtils.SimpleKCM {
                             text: appInfo.name || storageId
                             elide: Text.ElideRight
                         }
-
                         QQC2.Label {
                             Layout.fillWidth: true
                             visible: !!appInfo.name
@@ -92,7 +85,6 @@ KCMUtils.SimpleKCM {
                             elide: Text.ElideRight
                         }
                     }
-
                     QQC2.ToolButton {
                         icon.name: "view-visible"
                         QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
@@ -111,6 +103,7 @@ KCMUtils.SimpleKCM {
         QQC2.Button {
             visible: hiddenAppsModel.count > 0
             Layout.topMargin: Kirigami.Units.smallSpacing
+            Layout.alignment: Qt.AlignHCenter
             icon.name: "edit-undo"
             text: i18nd("dev.xarbit.appgrid", "Unhide All")
             onClicked: page.cfg_hiddenApps = []

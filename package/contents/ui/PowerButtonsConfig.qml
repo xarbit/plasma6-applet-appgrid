@@ -2,10 +2,9 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Settings widget for the power/session buttons: reorder the four
-    top-level slots, show/hide each, and show/hide the Session dropdown's
-    Lock / Log Out / Switch User items. Takes the current config values
-    in and emits `edited` with the new ones.
+    Power/session button editor, designed to drop into a Kirigami.FormLayout
+    parent so it picks up the standard KCM column alignment. Emits `edited`
+    with the new order and hidden-list whenever the user changes anything.
 */
 
 import QtQuick
@@ -21,7 +20,7 @@ ColumnLayout {
 
     signal edited(var newOrder, var newHidden)
 
-    spacing: Kirigami.Units.largeSpacing
+    spacing: Kirigami.Units.smallSpacing
 
     readonly property var slotLabels: ({
         "sleep": i18nd("dev.xarbit.appgrid", "Sleep"),
@@ -48,7 +47,7 @@ ColumnLayout {
         root.edited(_currentOrder(), h)
     }
 
-    // ListModel mirror of buttonOrder — a StringList can't drive a ListView.
+    // ListModel mirror — a StringList can't drive a Repeater directly.
     ListModel { id: orderModel }
     function _currentOrder() {
         var arr = []
@@ -65,12 +64,11 @@ ColumnLayout {
         return true
     }
     function _syncModel() {
-        // Empty config means the default order.
         var target = (root.buttonOrder && root.buttonOrder.length > 0)
                      ? root.buttonOrder : defaultSlotOrder
-        // Skip the rebuild when the model already matches — our own drag
-        // round-trips back through cfg_, and clearing the model mid-drop
-        // makes the reorder unreliable.
+        // Skip the rebuild when the model already matches — our own edits
+        // round-trip back through cfg_, and clearing mid-drop makes the
+        // reorder unreliable.
         if (_sameOrder(_currentOrder(), target))
             return
         orderModel.clear()
@@ -79,83 +77,37 @@ ColumnLayout {
     }
     function _move(from, to) {
         orderModel.move(from, to, 1)
-        root.edited(root._currentOrder(), root.hiddenButtons)
+        root.edited(_currentOrder(), root.hiddenButtons)
     }
     onButtonOrderChanged: _syncModel()
     Component.onCompleted: _syncModel()
 
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: Kirigami.Units.smallSpacing
-
-        Kirigami.Heading {
-            level: 3
-            text: i18nd("dev.xarbit.appgrid", "Top-level buttons")
-        }
-
-        QQC2.Label {
+    Repeater {
+        model: orderModel
+        delegate: RowLayout {
+            id: slotRow
             Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            font: Kirigami.Theme.smallFont
-            opacity: 0.7
-            text: i18nd("dev.xarbit.appgrid", "Shown on the power row in this order. Uncheck to hide.")
-        }
+            required property int index
+            required property string slotId
+            spacing: Kirigami.Units.smallSpacing
 
-        Repeater {
-            model: orderModel
-            delegate: RowLayout {
-                id: slotRow
+            QQC2.CheckBox {
                 Layout.fillWidth: true
-                required property int index
-                required property string slotId
-                spacing: Kirigami.Units.smallSpacing
-
-                QQC2.CheckBox {
-                    Layout.fillWidth: true
-                    text: root.slotLabels[slotRow.slotId] || slotRow.slotId
-                    checked: !root._isHidden(slotRow.slotId)
-                    onToggled: root._setHidden(slotRow.slotId, !checked)
-                }
-                QQC2.ToolButton {
-                    icon.name: "arrow-up"
-                    display: QQC2.AbstractButton.IconOnly
-                    enabled: slotRow.index > 0
-                    onClicked: root._move(slotRow.index, slotRow.index - 1)
-                }
-                QQC2.ToolButton {
-                    icon.name: "arrow-down"
-                    display: QQC2.AbstractButton.IconOnly
-                    enabled: slotRow.index < orderModel.count - 1
-                    onClicked: root._move(slotRow.index, slotRow.index + 1)
-                }
+                text: root.slotLabels[slotRow.slotId] || slotRow.slotId
+                checked: !root._isHidden(slotRow.slotId)
+                onToggled: root._setHidden(slotRow.slotId, !checked)
             }
-        }
-    }
-
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: Kirigami.Units.smallSpacing
-
-        Kirigami.Heading {
-            level: 3
-            text: i18nd("dev.xarbit.appgrid", "Session menu items")
-        }
-
-        QQC2.Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            font: Kirigami.Theme.smallFont
-            opacity: 0.7
-            text: i18nd("dev.xarbit.appgrid", "Shown in the Session dropdown.")
-        }
-
-        Repeater {
-            model: ["lock", "logout", "switchuser"]
-            delegate: QQC2.CheckBox {
-                required property string modelData
-                text: root.slotLabels[modelData]
-                checked: !root._isHidden(modelData)
-                onToggled: root._setHidden(modelData, !checked)
+            QQC2.ToolButton {
+                icon.name: "arrow-up"
+                display: QQC2.AbstractButton.IconOnly
+                enabled: slotRow.index > 0
+                onClicked: root._move(slotRow.index, slotRow.index - 1)
+            }
+            QQC2.ToolButton {
+                icon.name: "arrow-down"
+                display: QQC2.AbstractButton.IconOnly
+                enabled: slotRow.index < orderModel.count - 1
+                onClicked: root._move(slotRow.index, slotRow.index + 1)
             }
         }
     }
