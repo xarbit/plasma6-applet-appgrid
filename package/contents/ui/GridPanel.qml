@@ -31,9 +31,6 @@ Kirigami.ShadowedRectangle {
         categoryGridView.shakeAllIcons()
     }
 
-    // Dev/testing flags (populated at build time from BUILDFLAGS)
-    DevFlags { id: devFlags }
-
     // -- Configuration (single source of truth for all config reads) --
     readonly property var appsModel: Plasmoid ? Plasmoid.appsModel : null
     readonly property int columns: Plasmoid.configuration.gridColumns || 7
@@ -703,7 +700,6 @@ Kirigami.ShadowedRectangle {
             visible: panel.showCatBar
             Layout.leftMargin: Kirigami.Units.smallSpacing
             appsModel: panel.appsModel
-            devExtraCategories: devFlags.extraCategories
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
             scrollOnlyMode: panel.showCategoryGrid

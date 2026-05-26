@@ -20,18 +20,10 @@ RowLayout {
 
     property var appsModel: null
     property bool favoritesActive: false
-    property bool devExtraCategories: false
     property bool favoritesFirst: false
 
     // Reactive category list — updated when model categories change
     property var categoryList: []
-
-    // Dev test categories injected when DEV_EXTRA_CATEGORIES is enabled
-    readonly property var testCategories: [
-        "Education", "Science", "Games", "Accessibility",
-        "Photography", "Video", "Audio", "Network",
-        "Finance", "News", "Weather", "Navigation"
-    ]
 
     signal favoritesToggled(bool active)
     signal categorySelected(string name)
@@ -51,9 +43,6 @@ RowLayout {
             cats = categoryBar.appsModel.nonEmptyCategories().sort()
         else
             cats = categoryBar.appsModel ? categoryBar.appsModel.categories() : []
-
-        if (categoryBar.devExtraCategories)
-            cats = cats.concat(categoryBar.testCategories)
 
         categoryList = cats
     }

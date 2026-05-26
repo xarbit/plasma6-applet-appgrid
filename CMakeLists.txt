@@ -304,46 +304,7 @@ endforeach()
 install(TARGETS dev.xarbit.appgrid.panel DESTINATION ${KDE_INSTALL_PLUGINDIR}/plasma/applets)
 plasma_install_package(package-panel dev.xarbit.appgrid.panel)
 
-# --- Dev flags ---
-# Read BUILDFLAGS file and parse key=value pairs
-
-set(DEV_MODE "false")
-set(DEV_EXTRA_CATEGORIES "false")
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/BUILDFLAGS")
-    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/BUILDFLAGS" _flag_lines)
-    foreach(_line ${_flag_lines})
-        # Skip comments and empty lines
-        string(REGEX MATCH "^[A-Z_]+=.+" _match "${_line}")
-        if(_match)
-            string(REGEX REPLACE "^([A-Z_]+)=(.+)" "\\1;\\2" _parts "${_line}")
-            list(GET _parts 0 _key)
-            list(GET _parts 1 _val)
-            set(${_key} "${_val}")
-        endif()
-    endforeach()
-endif()
-
-# Only enable individual flags if DEV_MODE is true
-if(NOT DEV_MODE STREQUAL "true")
-    set(DEV_EXTRA_CATEGORIES "false")
-endif()
-
-message(STATUS "AppGrid DEV_MODE=${DEV_MODE}")
-message(STATUS "AppGrid DEV_EXTRA_CATEGORIES=${DEV_EXTRA_CATEGORIES}")
 message(STATUS "AppGrid ENABLE_X11=${ENABLE_X11}")
-
-# Generate DevFlags.qml from template
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/DevFlags.qml.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/package/contents/ui/DevFlags.qml
-    @ONLY
-)
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/DevFlags.qml.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/package-panel/contents/ui/DevFlags.qml
-    @ONLY
-)
 
 # --- Common ---
 

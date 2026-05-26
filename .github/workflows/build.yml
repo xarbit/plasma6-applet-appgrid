@@ -81,8 +81,7 @@ jobs:
       - name: Check SPDX license headers
         run: |
           set -e
-          files=$(git ls-files '*.cpp' '*.h' '*.qml' | \
-            grep -v -E '^(package|package-panel)/contents/ui/DevFlags\.qml$')
+          files=$(git ls-files '*.cpp' '*.h' '*.qml')
           if [ -z "$files" ]; then
             echo "::error::git ls-files returned no files — repo state broken"
             exit 1
