@@ -1,0 +1,694 @@
+# Traditional Chinese translation for plasma6-applet-appgrid.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the plasma6-applet-appgrid package.
+# urocissa.tw <urocissa.tw@proton.me>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma6-applet-appgrid\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/issues\n"
+"POT-Creation-Date: 2026-05-19 16:34+0200\n"
+"PO-Revision-Date: 2026-05-26 10:40+0800\n"
+"Last-Translator: urocissa.tw <urocissa.tw@proton.me>\n"
+"Language-Team: Traditional Chinese <zh_TW@li.org>\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: package/contents/ui/AppContextMenu.qml:158
+msgid "Remove from Favorites"
+msgstr "從「我的最愛」移除"
+
+#: package/contents/ui/AppContextMenu.qml:159
+msgid "Add to Favorites"
+msgstr "加入「我的最愛」"
+
+#: package/contents/ui/AppContextMenu.qml:176
+#: package/contents/ui/AppContextMenu.qml:300
+msgid "Remove from Selection"
+msgstr "從選取項目中移除"
+
+#: package/contents/ui/AppContextMenu.qml:177
+msgid "Add to Selection"
+msgstr "加入選取項目"
+
+#: package/contents/ui/AppContextMenu.qml:185
+msgid "Pin to Task Manager"
+msgstr "釘選到工作列"
+
+#: package/contents/ui/AppContextMenu.qml:194
+msgid "Add to Desktop"
+msgstr "新增至桌面"
+
+#: package/contents/ui/AppContextMenu.qml:203
+msgid "Edit Application"
+msgstr "編輯應用程式"
+
+#: package/contents/ui/AppContextMenu.qml:211
+msgid "Hide Application"
+msgstr "隱藏應用程式"
+
+#: package/contents/ui/AppContextMenu.qml:230
+msgid "Add %1 to Favorites"
+msgid_plural "Add %1 to Favorites"
+msgstr[0] "將 %1 加入「我的最愛」"
+msgstr[1] "將 %1 加入「我的最愛」"
+
+#: package/contents/ui/AppContextMenu.qml:244
+msgid "Remove %1 from Favorites"
+msgid_plural "Remove %1 from Favorites"
+msgstr[0] "將 %1 從「我的最愛」移除"
+msgstr[1] "將 %1 從「我的最愛」移除"
+
+#: package/contents/ui/AppContextMenu.qml:257
+msgid "Pin %1 to Task Manager"
+msgid_plural "Pin %1 to Task Manager"
+msgstr[0] "將 %1 釘選到工作列"
+msgstr[1] "將 %1 釘選到工作列"
+
+#: package/contents/ui/AppContextMenu.qml:265
+msgid "Add %1 to Desktop"
+msgid_plural "Add %1 to Desktop"
+msgstr[0] "將 %1 新增至桌面"
+msgstr[1] "將 %1 新增至桌面"
+
+#: package/contents/ui/AppContextMenu.qml:273
+msgid "Launch %1 application"
+msgid_plural "Launch %1 applications"
+msgstr[0] "啟動 %1 個應用程式"
+msgstr[1] "啟動 %1 個應用程式"
+
+#: package/contents/ui/AppContextMenu.qml:283
+msgid "Copy %1 path"
+msgid_plural "Copy %1 paths"
+msgstr[0] "複製 %1 個路徑"
+msgstr[1] "複製 %1 個路徑"
+
+#: package/contents/ui/AppContextMenu.qml:291
+msgid "Hide %1 application"
+msgid_plural "Hide %1 applications"
+msgstr[0] "隱藏 %1 個應用程式"
+msgstr[1] "隱藏 %1 個應用程式"
+
+#: package/contents/ui/AppIconDelegate.qml:216
+msgid "new"
+msgstr "新增"
+
+#: package/contents/ui/AppIconDelegate.qml:217
+msgid "selected"
+msgstr "已選取"
+
+#: package/contents/ui/CategoryBar.qml:67
+#: package/contents/ui/CategoryBar.qml:204
+#: package/contents/ui/CategoryBar.qml:205
+msgid "All"
+msgstr "全部"
+
+#: package/contents/ui/CategoryBar.qml:68
+#: package/contents/ui/CategoryBar.qml:183
+#: package/contents/ui/CategoryBar.qml:187
+#: package/contents/ui/CategoryBar.qml:343
+#: package/contents/ui/CategoryBar.qml:347
+#: package/contents/ui/prefix/PrefixInfoView.qml:121
+#: package/contents/ui/RecentAppsHeader.qml:111
+msgid "Favorites"
+msgstr "我的最愛"
+
+#: package/contents/ui/CategoryBar.qml:220
+msgid "All applications"
+msgstr "所有應用程式"
+
+#: package/contents/ui/CategoryBar.qml:234
+msgid "Scroll categories left"
+msgstr "向左捲動分類"
+
+#: package/contents/ui/CategoryBar.qml:331
+msgid "Scroll categories right"
+msgstr "向右捲動分類"
+
+#: package/contents/ui/CategoryBar.qml:360
+msgid "Edit \"%1\" in Menu Editor…"
+msgstr "在選單編輯器中編輯「%1」…"
+
+#: package/contents/ui/CategoryBar.qml:368
+msgid "Open Menu Editor…"
+msgstr "開啟選單編輯器…"
+
+#: package/contents/ui/ConfigGeneral.qml:85
+msgid "Icon:"
+msgstr "圖示："
+
+#: package/contents/ui/ConfigGeneral.qml:146
+msgctxt "@item:inmenu Open icon chooser dialog"
+msgid "Choose…"
+msgstr "選擇…"
+
+#: package/contents/ui/ConfigGeneral.qml:151
+msgctxt "@item:inmenu Reset icon to default"
+msgid "Clear Icon"
+msgstr "清除圖示"
+
+#: package/contents/ui/ConfigGeneral.qml:164
+msgid "Text label:"
+msgstr "文字標籤："
+
+#: package/contents/ui/ConfigGeneral.qml:166
+msgid "Type here to add a text label"
+msgstr "在此輸入以新增文字標籤"
+
+#: package/contents/ui/ConfigGeneral.qml:183
+msgid "Icons per row:"
+msgstr "每列圖示數："
+
+#: package/contents/ui/ConfigGeneral.qml:189
+msgid "Visible rows:"
+msgstr "可見列數："
+
+#: package/contents/ui/ConfigGeneral.qml:195
+msgid "Icon size:"
+msgstr "圖示大小："
+
+#: package/contents/ui/ConfigGeneral.qml:196
+msgid "Small"
+msgstr "小"
+
+#: package/contents/ui/ConfigGeneral.qml:196
+msgid "Medium"
+msgstr "中"
+
+#: package/contents/ui/ConfigGeneral.qml:196
+msgid "Large"
+msgstr "大"
+
+#: package/contents/ui/ConfigGeneral.qml:201
+msgid "Sort order:"
+msgstr "排序方式："
+
+#: package/contents/ui/ConfigGeneral.qml:202
+msgid "Alphabetical"
+msgstr "依字母順序"
+
+#: package/contents/ui/ConfigGeneral.qml:202
+msgid "Most Used"
+msgstr "最常使用"
+
+#: package/contents/ui/ConfigGeneral.qml:202
+msgid "By Category"
+msgstr "依分類"
+
+#: package/contents/ui/ConfigGeneral.qml:211
+msgid "Behavior:"
+msgstr "行為："
+
+#: package/contents/ui/ConfigGeneral.qml:212
+msgid "Show category bar"
+msgstr "顯示分類列"
+
+#: package/contents/ui/ConfigGeneral.qml:217
+msgid "Open on screen with mouse focus (otherwise on panel screen)"
+msgstr "在滑鼠焦點所在的螢幕開啟（否則在面板所在的螢幕開啟）"
+
+#: package/contents/ui/ConfigGeneral.qml:222
+msgid "Search all apps regardless of active tab"
+msgstr "搜尋所有應用程式（不論目前所在分頁）"
+
+#: package/contents/ui/ConfigGeneral.qml:227
+msgid "Start with favorites tab"
+msgstr "啟動時顯示「我的最愛」分頁"
+
+#: package/contents/ui/ConfigGeneral.qml:233
+msgid "Show recently used applications"
+msgstr "顯示最近使用的應用程式"
+
+#: package/contents/ui/ConfigGeneral.qml:239
+msgid "Use system categories (supports KDE Menu Editor)"
+msgstr "使用系統分類（支援 KDE 選單編輯器）"
+
+#: package/contents/ui/ConfigGeneral.qml:245
+msgid "Hide empty categories"
+msgstr "隱藏空的分類"
+
+#: package/contents/ui/ConfigGeneral.qml:253
+msgid "Check the AppGrid website for new releases"
+msgstr "檢查 AppGrid 網站是否有新版本"
+
+#: package/contents/ui/ConfigGeneral.qml:254
+msgid ""
+"Anonymous request once per day to %1. Shows an indicator near the session "
+"buttons when a new version is available; no automatic install."
+msgstr "每天一次向 %1 發送匿名請求。當有新版本可用時，會在工作階段按鈕旁顯示提示；不會自動安裝。"
+
+#: package/contents/ui/ConfigGeneral.qml:261
+msgid "Terminal shell:"
+msgstr "終端機 Shell："
+
+#: package/contents/ui/ConfigGeneral.qml:265
+msgid "Default (/bin/sh)"
+msgstr "預設 (/bin/sh)"
+
+#: package/contents/ui/ConfigGeneral.qml:285
+msgid "Appearance:"
+msgstr "外觀："
+
+#: package/contents/ui/ConfigGeneral.qml:286
+msgid "Show divider lines"
+msgstr "顯示分隔線"
+
+#: package/contents/ui/ConfigGeneral.qml:291
+msgid "Show scrollbars"
+msgstr "顯示捲軸"
+
+#: package/contents/ui/ConfigGeneral.qml:296
+msgid "Show tooltips on hover"
+msgstr "懸停時顯示工具提示"
+
+#: package/contents/ui/ConfigGeneral.qml:301
+msgid "Show new app badge"
+msgstr "顯示新應用程式標記"
+
+#: package/contents/ui/ConfigGeneral.qml:306
+msgid "Hide app labels on favorites tab"
+msgstr "在「我的最愛」分頁隱藏應用程式標籤"
+
+#: package/contents/ui/ConfigGeneral.qml:312
+msgid "Sort favorites alphabetically"
+msgstr "依字母順序排序「我的最愛」"
+
+#: package/contents/ui/ConfigGeneral.qml:317
+msgid "Open/close animation:"
+msgstr "開啟/關閉動畫："
+
+#: package/contents/ui/ConfigGeneral.qml:318
+#: package/contents/ui/ConfigGeneral.qml:334
+msgid "None"
+msgstr "無"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Fade"
+msgstr "淡入淡出"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Scale"
+msgstr "縮放"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Pop"
+msgstr "彈出"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Slide Up"
+msgstr "向上滑動"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Slide Down"
+msgstr "向下滑動"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Glide"
+msgstr "滑動"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Buzz"
+msgstr "震動"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Twist"
+msgstr "扭轉"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Slam"
+msgstr "衝擊"
+
+#: package/contents/ui/ConfigGeneral.qml:318
+msgid "Grow Up"
+msgstr "向上放大"
+
+#: package/contents/ui/ConfigGeneral.qml:323
+msgid "Enable background blur"
+msgstr "啟用背景模糊"
+
+#: package/contents/ui/ConfigGeneral.qml:328
+msgid "Dim background behind launcher"
+msgstr "啟動器後方背景變暗"
+
+#: package/contents/ui/ConfigGeneral.qml:333
+msgid "Icon animation:"
+msgstr "圖示動畫："
+
+#: package/contents/ui/ConfigGeneral.qml:334
+msgid "Shake"
+msgstr "搖晃"
+
+#: package/contents/ui/ConfigGeneral.qml:334
+msgid "Grow"
+msgstr "放大"
+
+#: package/contents/ui/ConfigGeneral.qml:334
+msgid "Bounce"
+msgstr "彈跳"
+
+#: package/contents/ui/ConfigGeneral.qml:334
+msgid "Spin"
+msgstr "旋轉"
+
+#: package/contents/ui/ConfigGeneral.qml:334
+msgid "Shuffle"
+msgstr "隨機"
+
+#: package/contents/ui/ConfigGeneral.qml:339
+msgid "Animate icons on open"
+msgstr "開啟時播放圖示動畫"
+
+#: package/contents/ui/ConfigGeneral.qml:345
+msgid "Show power/session buttons"
+msgstr "顯示電源/工作階段按鈕"
+
+#: package/contents/ui/ConfigGeneral.qml:350
+msgid "Show labels on power/session buttons"
+msgstr "在電源/工作階段按鈕顯示標籤"
+
+#: package/contents/ui/ConfigGeneral.qml:356
+msgid "Expand search to bookmarks, files, and websites"
+msgstr "將搜尋範圍擴展至書籤、檔案和網站"
+
+#: package/contents/ui/ConfigGeneral.qml:360
+msgid "Configure Search Plugins…"
+msgstr "設定搜尋外掛程式…"
+
+#: package/contents/ui/ConfigGeneral.qml:367
+msgid "Background opacity:"
+msgstr "背景不透明度："
+
+#: package/contents/ui/ConfigGeneral.qml:383
+msgid "Corner radius:"
+msgstr "圓角半徑："
+
+#: package/contents/ui/ConfigGeneral.qml:384
+msgid "Use custom corner radius"
+msgstr "使用自訂圓角半徑"
+
+#: package/contents/ui/ConfigGeneral.qml:396
+msgid "px"
+msgstr "px"
+
+#: package/contents/ui/ConfigGeneral.qml:408
+msgid "Reset to Defaults"
+msgstr "重設為預設值"
+
+#: package/contents/ui/ConfigGeneral.qml:452
+msgid "Hidden apps:"
+msgstr "隱藏的應用程式："
+
+#: package/contents/ui/ConfigGeneral.qml:459
+msgid ""
+"Right-click any app in the grid to hide it, or type h: in the search bar."
+msgstr "在網格中的任何應用程式點擊右鍵即可將其隱藏，或在搜尋列輸入 h:。"
+
+#: package/contents/ui/ConfigGeneral.qml:466
+msgid "No hidden applications."
+msgstr "沒有隱藏的應用程式。"
+
+#: package/contents/ui/ConfigGeneral.qml:512
+#: package/contents/ui/prefix/PrefixHiddenView.qml:127
+msgid "Unhide"
+msgstr "取消隱藏"
+
+#: package/contents/ui/ConfigGeneral.qml:529
+#: package/contents/ui/prefix/PrefixHiddenView.qml:35
+msgid "Unhide All"
+msgstr "全部取消隱藏"
+
+#: package/contents/ui/GridPanel.qml:868
+msgid "Launch all selected?"
+msgstr "啟動所有選取的項目？"
+
+#: package/contents/ui/GridPanel.qml:870
+msgid "Open %1 application at once?"
+msgid_plural "Open %1 applications at once?"
+msgstr[0] "一次開啟 %1 個應用程式？"
+msgstr[1] "一次開啟 %1 個應用程式？"
+
+#: package/contents/ui/GridPanel.qml:880
+msgid "Hide selected applications?"
+msgstr "隱藏選取的應用程式？"
+
+#: package/contents/ui/GridPanel.qml:882
+msgid ""
+"Hide %1 application from AppGrid? You can unhide it later in Settings → "
+"Hidden Applications."
+msgid_plural ""
+"Hide %1 applications from AppGrid? You can unhide them later in Settings → "
+"Hidden Applications."
+msgstr[0] "從 AppGrid 中隱藏這 %1 個應用程式嗎？您稍後可以在「設定 → 隱藏的應用程式」中取消隱藏。"
+msgstr[1] "從 AppGrid 中隱藏這 %1 個應用程式嗎？您稍後可以在「設定 → 隱藏的應用程式」中取消隱藏。"
+
+#: package/contents/ui/PowerButtons.qml:34
+msgid "Update available"
+msgstr "有可用的更新"
+
+#: package/contents/ui/PowerButtons.qml:39
+msgid "AppGrid %1 is available — click to view release notes"
+msgstr "AppGrid %1 已可用 — 點擊檢視版本資訊"
+
+#: package/contents/ui/PowerButtons.qml:50
+msgid "AppGrid update available"
+msgstr "AppGrid 有可用的更新"
+
+#: package/contents/ui/PowerButtons.qml:66
+#: package/contents/ui/PowerButtons.qml:69
+#: package/contents/ui/PowerButtons.qml:73
+msgid "Sleep"
+msgstr "睡眠"
+
+#: package/contents/ui/PowerButtons.qml:80
+#: package/contents/ui/PowerButtons.qml:83
+#: package/contents/ui/PowerButtons.qml:87
+msgid "Restart"
+msgstr "重新啟動"
+
+#: package/contents/ui/PowerButtons.qml:94
+#: package/contents/ui/PowerButtons.qml:97
+#: package/contents/ui/PowerButtons.qml:101
+msgid "Shut Down"
+msgstr "關機"
+
+#: package/contents/ui/PowerButtons.qml:110
+#: package/contents/ui/PowerButtons.qml:113
+#: package/contents/ui/PowerButtons.qml:119
+msgid "Session"
+msgstr "工作階段"
+
+#: package/contents/ui/PowerButtons.qml:129
+msgid "Lock"
+msgstr "鎖定"
+
+#: package/contents/ui/PowerButtons.qml:136
+msgid "Log Out"
+msgstr "登出"
+
+#: package/contents/ui/PowerButtons.qml:143
+msgid "Switch User"
+msgstr "切換使用者"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:33
+msgid "Type a command to run in terminal"
+msgstr "輸入要在終端機中執行的指令"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:34
+msgid "Type a command to execute"
+msgstr "輸入要執行的指令"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:36
+msgid "Press Enter to run in terminal"
+msgstr "按 Enter 鍵在終端機中執行"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:37
+msgid "Press Enter to execute"
+msgstr "按 Enter 鍵執行"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:17
+msgid "Quick Commands"
+msgstr "快速指令"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:25
+msgid "Run"
+msgstr "執行"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:26
+msgid "Terminal"
+msgstr "終端機"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:27
+msgid "Run Command"
+msgstr "執行指令"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:29
+msgid "Browse"
+msgstr "瀏覽"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:30
+msgid "Browse Files"
+msgstr "瀏覽檔案"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:31
+msgid "Browse Home"
+msgstr "瀏覽家目錄"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:33
+msgid "Tools"
+msgstr "工具"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:34
+msgid "System Info"
+msgstr "系統資訊"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:35
+msgid "Hidden Apps"
+msgstr "隱藏的應用程式"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:36
+msgid "This Help"
+msgstr "此說明"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:124
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 立即啟動搜尋結果"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:26
+msgid "Hidden Applications"
+msgstr "隱藏的應用程式"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:63
+msgid "No hidden applications"
+msgstr "沒有隱藏的應用程式"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:69
+msgid "Right-click any app in the grid to hide it"
+msgstr "在網格中的任何應用程式點擊右鍵即可將其隱藏"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:144
+msgid "%1 hidden application(s)"
+msgstr "%1 個隱藏的應用程式"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:27
+msgid "System Information"
+msgstr "系統資訊"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:77
+msgid "Update %1 available"
+msgstr "可用更新 %1"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:79
+msgid "Check for updates"
+msgstr "檢查更新"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:83
+msgid "Click to open release notes for %1"
+msgstr "點擊開啟 %1 的版本資訊"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:86
+msgid ""
+"Force an immediate check against the AppGrid website (bypasses the 24h "
+"schedule)."
+msgstr "強制立即檢查 AppGrid 網站是否有更新（略過 24 小時排程）。"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:131
+msgid "KAStats (%1 entries; legacy backup: %2)"
+msgstr "KAStats（%1 個項目；舊版備份：%2）"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:133
+msgid "Not migrated (legacy: %1 entries)"
+msgstr "未轉移（舊版：%1 個項目）"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:141
+msgid "Re-run migration"
+msgstr "重新執行轉移"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:142
+msgid ""
+"Clears the migration flag. On next open, AppGrid recomputes the favorites "
+"list as the union of the legacy backup and current KAStats entries. Nothing "
+"is lost; missing legacy items are re-added."
+msgstr "清除轉移標記。在下次開啟時，AppGrid 會重新計算「我的最愛」列表，將其作為舊版備份和目前 KAStats 項目的聯集。資料不會遺失；遺失的舊版項目將被重新加入。"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:156
+msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
+msgstr "轉移標記已清除。請重新開啟 AppGrid 以重新執行轉移作業。"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:174
+msgid "Copied!"
+msgstr "已複製！"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:175
+msgid "Copy to Clipboard"
+msgstr "複製到剪貼簿"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:212
+msgid "Include this info when reporting issues on GitHub"
+msgstr "在 GitHub 報告問題時請包含此資訊"
+
+#: package/contents/ui/RecentAppsHeader.qml:38
+msgid "Recently Used"
+msgstr "最近使用"
+
+#: package/contents/ui/RecentAppsHeader.qml:112
+msgid "All Apps"
+msgstr "所有應用程式"
+
+#: package/contents/ui/SearchBar.qml:38
+msgid "Search apps or type ? for commands"
+msgstr "搜尋應用程式，或輸入 ? 查詢指令"
+
+#: package/contents/ui/SearchBar.qml:64
+msgid "Search applications"
+msgstr "搜尋應用程式"
+
+#: package/contents/ui/SearchBar.qml:79
+msgid "Clear search"
+msgstr "清除搜尋"
+
+#: package/contents/ui/SearchResultsList.qml:183
+msgid "Application"
+msgstr "應用程式"
+
+#: src/appmodel.cpp:240
+msgid "Utilities"
+msgstr "工具程式"
+
+#: src/appmodel.cpp:241
+msgid "Development"
+msgstr "開發"
+
+#: src/appmodel.cpp:242
+msgid "Graphics"
+msgstr "圖形"
+
+#: src/appmodel.cpp:243
+msgid "Internet"
+msgstr "網際網路"
+
+#: src/appmodel.cpp:244
+msgid "Multimedia"
+msgstr "多媒體"
+
+#: src/appmodel.cpp:245
+msgid "Office"
+msgstr "辦公軟體"
+
+#: src/appmodel.cpp:246
+msgid "Games"
+msgstr "遊戲"
+
+#: src/appmodel.cpp:247
+msgid "Education"
+msgstr "教育"
+
+#: src/appmodel.cpp:248
+msgid "System"
+msgstr "系統"
+
+#: src/appmodel.cpp:249
+msgid "Other"
+msgstr "其他"
