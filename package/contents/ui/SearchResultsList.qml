@@ -43,13 +43,15 @@ ListView {
     // stack visually (would otherwise reveal a corner mismatch).
     highlight: PlasmaExtras.Highlight {}
 
-    // Reject hover-selects while the list is scrolling — rows passing under
-    // a stationary cursor would otherwise trigger spurious selects.
-    property double _lastScrollTime: 0
-    onContentYChanged: _lastScrollTime = Date.now()
+    // Reject hover-selects for a short window after the result set changes
+    // or the list scrolls — rows passing under, or appearing under, a
+    // stationary cursor would otherwise trigger spurious selects.
+    property double _lastListChange: 0
+    onContentYChanged: _lastListChange = Date.now()
+    onCountChanged: _lastListChange = Date.now()
 
     function _tryHoverSelect(row, pointerY, idx) {
-        if (Date.now() - _lastScrollTime < 100)
+        if (Date.now() - _lastListChange < 100)
             return
 
         const top = row.mapToItem(listView, 0, 0).y
