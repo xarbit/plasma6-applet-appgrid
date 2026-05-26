@@ -9,6 +9,8 @@ A grid-style application launcher for KDE Plasma 6. Ships as two plasmoids — a
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
 
+> 📊 **Active polls** — help pick the defaults for the next release. [Vote on hover animation, open animation, and more →](https://github.com/xarbit/plasma6-applet-appgrid/discussions/138)
+
 ![AppGrid](images/launcher-main.png)
 
 ![AppGrid Dark](images/launcher-main-dark.png)
