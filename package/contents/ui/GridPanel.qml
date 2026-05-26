@@ -132,8 +132,12 @@ Kirigami.ShadowedRectangle {
     width: Math.min(panelWidth, Screen.width * 0.9)
     height: Math.min(effectiveHeight, Screen.height * 0.9)
 
+    // Set by on_EmptyHiddenStateChanged to skip the next height Behavior
+    // animation. See the comment on that handler for the full rationale.
+    property bool _snapHeight: false
+
     Behavior on height {
-        enabled: cfgHideGridWhenEmpty
+        enabled: cfgHideGridWhenEmpty && !panel._snapHeight
         NumberAnimation {
             duration: Kirigami.Units.longDuration
             easing.type: Easing.OutCubic
@@ -170,13 +174,16 @@ Kirigami.ShadowedRectangle {
     Kirigami.Theme.colorSet: Kirigami.Theme.View
     Kirigami.Theme.inherit: false
 
-    // Compact mode: scrolling anywhere on the compact panel reveals the
-    // grid, mirroring the Down-arrow behavior.
+    // Compact mode: wheel toggles the grid while the search field has
+    // focus and there's no active query — down reveals, up collapses,
+    // mirroring the Down/Up-arrow behavior. Once typing starts, wheel
+    // events fall through so the search results list can scroll.
     WheelHandler {
-        enabled: panel._emptyHiddenState
+        enabled: panel.cfgHideGridWhenEmpty && !panel.isSearching
+                 && searchBar.field.activeFocus
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: function(event) {
-            panel._gridRevealed = true
+            panel._gridRevealed = event.angleDelta.y < 0
             event.accepted = true
         }
     }
@@ -424,12 +431,30 @@ Kirigami.ShadowedRectangle {
     }
 
 
-    // Reset the category bar scroll on close so reopening lands on
-    // the start instead of replaying the previous session's position.
-    // Done on close (not open) so the slide is invisible behind the
-    // fade-out instead of flashing on every open.
+    // Snap the panel height instantly on every compact-mode transition
+    // (open/close, typing into the search bar, revealing the grid) so
+    // children don't reflow inside an animating panel and the blur clip
+    // doesn't chase a shrinking surface during a close fade-out.
+    on_EmptyHiddenStateChanged: {
+        _snapHeight = true
+        Qt.callLater(function() { _snapHeight = false })
+    }
+
+    // Reset everything that should be back to its just-opened state on
+    // every show or hide: the search input (SearchBar.onTextChanged
+    // propagates the empty string into appsModel and runnerSourceModel)
+    // and the compact-mode reveal flag.
+    function _resetSearchSession() {
+        searchBar.text = ""
+        _gridRevealed = false
+    }
+
+    // Done on close (not open) so the height/scroll transitions back to
+    // the compact-mode starting state are invisible behind the fade-out
+    // instead of flashing on the next open.
     function resetOnClose() {
         categoryBar.resetScroll()
+        _resetSearchSession()
     }
 
     // -- Reset state (called when showing the grid) --
@@ -437,7 +462,7 @@ Kirigami.ShadowedRectangle {
         contextMenu.close()
         categoryBar.closeCategoryMenu()
         powerButtons.closeMenus()
-        searchBar.text = ""
+        _resetSearchSession()
 
         // Restore starting tab
         var startFav = cfgShowCategoryBar && cfgStartWithFavorites
@@ -460,7 +485,6 @@ Kirigami.ShadowedRectangle {
         appGrid.recentIndex = -1
         searchResultsList.contentY = searchResultsList.originY
         searchResultsList.currentIndex = 0
-        _gridRevealed = false
         categoryGridView.contentY = 0
         categoryGridView.clearSelection()
         categoryGridView.currentIndex = -1
@@ -659,10 +683,19 @@ Kirigami.ShadowedRectangle {
                         prefixModeView.focusFileList()
                         return
                     }
+                    // Compact mode: first Down reveals the grid and
+                    // keeps focus in the search bar; the next Down then
+                    // takes the normal navigateToResults path.
                     if (panel._emptyHiddenState) {
                         panel._gridRevealed = true
+                        return
                     }
                     navigateToResults()
+                }
+                onMoveUp: {
+                    if (panel.cfgHideGridWhenEmpty && panel._gridRevealed
+                        && !panel.isSearching)
+                        panel._gridRevealed = false
                 }
                 onTabPressed: navigateToResults()
                 onPageUp: if (panel.showSearchResults) searchResultsList.pageUp()
