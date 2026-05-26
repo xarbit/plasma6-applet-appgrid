@@ -586,7 +586,10 @@ Kirigami.ShadowedRectangle {
                     if (panel.isSearching && !panel.isPrefixMode) {
                         if (searchResultsList.count > 1) {
                             searchResultsList.forceActiveFocus()
-                            searchResultsList.currentIndex = 1
+                            // Respect a hover-set position; otherwise skip the
+                            // default top row so Down advances visibly.
+                            if (searchResultsList.currentIndex <= 0)
+                                searchResultsList.currentIndex = 1
                         } else if (searchResultsList.count === 1) {
                             searchResultsList.forceActiveFocus()
                         }
