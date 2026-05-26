@@ -28,7 +28,6 @@ ListView {
     clip: true
     reuseItems: true
 
-    WheelScroller { target: listView }
     currentIndex: count > 0 ? 0 : -1
     keyNavigationEnabled: true
 
@@ -36,6 +35,9 @@ ListView {
     // Keyboard nav animates the highlight; hover-driven selects snap so the
     // highlight tracks the cursor crisply across rows.
     property bool _suppressHighlightAnim: false
+    readonly property var _clearSuppressHighlightAnim: function() {
+        _suppressHighlightAnim = false
+    }
     highlightMoveDuration: (animateHighlight && !_suppressHighlightAnim)
         ? Kirigami.Units.shortDuration : 0
     highlightResizeDuration: 0
@@ -43,22 +45,34 @@ ListView {
     // stack visually (would otherwise reveal a corner mismatch).
     highlight: PlasmaExtras.Highlight {}
 
-    // Snap back to the top whenever results change; a hover-set
-    // currentIndex breaks the `count > 0 ? 0 : -1` binding, so without
-    // this Enter would launch a stale row instead of the new top match.
-    // The list-change timestamp blocks hover-select for a short window
-    // around scrolls and result-set updates so rows passing or appearing
-    // under a stationary cursor don't claim the highlight.
-    property double _lastListChange: 0
-    onContentYChanged: _lastListChange = Date.now()
+    // --- Hover-select gating ---
+    // pointChanged also fires on clicks (same pixel, button-state) and on
+    // rows that scroll under a stationary cursor — the position cache
+    // rejects both. Wheel events flip an override so the highlight does
+    // follow the cursor while wheel-scrolling. Count snap re-establishes
+    // the top match on every search-query change because a hover-set
+    // currentIndex breaks the `count > 0 ? 0 : -1` binding.
+
+    property point _lastHoverPos: Qt.point(-1, -1)
+    property double _lastWheelTime: 0
+
+    WheelScroller {
+        target: listView
+        onWheel: listView._lastWheelTime = Date.now()
+    }
+
     onCountChanged: {
-        _lastListChange = Date.now()
-        if (count > 0)
+        if (count > 0 && searchField && searchField.text.length > 0)
             currentIndex = 0
     }
 
-    function _tryHoverSelect(row, pointerY, idx) {
-        if (Date.now() - _lastListChange < 100)
+    function _tryHoverSelect(row, pointerY, idx, scenePos) {
+        const sentinel = _lastHoverPos.x < 0
+        const samePos = Math.abs(scenePos.x - _lastHoverPos.x) < 1
+                     && Math.abs(scenePos.y - _lastHoverPos.y) < 1
+        const wheelActive = Date.now() - _lastWheelTime < 500
+        _lastHoverPos = scenePos
+        if ((sentinel || samePos) && !wheelActive)
             return
 
         const top = row.mapToItem(listView, 0, 0).y
@@ -67,10 +81,10 @@ ListView {
         const mouseYInList = row.mapToItem(listView, 0, pointerY).y
         const inBottomEdge = mouseYInList > height - Kirigami.Units.smallSpacing * 2
 
-        if (!clipped || !inBottomEdge) {
+        if ((!clipped || !inBottomEdge) && currentIndex !== idx) {
             _suppressHighlightAnim = true
             currentIndex = idx
-            Qt.callLater(() => _suppressHighlightAnim = false)
+            Qt.callLater(_clearSuppressHighlightAnim)
         }
     }
 
@@ -282,8 +296,12 @@ ListView {
         HoverHandler {
             id: rowHover
             cursorShape: Qt.PointingHandCursor
-            onHoveredChanged: if (hovered)
-                listView._tryHoverSelect(resultDelegate, point.position.y, model.index)
+            // pointChanged also catches cursor motion within the row, so
+            // the select retries once the list-change gate releases —
+            // hoveredChanged alone wouldn't re-fire in that case.
+            onPointChanged: if (hovered)
+                listView._tryHoverSelect(resultDelegate, point.position.y,
+                                         model.index, point.scenePosition)
         }
 
         contentItem: RowLayout {

@@ -420,6 +420,7 @@ Kirigami.ShadowedRectangle {
         appGrid.currentIndex = -1
         appGrid.recentIndex = -1
         searchResultsList.contentY = searchResultsList.originY
+        searchResultsList.currentIndex = 0
         categoryGridView.contentY = 0
         categoryGridView.clearSelection()
         categoryGridView.currentIndex = -1
