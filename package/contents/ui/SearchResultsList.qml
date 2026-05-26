@@ -43,12 +43,19 @@ ListView {
     // stack visually (would otherwise reveal a corner mismatch).
     highlight: PlasmaExtras.Highlight {}
 
-    // Reject hover-selects for a short window after the result set changes
-    // or the list scrolls — rows passing under, or appearing under, a
-    // stationary cursor would otherwise trigger spurious selects.
+    // Snap back to the top whenever results change; a hover-set
+    // currentIndex breaks the `count > 0 ? 0 : -1` binding, so without
+    // this Enter would launch a stale row instead of the new top match.
+    // The list-change timestamp blocks hover-select for a short window
+    // around scrolls and result-set updates so rows passing or appearing
+    // under a stationary cursor don't claim the highlight.
     property double _lastListChange: 0
     onContentYChanged: _lastListChange = Date.now()
-    onCountChanged: _lastListChange = Date.now()
+    onCountChanged: {
+        _lastListChange = Date.now()
+        if (count > 0)
+            currentIndex = 0
+    }
 
     function _tryHoverSelect(row, pointerY, idx) {
         if (Date.now() - _lastListChange < 100)
