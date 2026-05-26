@@ -24,6 +24,7 @@ on:
       - "dev.xarbit.appgrid.metainfo.xml"
       - "PKGBUILD"
       - "packages/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
