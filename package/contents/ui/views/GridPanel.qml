@@ -11,7 +11,6 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.plasmoid
 
 import "../controllers"
 import "../widgets"
@@ -33,9 +32,6 @@ Kirigami.ShadowedRectangle {
         categoryGridView.shakeAllIcons()
     }
 
-    // -- Configuration (single source of truth for all config reads) --
-    ConfigCache { id: cfg; source: Plasmoid.configuration }
-
     // C++ models supplied by the owning plasmoid root. Injected here
     // rather than reached through Plasmoid.* so the panel doesn't grab
     // its dependencies from a global and so tests can pass stubs.
@@ -43,14 +39,25 @@ Kirigami.ShadowedRectangle {
     required property var searchModel
     required property var runnerSourceModel
 
+    // Read-write handle to Plasmoid.configuration. Reads route through
+    // ConfigCache (`cfg`) below; writes still target this handle directly
+    // for the launch-bookkeeping flush (recents / launchCounts / knownApps /
+    // hiddenApps / favoritesPortedToKAstats / iconMigratedFrom17).
+    required property var configuration
+
     // Side-effect callbacks supplied by the plasmoid root. notifyAppLaunched
     // broadcasts an app launch to KActivities (one-way courtesy ping for
     // other Plasma launchers); runInTerminal / runCommand execute the
-    // prefix-mode `t:` and `:` shell hooks. Injected so tests can capture
-    // call arguments without spawning real processes.
+    // prefix-mode `t:` and `:` shell hooks; runRunnerResult triggers a
+    // KRunner result by index. Injected so tests can capture call
+    // arguments without spawning real processes.
     required property var notifyAppLaunched
     required property var runInTerminal
     required property var runCommand
+    required property var runRunnerResult
+
+    // -- Configuration (single source of truth for all config reads) --
+    ConfigCache { id: cfg; source: panel.configuration }
     readonly property alias columns: cfg.gridColumns
     readonly property alias rows: cfg.gridRows
     readonly property alias sortMode: cfg.sortMode
@@ -255,7 +262,7 @@ Kirigami.ShadowedRectangle {
     }
 
     Component.onCompleted: {
-        Migrations.migratePowerButtons(Plasmoid.configuration)
+        Migrations.migratePowerButtons(panel.configuration)
         syncModelFromConfig()
     }
     onColumnsChanged: if (appsModel) appsModel.maxRecentApps = columns
@@ -263,13 +270,13 @@ Kirigami.ShadowedRectangle {
     Connections {
         target: panel.appsModel
         function onRecentAppsChanged() {
-            Plasmoid.configuration.recentApps = panel.appsModel.recentApps
+            panel.configuration.recentApps = panel.appsModel.recentApps
         }
         function onLaunchCountsChanged() {
-            Plasmoid.configuration.launchCounts = panel.launchCountsToList(panel.appsModel.launchCounts)
+            panel.configuration.launchCounts = panel.launchCountsToList(panel.appsModel.launchCounts)
         }
         function onKnownAppsChanged() {
-            Plasmoid.configuration.knownApps = panel.appsModel.knownApps
+            panel.configuration.knownApps = panel.appsModel.knownApps
         }
     }
 
@@ -351,7 +358,7 @@ Kirigami.ShadowedRectangle {
         if (item.resultType === "app") {
             launchApp(item.sourceIndex)
         } else {
-            if (Plasmoid.runRunnerResult(item.sourceIndex))
+            if (panel.runRunnerResult(item.sourceIndex))
                 closeRequested()
         }
     }
@@ -831,7 +838,7 @@ Kirigami.ShadowedRectangle {
             appsModel.hideByStorageId(sids[i])
         // Persist the new hidden-list to config so the change survives a
         // plasmoid reload (mirrors the single Hide handler).
-        Plasmoid.configuration.hiddenApps = appsModel.hiddenApps
+        panel.configuration.hiddenApps = appsModel.hiddenApps
     }
 
     Kirigami.PromptDialog {
