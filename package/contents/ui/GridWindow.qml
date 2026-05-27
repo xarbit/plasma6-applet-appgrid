@@ -26,21 +26,6 @@ Window {
 
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
 
-    // Compute window size independently from panel to avoid circular dependencies.
-    // Uses the same icon-based cell estimates as GridPanel.
-    readonly property int columns: Plasmoid.configuration.gridColumns || 7
-    readonly property int rows: Plasmoid.configuration.gridRows || 4
-    readonly property real gridIconSize: {
-        var preset = Plasmoid.configuration.iconSize
-        if (preset === 0) return Kirigami.Units.iconSizes.medium
-        if (preset === 1) return Kirigami.Units.iconSizes.large
-        return Kirigami.Units.iconSizes.huge
-    }
-    readonly property real estCellWidth: gridIconSize + Kirigami.Units.gridUnit * 2 + Kirigami.Units.smallSpacing * 2
-    readonly property real estCellHeight: gridIconSize + Kirigami.Units.gridUnit * 3 + Kirigami.Units.smallSpacing * 2
-    readonly property real estPanelWidth: estCellWidth * columns + Kirigami.Units.largeSpacing * 4
-    readonly property real estPanelHeight: estCellHeight * rows + Kirigami.Units.largeSpacing * 4 + Kirigami.Units.gridUnit * 5
-
     // User vertical nudge for the centered panel. The config value is a
     // percent (-100 = top, 0 = centered, +100 = bottom) of the free space
     // between the full panel and the screen edge, so it scales across
