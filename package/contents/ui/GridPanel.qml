@@ -242,51 +242,47 @@ Kirigami.ShadowedRectangle {
         }
     }
 
-    // Called after KAStatsFavoritesModel.enabled flips true, OR immediately
-    // if it was already true at load time. Idempotent and self-healing:
-    // if a prior migration attempt set the flag without actually populating
-    // KAStats (e.g. attempted while the model was disabled), this retries
-    // when both the model is empty AND the local backup still has entries.
-    // Migration entry point. Idempotent and self-healing: as long as KAStats
-    // holds fewer entries than the local backup, we (re)issue portOldFavorites.
-    // The model finishes loading on a 500ms timer internally; the QAbstractItemModel
-    // signals below pick that up and call _mirrorFavorites again.
+    // One-shot migration from the 1.7.x local backup into KAStats. Runs
+    // once per install (gated by favoritesPortedToKAstats) and never
+    // touches KAStats again afterwards — re-reading and merging back used
+    // to drag Plasma's seeded defaults (Konsole, Discover, Settings) into
+    // the user's favorites on every reopen (#144). Called after
+    // KAStatsFavoritesModel.enabled flips true, or immediately if it was
+    // already true at load time.
     function _maybeMigrateAndMirror() {
         const item = sharedFavoritesLoader.item
         if (!item) return
-        if (favoriteIdRole < 0) {
-            // Role probe hasn't resolved yet — try once it has, on the next
-            // model signal. Skip mirror; nothing useful to do.
+        // Role probe hasn't resolved yet — try once it has on the next
+        // model signal. Skip mirror; nothing useful to do.
+        if (favoriteIdRole < 0) return
+
+        if (Plasmoid.configuration.favoritesPortedToKAstats) {
+            panel._mirrorFavorites()
             return
         }
 
         const local = Plasmoid.configuration.favoriteApps || []
-
-        // Build the union of the local backup and whatever KAStats already
-        // holds. portOldFavorites's saveOrdering OVERWRITES the stored list
-        // with the argument, so passing only the local backup would drop
-        // any favorites added later via context menu. The union preserves
-        // everything.
-        const existing = []
-        for (let i = 0; i < item.count; ++i) {
-            const v = item.data(item.index(i, 0), favoriteIdRole)
-            if (v) existing.push(v.toString())
+        if (local.length > 0) {
+            // 1.7.x upgrade path. KAStatsFavoritesModel has no clear()
+            // and portOldFavorites only re-ranks, so any entry already
+            // in the KActivities backing store (Plasma's seeded defaults
+            // or favourites added during earlier 1.8.x sessions) would
+            // survive and merge into the result — #144. Snapshot the
+            // current ids and removeFavorite each before writing the
+            // user's actual backup.
+            const existing = []
+            for (let i = 0; i < item.count; ++i) {
+                const v = item.data(item.index(i, 0), favoriteIdRole)
+                if (v) existing.push(v.toString())
+            }
+            for (let i = 0; i < existing.length; ++i)
+                item.removeFavorite(existing[i])
+            const prefixed = local.map(function(id) {
+                return FavoriteId.toPrefixed(id)
+            })
+            item.portOldFavorites(prefixed)
         }
-        const seen = {}
-        const merged = []
-        const pushIfNew = function(id) {
-            const prefixed = FavoriteId.toPrefixed(id)
-            if (seen[prefixed]) return
-            seen[prefixed] = true
-            merged.push(prefixed)
-        }
-        // Existing KAStats entries first to preserve their order, then any
-        // local-only ones appended at the end.
-        existing.forEach(pushIfNew)
-        local.forEach(pushIfNew)
-
-        if (merged.length > item.count)
-            item.portOldFavorites(merged)
+        // else: fresh install — leave KAStats's seed alone.
 
         panel._mirrorFavorites()
     }
