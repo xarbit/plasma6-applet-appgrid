@@ -92,4 +92,51 @@ TestCase {
         // help only triggers on leading '?'
         compare(detector("foo?bar").mode, "")
     }
+
+    // --- single-character inputs (boundary cases) ---
+
+    function test_filesRootPath() {
+        // Bare "/" — file browser opens at the filesystem root.
+        var d = detector("/")
+        compare(d.mode, "files")
+        compare(d.argument, "/")
+    }
+
+    function test_tildeWithoutSlashIsNotFiles() {
+        // The files trigger is "~/" — a bare "~" must not steer into
+        // the file browser, otherwise typing "~test" hijacks the search.
+        compare(detector("~").mode, "")
+        compare(detector("~test").mode, "")
+    }
+
+    function test_questionMarkAloneIsHelp() {
+        var d = detector("?")
+        compare(d.mode, "help")
+        compare(d.argument, "")
+    }
+
+    // --- command precedence and content ---
+
+    function test_commandKeepsPipesAndShellSyntax() {
+        // ":foo | grep x" must stay command, not get re-classified by
+        // any character downstream of the leading ":".
+        var d = detector(":ls -la | grep \\.txt")
+        compare(d.mode, "command")
+        compare(d.argument, "ls -la | grep \\.txt")
+    }
+
+    function test_commandKeepsEmbeddedQuestionMark() {
+        // The help trigger is leading "?", so embedded "?" inside a
+        // command argument must not split classification.
+        var d = detector(":echo what?")
+        compare(d.mode, "command")
+        compare(d.argument, "echo what?")
+    }
+
+    function test_filesPathKeepsEmbeddedColon() {
+        // Embedded ":" inside a file path must not flip to command.
+        var d = detector("/tmp/foo:bar")
+        compare(d.mode, "files")
+        compare(d.argument, "/tmp/foo:bar")
+    }
 }
