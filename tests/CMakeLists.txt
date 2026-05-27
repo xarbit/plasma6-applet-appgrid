@@ -73,17 +73,17 @@ find_package(Qt6 OPTIONAL_COMPONENTS QuickTest Quick Qml)
 if(Qt6QuickTest_FOUND)
     # Copy QML components next to the tests so they can be loaded relatively.
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/PrefixDetector.qml
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/PrefixDetector.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/PrefixDetector.qml
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/MnemonicResolver.qml
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/MnemonicResolver.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/MnemonicResolver.qml
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/HoverGate.qml
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/HoverGate.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/HoverGate.qml
         COPYONLY
     )
@@ -98,17 +98,17 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/SelectionState.qml
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/SelectionState.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/SelectionState.qml
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/VisibilityState.qml
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/VisibilityState.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/VisibilityState.qml
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/SearchSessionManager.qml
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/SearchSessionManager.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/SearchSessionManager.qml
         COPYONLY
     )

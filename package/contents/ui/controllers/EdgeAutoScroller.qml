@@ -22,7 +22,7 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-import "js/scrolleasing.js" as ScrollEasing
+import "../js/scrolleasing.js" as ScrollEasing
 
 QtObject {
     id: scroller

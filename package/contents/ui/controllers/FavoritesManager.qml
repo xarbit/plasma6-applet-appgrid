@@ -16,8 +16,8 @@
 import QtQuick
 import org.kde.plasma.plasmoid
 
-import "js/favoriteid.js" as FavoriteId
-import "js/favoritesmigration.js" as FavoritesMigration
+import "../js/favoriteid.js" as FavoriteId
+import "../js/favoritesmigration.js" as FavoritesMigration
 
 Item {
     id: manager

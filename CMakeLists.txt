@@ -137,12 +137,12 @@ set(SHARED_QML_FILES
     ConfigHiddenApps.qml
     ConfigSearch.qml
     ConfigSession.qml
-    DragSource.qml
-    EdgeAutoScroller.qml
-    FavoritesManager.qml
+    controllers/DragSource.qml
+    controllers/EdgeAutoScroller.qml
+    controllers/FavoritesManager.qml
     FavoritesReorderArea.qml
     FavoritesTabDragHover.qml
-    KeyboardShortcuts.qml
+    controllers/KeyboardShortcuts.qml
     js/favoriteid.js
     js/favoritesmigration.js
     js/gridnav.js
@@ -151,23 +151,23 @@ set(SHARED_QML_FILES
     SharedFavoritesProvider.qml
     GridPanel.qml
     GridHighlight.qml
-    HoverGate.qml
-    MnemonicResolver.qml
+    controllers/HoverGate.qml
+    controllers/MnemonicResolver.qml
     OverlayScrollBar.qml
     PowerButtons.qml
     PowerButtonsConfig.qml
-    PrefixDetector.qml
+    controllers/PrefixDetector.qml
     PrefixModeView.qml
     RecentAppsHeader.qml
     ScrollableColumn.qml
     SearchBar.qml
     SearchResultsList.qml
-    SearchSessionManager.qml
-    SelectionState.qml
+    controllers/SearchSessionManager.qml
+    controllers/SelectionState.qml
     ShadowedIcon.qml
-    VisibilityState.qml
+    controllers/VisibilityState.qml
+    controllers/WheelScroller.qml
     ShuffleOverlay.qml
-    WheelScroller.qml
 )
 
 set(SHARED_PREFIX_QML_FILES

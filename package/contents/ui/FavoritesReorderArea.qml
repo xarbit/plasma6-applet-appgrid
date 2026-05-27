@@ -20,6 +20,8 @@
 
 import QtQuick
 import org.kde.plasma.plasmoid
+
+import "controllers"
 import "js/favoriteid.js" as FavoriteId
 
 DropArea {
