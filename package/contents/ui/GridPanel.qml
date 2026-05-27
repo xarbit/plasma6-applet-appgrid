@@ -494,11 +494,20 @@ Kirigami.ShadowedRectangle {
         }
     }
 
+    // One launch step: KActivities broadcast plus the model launch. Shared
+    // by the single-sid path and the bulk path so neither has to repeat
+    // the notify/launch pair (notifyAppLaunched is the one-way broadcast
+    // that lets other Plasma launchers count AppGrid as a contributing
+    // source — we don't read this data back).
+    function _launchOneBySid(sid) {
+        if (!sid) return
+        Plasmoid.notifyAppLaunched(sid)
+        appsModel.launchByStorageId(sid)
+    }
+
     function launchApp(index) {
         if (!appsModel || index < 0)
             return
-        // Broadcast to KActivities so other Plasma launchers count AppGrid
-        // as a contributing source (one-way; we don't read this data back).
         const sid = appsModel.get(index).storageId
         if (sid) Plasmoid.notifyAppLaunched(sid)
         appsModel.launch(index)
@@ -508,8 +517,7 @@ Kirigami.ShadowedRectangle {
     function launchAppByStorageId(sid) {
         if (!appsModel || !sid)
             return
-        Plasmoid.notifyAppLaunched(sid)
-        appsModel.launchByStorageId(sid)
+        _launchOneBySid(sid)
         closeRequested()
     }
 
@@ -954,15 +962,10 @@ Kirigami.ShadowedRectangle {
 
     function _runBulkLaunch(sids) {
         if (!appsModel) return
-        // Loop without going through launchAppByStorageId() since that fires
-        // closeRequested() per app — for N launches we want one close at the
-        // end, not N of them racing with the still-running launches.
-        for (var i = 0; i < sids.length; ++i) {
-            const sid = sids[i]
-            if (!sid) continue
-            Plasmoid.notifyAppLaunched(sid)
-            appsModel.launchByStorageId(sid)
-        }
+        // launchAppByStorageId fires closeRequested per call; the bulk path
+        // calls the inner step directly so the close runs once at the end.
+        for (var i = 0; i < sids.length; ++i)
+            _launchOneBySid(sids[i])
         closeRequested()
     }
 
