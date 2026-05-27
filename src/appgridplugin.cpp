@@ -415,15 +415,11 @@ static QString toolForBackend(const QString &backend)
 }
 
 // True when both the Discover backend plugin and its underlying CLI tool
-// are present. Cached per backend — plugin/tool installs during a session
-// are rare and a stale cache only mis-renders one menu item until restart.
+// are present. Called per right-click context-menu open, so re-resolving
+// each time picks up backend installs without a restart and the lookup
+// (one libraryPaths scan + one findExecutable) is cheap.
 static bool discoverBackendInstalled(const QString &name)
 {
-    static QHash<QString, bool> cache;
-    const auto cached = cache.constFind(name);
-    if (cached != cache.constEnd())
-        return *cached;
-
     const QString relPath = QStringLiteral("discover/") + name + QStringLiteral("-backend.so");
     bool pluginFound = false;
     for (const auto &dir : QCoreApplication::libraryPaths()) {
@@ -434,10 +430,8 @@ static bool discoverBackendInstalled(const QString &name)
     }
 
     const QString tool = toolForBackend(name);
-    const bool functional = pluginFound
+    return pluginFound
         && (tool.isEmpty() || !QStandardPaths::findExecutable(tool).isEmpty());
-    cache.insert(name, functional);
-    return functional;
 }
 
 bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
