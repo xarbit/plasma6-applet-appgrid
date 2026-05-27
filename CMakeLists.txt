@@ -145,6 +145,7 @@ set(SHARED_QML_FILES
     favoriteid.js
     gridnav.js
     migrations.js
+    scrolleasing.js
     SharedFavoritesProvider.qml
     GridPanel.qml
     GridHighlight.qml

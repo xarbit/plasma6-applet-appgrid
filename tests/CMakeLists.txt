@@ -105,6 +105,11 @@ if(Qt6QuickTest_FOUND)
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/SearchSessionManager.qml
         COPYONLY
     )
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/scrolleasing.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/scrolleasing.js
+        COPYONLY
+    )
 
     add_executable(tst_qml qml/main.cpp)
     target_link_libraries(tst_qml PRIVATE Qt6::QuickTest Qt6::Quick Qt6::Qml Qt6::Core)

@@ -22,6 +22,8 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
+import "scrolleasing.js" as ScrollEasing
+
 QtObject {
     id: scroller
 
@@ -52,15 +54,13 @@ QtObject {
         repeat: true
         running: scroller.active
         onTriggered: {
-            const y = scroller.dropArea.drag.y
-            // Distance inside the edge zone, clamped.
-            const inside = scroller.scrollingUp
-                ? (scroller.edge - Math.max(0, y))
-                : (y - (scroller.flickable.height - scroller.edge))
-            const t = Math.max(0, Math.min(1, inside / scroller.edge))
-            // Quadratic easing — gentle near boundary, snappier near edge.
-            const delta = scroller.minPxPerTick
-                + (scroller.maxPxPerTick - scroller.minPxPerTick) * t * t
+            const delta = ScrollEasing.deltaPerTick(
+                scroller.scrollingUp,
+                scroller.dropArea.drag.y,
+                scroller.edge,
+                scroller.flickable.height,
+                scroller.minPxPerTick,
+                scroller.maxPxPerTick)
             const dir = scroller.scrollingUp ? -1 : 1
             const max = Math.max(0,
                 scroller.flickable.contentHeight - scroller.flickable.height)
