@@ -320,21 +320,15 @@ RowLayout {
         Accessible.role: Accessible.Button
     }
 
-    // -- Scroll left arrow --
-    // The slot animates its width to 0 at the edge so the categories
-    // reclaim the space. visible:false would resize the Flickable in a
-    // single frame mid-scroll and snap contentX; an animated width gives
-    // the layout time to settle smoothly. The edge condition is
-    // pre-computed from contentX so the slot grows back the frame the
-    // user pages off.
-    PlasmaComponents.ToolButton {
-        id: scrollLeftBtn
-        readonly property bool _scrolled: catFlick.contentX > 0
-        enabled: _scrolled
-        opacity: _scrolled ? 1 : 0
-        implicitWidth: _scrolled ? categoryBar.scrollArrowWidth : 0
-        icon.name: "arrow-left"
-        onClicked: categoryBar.pageLeft()
+    // The arrow slot animates its width to 0 at the edge so the
+    // categories reclaim the space. visible:false would resize the
+    // Flickable in a single frame mid-scroll and snap contentX; the
+    // animated width gives the layout time to settle smoothly.
+    component ScrollArrow: PlasmaComponents.ToolButton {
+        property bool scrollable: false
+        enabled: scrollable
+        opacity: scrollable ? 1 : 0
+        implicitWidth: scrollable ? categoryBar.scrollArrowWidth : 0
 
         Behavior on implicitWidth {
             NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
@@ -343,8 +337,16 @@ RowLayout {
             NumberAnimation { duration: Kirigami.Units.shortDuration }
         }
 
-        Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
         Accessible.role: Accessible.Button
+    }
+
+    // -- Scroll left arrow --
+    ScrollArrow {
+        id: scrollLeftBtn
+        scrollable: catFlick.contentX > 0
+        icon.name: "arrow-left"
+        onClicked: categoryBar.pageLeft()
+        Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
     }
 
     // -- Scrollable category buttons --
@@ -469,25 +471,13 @@ RowLayout {
         }
     }
 
-    // -- Scroll right arrow -- same animated slot as the left.
-    PlasmaComponents.ToolButton {
+    // -- Scroll right arrow --
+    ScrollArrow {
         id: scrollRightBtn
-        readonly property bool _scrollable: catFlick.contentX + catFlick.width < catFlick.contentWidth - 1
-        enabled: _scrollable
-        opacity: _scrollable ? 1 : 0
-        implicitWidth: _scrollable ? categoryBar.scrollArrowWidth : 0
+        scrollable: catFlick.contentX + catFlick.width < catFlick.contentWidth - 1
         icon.name: "arrow-right"
         onClicked: categoryBar.pageRight()
-
-        Behavior on implicitWidth {
-            NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
-        }
-        Behavior on opacity {
-            NumberAnimation { duration: Kirigami.Units.shortDuration }
-        }
-
         Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
-        Accessible.role: Accessible.Button
     }
 
     // -- Favorites (right) --
