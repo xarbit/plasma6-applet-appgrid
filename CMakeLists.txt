@@ -159,6 +159,7 @@ set(SHARED_QML_FILES
     ScrollableColumn.qml
     SearchBar.qml
     SearchResultsList.qml
+    SearchSessionManager.qml
     SelectionState.qml
     ShadowedIcon.qml
     VisibilityState.qml

@@ -578,9 +578,14 @@ Kirigami.ShadowedRectangle {
 
             SearchBar {
                 id: searchBar
-                property string savedCategory: ""
-                property bool savedFavorites: false
-                property bool filtersCleared: false
+
+                SearchSessionManager {
+                    id: searchSession
+                    appsModel: panel.appsModel
+                    categoryBar: categoryBar
+                    searchAll: Plasmoid.configuration.searchAll !== false
+                    isPrefixMode: panel.isPrefixMode
+                }
 
                 // Debounce KRunner queries — fires after typing pauses
                 Timer {
@@ -597,29 +602,8 @@ Kirigami.ShadowedRectangle {
                 }
 
                 onTextChanged: {
+                    searchSession.update(text)
                     var searching = text.length > 0 && !panel.isPrefixMode
-                    var searchAll = Plasmoid.configuration.searchAll !== false
-
-                    if (searching && searchAll && !filtersCleared) {
-                        savedCategory = panel.appsModel ? panel.appsModel.filterCategory : ""
-                        savedFavorites = categoryBar.favoritesActive
-                        if (panel.appsModel) {
-                            panel.appsModel.filterCategory = ""
-                            panel.appsModel.showFavoritesOnly = false
-                        }
-                        filtersCleared = true
-                    } else if (!searching && filtersCleared) {
-                        if (panel.appsModel) {
-                            panel.appsModel.filterCategory = savedCategory
-                            panel.appsModel.showFavoritesOnly = savedFavorites
-                        }
-                        categoryBar.favoritesActive = savedFavorites
-                        filtersCleared = false
-                    }
-
-                    // App filter is instant (cheap string matching)
-                    if (panel.appsModel)
-                        panel.appsModel.searchText = panel.isPrefixMode ? "" : text
 
                     // KRunner query is debounced (expensive D-Bus calls), and
                     // only runs when the user opted into extra runners.
