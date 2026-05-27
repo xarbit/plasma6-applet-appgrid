@@ -146,6 +146,7 @@ set(SHARED_QML_FILES
     migrations.js
     SharedFavoritesProvider.qml
     GridPanel.qml
+    GridHighlight.qml
     HoverGate.qml
     MnemonicResolver.qml
     OverlayScrollBar.qml

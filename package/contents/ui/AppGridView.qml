@@ -435,18 +435,9 @@ GridView {
     }
 
     highlight: Item {
-        Rectangle {
-            anchors.centerIn: parent
-            width: gridView.cellWidth - Kirigami.Units.smallSpacing * 2
-            height: gridView.cellHeight - Kirigami.Units.smallSpacing * 2
-            radius: Kirigami.Units.cornerRadius
-            color: Qt.rgba(Kirigami.Theme.highlightColor.r,
-                           Kirigami.Theme.highlightColor.g,
-                           Kirigami.Theme.highlightColor.b, 0.2)
-            border.width: 1
-            border.color: Qt.rgba(Kirigami.Theme.highlightColor.r,
-                                  Kirigami.Theme.highlightColor.g,
-                                  Kirigami.Theme.highlightColor.b, 0.6)
+        GridHighlight {
+            cellWidth: gridView.cellWidth
+            cellHeight: gridView.cellHeight
             visible: gridView.currentIndex >= 0 && gridView.activeFocus
         }
     }

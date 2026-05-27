@@ -325,19 +325,9 @@ Flickable {
 
                             readonly property int flatIndex: sectionColumn.globalStartIndex + index
 
-                            // Highlight for keyboard navigation
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: categoryGrid.cellWidth - Kirigami.Units.smallSpacing * 2
-                                height: categoryGrid.cellHeight - Kirigami.Units.smallSpacing * 2
-                                radius: Kirigami.Units.cornerRadius
-                                color: Qt.rgba(Kirigami.Theme.highlightColor.r,
-                                               Kirigami.Theme.highlightColor.g,
-                                               Kirigami.Theme.highlightColor.b, 0.2)
-                                border.width: 1
-                                border.color: Qt.rgba(Kirigami.Theme.highlightColor.r,
-                                                      Kirigami.Theme.highlightColor.g,
-                                                      Kirigami.Theme.highlightColor.b, 0.6)
+                            GridHighlight {
+                                cellWidth: categoryGrid.cellWidth
+                                cellHeight: categoryGrid.cellHeight
                                 visible: categoryGrid.activeFocus && categoryGrid.currentIndex === flatIndex
                             }
 
