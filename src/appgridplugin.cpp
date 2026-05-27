@@ -674,38 +674,6 @@ QVariantMap UnifiedSearchModel::get(int row) const
     return map;
 }
 
-// --- RunnerFilterModel ---
-
-RunnerFilterModel::RunnerFilterModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
-{
-}
-
-void RunnerFilterModel::setAppModel(AppFilterModel *model)
-{
-    m_appModel = model;
-    // Re-filter when app search results change
-    connect(m_appModel, &QAbstractItemModel::modelReset, this, &RunnerFilterModel::invalidate);
-    connect(m_appModel, &QAbstractItemModel::layoutChanged, this, &RunnerFilterModel::invalidate);
-}
-
-bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
-{
-    if (!m_appModel)
-        return true;
-
-    const auto idx = sourceModel()->index(sourceRow, 0, sourceParent);
-    const auto runnerName = idx.data(Qt::DisplayRole).toString();
-
-    // Check if any visible app result has the same name
-    for (int i = 0; i < m_appModel->rowCount(); ++i) {
-        const auto appIdx = m_appModel->index(i, 0);
-        if (appIdx.data(AppModel::NameRole).toString().compare(runnerName, Qt::CaseInsensitive) == 0)
-            return false;
-    }
-    return true;
-}
-
 // --- UnifiedSearchModel ---
 
 UnifiedSearchModel::UnifiedSearchModel(QObject *parent)

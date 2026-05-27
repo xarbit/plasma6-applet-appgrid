@@ -11,6 +11,7 @@
 
 #include "appmodel.h"
 #include "appfiltermodel.h"
+#include "runnerfiltermodel.h"
 
 #ifdef APPGRID_UNIVERSAL_BUILD
 #include "updatechecker.h"
@@ -18,25 +19,6 @@
 
 class QScreen;
 class QWindow;
-
-/**
- * @brief Proxy that filters KRunner results already present in AppFilterModel.
- *
- * Hides runner results whose display name matches a visible app result,
- * preventing duplicate entries in the search view.
- */
-class RunnerFilterModel : public QSortFilterProxyModel {
-    Q_OBJECT
-public:
-    explicit RunnerFilterModel(QObject *parent = nullptr);
-    void setAppModel(AppFilterModel *model);
-
-protected:
-    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
-
-private:
-    AppFilterModel *m_appModel = nullptr;
-};
 
 /**
  * @brief Unified search model combining app results and KRunner results.
