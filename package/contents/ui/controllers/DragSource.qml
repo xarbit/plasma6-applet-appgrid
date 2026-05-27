@@ -42,7 +42,7 @@ Item {
     // was part of a multi-selection (length > 1). FavoritesReorderArea reads
     // this to skip internal reorder for multi-drags (drag-out only) and the
     // drop target sees the full URL list via Drag.mimeData "text/uri-list".
-    property var sourceStorageIds: []
+    property list<string> sourceStorageIds: []
 
     readonly property bool isDragInFlight: source.Drag.active
 
@@ -64,7 +64,7 @@ Item {
         width: 64
         height: 64
         visible: true
-        property var icons: []
+        property list<string> icons: []
 
         Repeater {
             model: Math.min(stackComposite.icons.length, 3)

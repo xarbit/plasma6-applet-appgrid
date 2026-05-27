@@ -48,8 +48,8 @@ Column {
     // Parallel URL / icon lists for the current selection, used by the
     // drag handler so dropping a recent that's part of a multi-selection
     // carries the full bundle to the target.
-    property var multiSelectionUrls: []
-    property var multiSelectionIcons: []
+    property list<string> multiSelectionUrls: []
+    property list<string> multiSelectionIcons: []
 
     spacing: Kirigami.Units.smallSpacing
 

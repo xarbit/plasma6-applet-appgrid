@@ -823,7 +823,7 @@ Kirigami.ShadowedRectangle {
 
     Kirigami.PromptDialog {
         id: bulkLaunchDialog
-        property var pendingSids: []
+        property list<string> pendingSids: []
         title: i18nd("dev.xarbit.appgrid", "Launch all selected?")
         subtitle: i18ndp("dev.xarbit.appgrid",
             "Open %1 application at once?",
@@ -835,7 +835,7 @@ Kirigami.ShadowedRectangle {
 
     Kirigami.PromptDialog {
         id: bulkHideDialog
-        property var pendingSids: []
+        property list<string> pendingSids: []
         title: i18nd("dev.xarbit.appgrid", "Hide selected applications?")
         subtitle: i18ndp("dev.xarbit.appgrid",
             "Hide %1 application from AppGrid? You can unhide it later in Settings → Hidden Applications.",

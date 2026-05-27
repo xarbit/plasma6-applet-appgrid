@@ -33,7 +33,7 @@ RowLayout {
     readonly property var hiddenButtons: Plasmoid.configuration.powerButtonsHidden || []
     function isHidden(id) { return hiddenButtons.indexOf(id) >= 0 }
 
-    readonly property var defaultSlotOrder: ["sleep", "restart", "shutdown", "session"]
+    readonly property list<string> defaultSlotOrder: ["sleep", "restart", "shutdown", "session"]
 
     // Top-level slots in configured order, hidden ones removed. An empty
     // config means "default order" (kcfg StringList defaults are unreliable).

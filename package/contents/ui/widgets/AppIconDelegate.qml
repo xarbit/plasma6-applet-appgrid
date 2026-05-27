@@ -52,11 +52,11 @@ Item {
     // selection. Populated by the owning GridView only when `selected` is
     // true so each delegate carries the bundle it would advertise if a
     // drag started here. Empty/length-1 falls back to single-item drag.
-    property var multiSelectionSids: []
-    property var multiSelectionUrls: []
+    property list<string> multiSelectionSids: []
+    property list<string> multiSelectionUrls: []
     // Icon names parallel to multiSelectionSids — DragSource uses these to
     // render the stacked drag-preview pixmap for multi-item drags.
-    property var multiSelectionIcons: []
+    property list<string> multiSelectionIcons: []
     signal clicked(var mouse)
 
     // Visual icon override for shuffle animation (set externally by the grid)

@@ -43,7 +43,7 @@ Item {
     property string popupDesktopFile: ""
     property bool popupIsFavorite: false
     property var popupActions: []
-    property var popupSelectedSids: []
+    property list<string> popupSelectedSids: []
     property bool popupIsSelected: false
     readonly property bool isMultiSelect: popupIsSelected
                                           && popupSelectedSids.length >= 2

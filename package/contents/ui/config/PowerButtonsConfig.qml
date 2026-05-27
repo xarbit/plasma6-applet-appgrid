@@ -32,7 +32,7 @@ ColumnLayout {
         "switchuser": i18nd("dev.xarbit.appgrid", "Switch User")
     })
 
-    readonly property var defaultSlotOrder: ["sleep", "restart", "shutdown", "session"]
+    readonly property list<string> defaultSlotOrder: ["sleep", "restart", "shutdown", "session"]
 
     function _isHidden(id) {
         return (root.hiddenButtons || []).indexOf(id) >= 0
