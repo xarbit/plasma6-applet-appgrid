@@ -67,13 +67,25 @@ ListView {
     }
 
     function _tryHoverSelect(row, pointerY, idx, scenePos) {
-        const sentinel = _lastHoverPos.x < 0
-        const samePos = Math.abs(scenePos.x - _lastHoverPos.x) < 1
-                     && Math.abs(scenePos.y - _lastHoverPos.y) < 1
         const wheelActive = Date.now() - _lastWheelTime < 500
+        if (!wheelActive) {
+            // First event after reset — anchor without selecting so a
+            // stationary cursor doesn't auto-claim the highlight.
+            if (_lastHoverPos.x < 0) {
+                _lastHoverPos = scenePos
+                return
+            }
+            // Click events keep the same scenePos as the last motion;
+            // sub-1px drift on fractionally-scaled screens looks the
+            // same. Don't update the anchor so genuine slow motion can
+            // accumulate past the threshold instead of resetting each
+            // event (#145).
+            const samePos = Math.abs(scenePos.x - _lastHoverPos.x) < 1
+                         && Math.abs(scenePos.y - _lastHoverPos.y) < 1
+            if (samePos)
+                return
+        }
         _lastHoverPos = scenePos
-        if ((sentinel || samePos) && !wheelActive)
-            return
 
         const top = row.mapToItem(listView, 0, 0).y
         const bottom = row.mapToItem(listView, 0, row.height).y
