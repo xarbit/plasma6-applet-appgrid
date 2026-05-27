@@ -222,12 +222,12 @@ QStringList AppFilterModel::recentApps() const { return m_recentApps; }
 
 void AppFilterModel::setRecentApps(const QStringList &list)
 {
-    bool changed = (m_recentApps != list);
+    if (m_recentApps == list)
+        return;
     m_recentApps = list;
     rebuildRecentSet();
     invalidate();
-    if (changed)
-        emit recentAppsChanged();
+    emit recentAppsChanged();
 }
 
 int AppFilterModel::maxRecentApps() const { return m_maxRecentApps; }
