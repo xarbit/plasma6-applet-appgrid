@@ -61,7 +61,7 @@ package-panel/contents/ui/js/scrolleasing.js
 package-panel/contents/ui/GridPanel.qml
 package-panel/contents/ui/PrefixModeView.qml
 package-panel/contents/ui/SearchResultsList.qml
-package-panel/contents/ui/SharedFavoritesProvider.qml
+package-panel/contents/ui/models/SharedFavoritesProvider.qml
 package-panel/contents/ui/widgets/AppContextMenu.qml
 package-panel/contents/ui/widgets/AppIconDelegate.qml
 package-panel/contents/ui/widgets/CategoryBar.qml

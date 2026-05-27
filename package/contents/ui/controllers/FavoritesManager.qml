@@ -53,7 +53,7 @@ Item {
     Loader {
         id: sharedFavoritesLoader
         active: true
-        source: "SharedFavoritesProvider.qml"
+        source: "../models/SharedFavoritesProvider.qml"
         onStatusChanged: {
             if (status === Loader.Error) {
                 console.warn("AppGrid: org.kde.plasma.private.kicker plugin missing — favorites disabled")

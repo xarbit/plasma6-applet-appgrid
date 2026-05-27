@@ -153,8 +153,8 @@ set(SHARED_QML_FILES
     js/migrations.js
     js/scrolleasing.js
     PrefixModeView.qml
+    models/SharedFavoritesProvider.qml
     SearchResultsList.qml
-    SharedFavoritesProvider.qml
     widgets/AppContextMenu.qml
     widgets/AppIconDelegate.qml
     widgets/CategoryBar.qml
