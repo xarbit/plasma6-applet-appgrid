@@ -121,12 +121,15 @@ Kirigami.ShadowedRectangle {
     // power buttons), no slack for a category bar or grid below.
     readonly property real compactHeight: headerRow.implicitHeight + panelMargin * 2
     readonly property real effectiveHeight: _emptyHiddenState ? compactHeight : panelHeight
-    // Half the delta between current and compact heights — compact mode
-    // expands the panel downward by this amount, keeping the search bar
-    // pinned where it sat when compact. Consumed by GridWindow for the
-    // panel translate and the blur clip; zero when the feature is off.
+    // Negative half-delta between the current and full height. With this
+    // offset the expanded panel sits at the standard centered position
+    // (shift = 0); the compact panel slides up to where the full panel
+    // would put its search bar, so the visible search results stay
+    // vertically centered when the user starts typing. Consumed by
+    // GridWindow for the panel translate and the blur clip; zero when
+    // compact mode is off.
     readonly property real compactShift: cfgHideGridWhenEmpty
-        ? (height - compactHeight) / 2
+        ? (height - panelHeight) / 2
         : 0
 
     width: Math.min(panelWidth, Screen.width * 0.9)
