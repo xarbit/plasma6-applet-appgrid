@@ -27,8 +27,8 @@ Built, signed, and published by the AppGrid maintainer. These are the channels s
 | **Arch Linux + derivatives** (AUR) | `yay -S plasma6-applets-appgrid` |
 | **Ubuntu 25.10+** (Launchpad PPA) | `sudo add-apt-repository ppa:xarbit/plasma-applet-appgrid && sudo apt install plasma-applet-appgrid` |
 | **Fedora** (Copr) | `sudo dnf copr enable scujas/plasma-applet-appgrid && sudo dnf install plasma-applet-appgrid` |
-| **Immutable distros** (KDE Linux, Kinoite, Bazzite, Aurora, Kalpa, SteamOS) | Universal `~/.local/` tarball — see [INSTALL.TXT](packages/universal/INSTALL.TXT) |
-| **Nix / NixOS** | Flake — see [packages/nix/README.md](packages/nix/README.md) |
+| **Immutable distros** (KDE Linux, Kinoite, Bazzite, Aurora, Kalpa, SteamOS) | Universal `~/.local/` tarball — see [INSTALL.TXT](packaging/universal/INSTALL.TXT) |
+| **Nix / NixOS** | Flake — see [packaging/nix/README.md](packaging/nix/README.md) |
 
 After install: right-click the panel launcher → **Show Alternatives** → **AppGrid**.
 
@@ -50,7 +50,7 @@ If you maintain an AppGrid package for a distro not listed here, open an issue a
 
 ## Build from source
 
-Requires Plasma 6.0+ (6.4+ recommended) and the KDE Frameworks 6 development headers — see [`PKGBUILD`](PKGBUILD) for the Arch list, or [`packages/`](packages/) for the Fedora spec and Ubuntu `debian/` packaging.
+Requires Plasma 6.0+ (6.4+ recommended) and the KDE Frameworks 6 development headers — see [`PKGBUILD`](PKGBUILD) for the Arch list, or [`packaging/`](packaging/) for the Fedora spec and Ubuntu `debian/` packaging.
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr

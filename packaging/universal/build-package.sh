@@ -9,7 +9,7 @@
 # CI uses this; locally you can run it after a full build to sanity-check.
 #
 # Usage:
-#   packages/universal/build-package.sh <version> <arch> <build-dir> <out-dir>
+#   packaging/universal/build-package.sh <version> <arch> <build-dir> <out-dir>
 
 set -eu
 
@@ -43,12 +43,12 @@ DESTDIR="$PAYLOAD_ROOT/__prefix__" \
 mv "$PAYLOAD_ROOT/__prefix__/.local/"* "$PAYLOAD_ROOT/"
 rm -rf "$PAYLOAD_ROOT/__prefix__"
 
-cp "$PROJECT_ROOT/packages/universal/install.sh"   "$PKG_ROOT/"
-cp "$PROJECT_ROOT/packages/universal/install.py"   "$PKG_ROOT/"
-cp "$PROJECT_ROOT/packages/universal/uninstall.sh" "$PKG_ROOT/"
-cp "$PROJECT_ROOT/packages/universal/uninstall.py" "$PKG_ROOT/"
-cp "$PROJECT_ROOT/packages/universal/distros.toml" "$PKG_ROOT/"
-cp "$PROJECT_ROOT/packages/universal/INSTALL.TXT"  "$PKG_ROOT/"
+cp "$PROJECT_ROOT/packaging/universal/install.sh"   "$PKG_ROOT/"
+cp "$PROJECT_ROOT/packaging/universal/install.py"   "$PKG_ROOT/"
+cp "$PROJECT_ROOT/packaging/universal/uninstall.sh" "$PKG_ROOT/"
+cp "$PROJECT_ROOT/packaging/universal/uninstall.py" "$PKG_ROOT/"
+cp "$PROJECT_ROOT/packaging/universal/distros.toml" "$PKG_ROOT/"
+cp "$PROJECT_ROOT/packaging/universal/INSTALL.TXT"  "$PKG_ROOT/"
 chmod +x "$PKG_ROOT/install.sh" "$PKG_ROOT/install.py" \
          "$PKG_ROOT/uninstall.sh" "$PKG_ROOT/uninstall.py"
 

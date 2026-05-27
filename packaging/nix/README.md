@@ -1,7 +1,7 @@
 # Nix / NixOS
 
 AppGrid ships a standalone flake at the repository root (`flake.nix`) and the
-derivation under `packages/nix/package.nix`. Both classic Nix and flake-based
+derivation under `packaging/nix/package.nix`. Both classic Nix and flake-based
 workflows are supported.
 
 > **Note:** AppGrid is a Plasma *applet* — a `.so` plugin plus QML, not a
@@ -69,14 +69,14 @@ their `pkgs`:
 ## Classic Nix (no flakes)
 
 ```bash
-nix-build packages/nix/package.nix
+nix-build packaging/nix/package.nix
 ```
 
 Or with `callPackage` from your own overlay:
 
 ```nix
 self: super: {
-  appgrid = super.callPackage ./packages/nix/package.nix { };
+  appgrid = super.callPackage ./packaging/nix/package.nix { };
 }
 ```
 

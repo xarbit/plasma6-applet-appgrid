@@ -64,7 +64,7 @@ jobs:
           set -e
           export CHANGELOG_DATE="$(date '+%a %b %d %Y')"
           envsubst '$APP_VERSION $PKG_VERSION $CHANGELOG_DATE' \
-            < packages/rpm/appgrid.spec.in > appgrid.spec
+            < packaging/rpm/appgrid.spec.in > appgrid.spec
           git archive --format=tar.gz \
             --prefix="plasma-applet-appgrid-${PKG_VERSION}/" \
             -o "plasma-applet-appgrid-${PKG_VERSION}.tar.gz" HEAD
@@ -127,7 +127,7 @@ jobs:
             *) echo "::error::unknown channel ${{ inputs.channel }}"; exit 1 ;;
           esac
           # dpkg-buildpackage needs debian/ at the source-tree root.
-          mv packages/deb/debian debian
+          mv packaging/deb/debian debian
           # ~<series> keeps each per-series upload distinct and correctly
           # ordered; native source format -> no Debian revision.
           DEB_VERSION="${{ inputs.pkg_version }}~${{ matrix.series.ver }}"
@@ -167,14 +167,14 @@ jobs:
               echo "aur_pkg=plasma6-applets-appgrid" >> "$GITHUB_ENV"
               export PKGVER="${{ inputs.version }}"
               export SHA256="$(curl -fsSL "$REPO/archive/refs/tags/v${PKGVER}.tar.gz" | sha256sum | cut -d' ' -f1)"
-              envsubst '$PKGVER $SHA256' < packages/aur/PKGBUILD.in > PKGBUILD
+              envsubst '$PKGVER $SHA256' < packaging/aur/PKGBUILD.in > PKGBUILD
               ;;
             rc)
               echo "aur_pkg=plasma6-applets-appgrid-rc" >> "$GITHUB_ENV"
               export TAG="v${{ inputs.version }}"
               export PKGVER="$(echo '${{ inputs.version }}' | sed 's/-/_/g; s/+.*//')"
               export SHA256="$(curl -fsSL "$REPO/archive/refs/tags/${TAG}.tar.gz" | sha256sum | cut -d' ' -f1)"
-              envsubst '$PKGVER $TAG $SHA256' < packages/aur/PKGBUILD-rc.in > PKGBUILD
+              envsubst '$PKGVER $TAG $SHA256' < packaging/aur/PKGBUILD-rc.in > PKGBUILD
               ;;
             dev)
               echo "aur_pkg=plasma6-applets-appgrid-git" >> "$GITHUB_ENV"
@@ -183,7 +183,7 @@ jobs:
               # the AUR page shows it: base.r<commit-count>.g<short-sha>.
               BASE="$(grep -oP 'project\(AppGrid VERSION \K[0-9.]+' CMakeLists.txt)"
               export PKGVER="${BASE}.r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
-              envsubst '$PKGVER' < packages/aur/PKGBUILD-git.in > PKGBUILD
+              envsubst '$PKGVER' < packaging/aur/PKGBUILD-git.in > PKGBUILD
               ;;
             *) echo "::error::unknown channel ${{ inputs.channel }}"; exit 1 ;;
           esac

@@ -144,7 +144,7 @@ jobs:
                   -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
               cmake --build build -j$(nproc)
               mkdir -p out
-              bash packages/universal/build-package.sh \
+              bash packaging/universal/build-package.sh \
                 "$APP_VERSION" "$ARCH" build out
             '
 
