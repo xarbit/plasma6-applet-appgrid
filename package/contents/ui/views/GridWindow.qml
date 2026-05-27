@@ -14,6 +14,8 @@ import QtQuick.Window
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
+import "../controllers"
+
 Window {
     id: root
 
@@ -24,6 +26,8 @@ Window {
     // (dragSource, isDragInFlight, closeWindow(), …).
     property var appletInterface: null
 
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
 
     // User vertical nudge for the centered panel. The config value is a
@@ -33,7 +37,7 @@ Window {
     // panelHeight (not panel.height) so the compact-mode height animation
     // doesn't drag the panel up or down as it expands.
     readonly property real panelVerticalOffset: {
-        var pct = Plasmoid.configuration.verticalOffset || 0
+        var pct = cfg.verticalOffset
         var slack = Math.max(0, (root.height - panel.panelHeight) / 2)
         return Math.round(pct / 100 * slack)
     }
@@ -67,7 +71,7 @@ Window {
     }
 
     function applyBlur() {
-        if (Plasmoid.configuration.enableBlur && visible) {
+        if (cfg.enableBlur && visible) {
             const r = _panelRect()
             Plasmoid.setBlurBehind(root, true, r.x, r.y, r.w, r.h, panel.radius)
         } else {
@@ -110,11 +114,8 @@ Window {
         "../animations/SlamAnimation.qml",       // 9
         "../animations/GrowUpAnimation.qml"      // 10
     ]
-    readonly property int animStyle: {
-        var idx = Plasmoid.configuration.openAnimation
-        if (idx === undefined || idx === null) idx = 2
-        return Math.max(0, Math.min(idx, animationFiles.length - 1))
-    }
+    readonly property int animStyle: Math.max(0, Math.min(cfg.openAnimation,
+                                                          animationFiles.length - 1))
 
     Loader {
         id: animLoader
@@ -124,7 +125,7 @@ Window {
             item.openFinished.connect(function() {
                 if (!item.blurBeforeAnimation)
                     applyBlur()
-                if (Plasmoid.configuration.shakeOnOpen)
+                if (cfg.shakeOnOpen)
                     panel.shakeAllIcons()
             })
             item.closeFinished.connect(function() {
@@ -169,7 +170,7 @@ Window {
             windowConfigured = true
         }
 
-        var useActive = Plasmoid.configuration.openOnActiveScreen !== false
+        var useActive = cfg.openOnActiveScreen
 
         if (Plasmoid.isWayland) {
             Plasmoid.updateWindowScreen(root, useActive)
@@ -200,7 +201,7 @@ Window {
             visible = true
             requestActivate()
             applyBlur()
-            if (Plasmoid.configuration.shakeOnOpen)
+            if (cfg.shakeOnOpen)
                 panel.shakeAllIcons()
         } else {
             panel.opacity = 0.0
@@ -296,9 +297,7 @@ Window {
     Rectangle {
         id: dimOverlay
         anchors.fill: parent
-        color: Plasmoid.configuration.dimBackground !== false
-               ? Qt.rgba(0, 0, 0, 0.35)
-               : "transparent"
+        color: cfg.dimBackground ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
         opacity: 0
 
         MouseArea {

@@ -14,16 +14,18 @@ import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 
+import "../controllers"
+
 Item {
     id: root
 
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
     readonly property bool vertical: (Plasmoid.formFactor === PlasmaCore.Types.Vertical)
-    readonly property bool useCustomButtonImage: (Plasmoid.configuration.useCustomButtonImage
-        && Plasmoid.configuration.customButtonImage.length !== 0)
-    readonly property bool shouldHaveLabel: !vertical
-        && Plasmoid.configuration.menuLabel !== undefined
-        && Plasmoid.configuration.menuLabel !== ""
-    readonly property bool shouldHaveIcon: vertical || Plasmoid.configuration.icon !== ""
+    readonly property bool useCustomButtonImage: cfg.useCustomButtonImage
+        && cfg.customButtonImage.toString().length !== 0
+    readonly property bool shouldHaveLabel: !vertical && cfg.menuLabel.length > 0
+    readonly property bool shouldHaveIcon: vertical || cfg.icon.length > 0
         || useCustomButtonImage
 
     readonly property bool tooSmall: Plasmoid.formFactor === PlasmaCore.Types.Horizontal
@@ -79,9 +81,7 @@ Item {
             visible: root.shouldHaveIcon
 
             active: mouseArea.containsMouse
-            source: root.useCustomButtonImage
-                ? Plasmoid.configuration.customButtonImage
-                : Plasmoid.configuration.icon
+            source: root.useCustomButtonImage ? cfg.customButtonImage : cfg.icon
 
             roundToIconSize: !root.useCustomButtonImage
                 || (root.vertical ? implicitHeight / implicitWidth : implicitWidth / implicitHeight) === 1
@@ -98,7 +98,7 @@ Item {
 
             visible: root.shouldHaveLabel
 
-            text: Plasmoid.configuration.menuLabel || ""
+            text: cfg.menuLabel
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.NoWrap

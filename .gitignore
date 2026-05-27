@@ -47,6 +47,7 @@ package-panel/contents/ui/config/ConfigHiddenApps.qml
 package-panel/contents/ui/config/ConfigSearch.qml
 package-panel/contents/ui/config/ConfigSession.qml
 package-panel/contents/ui/config/PowerButtonsConfig.qml
+package-panel/contents/ui/controllers/ConfigCache.qml
 package-panel/contents/ui/controllers/DragSource.qml
 package-panel/contents/ui/controllers/EdgeAutoScroller.qml
 package-panel/contents/ui/controllers/FavoritesManager.qml

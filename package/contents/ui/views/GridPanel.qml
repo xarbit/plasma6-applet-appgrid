@@ -34,19 +34,21 @@ Kirigami.ShadowedRectangle {
     }
 
     // -- Configuration (single source of truth for all config reads) --
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
     readonly property var appsModel: Plasmoid ? Plasmoid.appsModel : null
-    readonly property int columns: Plasmoid.configuration.gridColumns || 7
-    readonly property int rows: Plasmoid.configuration.gridRows || 4
-    readonly property int sortMode: Plasmoid.configuration.sortMode || 0
-    readonly property bool cfgShowCategoryBar: Plasmoid.configuration.showCategoryBar !== false
-    readonly property bool cfgStartWithFavorites: Plasmoid.configuration.startWithFavorites !== false
-    readonly property bool cfgShowRecentApps: Plasmoid.configuration.showRecentApps !== false
-    readonly property bool cfgShowDividers: Plasmoid.configuration.showDividers !== false
-    readonly property bool cfgShowTooltips: Plasmoid.configuration.showTooltips !== false
-    readonly property bool cfgShowNewAppBadge: Plasmoid.configuration.showNewAppBadge !== false
-    readonly property bool cfgHideLabelsOnFavorites: Plasmoid.configuration.hideLabelsOnFavorites === true
-    readonly property bool cfgUseExtraRunners: Plasmoid.configuration.useExtraRunners !== false
-    readonly property bool cfgHideGridWhenEmpty: Plasmoid.configuration.hideGridWhenEmpty === true
+    readonly property alias columns: cfg.gridColumns
+    readonly property alias rows: cfg.gridRows
+    readonly property alias sortMode: cfg.sortMode
+    readonly property alias cfgShowCategoryBar: cfg.showCategoryBar
+    readonly property alias cfgStartWithFavorites: cfg.startWithFavorites
+    readonly property alias cfgShowRecentApps: cfg.showRecentApps
+    readonly property alias cfgShowDividers: cfg.showDividers
+    readonly property alias cfgShowTooltips: cfg.showTooltips
+    readonly property alias cfgShowNewAppBadge: cfg.showNewAppBadge
+    readonly property alias cfgHideLabelsOnFavorites: cfg.hideLabelsOnFavorites
+    readonly property alias cfgUseExtraRunners: cfg.useExtraRunners
+    readonly property alias cfgHideGridWhenEmpty: cfg.hideGridWhenEmpty
 
     // -- Sort helpers --
     readonly property bool isSortByCategory: sortMode === 2
@@ -98,7 +100,7 @@ Kirigami.ShadowedRectangle {
 
     // -- Icon size mapping (0=Small/medium, 1=Medium/large, 2=Large/huge) --
     readonly property real gridIconSize: {
-        var preset = Plasmoid.configuration.iconSize
+        var preset = cfg.iconSize
         if (preset === 0) return Kirigami.Units.iconSizes.medium
         if (preset === 1) return Kirigami.Units.iconSizes.large
         return Kirigami.Units.iconSizes.huge
@@ -163,11 +165,9 @@ Kirigami.ShadowedRectangle {
     Layout.minimumWidth: nativePopup ? Kirigami.Units.gridUnit * 12 : width
     Layout.minimumHeight: nativePopup ? Kirigami.Units.gridUnit * 12 : height
     radius: nativePopup ? 0
-            : (Plasmoid.configuration.overrideRadius
-               ? Plasmoid.configuration.cornerRadius
-               : Kirigami.Units.cornerRadius)
+            : (cfg.overrideRadius ? cfg.cornerRadius : Kirigami.Units.cornerRadius)
 
-    readonly property real bgOpacity: Plasmoid.configuration.backgroundOpacity / 100
+    readonly property real bgOpacity: cfg.backgroundOpacity / 100
     color: nativePopup ? "transparent"
            : Qt.rgba(Kirigami.Theme.backgroundColor.r,
                      Kirigami.Theme.backgroundColor.g,
@@ -226,17 +226,16 @@ Kirigami.ShadowedRectangle {
     // Sync model properties from config — called on init and reset
     function syncModelFromConfig() {
         if (!appsModel) return
-        appsModel.hiddenApps = Plasmoid.configuration.hiddenApps || []
+        appsModel.hiddenApps = cfg.hiddenApps
         // Favorites are loaded from KAStatsFavoritesModel after migration —
         // see FavoritesManager.qml.
         appsModel.maxRecentApps = columns
         appsModel.sortMode = sortMode
-        appsModel.useSystemCategories = Plasmoid.configuration.useSystemCategories !== false
-        appsModel.sortFavoritesAlphabetically = Plasmoid.configuration.sortFavoritesAlphabetically === true
-        appsModel.launchCounts = launchCountsToMap(Plasmoid.configuration.launchCounts)
-        appsModel.knownApps = Plasmoid.configuration.knownApps || []
-        appsModel.recentApps = cfgShowRecentApps
-            ? (Plasmoid.configuration.recentApps || []) : []
+        appsModel.useSystemCategories = cfg.useSystemCategories
+        appsModel.sortFavoritesAlphabetically = cfg.sortFavoritesAlphabetically
+        appsModel.launchCounts = launchCountsToMap(cfg.launchCounts)
+        appsModel.knownApps = cfg.knownApps
+        appsModel.recentApps = cfgShowRecentApps ? cfg.recentApps : []
         if (appsModel.knownApps.length === 0)
             appsModel.markAllKnown()
     }
@@ -423,7 +422,7 @@ Kirigami.ShadowedRectangle {
                     id: searchSession
                     appsModel: panel.appsModel
                     categoryBar: categoryBar
-                    searchAll: Plasmoid.configuration.searchAll !== false
+                    searchAll: cfg.searchAll
                     isPrefixMode: panel.isPrefixMode
                 }
 
@@ -463,10 +462,10 @@ Kirigami.ShadowedRectangle {
                 }
                 onAccepted: {
                     if (panel.prefixMode === "terminal") {
-                        Plasmoid.runInTerminal(panel.prefixArgument, Plasmoid.configuration.terminalShell || "")
+                        Plasmoid.runInTerminal(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === "command") {
-                        Plasmoid.runCommand(panel.prefixArgument, Plasmoid.configuration.terminalShell || "")
+                        Plasmoid.runCommand(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === "files") {
                         prefixModeView.activateFileCurrent()
@@ -575,7 +574,7 @@ Kirigami.ShadowedRectangle {
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
             scrollOnlyMode: panel.showCategoryGrid
-            hideEmptyCategories: Plasmoid.configuration.hideEmptyCategories !== false
+            hideEmptyCategories: cfg.hideEmptyCategories
             onFavoritesToggled: function(active) {
                 // Update model state BEFORE UI state so bindings see the
                 // correct proxy data when showCategoryGrid re-evaluates.
@@ -642,7 +641,7 @@ Kirigami.ShadowedRectangle {
             model: panel.isSearching ? Plasmoid.searchModel : null
             iconSize: panel.gridIconSize
             showDividers: panel.cfgShowDividers
-            animateHighlight: (Plasmoid.configuration.hoverAnimation || 0) > 0
+            animateHighlight: cfg.hoverAnimation > 0
             searchField: searchBar.field
             onLaunched: function(index) { panel.launchSearchResult(index) }
             onContextMenuRequested: function(index, storageId, desktopFile) {
@@ -703,7 +702,7 @@ Kirigami.ShadowedRectangle {
                 model: panel.isSearching ? null
                        : (panel.isFavoritesActive
                           && panel.sharedFavoritesModel
-                          && !Plasmoid.configuration.sortFavoritesAlphabetically
+                          && !cfg.sortFavoritesAlphabetically
                           ? panel.sharedFavoritesModel
                           : panel.appsModel)
                 appsModel: panel.appsModel
@@ -722,7 +721,7 @@ Kirigami.ShadowedRectangle {
                 showTooltips: panel.cfgShowTooltips
                 showNewAppBadge: panel.cfgShowNewAppBadge
                 hideLabelsOnFavorites: panel.cfgHideLabelsOnFavorites
-                animateHighlight: (Plasmoid.configuration.hoverAnimation || 0) > 0
+                animateHighlight: cfg.hoverAnimation > 0
                 shuffleOverlayParent: shuffleOverlay
                 onOriginYChanged: {
                     if (panel._needsScrollToTop) {

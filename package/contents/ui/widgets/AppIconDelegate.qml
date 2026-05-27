@@ -65,8 +65,10 @@ Item {
     // Emitted when shuffle animation wants to swap with another icon
     signal shuffleRequested()
 
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
     // 0=None, 1=Shake, 2=Grow, 3=Bounce, 4=Spin, 5=Shuffle
-    readonly property int hoverAnimation: Plasmoid.configuration.hoverAnimation
+    readonly property alias hoverAnimation: cfg.hoverAnimation
     readonly property var iconAnimFiles: [
         "",                          // 0=None
         "../iconanims/ShakeAnim.qml",   // 1

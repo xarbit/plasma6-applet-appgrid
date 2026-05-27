@@ -17,6 +17,8 @@ import QtQuick.Effects
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
+import "../controllers"
+
 Item {
     id: root
 
@@ -26,7 +28,9 @@ Item {
     implicitWidth: icon.implicitWidth
     implicitHeight: icon.implicitHeight
 
-    readonly property bool _shadowEnabled: Plasmoid.configuration.iconShadow
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
+    readonly property alias _shadowEnabled: cfg.iconShadow
 
     Kirigami.Icon {
         id: icon

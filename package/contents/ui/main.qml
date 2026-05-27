@@ -22,9 +22,9 @@ PlasmoidItem {
 
     activationTogglesExpanded: false
 
-    Plasmoid.icon: Plasmoid.configuration.useCustomButtonImage
-        ? Plasmoid.configuration.customButtonImage
-        : Plasmoid.configuration.icon
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
+    Plasmoid.icon: cfg.useCustomButtonImage ? cfg.customButtonImage : cfg.icon
 
     property GridWindow gridWindow: null
     property bool gridOpen: false
@@ -47,7 +47,7 @@ PlasmoidItem {
     }
     function _syncUpdateChecker() {
         if (Plasmoid.updateChecker)
-            Plasmoid.updateChecker.enabled = Plasmoid.configuration.checkForUpdates === true
+            Plasmoid.updateChecker.enabled = cfg.checkForUpdates
     }
 
     Component {

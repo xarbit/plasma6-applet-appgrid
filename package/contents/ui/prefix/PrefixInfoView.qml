@@ -9,6 +9,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
+import "../controllers"
 import "../widgets"
 
 ScrollableColumn {
@@ -17,9 +18,11 @@ ScrollableColumn {
     property var sysInfo: Plasmoid.systemInfo()
     property var sharedFavoritesModel: null
 
-    readonly property bool _migrated: Plasmoid.configuration.favoritesPortedToKAstats === true
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
+    readonly property alias _migrated: cfg.favoritesPortedToKAstats
     readonly property int _kastatsCount: sharedFavoritesModel ? sharedFavoritesModel.count : 0
-    readonly property int _localCount: (Plasmoid.configuration.favoriteApps || []).length
+    readonly property int _localCount: cfg.favoriteApps.length
 
     PlasmaComponents.Label {
         text: i18nd("dev.xarbit.appgrid", "System Information")

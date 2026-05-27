@@ -36,11 +36,12 @@ Item {
     readonly property int _kickerFavoriteIdRole: 259
     readonly property var sharedFavoritesModel: sharedFavoritesLoader.item
 
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
     // Drives whether the live model gets mirrored into AppFilterModel.
     // Only alpha-sort needs that; drag-reorder reads the shared model
     // directly.
-    readonly property bool mirrorRequired:
-        Plasmoid.configuration.sortFavoritesAlphabetically === true
+    readonly property alias mirrorRequired: cfg.sortFavoritesAlphabetically
 
     // No layout; pure controller.
     visible: false
@@ -93,12 +94,12 @@ Item {
         // model signal. Skip mirror; nothing useful to do.
         if (favoriteIdRole < 0) return
 
-        if (Plasmoid.configuration.favoritesPortedToKAstats) {
+        if (cfg.favoritesPortedToKAstats) {
             _mirrorFavorites()
             return
         }
 
-        const local = Plasmoid.configuration.favoriteApps || []
+        const local = cfg.favoriteApps
         if (local.length > 0) {
             // 1.7.x upgrade path. KAStatsFavoritesModel has no clear()
             // and portOldFavorites only re-ranks, so any entry already
@@ -146,7 +147,7 @@ Item {
         interval: 0
         repeat: false
         onTriggered: {
-            if (!Plasmoid.configuration.favoritesPortedToKAstats
+            if (!cfg.favoritesPortedToKAstats
                     && manager.sharedFavoritesModel
                     && manager.sharedFavoritesModel.count > 0) {
                 Plasmoid.configuration.favoritesPortedToKAstats = true

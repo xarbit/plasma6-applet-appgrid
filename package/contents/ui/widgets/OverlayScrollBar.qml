@@ -14,10 +14,13 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
+import "../controllers"
+
 PlasmaComponents.ScrollBar {
-    policy: Plasmoid.configuration.showScrollbars !== false
-            ? PlasmaComponents.ScrollBar.AsNeeded
-            : PlasmaComponents.ScrollBar.AlwaysOff
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
+    policy: cfg.showScrollbars ? PlasmaComponents.ScrollBar.AsNeeded
+                               : PlasmaComponents.ScrollBar.AlwaysOff
 
     opacity: active || hovered ? 1.0 : 0.0
     Behavior on opacity {

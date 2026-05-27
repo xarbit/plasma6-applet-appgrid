@@ -140,6 +140,7 @@ set(SHARED_QML_FILES
     config/ConfigSearch.qml
     config/ConfigSession.qml
     config/PowerButtonsConfig.qml
+    controllers/ConfigCache.qml
     controllers/DragSource.qml
     controllers/EdgeAutoScroller.qml
     controllers/FavoritesManager.qml

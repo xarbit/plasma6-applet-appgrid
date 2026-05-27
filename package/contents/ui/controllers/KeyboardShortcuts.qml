@@ -25,13 +25,15 @@ Item {
     // sharedFavoritesModel, and favoritesActive.
     required property GridView gridView
 
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
     // --- Favorites reorder (Ctrl+Shift+Arrow) ---
 
     function reorderable() {
         return gridView.favoritesActive
                && gridView.sharedFavoritesModel
                && gridView.model === gridView.sharedFavoritesModel
-               && !Plasmoid.configuration.sortFavoritesAlphabetically
+               && !cfg.sortFavoritesAlphabetically
                && gridView.currentIndex >= 0
     }
 

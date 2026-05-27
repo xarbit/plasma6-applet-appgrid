@@ -15,6 +15,8 @@ import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 import org.kde.plasma.private.sessions as Sessions
 
+import "../controllers"
+
 RowLayout {
     id: powerButtons
 
@@ -22,7 +24,10 @@ RowLayout {
     function closeMenus() { if (_sessionMenu) _sessionMenu.close() }
 
     spacing: Kirigami.Units.smallSpacing
-    readonly property bool showLabels: Plasmoid.configuration.showActionLabels
+
+    ConfigCache { id: cfg; source: Plasmoid.configuration }
+
+    readonly property alias showLabels: cfg.showActionLabels
 
     // The live Session dropdown, so closeMenus() can reach it.
     property var _sessionMenu: null
@@ -30,7 +35,7 @@ RowLayout {
     Sessions.SessionManagement { id: sm }
     Sessions.SessionsModel { id: sessionsModel }
 
-    readonly property var hiddenButtons: Plasmoid.configuration.powerButtonsHidden || []
+    readonly property alias hiddenButtons: cfg.powerButtonsHidden
     function isHidden(id) { return hiddenButtons.indexOf(id) >= 0 }
 
     readonly property list<string> defaultSlotOrder: ["sleep", "restart", "shutdown", "session"]
@@ -38,8 +43,8 @@ RowLayout {
     // Top-level slots in configured order, hidden ones removed. An empty
     // config means "default order" (kcfg StringList defaults are unreliable).
     readonly property var orderedSlots: {
-        const cfg = Plasmoid.configuration.powerButtonOrder || []
-        const order = cfg.length > 0 ? cfg : defaultSlotOrder
+        const order = cfg.powerButtonOrder.length > 0
+                      ? cfg.powerButtonOrder : defaultSlotOrder
         return order.filter(s => !isHidden(s))
     }
 
