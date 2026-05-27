@@ -231,6 +231,35 @@ TestCase {
         compare(s.iconNames(model), ["app0-icon"])
     }
 
+    // --- unified index space (recents + grid) ---
+    //
+    // The grids feed SelectionState a `sidAt` that maps low indices to
+    // the recents row and high indices to the actual grid. Range fill
+    // must walk the boundary so Shift+Arrow from grid into recents
+    // (or vice versa) extends the selection through both sides.
+
+    function test_rangeAcrossUnifiedDomainSelectsBothSides() {
+        var c = Qt.createComponent("SelectionState.qml")
+        verify(c.status === Component.Ready, "component error: " + c.errorString())
+        // 0..2 are recents, 3..7 are grid.
+        var s = c.createObject(null, {
+            gridCount: 8,
+            sidAt: function(idx) {
+                if (idx < 0 || idx >= 8) return ""
+                return (idx < 3 ? "recent" : "grid") + idx + ".desktop"
+            }
+        })
+
+        s.toggleAt(3)               // anchor on the first grid cell
+        s.rangeTo(0)                // walk back through every recents cell
+
+        compare(s.selectionCount, 4)
+        verify(s.contains("grid3.desktop"))
+        verify(s.contains("recent2.desktop"))
+        verify(s.contains("recent1.desktop"))
+        verify(s.contains("recent0.desktop"))
+    }
+
     function test_modelHelpersReturnEmptyOnNullModel() {
         var s = makeSelection(5)
         s.toggleAt(0)

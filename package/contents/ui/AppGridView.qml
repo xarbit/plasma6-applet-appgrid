@@ -224,10 +224,25 @@ GridView {
     // favorites). Source of truth lives on the SelectionState child; the
     // accessors below preserve the older AppGridView API so consumers
     // (GridPanel, KeyboardShortcuts, the delegate) keep working unchanged.
+    // SelectionState operates in a unified index space that spans the
+    // recents row (0 .. recentCount-1) and the grid (recentCount .. end)
+    // so Shift+Arrow extends a range across the boundary just like it
+    // does within either section.
     SelectionState {
         id: selection
-        sidAt: function(idx) { return gridView._sidAt(idx) }
-        gridCount: gridView.count
+        sidAt: function(idx) { return gridView._unifiedSidAt(idx) }
+        gridCount: gridView.recentCount + gridView.count
+    }
+    readonly property int virtualIndex:
+        recentIndex >= 0 ? recentIndex
+        : currentIndex >= 0 ? recentCount + currentIndex
+        : -1
+
+    function _unifiedSidAt(virtualIdx) {
+        if (virtualIdx < 0) return ""
+        if (virtualIdx < recentCount)
+            return appsModel ? (appsModel.recentApps[virtualIdx] || "") : ""
+        return _sidAt(virtualIdx - recentCount)
     }
     readonly property bool _favoritesSelect: favoritesActive
                                              && sharedFavoritesModel
@@ -257,17 +272,28 @@ GridView {
         return row && row.storageId ? row.storageId : ""
     }
 
-    function toggleSelectionAt(idx) {
-        if (multiSelectActive) selection.toggleAt(idx)
+    // Public accessors take a grid-local index; selection runs in the
+    // unified (recents + grid) space, so translate at the boundary.
+    function toggleSelectionAt(gridIdx) {
+        if (multiSelectActive) selection.toggleAt(recentCount + gridIdx)
     }
     function toggleSelectionBySid(sid) {
         if (multiSelectActive) selection.toggleSid(sid, -1)
     }
-    function rangeSelectTo(idx) {
-        if (multiSelectActive) selection.rangeTo(idx)
+    function rangeSelectTo(gridIdx) {
+        if (multiSelectActive) selection.rangeTo(recentCount + gridIdx)
+    }
+    function applyClickModifiers(mouse, gridIdx) {
+        return multiSelectActive
+            ? selection.applyModClick(mouse, recentCount + gridIdx) : false
+    }
+    // Recents already sit at virtual indices 0 .. recentCount-1, no offset.
+    function applyRecentClickModifiers(mouse, recentIdx) {
+        return multiSelectActive
+            ? selection.applyModClick(mouse, recentIdx) : false
     }
     function selectAllVisible() {
-        if (multiSelectActive) selection.selectAll(currentIndex)
+        if (multiSelectActive) selection.selectAll(virtualIndex)
     }
     function clearSelection() { selection.clear() }
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
@@ -323,34 +349,35 @@ GridView {
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()
 
-    // Shift+Arrow extends the multi-selection from the anchor through the
-    // new current index. Plain arrows clear selection so anchor state never
-    // drifts behind the visible cursor.
+    // Shift+Arrow extends the multi-selection from the anchor through
+    // the new virtual cursor index. Plain arrows just move. Reads the
+    // virtual index so range fill spans recents and grid uniformly.
     function _arrowMoveWithSelection(event, moveFn) {
         GridNav.arrowMoveWithSelection(selection, multiSelectActive,
                                         event, moveFn,
-                                        function() { return currentIndex })
+                                        function() { return virtualIndex })
     }
 
-    Keys.onUpPressed: function(event) {
+    // Direction movers — encode the cursor-transition rules between
+    // the recents row and the grid. Callers wrap them with the
+    // shift-extender so a Shift+Arrow at a recents/grid boundary
+    // extends the selection through the destination cell.
+    function _moveUp() {
         if (recentIndex >= 0) {
             var newIdx = recentIndex - effectiveColumns
-            if (newIdx >= 0) {
+            if (newIdx >= 0)
                 recentIndex = newIdx
-            } else {
-                recentIndex = -1
-                currentIndex = -1
-                if (searchField) searchField.forceActiveFocus()
-            }
+            else
+                _exitToSearchField()
         } else if (currentIndex >= 0 && currentIndex < effectiveColumns && showRecents) {
             var lastRow = Math.floor((recentCount - 1) / effectiveColumns)
             recentIndex = Math.min(currentIndex + lastRow * effectiveColumns, recentCount - 1)
             currentIndex = -1
         } else {
-            _arrowMoveWithSelection(event, moveCurrentIndexUp)
+            moveCurrentIndexUp()
         }
     }
-    Keys.onDownPressed: function(event) {
+    function _moveDown() {
         if (recentIndex >= 0) {
             var newIdx = recentIndex + effectiveColumns
             if (newIdx < recentCount) {
@@ -360,8 +387,41 @@ GridView {
                 recentIndex = -1
             }
         } else {
-            _arrowMoveWithSelection(event, moveCurrentIndexDown)
+            moveCurrentIndexDown()
         }
+    }
+    function _moveLeft() {
+        if (recentIndex > 0)
+            recentIndex--
+        else if (recentIndex < 0)
+            moveCurrentIndexLeft()
+    }
+    function _moveRight() {
+        if (recentIndex >= 0 && recentIndex < recentCount - 1)
+            recentIndex++
+        else if (recentIndex < 0)
+            moveCurrentIndexRight()
+    }
+    function _exitToSearchField() {
+        recentIndex = -1
+        currentIndex = -1
+        if (searchField) searchField.forceActiveFocus()
+    }
+
+    Keys.onUpPressed: function(event) {
+        // Leaving the grid is a focus transfer, not a cursor move, so it
+        // bypasses the shift-extender. Triggered when the cursor sits on
+        // the top row of recents (any column) or nothing is focused yet.
+        const exitingRecentsTop = recentIndex >= 0 && recentIndex < effectiveColumns
+        const nothingFocused = recentIndex < 0 && currentIndex < 0
+        if (exitingRecentsTop || nothingFocused) {
+            _exitToSearchField()
+            return
+        }
+        _arrowMoveWithSelection(event, _moveUp)
+    }
+    Keys.onDownPressed: function(event) {
+        _arrowMoveWithSelection(event, _moveDown)
     }
     Keys.onLeftPressed: function(event) {
         if (event.modifiers & Qt.AltModifier) {
@@ -369,10 +429,7 @@ GridView {
             event.accepted = true
             return
         }
-        if (recentIndex > 0)
-            recentIndex--
-        else if (recentIndex < 0)
-            _arrowMoveWithSelection(event, moveCurrentIndexLeft)
+        _arrowMoveWithSelection(event, _moveLeft)
     }
     Keys.onRightPressed: function(event) {
         if (event.modifiers & Qt.AltModifier) {
@@ -380,10 +437,7 @@ GridView {
             event.accepted = true
             return
         }
-        if (recentIndex >= 0 && recentIndex < recentCount - 1)
-            recentIndex++
-        else if (recentIndex < 0)
-            _arrowMoveWithSelection(event, moveCurrentIndexRight)
+        _arrowMoveWithSelection(event, _moveRight)
     }
 
     // Esc clears multi-selection first; only when there's no selection do
@@ -437,9 +491,20 @@ GridView {
         showDividers: gridView.showDividers
         showTooltips: gridView.showTooltips
         dragSource: gridView.dragSource
+        multiSelectActive: gridView.multiSelectActive
+        selectionSids: gridView.selectedSids
+        multiSelectionUrls: gridView.selectedDesktopFileUrls()
+        multiSelectionIcons: gridView.selectedIconNames()
         onRecentLaunched: function(storageId) { gridView.recentLaunched(storageId) }
         onContextMenuRequested: function(storageId, desktopFile) {
             gridView.contextMenuRequested(-1, storageId, desktopFile)
+        }
+        tryModifierClick: function(recentIdx, mouse) {
+            if (!gridView.applyRecentClickModifiers(mouse, recentIdx)) return false
+            gridView.recentIndex = recentIdx
+            gridView.currentIndex = -1
+            gridView.forceActiveFocus()
+            return true
         }
 
         Connections {
@@ -541,7 +606,7 @@ GridView {
                 }
                 if (gridView.multiSelectActive) {
                     gridView.currentIndex = model.index
-                    if (selection.applyModClick(mouse, model.index)) return
+                    if (gridView.applyClickModifiers(mouse, model.index)) return
                 }
                 gridView.clearSelection()
                 if (delegateRoot._fromShared) {

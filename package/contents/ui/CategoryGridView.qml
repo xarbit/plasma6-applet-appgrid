@@ -73,13 +73,27 @@ Flickable {
     // user can select any visible app and drag it out, or drag a multi-
     // selection onto the Favorites tab to batch-add. See AppGridView for
     // the analogous favorites-aware variant.
+    // SelectionState operates in a unified index space that spans the
+    // recents row (0 .. recentCount-1) and the flat category grid
+    // (recentCount .. end) so Shift+Arrow extends a range across the
+    // boundary just like it does within either section.
     SelectionState {
         id: selection
-        sidAt: function(idx) {
-            if (idx < 0 || idx >= categoryGrid.flatApps.length) return ""
-            return categoryGrid.flatApps[idx].storageId || ""
-        }
-        gridCount: categoryGrid.flatApps.length
+        sidAt: function(idx) { return categoryGrid._unifiedSidAt(idx) }
+        gridCount: categoryGrid.recentCount + categoryGrid.flatApps.length
+    }
+    readonly property int virtualIndex:
+        recentIndex >= 0 ? recentIndex
+        : currentIndex >= 0 ? recentCount + currentIndex
+        : -1
+
+    function _unifiedSidAt(virtualIdx) {
+        if (virtualIdx < 0) return ""
+        if (virtualIdx < recentCount)
+            return appsModel ? (appsModel.recentApps[virtualIdx] || "") : ""
+        const gridIdx = virtualIdx - recentCount
+        if (gridIdx >= flatApps.length) return ""
+        return flatApps[gridIdx].storageId || ""
     }
     readonly property bool multiSelectActive: flatApps.length > 0
 
@@ -90,17 +104,28 @@ Flickable {
     function selectionContainsSid(sid) { return selection.contains(sid) }
     function selectedSidList() { return selection.sidList() }
 
-    function toggleSelectionAt(idx) {
-        if (multiSelectActive) selection.toggleAt(idx)
+    // Public accessors take a flat-grid index; selection runs in the
+    // unified (recents + grid) space, so translate at the boundary.
+    function toggleSelectionAt(gridIdx) {
+        if (multiSelectActive) selection.toggleAt(recentCount + gridIdx)
     }
     function toggleSelectionBySid(sid) {
         if (multiSelectActive) selection.toggleSid(sid, -1)
     }
-    function rangeSelectTo(idx) {
-        if (multiSelectActive) selection.rangeTo(idx)
+    function rangeSelectTo(gridIdx) {
+        if (multiSelectActive) selection.rangeTo(recentCount + gridIdx)
+    }
+    function applyClickModifiers(mouse, gridIdx) {
+        return multiSelectActive
+            ? selection.applyModClick(mouse, recentCount + gridIdx) : false
+    }
+    // Recents already sit at virtual indices 0 .. recentCount-1, no offset.
+    function applyRecentClickModifiers(mouse, recentIdx) {
+        return multiSelectActive
+            ? selection.applyModClick(mouse, recentIdx) : false
     }
     function selectAllVisible() {
-        if (multiSelectActive) selection.selectAll(currentIndex)
+        if (multiSelectActive) selection.selectAll(virtualIndex)
     }
     function clearSelection() { selection.clear() }
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
@@ -113,7 +138,7 @@ Flickable {
     function _arrowMoveWithSelection(event, moveFn) {
         GridNav.arrowMoveWithSelection(selection, multiSelectActive,
                                         event, moveFn,
-                                        function() { return currentIndex })
+                                        function() { return virtualIndex })
     }
 
     Shortcut {
@@ -157,60 +182,90 @@ Flickable {
         }
     }
 
-    Keys.onLeftPressed: function(event) {
-        // Alt+Left belongs to the category bar — let it bubble up.
-        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
-        if (recentIndex > 0) { recentIndex-- }
-        else _arrowMoveWithSelection(event, function() {
-            if (currentIndex > 0) { currentIndex--; ensureVisible() }
-        })
+    // Direction movers — encode the cursor-transition rules between
+    // the recents row and the flat category grid. Wrapped by the
+    // shift-extender so Shift+Arrow at a recents/grid boundary extends
+    // the selection through the destination cell.
+    function _moveLeft() {
+        if (recentIndex > 0) recentIndex--
+        else if (recentIndex < 0 && currentIndex > 0) {
+            currentIndex--
+            ensureVisible()
+        }
     }
-    Keys.onRightPressed: function(event) {
-        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
-        if (recentIndex >= 0 && recentIndex < recentCount - 1) { recentIndex++ }
-        else _arrowMoveWithSelection(event, function() {
-            if (currentIndex < flatApps.length - 1) { currentIndex++; ensureVisible() }
-        })
+    function _moveRight() {
+        if (recentIndex >= 0 && recentIndex < recentCount - 1) recentIndex++
+        else if (recentIndex < 0 && currentIndex < flatApps.length - 1) {
+            currentIndex++
+            ensureVisible()
+        }
     }
-    Keys.onUpPressed: function(event) {
+    function _moveUp() {
         if (recentIndex >= 0) {
-            var newIdx = recentIndex - itemsPerRow
-            if (newIdx >= 0) { recentIndex = newIdx }
-            else { recentIndex = -1; currentIndex = -1; if (searchField) searchField.forceActiveFocus() }
+            recentIndex -= itemsPerRow
         } else if (currentIndex >= itemsPerRow) {
-            _arrowMoveWithSelection(event, function() {
-                currentIndex -= itemsPerRow; ensureVisible()
-            })
+            currentIndex -= itemsPerRow
+            ensureVisible()
         } else if (currentIndex >= 0 && showRecents && recentCount > 0) {
-            // Move from first row of categories into recents
             var lastRow = Math.floor((recentCount - 1) / itemsPerRow)
             recentIndex = Math.min(currentIndex + lastRow * itemsPerRow, recentCount - 1)
             currentIndex = -1
             contentY = 0
-            clearSelection()
-        } else if (currentIndex >= 0) {
-            currentIndex = -1
-            clearSelection()
-            if (searchField) searchField.forceActiveFocus()
         }
     }
-    Keys.onDownPressed: function(event) {
+    function _moveDown() {
         if (recentIndex >= 0) {
             var newIdx = recentIndex + itemsPerRow
-            if (newIdx < recentCount) { recentIndex = newIdx }
-            else {
-                // Move from recents into first category row
+            if (newIdx < recentCount) {
+                recentIndex = newIdx
+            } else {
                 currentIndex = Math.min(recentIndex % itemsPerRow, flatApps.length - 1)
                 recentIndex = -1
                 ensureVisible()
             }
-        } else if (currentIndex < 0) {
-            selectFirst()
         } else if (currentIndex + itemsPerRow < flatApps.length) {
-            _arrowMoveWithSelection(event, function() {
-                currentIndex += itemsPerRow; ensureVisible()
-            })
+            currentIndex += itemsPerRow
+            ensureVisible()
         }
+    }
+    function _exitToSearchField() {
+        recentIndex = -1
+        currentIndex = -1
+        if (searchField) searchField.forceActiveFocus()
+    }
+
+    Keys.onLeftPressed: function(event) {
+        // Alt+Left belongs to the category bar — let it bubble up.
+        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
+        _arrowMoveWithSelection(event, _moveLeft)
+    }
+    Keys.onRightPressed: function(event) {
+        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
+        _arrowMoveWithSelection(event, _moveRight)
+    }
+    Keys.onUpPressed: function(event) {
+        // Leaving the grid is a focus transfer, not a cursor move, so it
+        // bypasses the shift-extender. Top row of recents exits straight
+        // to the search field; first row of the category grid exits when
+        // recents is hidden.
+        const exitingRecentsTop = recentIndex >= 0 && recentIndex < itemsPerRow
+        const exitingGridTopWithoutRecents =
+            recentIndex < 0 && currentIndex >= 0
+            && currentIndex < itemsPerRow
+            && (!showRecents || recentCount === 0)
+        if (exitingRecentsTop || exitingGridTopWithoutRecents) {
+            _exitToSearchField()
+            return
+        }
+        _arrowMoveWithSelection(event, _moveUp)
+    }
+    Keys.onDownPressed: function(event) {
+        if (recentIndex < 0 && currentIndex < 0) {
+            // No focus yet — claim it (selectFirst handles recents-first preference).
+            selectFirst()
+            return
+        }
+        _arrowMoveWithSelection(event, _moveDown)
     }
     function _launchCurrent() {
         if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
@@ -292,9 +347,21 @@ Flickable {
             hideBottomLabel: true
             showDividers: categoryGrid.showDividers
             showTooltips: categoryGrid.showTooltips
+            dragSource: categoryGrid.dragSource
+            multiSelectActive: categoryGrid.multiSelectActive
+            selectionSids: categoryGrid.selectedSids
+            multiSelectionUrls: categoryGrid.selectedDesktopFileUrls()
+            multiSelectionIcons: categoryGrid.selectedIconNames()
             onRecentLaunched: function(storageId) { categoryGrid.recentLaunched(storageId) }
             onContextMenuRequested: function(storageId, desktopFile) {
                 categoryGrid.contextMenuRequested(-1, storageId, desktopFile)
+            }
+            tryModifierClick: function(recentIdx, mouse) {
+                if (!categoryGrid.applyRecentClickModifiers(mouse, recentIdx)) return false
+                categoryGrid.recentIndex = recentIdx
+                categoryGrid.currentIndex = -1
+                categoryGrid.forceActiveFocus()
+                return true
             }
 
             Connections {
@@ -382,7 +449,7 @@ Flickable {
                                     }
                                     if (categoryGrid.multiSelectActive) {
                                         categoryGrid.currentIndex = parent.flatIndex
-                                        if (selection.applyModClick(mouse, parent.flatIndex)) return
+                                        if (categoryGrid.applyClickModifiers(mouse, parent.flatIndex)) return
                                     }
                                     categoryGrid.clearSelection()
                                     categoryGrid.launched(modelData.proxyIndex)

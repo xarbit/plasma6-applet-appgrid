@@ -31,6 +31,24 @@ Column {
     signal contextMenuRequested(string storageId, string desktopFile)
     signal shakeAll()
 
+    // Consumer-provided modifier-click handler. Returns true if the click
+    // was consumed (Ctrl/Shift+click extending the grid selection); false
+    // for a plain click that should fall through to launch. The recents
+    // row lives in indices 0 .. recentCount-1 of the unified selection
+    // space, so the consumer passes the recent index straight through.
+    property var tryModifierClick: function(recentIdx, mouse) { return false }
+
+    // Live selection dictionary the consumer's SelectionState owns —
+    // delegates index into it by storageId to drive the selection halo.
+    property var selectionSids: ({})
+    property bool multiSelectActive: false
+
+    // Parallel URL / icon lists for the current selection, used by the
+    // drag handler so dropping a recent that's part of a multi-selection
+    // carries the full bundle to the target.
+    property var multiSelectionUrls: []
+    property var multiSelectionIcons: []
+
     spacing: Kirigami.Units.smallSpacing
 
     PlasmaComponents.Label {
@@ -83,11 +101,23 @@ Column {
                     storageId: recentDelegate.modelData
                     desktopFile: recentDelegate.appData.desktopFile || ""
                     dragSource: recentHeader.dragSource
+                    selected: recentHeader.multiSelectActive
+                              && !!recentHeader.selectionSids[recentDelegate.modelData]
+                    multiSelectionSids: selected
+                        ? Object.keys(recentHeader.selectionSids).filter(function(k) {
+                              return recentHeader.selectionSids[k]
+                          })
+                        : []
+                    multiSelectionUrls: selected ? recentHeader.multiSelectionUrls : []
+                    multiSelectionIcons: selected ? recentHeader.multiSelectionIcons : []
                     onClicked: function(mouse) {
-                        if (mouse.button === Qt.RightButton)
+                        if (mouse.button === Qt.RightButton) {
                             recentHeader.contextMenuRequested(recentDelegate.modelData, recentDelegate.appData.desktopFile || "")
-                        else
-                            recentHeader.recentLaunched(recentDelegate.modelData)
+                            return
+                        }
+                        if (recentHeader.tryModifierClick(recentDelegate.index, mouse))
+                            return
+                        recentHeader.recentLaunched(recentDelegate.modelData)
                     }
                 }
 
