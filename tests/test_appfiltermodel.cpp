@@ -37,6 +37,7 @@ private slots:
     void hideAppDoesNothingForInvalidIndex();
     void unhideAppRemovesFromList();
     void isRecentReflectsList();
+    void setRecentAppsSkipsWorkWhenUnchanged();
     void hiddenAppsChangedTriggersGroupedSignal();
     void recordRecentLaunchPrependsAndBumpsCount();
     void recordRecentLaunchCapsAtMaxRecentApps();
@@ -276,6 +277,22 @@ void TestAppFilterModel::isRecentReflectsList()
     m_filter.setRecentApps({QStringLiteral("x"), QStringLiteral("y")});
     QVERIFY(m_filter.isRecent(QStringLiteral("x")));
     QVERIFY(!m_filter.isRecent(QStringLiteral("z")));
+}
+
+void TestAppFilterModel::setRecentAppsSkipsWorkWhenUnchanged()
+{
+    const QStringList list{QStringLiteral("a"), QStringLiteral("b")};
+    m_filter.setRecentApps(list);
+
+    QSignalSpy changed(&m_filter, &AppFilterModel::recentAppsChanged);
+    QSignalSpy layout(&m_filter, &AppFilterModel::layoutChanged);
+
+    m_filter.setRecentApps(list);
+    QCOMPARE(changed.count(), 0);
+    QCOMPARE(layout.count(), 0);
+
+    m_filter.setRecentApps({QStringLiteral("c")});
+    QCOMPARE(changed.count(), 1);
 }
 
 void TestAppFilterModel::hiddenAppsChangedTriggersGroupedSignal()
