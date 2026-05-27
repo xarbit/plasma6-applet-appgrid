@@ -63,6 +63,9 @@ PlasmoidItem {
             appsModel: Plasmoid.appsModel
             searchModel: Plasmoid.searchModel
             runnerSourceModel: Plasmoid.runnerSourceModel
+            notifyAppLaunched: function(sid) { Plasmoid.notifyAppLaunched(sid) }
+            runInTerminal: function(cmd, shell) { Plasmoid.runInTerminal(cmd, shell) }
+            runCommand: function(cmd, shell) { Plasmoid.runCommand(cmd, shell) }
             opacity: 1.0
             onCloseRequested: kicker.expanded = false
 

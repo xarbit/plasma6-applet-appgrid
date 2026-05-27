@@ -42,6 +42,15 @@ Kirigami.ShadowedRectangle {
     required property var appsModel
     required property var searchModel
     required property var runnerSourceModel
+
+    // Side-effect callbacks supplied by the plasmoid root. notifyAppLaunched
+    // broadcasts an app launch to KActivities (one-way courtesy ping for
+    // other Plasma launchers); runInTerminal / runCommand execute the
+    // prefix-mode `t:` and `:` shell hooks. Injected so tests can capture
+    // call arguments without spawning real processes.
+    required property var notifyAppLaunched
+    required property var runInTerminal
+    required property var runCommand
     readonly property alias columns: cfg.gridColumns
     readonly property alias rows: cfg.gridRows
     readonly property alias sortMode: cfg.sortMode
@@ -354,7 +363,7 @@ Kirigami.ShadowedRectangle {
     // source — we don't read this data back).
     function _launchOneBySid(sid) {
         if (!sid) return
-        Plasmoid.notifyAppLaunched(sid)
+        notifyAppLaunched(sid)
         appsModel.launchByStorageId(sid)
     }
 
@@ -362,7 +371,7 @@ Kirigami.ShadowedRectangle {
         if (!appsModel || index < 0)
             return
         const sid = appsModel.get(index).storageId
-        if (sid) Plasmoid.notifyAppLaunched(sid)
+        if (sid) notifyAppLaunched(sid)
         appsModel.launch(index)
         closeRequested()
     }
@@ -467,10 +476,10 @@ Kirigami.ShadowedRectangle {
                 }
                 onAccepted: {
                     if (panel.prefixMode === "terminal") {
-                        Plasmoid.runInTerminal(panel.prefixArgument, cfg.terminalShell)
+                        panel.runInTerminal(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === "command") {
-                        Plasmoid.runCommand(panel.prefixArgument, cfg.terminalShell)
+                        panel.runCommand(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === "files") {
                         prefixModeView.activateFileCurrent()
