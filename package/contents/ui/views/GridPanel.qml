@@ -62,6 +62,12 @@ Kirigami.ShadowedRectangle {
     // KAStats favorites client id, built from the plasmoid id at the root.
     required property string favoritesClientInstance
 
+    // Plasmoid C++ invokables, forwarded to AppContextMenu.
+    required property var appActions
+    required property var launchAppAction
+    required property var canManageInDiscover
+    required property var openInDiscover
+
     // -- Configuration (single source of truth for all config reads) --
     ConfigCache { id: cfg; source: panel.configuration }
     readonly property alias columns: cfg.gridColumns
@@ -829,6 +835,12 @@ Kirigami.ShadowedRectangle {
         appsModel: panel.appsModel
         sharedFavoritesModel: panel.sharedFavoritesModel
         appletInterface: panel.appletInterface
+
+        appActions: panel.appActions
+        launchAppAction: panel.launchAppAction
+        canManageInDiscover: panel.canManageInDiscover
+        openInDiscover: panel.openInDiscover
+        setHiddenApps: function(list) { panel.configuration.hiddenApps = list }
 
         onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
         onBulkHideRequested: function(sids) {

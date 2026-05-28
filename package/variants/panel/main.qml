@@ -70,6 +70,10 @@ PlasmoidItem {
             runRunnerResult: function(idx) { return Plasmoid.runRunnerResult(idx) }
             updateChecker: Plasmoid.updateChecker
             favoritesClientInstance: "dev.xarbit.appgrid.favorites.instance-" + Plasmoid.id
+            appActions: function(sid) { return Plasmoid.appActions(sid) }
+            launchAppAction: function(sid, idx) { Plasmoid.launchAppAction(sid, idx) }
+            canManageInDiscover: function(sid) { return Plasmoid.canManageInDiscover(sid) }
+            openInDiscover: function(sid) { Plasmoid.openInDiscover(sid) }
             opacity: 1.0
             onCloseRequested: kicker.expanded = false
 

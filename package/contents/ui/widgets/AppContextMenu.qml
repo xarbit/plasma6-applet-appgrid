@@ -15,7 +15,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.plasmoid
 import org.kde.plasma.private.kicker as Kicker
 import "../js/favoriteid.js" as FavoriteId
 
@@ -34,6 +33,16 @@ Item {
     property var appletInterface: null
     property var appsModel: null
     property var sharedFavoritesModel: null
+
+    // Plasmoid-glue callbacks, injected from the boundary:
+    //   appActions(sid) -> list        launchAppAction(sid, idx)
+    //   canManageInDiscover(sid) -> bool   openInDiscover(sid)
+    //   setHiddenApps(list)            persists the hidden-apps list
+    required property var appActions
+    required property var launchAppAction
+    required property var canManageInDiscover
+    required property var openInDiscover
+    required property var setHiddenApps
 
     // Popup snapshot — populated by showForApp() before popping the
     // appropriate Menu. Lives here so both child Menus + their dynamic
@@ -96,7 +105,7 @@ Item {
         }
         popupFavCount = favs
         popupNonFavCount = popupSelectedSids.length - favs
-        popupActions = isMultiSelect ? [] : (Plasmoid.appActions(storageId) || [])
+        popupActions = isMultiSelect ? [] : (contextMenu.appActions(storageId) || [])
 
         if (isMultiSelect)
             bulkMenu.popup()
@@ -166,7 +175,7 @@ Item {
                 icon.name: modelData.icon || ""
                 text: modelData.text
                 onClicked: {
-                    Plasmoid.launchAppAction(contextMenu.popupStorageId, index)
+                    contextMenu.launchAppAction(contextMenu.popupStorageId, index)
                     singleMenu.close()
                 }
             }
@@ -229,11 +238,11 @@ Item {
         // Truly-conditional item — Instantiator creates/destroys instead
         // of visible:false, which leaves a blank row in PlasmaComponents.Menu.
         Instantiator {
-            active: Plasmoid.canManageInDiscover(contextMenu.popupStorageId)
+            active: contextMenu.canManageInDiscover(contextMenu.popupStorageId)
             delegate: PlasmaComponents.MenuItem {
                 icon.name: "plasmadiscover"
                 text: i18nd("dev.xarbit.appgrid", "Manage in Discover…")
-                onClicked: Plasmoid.openInDiscover(contextMenu.popupStorageId)
+                onClicked: contextMenu.openInDiscover(contextMenu.popupStorageId)
             }
             onObjectAdded: (idx, obj) => singleMenu.addItem(obj)
             onObjectRemoved: (idx, obj) => singleMenu.removeItem(obj)
@@ -247,7 +256,7 @@ Item {
             onClicked: {
                 if (!contextMenu.appsModel) return
                 contextMenu.appsModel.hideApp(contextMenu.popupIndex)
-                Plasmoid.configuration.hiddenApps = contextMenu.appsModel.hiddenApps
+                contextMenu.setHiddenApps(contextMenu.appsModel.hiddenApps)
             }
         }
     }

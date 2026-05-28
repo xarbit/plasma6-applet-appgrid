@@ -42,6 +42,10 @@ Window {
     required property var runRunnerResult
     required property var updateChecker
     required property string favoritesClientInstance
+    required property var appActions
+    required property var launchAppAction
+    required property var canManageInDiscover
+    required property var openInDiscover
 
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
 
@@ -341,6 +345,10 @@ Window {
         runRunnerResult: root.runRunnerResult
         updateChecker: root.updateChecker
         favoritesClientInstance: root.favoritesClientInstance
+        appActions: root.appActions
+        launchAppAction: root.launchAppAction
+        canManageInDiscover: root.canManageInDiscover
+        openInDiscover: root.openInDiscover
         // Static user offset + compact-mode downward shift, kept out of
         // the anchor system so the open/close animations (which drive
         // anchors.verticalCenterOffset) are unaffected.
