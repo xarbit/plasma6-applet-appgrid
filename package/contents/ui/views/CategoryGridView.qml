@@ -29,6 +29,9 @@ Flickable {
     property real cellWidth: 100
     property real cellHeight: 100
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Icon delegate config, injected from the boundary's ConfigCache.
+    required property int hoverAnimation
+    required property bool shadowEnabled
     property bool showRecents: false
     property bool showDividers: true
     property bool showTooltips: true
@@ -343,6 +346,8 @@ Flickable {
             cellWidth: categoryGrid.cellWidth
             cellHeight: categoryGrid.cellHeight
             iconSize: categoryGrid.iconSize
+            hoverAnimation: categoryGrid.hoverAnimation
+            shadowEnabled: categoryGrid.shadowEnabled
             currentRecentIndex: categoryGrid.recentIndex
             gridHasFocus: categoryGrid.activeFocus
             favoritesActive: false
@@ -424,6 +429,8 @@ Flickable {
                                 installSource: modelData.installSource || ""
                                 showTooltip: categoryGrid.showTooltips
                                 iconSize: categoryGrid.iconSize
+                                hoverAnimation: categoryGrid.hoverAnimation
+                                shadowEnabled: categoryGrid.shadowEnabled
                                 isCurrentItem: categoryGrid.currentIndex === parent.flatIndex && categoryGrid.activeFocus
                                 isNew: categoryGrid.showNewAppBadge && categoryGrid.appsModel
                                     ? categoryGrid.appsModel.isNewApp(modelData.storageId || "") : false

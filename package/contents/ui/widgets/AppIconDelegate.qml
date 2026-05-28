@@ -9,7 +9,6 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.plasmoid
 
 import "../controllers"
 
@@ -65,10 +64,9 @@ Item {
     // Emitted when shuffle animation wants to swap with another icon
     signal shuffleRequested()
 
-    ConfigCache { id: cfg; source: Plasmoid.configuration }
-
     // 0=None, 1=Shake, 2=Grow, 3=Bounce, 4=Spin, 5=Shuffle
-    readonly property alias hoverAnimation: cfg.hoverAnimation
+    required property int hoverAnimation
+    required property bool shadowEnabled
     readonly property var iconAnimFiles: [
         "",                          // 0=None
         "../iconanims/ShakeAnim.qml",   // 1
@@ -148,7 +146,7 @@ Item {
                 id: delegateIcon
                 anchors.fill: parent
                 source: root.displayIcon || root.appIcon || "application-x-executable"
-                shadowEnabled: cfg.iconShadow
+                shadowEnabled: root.shadowEnabled
                 active: delegateMouse.containsMouse || root.isCurrentItem
                 transformOrigin: Item.Center
             }

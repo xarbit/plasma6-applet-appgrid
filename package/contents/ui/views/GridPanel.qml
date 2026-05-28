@@ -706,6 +706,8 @@ Kirigami.ShadowedRectangle {
                         + Kirigami.Units.gridUnit * 3
                         + Kirigami.Units.smallSpacing * 2
             iconSize: panel.gridIconSize
+            hoverAnimation: cfg.hoverAnimation
+            shadowEnabled: cfg.iconShadow
             showDividers: panel.cfgShowDividers
             showTooltips: panel.cfgShowTooltips
             showNewAppBadge: panel.cfgShowNewAppBadge
@@ -753,6 +755,8 @@ Kirigami.ShadowedRectangle {
                 columns: panel.columns
                 adaptiveColumns: panel.nativePopup
                 iconSize: panel.gridIconSize
+                hoverAnimation: cfg.hoverAnimation
+                shadowEnabled: cfg.iconShadow
                 searchField: searchBar.field
                 showRecentApps: panel.cfgShowRecentApps
                 startWithFavorites: panel.cfgStartWithFavorites

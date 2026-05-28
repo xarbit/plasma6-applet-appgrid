@@ -29,6 +29,10 @@ GridView {
     // Icon size from configuration (Kirigami pixel size).
     property real iconSize: Kirigami.Units.iconSizes.huge
 
+    // Icon delegate config, injected from the boundary's ConfigCache.
+    required property int hoverAnimation
+    required property bool shadowEnabled
+
     // Emitted when a shake-all-icons trigger fires (e.g. on grid open).
     signal shakeAllIcons()
 
@@ -488,6 +492,8 @@ GridView {
         cellWidth: gridView.cellWidth
         cellHeight: gridView.cellHeight
         iconSize: gridView.iconSize
+        hoverAnimation: gridView.hoverAnimation
+        shadowEnabled: gridView.shadowEnabled
         currentRecentIndex: gridView.recentIndex
         gridHasFocus: gridView.activeFocus
         favoritesActive: gridView.favoritesActive
@@ -567,6 +573,8 @@ GridView {
             hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
             isCurrentItem: gridView.currentIndex === model.index && gridView.activeFocus
             iconSize: gridView.iconSize
+            hoverAnimation: gridView.hoverAnimation
+            shadowEnabled: gridView.shadowEnabled
             isNew: !delegateRoot._fromShared
                    && gridView.showNewAppBadge && gridView.appsModel
                    ? gridView.appsModel.isNewApp(delegateRoot._sid) : false

@@ -19,6 +19,9 @@ Column {
     property real cellWidth: 100
     property real cellHeight: 100
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Icon delegate config, injected from the boundary's ConfigCache.
+    required property int hoverAnimation
+    required property bool shadowEnabled
     property int currentRecentIndex: -1
     property bool gridHasFocus: false
     property bool favoritesActive: false
@@ -100,6 +103,8 @@ Column {
                     showTooltip: recentHeader.showTooltips
                     isCurrentItem: recentHeader.currentRecentIndex === recentDelegate.index
                     iconSize: recentHeader.iconSize
+                    hoverAnimation: recentHeader.hoverAnimation
+                    shadowEnabled: recentHeader.shadowEnabled
                     storageId: recentDelegate.modelData
                     desktopFile: recentDelegate.appData.desktopFile || ""
                     dragSource: recentHeader.dragSource
