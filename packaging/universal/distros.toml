@@ -15,6 +15,7 @@ packages = [
     "libplasma", "kpackage", "kio", "kservice", "ki18n",
     "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
     "layer-shell-qt", "plasma-activities", "plasma-workspace",
+    "appstream-qt",
 ]
 install  = "sudo pacman -S --needed {packages}"
 
@@ -26,6 +27,7 @@ packages = [
     "libplasma", "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
     "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt", "plasma-activities", "plasma-workspace",
+    "appstream-qt",
 ]
 install  = "sudo dnf install {packages}"
 
@@ -40,6 +42,7 @@ packages = [
     "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
     "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt", "plasma-workspace",
+    "lib64AppStreamQt6_3",
 ]
 install  = "sudo dnf install {packages}"
 
@@ -57,6 +60,7 @@ packages = [
     "qml6-module-org-kde-kirigami",
     "liblayershellqtinterface6", "libplasmaactivities6",
     "plasma-workspace",
+    "libappstreamqt3",
 ]
 install  = "sudo apt install {packages}"
 
@@ -71,6 +75,7 @@ packages = [
     "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
     "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt6", "plasma6-workspace",
+    "libAppStreamQt3",
 ]
 install  = "sudo zypper install {packages}"
 
@@ -124,4 +129,5 @@ packages = [
     "plasma", "kpackage", "kio", "kservice", "ki18n",
     "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
     "layer-shell-qt", "plasma-activities", "plasma-workspace",
+    "appstream-qt",
 ]

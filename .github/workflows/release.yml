@@ -56,7 +56,7 @@ jobs:
             qt6-base qt6-declarative \
             libplasma kpackage kio kservice ki18n \
             kcoreaddons kwindowsystem krunner layer-shell-qt plasma-activities \
-            plasma-workspace
+            plasma-workspace appstream-qt
 
       - name: Checkout
         uses: actions/checkout@v5
@@ -131,6 +131,7 @@ jobs:
                 kf6-kiconthemes-devel \
                 kf6-kwindowsystem-devel kf6-krunner-devel layer-shell-qt-devel \
                 plasma-activities-devel plasma-workspace-devel \
+                appstream-qt-devel \
                 gettext
               test -f /usr/lib64/cmake/Qt6/Qt6Config.cmake \
                 || { echo "ERROR: qt6-qtbase-devel install incomplete"; rpm -V qt6-qtbase-devel; exit 1; }

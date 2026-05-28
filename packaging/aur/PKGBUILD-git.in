@@ -33,6 +33,7 @@ depends=(
     'kwindowsystem'
     'kcmutils'
     'libplasma'
+    'appstream-qt'
 )
 makedepends=(
     'cmake'

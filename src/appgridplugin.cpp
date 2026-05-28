@@ -7,8 +7,14 @@
 
 #include "pluginhelpers.h"
 
+#include <AppStreamQt/component-box.h>
+#include <AppStreamQt/component.h>
+#include <AppStreamQt/launchable.h>
+#include <AppStreamQt/pool.h>
+
 #include <KDesktopFile>
 #include <KIO/ApplicationLauncherJob>
+#include <KIO/CommandLauncherJob>
 #include <KIO/OpenUrlJob>
 #include <KRunner/ResultsModel>
 #include <KService>
@@ -40,9 +46,11 @@
 #include <QTimer>
 #include <QUrl>
 #include <QWindow>
-#include <QXmlStreamReader>
 #include <kcoreaddons_version.h>
 #include <plasma_version.h>
+
+// Defined with the Discover helpers below; warmed from the constructor.
+static void warmAppstreamPool();
 
 // Known task manager plugin IDs, matching the list used by Kicker.
 AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
@@ -55,6 +63,10 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
     m_searchModel.setAppModel(&m_filterModel);
     m_searchModel.setRunnerModel(&m_runnerFilterModel);
     QQuickWindow::setDefaultAlphaBuffer(true);
+
+    // Warm the AppStream pool in the background now, so the first right-click
+    // "Manage in Discover" check never blocks on a synchronous metadata parse.
+    warmAppstreamPool();
 
     // PlasmoidItem::init() connects activated → setExpanded(true).
     // For custom Window mode, we add a second connection (fires after PlasmoidItem's)
@@ -391,8 +403,8 @@ bool AppGridPlugin::isDiscoverAvailable() const
     return static_cast<bool>(KService::serviceByDesktopName(QStringLiteral("org.kde.discover")));
 }
 
-// Maps an AppModel install-source string to the Discover backend name
-// that handles it. Returns empty for sources Discover doesn't manage.
+// Maps an AppModel install-source string to the Discover backend name that
+// handles it. Returns empty for sources Discover doesn't manage.
 static QString backendForSource(const QString &source)
 {
     if (source == QLatin1String("System"))
@@ -404,13 +416,12 @@ static QString backendForSource(const QString &source)
     return {};
 }
 
-// CLI tool the backend talks to. The plugin .so ships with Discover but
-// is non-functional without the tool — return empty for backends that
-// don't have an external dependency to verify.
+// CLI the backend drives — its presence gates the menu. PackageKit is NOT
+// here: it is reached over a D-Bus-activated system service (checked
+// separately), and pkcon is an optional client that several distros (e.g.
+// Arch) don't ship, which produced false negatives.
 static QString toolForBackend(const QString &backend)
 {
-    if (backend == QLatin1String("packagekit"))
-        return QStringLiteral("pkcon");
     if (backend == QLatin1String("flatpak"))
         return QStringLiteral("flatpak");
     if (backend == QLatin1String("snap"))
@@ -418,10 +429,23 @@ static QString toolForBackend(const QString &backend)
     return {};
 }
 
-// True when both the Discover backend plugin and its underlying CLI tool
-// are present. Called per right-click context-menu open, so re-resolving
-// each time picks up backend installs without a restart and the lookup
-// (one libraryPaths scan + one findExecutable) is cheap.
+// PackageKit registers a D-Bus-activated system service; the service file is
+// the reliable "installed" signal — the daemon lives in libexec and the CLI
+// may be absent. Standard freedesktop location, with a source-install fallback.
+static bool packageKitServicePresent()
+{
+    static const QLatin1String bases[] = {QLatin1String("/usr/share"), QLatin1String("/usr/local/share")};
+    for (const auto &base : bases) {
+        if (QFileInfo::exists(base + QLatin1String("/dbus-1/system-services/org.freedesktop.PackageKit.service")))
+            return true;
+    }
+    return false;
+}
+
+// True when the Discover backend plugin is present and its runtime dependency
+// is satisfied (Flatpak/Snap CLI, or the PackageKit D-Bus service). Called per
+// right-click so backend installs are picked up without a restart; the lookup
+// (one libraryPaths scan + one findExecutable / stat) is cheap.
 static bool discoverBackendInstalled(const QString &name)
 {
     const QString relPath = QStringLiteral("discover/") + name + QStringLiteral("-backend.so");
@@ -432,9 +456,65 @@ static bool discoverBackendInstalled(const QString &name)
             break;
         }
     }
+    if (!pluginFound)
+        return false;
+
+    if (name == QLatin1String("packagekit"))
+        return packageKitServicePresent();
 
     const QString tool = toolForBackend(name);
-    return pluginFound && (tool.isEmpty() || !QStandardPaths::findExecutable(tool).isEmpty());
+    return tool.isEmpty() || !QStandardPaths::findExecutable(tool).isEmpty();
+}
+
+// --- AppStream component id resolver --------------------------------
+// AppStream::Pool is the canonical resolver Kicker and Discover use: it
+// indexes metainfo from every backend (distro/PackageKit, Flatpak, Snap),
+// so one lookup by .desktop id works regardless of where the app came from.
+// --------------------------------------------------------------------
+
+// Shared AppStream metadata pool. Warmed asynchronously at plugin startup
+// (warmAppstreamPool) so the UI thread never blocks parsing metadata — the
+// launcher must stay snappy. Queries are gated on appstreamPoolReady() so we
+// never read the pool mid-load.
+static AppStream::Pool &appstreamPool()
+{
+    static AppStream::Pool pool;
+    return pool;
+}
+
+static bool &appstreamPoolReady()
+{
+    static bool ready = false;
+    return ready;
+}
+
+// Kick off the one-time background load. Cheap no-op after the first call.
+static void warmAppstreamPool()
+{
+    static bool started = false;
+    if (started)
+        return;
+    started = true;
+    QObject::connect(&appstreamPool(), &AppStream::Pool::loadFinished, &appstreamPool(), [](bool success) {
+        appstreamPoolReady() = success;
+        if (!success)
+            qWarning() << "AppGrid: AppStream pool load failed:" << appstreamPool().lastError();
+    });
+    appstreamPool().loadAsync();
+}
+
+// Canonical AppStream component id for a desktop id (e.g. "org.kde.kate.desktop"),
+// or empty when the pool has no matching component (or is still warming).
+static QString resolveAppStreamId(const QString &desktopId)
+{
+    if (!appstreamPoolReady())
+        return {};
+    const auto components = appstreamPool().componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
+    for (const AppStream::Component &component : components) {
+        if (!component.id().isEmpty())
+            return component.id();
+    }
+    return {};
 }
 
 bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
@@ -444,123 +524,58 @@ bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
     auto service = KService::serviceByStorageId(storageId);
     if (!service)
         return false;
+
+    // The .desktop we would launch from is the installed copy, so its
+    // location authoritatively identifies the backend (PackageKit / Flatpak
+    // / Snap) — more reliable than the AppStream id, which on its own can't
+    // tell apart multiple sources of the same component.
     const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    // 1.8.0 ships the menu only for Flatpak — system (PackageKit) and
-    // Snap routes hit Discover's multi-backend ambiguity that we can't
-    // disambiguate without spawning plasma-discover or pulling in a
-    // dedicated AppStream dep. Tracked in #119.
-    const auto source = AppModel::detectInstallSource(service->exec(), resolvedPath);
-    if (source != QLatin1String("Flatpak"))
+    const QString backend = backendForSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    if (backend.isEmpty() || !discoverBackendInstalled(backend))
         return false;
-    return discoverBackendInstalled(QStringLiteral("flatpak"));
-}
 
-// --- AppStream component id resolver --------------------------------
-// AppStreamQt (AppStream::Pool::componentsById) would be the canonical
-// way to do this in-process, but pulling in libappstream-qt for one
-// lookup per right-click adds a build + runtime dep across every distro
-// package for negligible gain. We read the per-app metainfo XML files
-// directly instead — same source data Discover's pool indexes from.
-// --------------------------------------------------------------------
-
-// Standard locations for per-app AppStream metainfo files. Covers
-// distro-installed metadata + Flatpak's system and user exports.
-static QStringList metainfoSearchDirs()
-{
-    QStringList dirs;
-    for (const auto &base : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)) {
-        dirs << base + QStringLiteral("/metainfo");
-        dirs << base + QStringLiteral("/appdata");
-    }
-    dirs << QStringLiteral("/var/lib/flatpak/exports/share/metainfo");
-    dirs << QDir::homePath() + QStringLiteral("/.local/share/flatpak/exports/share/metainfo");
-    return dirs;
-}
-
-// Read the <id> element from an AppStream metainfo XML file. Returns
-// empty if the file can't be opened or doesn't declare an id.
-static QString readIdFromMetainfo(const QString &path)
-{
-    QFile f(path);
-    if (!f.open(QIODevice::ReadOnly))
-        return {};
-    QXmlStreamReader xml(&f);
-    while (!xml.atEnd()) {
-        xml.readNext();
-        if (xml.isStartElement() && xml.name() == QLatin1String("id"))
-            return xml.readElementText().trimmed();
-    }
-    return {};
-}
-
-// Scan known metainfo locations for any file whose basename matches one
-// of @p basenames (with either .metainfo.xml or .appdata.xml suffix) and
-// return the first <id> found.
-static QString scanMetainfoForId(const QStringList &basenames)
-{
-    static const QStringList suffixes{
-        QStringLiteral(".metainfo.xml"),
-        QStringLiteral(".appdata.xml"),
-    };
-    for (const auto &dir : metainfoSearchDirs()) {
-        for (const auto &name : basenames) {
-            for (const auto &sfx : suffixes) {
-                const QString id = readIdFromMetainfo(dir + QLatin1Char('/') + name + sfx);
-                if (!id.isEmpty())
-                    return id;
-            }
-        }
-    }
-    return {};
-}
-
-// Resolve the AppStream component id for @p storageId. AppStream's spec
-// is inconsistent about the .desktop suffix (legacy keeps it, modern
-// strips it); reading each app's metainfo <id> returns whichever form
-// that specific component declares. Falls back to the storage id when
-// no metainfo file exists. Cached per session.
-static QString resolveAppStreamId(const QString &storageId)
-{
-    static QHash<QString, QString> cache;
-    const auto cached = cache.constFind(storageId);
-    if (cached != cache.constEnd())
-        return *cached;
-
-    QString stripped = storageId;
-    if (stripped.endsWith(QLatin1String(".desktop")))
-        stripped.chop(8);
-    QStringList basenames{storageId};
-    if (stripped != storageId)
-        basenames << stripped;
-
-    const QString found = scanMetainfoForId(basenames);
-    const QString resolved = found.isEmpty() ? storageId : found;
-    cache.insert(storageId, resolved);
-    return resolved;
+    // Only offer the menu when AppStream actually knows the component, so we
+    // never open Discover on a dead appstream:// id.
+    return !resolveAppStreamId(service->desktopEntryName() + QLatin1String(".desktop")).isEmpty();
 }
 
 void AppGridPlugin::openInDiscover(const QString &storageId)
 {
     if (storageId.isEmpty() || !isDiscoverAvailable())
         return;
-
-    // Prefer X-AppStream-Component if the .desktop file declares one;
-    // otherwise resolve the canonical id by asking AppStream which form
-    // (.desktop-suffixed or stripped) it actually has registered.
-    QString appId;
     auto service = KService::serviceByStorageId(storageId);
-    if (service) {
-        KDesktopFile desktopFile(service->entryPath());
-        appId = desktopFile.desktopGroup().readEntry("X-AppStream-Component", QString());
-    }
-    if (appId.isEmpty())
-        appId = resolveAppStreamId(storageId);
+    if (!service)
+        return;
 
-    // appstream:// is the distro-agnostic entry point — Discover's
-    // registered URL handler resolves the component through whichever
-    // backend (PackageKit, Flatpak, Fwupd) owns it.
-    auto *job = new KIO::OpenUrlJob(QUrl(QStringLiteral("appstream://") + appId));
-    job->start();
+    // X-AppStream-Component wins if the .desktop declares one; otherwise ask
+    // the AppStream pool for the canonical id.
+    KDesktopFile desktopFile(service->entryPath());
+    QString appId = desktopFile.desktopGroup().readEntry("X-AppStream-Component", QString());
+    if (appId.isEmpty())
+        appId = resolveAppStreamId(service->desktopEntryName() + QLatin1String(".desktop"));
+    if (appId.isEmpty())
+        return;
+
+    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
+    const QString backend = backendForSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+
+    // Target the backend that owns the installed copy so a multi-source app
+    // (e.g. Flatpak + distro) opens the right version instead of Discover's
+    // first match. CommandLauncherJob is KDE's launcher wrapper — carries the
+    // desktop activation token + startup notification. Fall back to the bare
+    // URL when the backend is unknown.
+    if (!backend.isEmpty()) {
+        // Discover's --backends identifies a backend by its plugin name,
+        // which carries the -backend suffix (see `plasma-discover --listbackends`).
+        const QString discoverBackend = backend + QStringLiteral("-backend");
+        auto *job = new KIO::CommandLauncherJob(
+            QStringLiteral("plasma-discover"),
+            {QStringLiteral("--backends"), discoverBackend, QStringLiteral("--application"), QStringLiteral("appstream://") + appId});
+        job->start();
+    } else {
+        auto *job = new KIO::OpenUrlJob(QUrl(QStringLiteral("appstream://") + appId));
+        job->start();
+    }
 }
 
 QVariantList AppGridPlugin::listDirectory(const QString &path)

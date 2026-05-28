@@ -56,6 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
     krunner
     kirigami
     layer-shell-qt
+    # AppStream Qt6 bindings (kdePackages set, not the top-level attr).
+    appstream-qt
   ];
 
   cmakeFlags = [

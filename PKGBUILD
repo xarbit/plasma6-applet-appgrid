@@ -15,6 +15,7 @@ depends=(
     'ki18n'
     'kiconthemes'
     'layer-shell-qt'
+    'appstream-qt'
 )
 makedepends=(
     'cmake'
@@ -28,6 +29,7 @@ makedepends=(
     'krunner'
     'kwindowsystem'
     'kiconthemes'
+    'appstream-qt'
     'gettext'
 )
 source=()

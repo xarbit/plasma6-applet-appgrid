@@ -112,6 +112,10 @@ find_package(PlasmaQuick REQUIRED)
 # Plasma Activities see AppGrid as a contributing launcher. We do NOT read from
 # KActivities — see #95 close-out for the rationale.
 find_package(PlasmaActivities REQUIRED)
+# AppStream metadata pool — resolves an app's .desktop id to its canonical
+# component id across all backends (distro/PackageKit, Flatpak, Snap) for
+# the "Manage in Discover" action. Same resolver Kicker and Discover use.
+find_package(AppStreamQt REQUIRED)
 
 set(APPGRID_COMMON_LIBS
     Qt6::Quick
@@ -128,6 +132,7 @@ set(APPGRID_COMMON_LIBS
     Plasma::PlasmaQuick
     KF6::Runner
     Plasma::Activities
+    AppStreamQt
 )
 
 # Assemble a complete plasmoid package for ${variant} under the build tree
