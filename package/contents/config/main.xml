@@ -108,7 +108,7 @@
     </entry>
     <entry name="shakeOnOpen" type="Bool">
       <label>Whether to shake all icons when the grid opens.</label>
-      <default>true</default>
+      <default>false</default>
     </entry>
     <entry name="searchAll" type="Bool">
       <label>Whether search covers all apps regardless of active category or favorites filter.</label>
