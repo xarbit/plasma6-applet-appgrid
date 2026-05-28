@@ -109,11 +109,27 @@ Kirigami.ShadowedRectangle {
     readonly property real panelWidth: estCellWidth * columns + panelMargin * 2
     readonly property real panelHeight: estCellHeight * rows + panelMargin * 2 + headerHeight
 
-    width: Math.min(panelWidth, Screen.width * 0.9)
-    height: Math.min(panelHeight, Screen.height * 0.9)
+    // Center variant: GridWindow centers a fixed-size panel, so the size
+    // is hard-bound to the icon-grid estimate.
+    // Panel variant: only seed the *initial* popup size via implicitWidth/
+    // Height and leave width/height + preferred size unbound, so Plasma's
+    // own popup-resize persistence owns it. A hard preferred-size binding
+    // re-asserted the estimate on every layout pass (e.g. a monitor wake)
+    // and snapped the user's edge-drag back, shrinking the popup (#146).
+    implicitWidth: nativePopup ? panelWidth : 0
+    implicitHeight: nativePopup ? panelHeight : 0
 
-    Layout.preferredWidth: width
-    Layout.preferredHeight: height
+    Binding on width {
+        when: !panel.nativePopup
+        value: Math.min(panel.panelWidth, Screen.width * 0.9)
+    }
+    Binding on height {
+        when: !panel.nativePopup
+        value: Math.min(panel.panelHeight, Screen.height * 0.9)
+    }
+
+    Layout.preferredWidth: nativePopup ? -1 : width
+    Layout.preferredHeight: nativePopup ? -1 : height
     Layout.minimumWidth: nativePopup ? Kirigami.Units.gridUnit * 12 : width
     Layout.minimumHeight: nativePopup ? Kirigami.Units.gridUnit * 12 : height
     radius: nativePopup ? 0
