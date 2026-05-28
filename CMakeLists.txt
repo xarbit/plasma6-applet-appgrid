@@ -165,6 +165,8 @@ set(APPGRID_SOURCES
     src/appfiltermodel.h
     src/categorymapping.cpp
     src/categorymapping.h
+    src/pluginhelpers.cpp
+    src/pluginhelpers.h
     src/runnerfiltermodel.cpp
     src/runnerfiltermodel.h
     src/unifiedsearchmodel.cpp
@@ -217,6 +219,8 @@ set(APPGRID_PANEL_SOURCES
     src/appfiltermodel.h
     src/categorymapping.cpp
     src/categorymapping.h
+    src/pluginhelpers.cpp
+    src/pluginhelpers.h
     src/runnerfiltermodel.cpp
     src/runnerfiltermodel.h
     src/unifiedsearchmodel.cpp

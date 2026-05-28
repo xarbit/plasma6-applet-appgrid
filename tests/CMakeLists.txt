@@ -48,6 +48,16 @@ appgrid_add_test(test_category_mapping
 # (system theme switch). Both flow through KIconLoader::iconChanged.
 appgrid_add_test(test_appmodel)
 
+# Pure helpers extracted from AppGridPlugin — no Plasma deps, so a light
+# standalone target instead of the model-heavy appgrid_add_test().
+add_executable(test_pluginhelpers
+    test_pluginhelpers.cpp
+    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
+    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.h
+)
+target_link_libraries(test_pluginhelpers PRIVATE Qt6::Test Qt6::Core)
+add_test(NAME test_pluginhelpers COMMAND test_pluginhelpers)
+
 # UpdateChecker only exists in universal builds; gate the test to match so
 # distro-package CI runs (which don't compile updatechecker.cpp) don't try
 # to link against missing symbols.

@@ -5,6 +5,8 @@
 
 #include "appgridplugin.h"
 
+#include "pluginhelpers.h"
+
 #include <KDesktopFile>
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/OpenUrlJob>
@@ -336,15 +338,16 @@ void AppGridPlugin::runCommand(const QString &command, const QString &shell)
 
 QStringList AppGridPlugin::availableShells()
 {
-    QStringList shells;
     QFile file(QStringLiteral("/etc/shells"));
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&file);
-        while (!in.atEnd()) {
-            const QString line = in.readLine().trimmed();
-            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && QFile::exists(line))
-                shells.append(line);
-        }
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+    const QString contents = QString::fromUtf8(file.readAll());
+
+    QStringList shells;
+    const auto candidates = PluginHelpers::parseShells(contents);
+    for (const QString &shell : candidates) {
+        if (QFile::exists(shell))
+            shells.append(shell);
     }
     return shells;
 }
@@ -562,49 +565,7 @@ void AppGridPlugin::openInDiscover(const QString &storageId)
 
 QVariantList AppGridPlugin::listDirectory(const QString &path)
 {
-    QString expanded = path;
-    if (expanded.startsWith(QLatin1Char('~')))
-        expanded = QDir::homePath() + expanded.mid(1);
-
-    // Split into directory + filter for partial paths
-    QDir dir(expanded);
-    QString filter;
-    if (!dir.exists()) {
-        QFileInfo fi(expanded);
-        dir = QDir(fi.path());
-        filter = fi.fileName();
-        if (!dir.exists())
-            return {};
-    }
-
-    QVariantList result;
-    QMimeDatabase mimeDb;
-
-    dir.setFilter(QDir::AllEntries | QDir::NoDot);
-    dir.setSorting(QDir::DirsFirst | QDir::Name | QDir::IgnoreCase);
-
-    const auto entries = dir.entryInfoList();
-    for (const auto &entry : entries) {
-        if (!filter.isEmpty() && !entry.fileName().contains(filter, Qt::CaseInsensitive))
-            continue;
-
-        QVariantMap item;
-        item[QStringLiteral("name")] = entry.fileName();
-        item[QStringLiteral("path")] = entry.absoluteFilePath();
-        item[QStringLiteral("isDir")] = entry.isDir();
-
-        if (entry.isDir()) {
-            item[QStringLiteral("icon")] = QStringLiteral("folder");
-        } else {
-            const auto mime = mimeDb.mimeTypeForFile(entry);
-            item[QStringLiteral("icon")] = mime.iconName();
-        }
-
-        result.append(item);
-        if (result.size() >= 200)
-            break;
-    }
-    return result;
+    return PluginHelpers::listDirectoryAt(path);
 }
 
 // --- System info ---
@@ -625,17 +586,9 @@ QVariantMap AppGridPlugin::systemInfo()
     // OS info from /etc/os-release
     QFile osRelease(QStringLiteral("/etc/os-release"));
     if (osRelease.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&osRelease);
-        while (!in.atEnd()) {
-            const auto line = in.readLine();
-            if (line.startsWith(QLatin1String("PRETTY_NAME="))) {
-                auto val = line.mid(12);
-                if (val.startsWith('"') && val.endsWith('"'))
-                    val = val.mid(1, val.length() - 2);
-                info[QStringLiteral("os")] = val;
-                break;
-            }
-        }
+        const QString pretty = PluginHelpers::parseOsPrettyName(QString::fromUtf8(osRelease.readAll()));
+        if (!pretty.isEmpty())
+            info[QStringLiteral("os")] = pretty;
     }
 
     // Screen info
