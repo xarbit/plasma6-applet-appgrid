@@ -24,6 +24,7 @@ ListView {
     property PlasmaComponents.TextField searchField: null
     property real iconSize: Kirigami.Units.iconSizes.huge
     property bool showDividers: true
+    property bool shadowEnabled: false
 
     signal launched(int index)
     signal contextMenuRequested(int index, string storageId, string desktopFile)
@@ -308,6 +309,7 @@ ListView {
                 implicitWidth: listView.iconSize
                 implicitHeight: listView.iconSize
                 source: model.iconName || "application-x-executable"
+                shadowEnabled: listView.shadowEnabled
             }
 
             ColumnLayout {

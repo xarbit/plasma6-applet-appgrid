@@ -15,9 +15,6 @@
 import QtQuick
 import QtQuick.Effects
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.plasmoid
-
-import "../controllers"
 
 Item {
     id: root
@@ -25,22 +22,20 @@ Item {
     property alias source: icon.source
     property alias active: icon.active
 
+    required property bool shadowEnabled
+
     implicitWidth: icon.implicitWidth
     implicitHeight: icon.implicitHeight
-
-    ConfigCache { id: cfg; source: Plasmoid.configuration }
-
-    readonly property alias _shadowEnabled: cfg.iconShadow
 
     Kirigami.Icon {
         id: icon
         anchors.fill: parent
-        visible: !root._shadowEnabled
+        visible: !root.shadowEnabled
     }
 
     Loader {
         anchors.fill: icon
-        active: root._shadowEnabled
+        active: root.shadowEnabled
         sourceComponent: MultiEffect {
             source: icon
             shadowEnabled: true

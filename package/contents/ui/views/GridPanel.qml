@@ -590,6 +590,7 @@ Kirigami.ShadowedRectangle {
             ShadowedIcon {
                 visible: panel.showSearchResults && panel.currentResultIcon !== ""
                 source: panel.currentResultIcon
+                shadowEnabled: cfg.iconShadow
                 Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: Kirigami.Units.iconSizes.medium
                 Layout.preferredHeight: Kirigami.Units.iconSizes.medium
@@ -678,6 +679,7 @@ Kirigami.ShadowedRectangle {
             model: panel.isSearching ? panel.searchModel : null
             iconSize: panel.gridIconSize
             showDividers: panel.cfgShowDividers
+            shadowEnabled: cfg.iconShadow
             animateHighlight: cfg.hoverAnimation > 0
             searchField: searchBar.field
             onLaunched: function(index) { panel.launchSearchResult(index) }

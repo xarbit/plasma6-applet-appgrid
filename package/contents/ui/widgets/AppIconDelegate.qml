@@ -148,6 +148,7 @@ Item {
                 id: delegateIcon
                 anchors.fill: parent
                 source: root.displayIcon || root.appIcon || "application-x-executable"
+                shadowEnabled: cfg.iconShadow
                 active: delegateMouse.containsMouse || root.isCurrentItem
                 transformOrigin: Item.Center
             }
