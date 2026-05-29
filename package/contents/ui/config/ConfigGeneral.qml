@@ -51,6 +51,15 @@ KCM.SimpleKCM {
             checked: dropArea.containsAcceptableDrag
             onPressed: iconMenu.opened ? iconMenu.close() : iconMenu.open()
 
+            QQC2.ToolTip.text: i18ndc("dev.xarbit.appgrid",
+                                      "@info:tooltip %1 is the icon-theme name or, if an image was dropped in, the file path of the configured launcher icon",
+                                      "Icon name is \"%1\"",
+                                      page.cfg_useCustomButtonImage
+                                          ? page.cfg_customButtonImage
+                                          : page.cfg_icon)
+            QQC2.ToolTip.visible: iconButton.hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+
             DragDrop.DropArea {
                 id: dropArea
                 property bool containsAcceptableDrag: false
