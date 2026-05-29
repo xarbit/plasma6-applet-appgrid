@@ -120,7 +120,7 @@ Item {
 
         // Build the launcher window ahead of the click, while the cursor is
         // still travelling to the icon.
-        onContainsMouseChanged: if (containsMouse) kicker.preloadWindow()
+        onContainsMouseChanged: if (containsMouse) appgrid.preloadWindow()
 
         Accessible.name: Plasmoid.title
         Accessible.role: Accessible.Button
@@ -136,6 +136,6 @@ Item {
             }
         }
 
-        onClicked: kicker.toggleWindow()
+        onClicked: appgrid.toggleWindow()
     }
 }

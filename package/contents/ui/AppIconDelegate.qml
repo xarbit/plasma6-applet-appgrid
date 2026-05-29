@@ -231,7 +231,7 @@ Item {
 
     // -- Drag handler for favorites reordering and external drag-out --
     // A DragHandler on this delegate activates the shared DragSource (see
-    // kicker.dragSource / DragSource.qml). Internal reorder identifies "our"
+    // appgrid.dragSource / DragSource.qml). Internal reorder identifies "our"
     // drags via dragSource.isOwnDrag(drag) and reads dragSource.sourceItem
     // (set to this delegate). External drop targets receive `text/uri-list`
     // pointing at the app's .desktop file.
