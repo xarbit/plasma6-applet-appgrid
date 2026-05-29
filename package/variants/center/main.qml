@@ -135,7 +135,9 @@ PlasmoidItem {
             runCommand: function(cmd, shell) { Plasmoid.runCommand(cmd, shell) }
             runRunnerResult: function(idx) { return Plasmoid.runRunnerResult(idx) }
             updateChecker: Plasmoid.updateChecker
-            favoritesClientInstance: "dev.xarbit.appgrid.favorites.instance-" + Plasmoid.id
+            // Stable, instance-independent client id so favorites survive
+            // widget remove/re-add (Plasmoid.id changes each time) — #147.
+            favoritesClientInstance: "dev.xarbit.appgrid.favorites"
             appActions: function(sid) { return Plasmoid.appActions(sid) }
             launchAppAction: function(sid, idx) { Plasmoid.launchAppAction(sid, idx) }
             canManageInDiscover: function(sid) { return Plasmoid.canManageInDiscover(sid) }
