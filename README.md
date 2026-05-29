@@ -42,6 +42,7 @@ Maintained by third-party contributors, **not** by the AppGrid project. They are
 |---|---|---|
 | **openSUSE** | [OBS package](https://build.opensuse.org/package/show/home:JMarcosHP01/plasma6-applet-appgrid) | [@JMarcosHP01](https://github.com/JMarcosHP01) |
 | **Gentoo** | [Overlay](https://github.com/mnalmahmud/mnalmahmud-overlay) | [@mnalmahmud](https://github.com/mnalmahmud) |
+| **Fedora** (Terra) | [Terra package](https://github.com/terrapkg/packages/blob/frawhide/anda/desktops/kde/plasma6-applet-appgrid/plasma6-applet-appgrid.spec) | [@hilltty](https://github.com/hilltty) |
 
 If you maintain an AppGrid package for a distro not listed here, open an issue and we will add you.
 
