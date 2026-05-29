@@ -22,7 +22,7 @@ function nextIndex(currentIndex, count, step, wrap) {
     }
 
     if (step > 0) {
-        // The list pre-selects the top match (index 0), so Down from there
+        // The list preselects the top match (index 0), so Down from there
         // skips to 1 — otherwise the first press appears to do nothing.
         if (idx <= 0)
             return 1
