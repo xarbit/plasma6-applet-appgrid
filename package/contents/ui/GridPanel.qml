@@ -229,7 +229,12 @@ Kirigami.ShadowedRectangle {
                 return
             }
             if (status === Loader.Ready && item) {
-                item.initForClient("dev.xarbit.appgrid.favorites.instance-" + Plasmoid.id)
+                // Stable, instance-independent client id. Keying it to
+                // Plasmoid.id meant favorites were lost on every widget
+                // remove/re-add (the id changes) and fresh instances got
+                // re-seeded with Plasma defaults — #147. Favorites carry over
+                // because the KActivities links live in the shared store.
+                item.initForClient("dev.xarbit.appgrid.favorites")
                 // Probe the well-known Kicker::FavoriteIdRole at runtime
                 // (see _kickerFavoriteIdRole comment). If the data at that
                 // role isn't a string, Plasma's enum has shifted and reorder
