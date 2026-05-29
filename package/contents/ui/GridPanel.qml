@@ -595,16 +595,22 @@ Kirigami.ShadowedRectangle {
                         }
                     }
                 }
-                function navigateToResults() {
+                readonly property int resultNavPrevious: -1
+                readonly property int resultNavNext: 1
+                function navigateToResults(step) {
                     if (panel.isSearching && !panel.isPrefixMode) {
-                        if (searchResultsList.count > 1) {
-                            searchResultsList.forceActiveFocus()
-                            // Respect a hover-set position; otherwise skip the
-                            // default top row so Down advances visibly.
-                            if (searchResultsList.currentIndex <= 0)
+                        const count = searchResultsList.count
+                        if (count > 1) {
+                            const idx = searchResultsList.currentIndex
+                            if (step < 0) {
+                                if (idx <= 0)
+                                    return
+                                searchResultsList.currentIndex = idx - 1
+                            } else if (idx <= 0) {
                                 searchResultsList.currentIndex = 1
-                        } else if (searchResultsList.count === 1) {
-                            searchResultsList.forceActiveFocus()
+                            } else if (step > 0) {
+                                searchResultsList.currentIndex = Math.min(count - 1, idx + 1)
+                            }
                         }
                     } else if (panel.showCategoryGrid) {
                         categoryGridView.forceActiveFocus()
@@ -630,9 +636,13 @@ Kirigami.ShadowedRectangle {
                         prefixModeView.focusFileList()
                         return
                     }
-                    navigateToResults()
+                    navigateToResults(resultNavNext)
                 }
-                onTabPressed: navigateToResults()
+                onMoveUp: {
+                    if (panel.isSearching && !panel.isPrefixMode)
+                        navigateToResults(resultNavPrevious)
+                }
+                onTabPressed: navigateToResults(resultNavNext)
                 onPageUp: if (panel.showSearchResults) searchResultsList.pageUp()
                 onPageDown: if (panel.showSearchResults) searchResultsList.pageDown()
                 onHome: if (panel.showSearchResults) searchResultsList.goHome()

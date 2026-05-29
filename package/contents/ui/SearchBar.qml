@@ -18,6 +18,7 @@ RowLayout {
 
     signal accepted()
     signal moveDown()
+    signal moveUp()
     signal tabPressed()
     signal pageUp()
     signal pageDown()
@@ -51,6 +52,7 @@ RowLayout {
         Keys.onReturnPressed: searchBar.accepted()
         Keys.onEnterPressed: searchBar.accepted()
         Keys.onDownPressed: searchBar.moveDown()
+        Keys.onUpPressed: searchBar.moveUp()
         Keys.onTabPressed: searchBar.tabPressed()
         Keys.onPressed: function(event) {
             switch (event.key) {
