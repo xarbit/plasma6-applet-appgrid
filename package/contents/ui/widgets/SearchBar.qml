@@ -31,8 +31,8 @@ RowLayout {
     spacing: Kirigami.Units.smallSpacing
 
     Kirigami.Icon {
-        implicitWidth: Kirigami.Units.iconSizes.smallMedium
-        implicitHeight: Kirigami.Units.iconSizes.smallMedium
+        implicitWidth: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.smallSpacing
+        implicitHeight: Kirigami.Units.iconSizes.smallMedium + Kirigami.Units.smallSpacing
         source: "search-symbolic"
         opacity: 0.5
     }

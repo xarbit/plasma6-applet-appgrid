@@ -336,11 +336,13 @@ Kirigami.ShadowedRectangle {
     readonly property alias mirrorRequired: favorites.mirrorRequired
 
 
-    // Snap the panel height instantly on every compact-mode transition
-    // (open/close, typing into the search bar, revealing the grid) so
-    // children don't reflow inside an animating panel and the blur clip
-    // doesn't chase a shrinking surface during a close fade-out.
+    // Snap only when *entering* the compact (emptyHidden) state — the close
+    // fade-out can't have the blur region chasing a shrinking surface. The
+    // open direction (compact → revealed) keeps the height Behavior so the
+    // grid slides down smoothly.
     on_EmptyHiddenStateChanged: {
+        if (!_emptyHiddenState)
+            return
         _snapHeight = true
         Qt.callLater(function() { _snapHeight = false })
     }
