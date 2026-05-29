@@ -32,7 +32,6 @@ ListView {
     reuseItems: true
 
     currentIndex: count > 0 ? 0 : -1
-    keyNavigationEnabled: true
 
     property bool animateHighlight: true
     // Keyboard nav animates the highlight; hover-driven selects snap so the
@@ -200,67 +199,6 @@ ListView {
               ? i18nd("dev.xarbit.appgrid", "No results for \"%1\"", searchField.text)
               : ""
         visible: listView.count === 0 && searchField && searchField.text.length > 0
-    }
-
-    Keys.onReturnPressed: if (currentIndex >= 0) listView.launched(currentIndex)
-    Keys.onEnterPressed: if (currentIndex >= 0) listView.launched(currentIndex)
-
-    Keys.onPressed: function(event) {
-        if (event.modifiers & Qt.AltModifier) {
-            const num = event.key - Qt.Key_0
-            if (num >= 1 && num <= 9 && num <= count) {
-                launched(num - 1)
-                event.accepted = true
-                return
-            }
-        }
-
-        switch (event.key) {
-        case Qt.Key_PageDown: pageDown(); event.accepted = true; return
-        case Qt.Key_PageUp:   pageUp();   event.accepted = true; return
-        case Qt.Key_Home:     goHome();   event.accepted = true; return
-        case Qt.Key_End:      goEnd();    event.accepted = true; return
-        }
-
-        if (event.key === Qt.Key_Backspace || event.key === Qt.Key_Delete) {
-            searchField.forceActiveFocus()
-            searchField.text = searchField.text.slice(0, -1)
-            event.accepted = true
-        } else if (event.text.length > 0 && !event.modifiers) {
-            searchField.forceActiveFocus()
-            searchField.text += event.text
-            event.accepted = true
-        }
-    }
-
-    Keys.onDownPressed: {
-        if (currentIndex < count - 1)
-            currentIndex++
-    }
-
-    Keys.onUpPressed: {
-        if (currentIndex > 0)
-            currentIndex--
-        else if (searchField)
-            searchField.forceActiveFocus()
-    }
-
-    Keys.onTabPressed: {
-        if (currentIndex < count - 1)
-            currentIndex++
-        else
-            currentIndex = 0
-    }
-
-    Keys.onBacktabPressed: {
-        if (currentIndex > 0)
-            currentIndex--
-        else
-            currentIndex = count - 1
-    }
-
-    Keys.onEscapePressed: {
-        if (searchField) searchField.forceActiveFocus()
     }
 
     delegate: PlasmaComponents.ItemDelegate {
