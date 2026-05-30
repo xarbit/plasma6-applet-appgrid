@@ -9,8 +9,17 @@
 #include <PlasmaActivities/Stats/ResultModel>
 #include <PlasmaActivities/Stats/Terms>
 
+#include <QLoggingCategory>
+
+#include <algorithm>
+
 namespace KAStats = KActivities::Stats;
 namespace KASTerms = KActivities::Stats::Terms;
+
+// Opt-in via QT_LOGGING_RULES='appgrid.frecency.debug=true'. Used to triage
+// storage-id mismatches between KAStats's resource URIs and the .desktop ids
+// AppModel::StorageIdRole hands AppFilterModel.
+Q_LOGGING_CATEGORY(lcFrecency, "appgrid.frecency", QtWarningMsg)
 
 namespace
 {
@@ -76,7 +85,17 @@ void FrecencyProvider::rebuildScores()
 
     const int rows = m_model->rowCount();
     QHash<QString, int> next;
-    next.reserve(rows);
+    next.reserve(rows * 2);
+    const QLatin1String kdePrefix("org.kde.");
+    // Insert into the map keyed by `key`, but never demote an existing higher
+    // score (matters when two distinct apps collide on the normalised form).
+    const auto add = [&next](const QString &key, int score) {
+        if (key.isEmpty())
+            return;
+        const auto it = next.find(key);
+        if (it == next.end() || it.value() < score)
+            next.insert(key, score);
+    };
     for (int r = 0; r < rows; ++r) {
         const QModelIndex idx = m_model->index(r, 0);
         const QString resource = idx.data(KAStats::ResultModel::ResourceRole).toString();
@@ -85,11 +104,27 @@ void FrecencyProvider::rebuildScores()
             continue;
         // Rank-based score (top row = `rows`, last row = 1) instead of the
         // raw KAStats score. Stable ordering even as absolute scores drift.
-        next.insert(sid, rows - r);
+        const int score = rows - r;
+        add(sid, score);
+        // Same app, two common .desktop id shapes — different launchers /
+        // KDE eras stored Konsole as both "org.kde.konsole.desktop" and
+        // "konsole.desktop". AppModel::StorageIdRole may report either,
+        // so index both spellings so the AppFilterModel lookup hits.
+        if (sid.startsWith(kdePrefix))
+            add(sid.mid(kdePrefix.size()), score);
+        else
+            add(kdePrefix + sid, score);
     }
 
     if (next != m_scores) {
         m_scores = next;
+        if (lcFrecency().isDebugEnabled()) {
+            QStringList sample = m_scores.keys();
+            std::sort(sample.begin(), sample.end());
+            if (sample.size() > 10)
+                sample = sample.mid(0, 10);
+            qCDebug(lcFrecency) << "scores populated:" << m_scores.size() << "keys; sample:" << sample;
+        }
         Q_EMIT scoresChanged();
     }
 }

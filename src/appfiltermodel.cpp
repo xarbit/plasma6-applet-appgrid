@@ -109,6 +109,7 @@ QString AppFilterModel::ensureHaystack(int sourceRow) const
         idx.data(AppModel::NameRole).toString(),
         idx.data(AppModel::GenericNameRole).toString(),
         idx.data(AppModel::KeywordsRole).toStringList().join(QLatin1Char('\n')),
+        idx.data(AppModel::CommentRole).toString(),
         idx.data(AppModel::InstallSourceRole).toString(),
     };
     const QString hay = parts.join(QLatin1Char('\n')).toCaseFolded();
@@ -583,6 +584,15 @@ static int searchRelevance(const QModelIndex &idx, const QString &query)
     const auto generic = idx.data(AppModel::GenericNameRole).toString();
     if (containsAtWordBoundary(generic, query))
         return 2;
+    // Fallback: many .desktop files omit GenericName entirely (third-party
+    // apps especially), leaving Comment as the only descriptive field.
+    // Treat it as tier 2 only when GenericName is missing so apps that
+    // properly fill both don't get double-counted.
+    if (generic.isEmpty()) {
+        const auto comment = idx.data(AppModel::CommentRole).toString();
+        if (containsAtWordBoundary(comment, query))
+            return 2;
+    }
 
     const auto keywords = idx.data(AppModel::KeywordsRole).toStringList();
     for (const auto &kw : keywords) {

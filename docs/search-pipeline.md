@@ -89,7 +89,7 @@ better). The tiers, in order:
 |------|------------------------------------------------|----------------------------------|
 | 0    | name starts with query                         | **Ter**minal                    |
 | 1    | word-boundary substring in name                | VLC Media **Player** for "media" |
-| 2    | word-boundary substring in generic name        | **Terminal** Emulator           |
+| 2    | word-boundary substring in generic name (or in `Comment` if `GenericName` is empty) | **Terminal** Emulator |
 | 3    | keyword contains query                         | `terminal` keyword on Ghostty   |
 | 4    | mid-word substring in name (deep fallback)     | ghostwri**ter**, boos**ter**    |
 | 5    | no match (filtered out)                        | —                                |
