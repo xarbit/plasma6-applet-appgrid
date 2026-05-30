@@ -24,6 +24,7 @@ private slots:
     void launchCountStillBeatsDefaultAcrossTiers();
     void mostUsedJumpsOneTierUp();
     void mostUsedCannotJumpTwoTiers();
+    void keywordCannotLeapPastGenericMatch();
     void mostUsedCannotDethronePrefix();
     void wordBoundarySubstringBeatsMidword();
     void midwordSubstringCannotBeatGeneric();
@@ -31,6 +32,8 @@ private slots:
     void zeroCountDoesNotCrossTier();
     void frecencyTiebreakReplacesLaunchCount();
     void frecencyFallsBackToLaunchCountWhenMapEmpty();
+    void categoryMatchLandsInTier3();
+    void pluralQueryReachesSingularCategory();
 
 private:
     QString nameAt(int proxyRow) const;
@@ -169,24 +172,54 @@ void TestSearchRanking::launchCountStillBeatsDefaultAcrossTiers()
 
 void TestSearchRanking::mostUsedJumpsOneTierUp()
 {
-    // Ghostty matches "terminal" only via keyword (tier 3), Alacritty via
-    // generic name (tier 2). Ghostty is used much more — it should win.
+    // Heavy-use promotion still spans the 3↔4 boundary: a frequently used
+    // keyword match outranks a never-launched mid-word fallback. The 2↔3
+    // boundary used to also promote — see keywordCannotLeapPastGenericMatch
+    // for why it doesn't any more.
     m_source.setApps({
-        {QStringLiteral("Alacritty"), {}, {}, {},
-         QStringLiteral("Terminal Emulator"), QStringLiteral("alacritty.desktop"),
-         {}, {}, {}},
-        {QStringLiteral("Ghostty"), {}, {}, {},
-         QStringLiteral("GPU-Accelerated Console"), QStringLiteral("ghostty.desktop"),
+        // Mid-word "term" hit (tier 4): "Postermaker" has "term" mid-word.
+        {QStringLiteral("Postermaker"), {}, {}, {}, {},
+         QStringLiteral("postermaker.desktop"), {}, {}, {}},
+        // Keyword "terminal" → tier 3 for query "term".
+        {QStringLiteral("Ghostty"), {}, {}, {}, {},
+         QStringLiteral("ghostty.desktop"),
          {QStringLiteral("terminal")}, {}, {}},
     });
     QVariantMap counts;
     counts[QStringLiteral("ghostty.desktop")] = 50;
-    counts[QStringLiteral("alacritty.desktop")] = 1;
+    counts[QStringLiteral("postermaker.desktop")] = 1;
     m_filter.setLaunchCountsMap(counts);
-    m_filter.setSearchText(QStringLiteral("terminal"));
+    m_filter.setSearchText(QStringLiteral("term"));
     QCOMPARE(m_filter.count(), 2);
     QCOMPARE(nameAt(0), QStringLiteral("Ghostty"));
-    QCOMPARE(nameAt(1), QStringLiteral("Alacritty"));
+    QCOMPARE(nameAt(1), QStringLiteral("Postermaker"));
+}
+
+void TestSearchRanking::keywordCannotLeapPastGenericMatch()
+{
+    // Real-world regression: searching "games" surfaced Discover above Steam
+    // because Discover lists "games" in its Keywords (tier 3) and is used
+    // heavily, so the old ±1 promotion lifted it past Steam's Comment-fallback
+    // generic-tier-2 match. Categories=Game on Steam reinforces the result.
+    // Keep tier-3 keyword matches from leaping past tier-2 generic/Comment.
+    m_source.setApps({
+        // Steam: no GenericName → Comment fallback word-boundary "games" → tier 2.
+        {QStringLiteral("Steam"), {}, {}, {QStringLiteral("Game")}, {},
+         QStringLiteral("steam.desktop"), {},
+         QStringLiteral("Application for managing and playing games on Steam"), {}},
+        // Discover: Keywords mention games → tier 3, heavily used.
+        {QStringLiteral("Discover"), {}, {}, {QStringLiteral("System")},
+         QStringLiteral("Software Center"), QStringLiteral("discover.desktop"),
+         {QStringLiteral("apps"), QStringLiteral("games"), QStringLiteral("flatpak")},
+         QStringLiteral("Install and remove apps"), {}},
+    });
+    QVariantMap counts;
+    counts[QStringLiteral("discover.desktop")] = 500;
+    counts[QStringLiteral("steam.desktop")] = 0;
+    m_filter.setLaunchCountsMap(counts);
+    m_filter.setSearchText(QStringLiteral("games"));
+    QCOMPARE(nameAt(0), QStringLiteral("Steam"));
+    QCOMPARE(nameAt(1), QStringLiteral("Discover"));
 }
 
 void TestSearchRanking::mostUsedCannotJumpTwoTiers()
@@ -341,6 +374,39 @@ void TestSearchRanking::frecencyFallsBackToLaunchCountWhenMapEmpty()
     QCOMPARE(nameAt(0), QStringLiteral("Kate-A"));
 
     m_filter.setSearchUsesFrecency(false);
+}
+
+void TestSearchRanking::categoryMatchLandsInTier3()
+{
+    // Categories are searched at tier 3. "Empire" has no name/generic/keyword
+    // hit for "game", only Categories=Game. A mid-word "game" in another app's
+    // name lands at tier 4 — tier 3 ranks above.
+    m_source.setApps({
+        {QStringLiteral("Mygamestuff"), {}, {}, {}, {},
+         QStringLiteral("a"), {}, {}, {}},                                        // tier 4 (mid-word)
+        {QStringLiteral("Empire"), {}, {}, {QStringLiteral("Game")}, {},
+         QStringLiteral("b"), {}, {}, {}},                                        // tier 3 (category)
+    });
+    m_filter.setSearchText(QStringLiteral("game"));
+    QCOMPARE(m_filter.count(), 2);
+    QCOMPARE(nameAt(0), QStringLiteral("Empire"));
+    QCOMPARE(nameAt(1), QStringLiteral("Mygamestuff"));
+}
+
+void TestSearchRanking::pluralQueryReachesSingularCategory()
+{
+    // Typing "games" should still find an app whose Categories list is "Game"
+    // — the naive singularize() helper strips the trailing s for the filter +
+    // category check. Konsole has nothing matching "games" or "game" → drops.
+    m_source.setApps({
+        {QStringLiteral("Empire"), {}, {}, {QStringLiteral("Game")}, {},
+         QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("Konsole"), {}, {}, {QStringLiteral("System")},
+         QStringLiteral("Terminal"), QStringLiteral("b"), {}, {}, {}},
+    });
+    m_filter.setSearchText(QStringLiteral("games"));
+    QCOMPARE(m_filter.count(), 1);
+    QCOMPARE(nameAt(0), QStringLiteral("Empire"));
 }
 
 QTEST_MAIN(TestSearchRanking)

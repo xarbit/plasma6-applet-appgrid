@@ -166,6 +166,10 @@ private:
     // case-sensitive contains() against the cached lower-cased haystack
     // and avoid the per-character Unicode case-fold inside QString::contains.
     QString m_searchTextLower;
+    // Naive singular form of the query ("games" → "game"), or empty when the
+    // query doesn't end in s / is too short. Filter + ranking both consult
+    // it so a plural query against a singular category still matches.
+    QString m_searchTextLowerSingular;
     QStringList m_hiddenApps;
     QStringList m_favoriteApps;
     QStringList m_recentApps;

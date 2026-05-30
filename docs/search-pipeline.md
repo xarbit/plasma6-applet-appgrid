@@ -90,7 +90,7 @@ better). The tiers, in order:
 | 0    | name starts with query                         | **Ter**minal                    |
 | 1    | word-boundary substring in name                | VLC Media **Player** for "media" |
 | 2    | word-boundary substring in generic name (or in `Comment` if `GenericName` is empty) | **Terminal** Emulator |
-| 3    | keyword contains query                         | `terminal` keyword on Ghostty   |
+| 3    | keyword contains query, **or** any category contains it (e.g. `Game`, `ArcadeGame`, `OfficeApp`) | `terminal` keyword on Ghostty; `Game` category for an unnamed strategy app |
 | 4    | mid-word substring in name (deep fallback)     | ghostwri**ter**, boos**ter**    |
 | 5    | no match (filtered out)                        | —                                |
 
@@ -113,12 +113,18 @@ if (!endpointInvolved && std::abs(leftRel - rightRel) <= 1
 }
 ```
 
-The endpoint tiers are inviolate:
+The endpoint tiers are inviolate, **and** the 2↔3 boundary is closed too:
 
 - **Tier 0** (prefix) — must always win. A heavily-used `Spotter` never
   beats a never-used `Terminal` for query `ter`.
 - **Tier 4** (mid-word fallback) — must always lose. A heavily-used
   `ghostwriter` never beats a generic/keyword hit for query `ter`.
+- **Tier 2 ↔ Tier 3** (generic/Comment ↔ keyword/category) — also
+  blocked. Keywords are a marketing tag bag (Discover lists "games"
+  alongside "snap" and "addons"); generic name and Comment are
+  semantic signals. A heavy keyword match shouldn't leap past them
+  via launch count. Promotion still spans 1↔2 (heavy name substring
+  vs unused generic) and 3↔4 (heavy keyword vs noisy mid-word).
 
 ### Within-tier tiebreaks
 
