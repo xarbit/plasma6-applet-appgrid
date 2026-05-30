@@ -38,6 +38,7 @@ BuildRequires:  kf6-kwindowsystem-devel
 BuildRequires:  kf6-krunner-devel
 BuildRequires:  layer-shell-qt-devel
 BuildRequires:  plasma-activities-devel
+BuildRequires:  plasma-activities-stats-devel
 BuildRequires:  plasma-workspace-devel
 BuildRequires:  appstream-qt-devel
 

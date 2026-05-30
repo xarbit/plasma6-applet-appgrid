@@ -14,7 +14,8 @@ packages = [
     "qt6-base", "qt6-declarative",
     "libplasma", "kpackage", "kio", "kservice", "ki18n",
     "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
-    "layer-shell-qt", "plasma-activities", "plasma-workspace",
+    "layer-shell-qt", "plasma-activities", "plasma-activities-stats",
+    "plasma-workspace",
     "appstream-qt",
 ]
 install  = "sudo pacman -S --needed {packages}"
@@ -26,7 +27,8 @@ packages = [
     "qt6-qtbase", "qt6-qtdeclarative",
     "libplasma", "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
     "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
-    "layer-shell-qt", "plasma-activities", "plasma-workspace",
+    "layer-shell-qt", "plasma-activities", "plasma-activities-stats",
+    "plasma-workspace",
     "appstream-qt",
 ]
 install  = "sudo dnf install {packages}"
@@ -38,7 +40,7 @@ display  = "OpenMandriva Lx"
 packages = [
     "lib64Qt6Core", "lib64Qt6Gui", "lib64Qt6Quick", "lib64Qt6Qml",
     "lib64Qt6Network", "lib64Qt6DBus",
-    "lib64Plasma", "lib64PlasmaActivities",
+    "lib64Plasma", "lib64PlasmaActivities", "lib64PlasmaActivitiesStats",
     "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
     "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt", "plasma-workspace",
@@ -59,6 +61,7 @@ packages = [
     "libkf6windowsystem6", "libkf6runner6",
     "qml6-module-org-kde-kirigami",
     "liblayershellqtinterface6", "libplasmaactivities6",
+    "libplasmaactivitiesstats1",
     "plasma-workspace",
     "libappstreamqt3",
 ]
@@ -71,7 +74,7 @@ display  = "openSUSE / SUSE"
 packages = [
     "libQt6Core6", "libQt6Gui6", "libQt6Quick6", "libQt6Qml6",
     "libQt6Network6", "libQt6DBus6",
-    "libPlasma7", "libPlasmaActivities7",
+    "libPlasma7", "libPlasmaActivities7", "libPlasmaActivitiesStats1",
     "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
     "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt6", "plasma6-workspace",

@@ -46,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     libplasma
     plasma-workspace
     plasma-activities
+    plasma-activities-stats
     kpackage
     kio
     kservice

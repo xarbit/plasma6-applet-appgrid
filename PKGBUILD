@@ -16,6 +16,7 @@ depends=(
     'ki18n'
     'kiconthemes'
     'layer-shell-qt'
+    'plasma-activities-stats'
     'appstream-qt'
 )
 makedepends=(
@@ -30,6 +31,7 @@ makedepends=(
     'krunner'
     'kwindowsystem'
     'kiconthemes'
+    'plasma-activities-stats'
     'appstream-qt'
     'gettext'
 )

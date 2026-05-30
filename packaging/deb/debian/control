@@ -19,6 +19,7 @@ Build-Depends: debhelper-compat (= 13),
  libkf6windowsystem-dev,
  libkf6runner-dev,
  libplasmaactivities-dev,
+ libplasmaactivitiesstats-dev,
  liblayershellqtinterface-dev,
  plasma-workspace-dev,
  libappstreamqt-dev

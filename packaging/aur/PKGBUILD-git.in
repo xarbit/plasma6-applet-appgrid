@@ -33,6 +33,7 @@ depends=(
     'kwindowsystem'
     'kcmutils'
     'libplasma'
+    'plasma-activities-stats'
     'appstream-qt'
 )
 makedepends=(
