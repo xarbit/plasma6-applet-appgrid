@@ -16,13 +16,13 @@
 namespace KAStats = KActivities::Stats;
 namespace KASTerms = KActivities::Stats::Terms;
 
+namespace
+{
 // Opt-in via QT_LOGGING_RULES='appgrid.frecency.debug=true'. Used to triage
 // storage-id mismatches between KAStats's resource URIs and the .desktop ids
 // AppModel::StorageIdRole hands AppFilterModel.
 Q_LOGGING_CATEGORY(lcFrecency, "appgrid.frecency", QtWarningMsg)
 
-namespace
-{
 // Cap how many top-frecent apps we track. The ranking only needs enough rows
 // to win tiebreaks among search hits, not the full launch history.
 constexpr int kFrecencyLimit = 200;
@@ -85,7 +85,7 @@ void FrecencyProvider::rebuildScores()
 
     const int rows = m_model->rowCount();
     QHash<QString, int> next;
-    next.reserve(rows * 2);
+    next.reserve(static_cast<qsizetype>(rows) * 2);
     const QLatin1String kdePrefix("org.kde.");
     // Insert into the map keyed by `key`, but never demote an existing higher
     // score (matters when two distinct apps collide on the normalised form).

@@ -80,10 +80,16 @@ other patch:
   refactor or remove, sweep for dead code (unused includes, orphan
   helpers, comments referring to what you just deleted).
 - **Test it.** New behaviour should ship with coverage. CI runs
-  clang-format, clang-tidy, codespell, cppcheck, qmllint, ctest, and
-  the QtQuickTest harness — running them locally first saves a CI
-  round-trip
-  (`cmake --preset ci && cmake --build --preset ci && ctest --preset ci`).
+  clang-format, clang-tidy, codespell, cppcheck, qmllint, ctest and
+  the QtQuickTest harness — running the same set locally saves a
+  CI round-trip:
+  ```sh
+  cmake --preset ci && cmake --build --preset ci
+  # clang-tidy: strip the gcc-only flag clang doesn't grok, then run
+  sed -i 's/-mno-direct-extern-access//g' build-ci/compile_commands.json
+  run-clang-tidy -p build-ci -quiet -warnings-as-errors='*' 'src/.*\.cpp'
+  ctest --preset ci
+  ```
 - **Follow the style above.** KDE idioms, comments that explain the
   *why* and stay current, named properties over magic numbers, no
   dead or stale code.
