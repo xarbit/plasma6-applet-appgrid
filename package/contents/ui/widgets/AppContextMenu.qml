@@ -79,6 +79,16 @@ Item {
         reopenGuard.restart()
     }
 
+    // Kill the rubber-band overshoot when a menu overflows the popup and
+    // scrolls (long jumplists like Steam) — #154. Called on aboutToShow
+    // rather than Component.onCompleted because PlasmaComponents.Menu
+    // constructs contentItem lazily on first open; running earlier would
+    // silently no-op. The assignment is idempotent across re-opens.
+    function _stopMenuBounce(menu) {
+        if (menu.contentItem && "boundsBehavior" in menu.contentItem)
+            menu.contentItem.boundsBehavior = Flickable.StopAtBounds
+    }
+
     function showForApp(index, storageId, desktopFile, selectedSids) {
         if (storageId && _lastClosedStorageId === storageId) {
             _lastClosedStorageId = ""
@@ -166,6 +176,7 @@ Item {
         id: singleMenu
 
         onAboutToHide: contextMenu._trackClose()
+        onAboutToShow: contextMenu._stopMenuBounce(singleMenu)
 
         Instantiator {
             model: contextMenu.popupActions
@@ -265,6 +276,7 @@ Item {
         id: bulkMenu
 
         onAboutToHide: contextMenu._trackClose()
+        onAboutToShow: contextMenu._stopMenuBounce(bulkMenu)
 
         // Add N inserts at 0 (top). Remove N lands at 0 or 1 based on
         // whether Add N is already present — both at top, Add N above.
