@@ -171,12 +171,12 @@ void AppFilterModel::rebuildKnownSet()
 // Relevance tiers used by searchRelevance() and the promotion guard in
 // lessThan(). Lower number = better match. Named so the comparison sites
 // don't carry bare integers.
-constexpr int kTierNamePrefix = 0;          // name starts with query
-constexpr int kTierNameWordBoundary = 1;    // word-boundary substring in name
-constexpr int kTierGeneric = 2;             // word-boundary in generic name / Comment fallback
-constexpr int kTierKeyword = 3;             // keyword or category contains query
-constexpr int kTierNameMidword = 4;         // mid-word substring fallback
-constexpr int kTierNoMatch = 5;             // filtered out
+constexpr int kTierNamePrefix = 0; // name starts with query
+constexpr int kTierNameWordBoundary = 1; // word-boundary substring in name
+constexpr int kTierGeneric = 2; // word-boundary in generic name / Comment fallback
+constexpr int kTierKeyword = 3; // keyword or category contains query
+constexpr int kTierNameMidword = 4; // mid-word substring fallback
+constexpr int kTierNoMatch = 5; // filtered out
 
 // Naive plural strip: "games" → "game". Capped at queries of 4+ chars so
 // short tokens like "es"/"is"/"os" don't lose their final letter. Lets a
@@ -576,9 +576,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
         // the singular form so "games" still reaches a row whose category
         // is "Game"/"ArcadeGame"/etc.
         const auto &haystack = ensureHaystack(sourceRow);
-        if (!haystack.contains(m_searchTextLower)
-            && (m_searchTextLowerSingular.isEmpty()
-                || !haystack.contains(m_searchTextLowerSingular)))
+        if (!haystack.contains(m_searchTextLower) && (m_searchTextLowerSingular.isEmpty() || !haystack.contains(m_searchTextLowerSingular)))
             return false;
     }
 
@@ -694,8 +692,7 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
             //   kTierNamePrefix — must always win
             //   kTierNameMidword — must always lose
             const bool endpointInvolved =
-                leftRel == kTierNamePrefix || rightRel == kTierNamePrefix
-                || leftRel == kTierNameMidword || rightRel == kTierNameMidword;
+                leftRel == kTierNamePrefix || rightRel == kTierNamePrefix || leftRel == kTierNameMidword || rightRel == kTierNameMidword;
             // Also block the generic↔keyword boundary so a heavy *keyword*
             // match can't leap past a generic-name / Comment match.
             // Keywords are a marketing tag bag (Discover lists "games"
@@ -703,10 +700,8 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
             // semantic signal. The promotions that motivated the rule
             // (name-substring vs generic, keyword vs mid-word) still fire.
             const bool keywordVsGenericBoundary =
-                (leftRel == kTierGeneric && rightRel == kTierKeyword)
-                || (leftRel == kTierKeyword && rightRel == kTierGeneric);
-            if (!endpointInvolved && !keywordVsGenericBoundary
-                && std::abs(leftRel - rightRel) <= 1 && leftCount != rightCount) {
+                (leftRel == kTierGeneric && rightRel == kTierKeyword) || (leftRel == kTierKeyword && rightRel == kTierGeneric);
+            if (!endpointInvolved && !keywordVsGenericBoundary && std::abs(leftRel - rightRel) <= 1 && leftCount != rightCount) {
                 return leftCount > rightCount;
             }
             return leftRel < rightRel;

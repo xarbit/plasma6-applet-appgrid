@@ -19,6 +19,7 @@ set(TEST_COMMON_LIBS
     KF6::CoreAddons
     KF6::KIOGui
     KF6::IconThemes
+    KF6::Runner
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -74,6 +75,20 @@ if(APPGRID_UNIVERSAL_BUILD)
         APPGRID_UNIVERSAL_BUILD
         "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
     add_test(NAME test_updatechecker COMMAND test_updatechecker)
+endif()
+
+# --- clang-format check ---
+# Mirrors the CI clang-format step so `ctest --preset ci` fails locally
+# before CI does. Skipped when clang-format isn't on PATH (distro-package
+# CI runners install it; user dev shells usually have it too).
+find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format)
+if(CLANG_FORMAT_EXECUTABLE)
+    add_test(
+        NAME format_check
+        COMMAND bash -c
+            "cd '${CMAKE_SOURCE_DIR}' && git ls-files 'src/*.cpp' 'src/*.h' \
+             | xargs '${CLANG_FORMAT_EXECUTABLE}' --dry-run -Werror"
+    )
 endif()
 
 # --- QML tests (QtQuickTest) ---
