@@ -715,7 +715,7 @@ Kirigami.ShadowedRectangle {
             onLaunched: function(index) { panel.launchSearchResult(index) }
             onContextMenuRequested: function(index, storageId, desktopFile) {
                 if (storageId)
-                    contextMenu.showForApp(-1, storageId, desktopFile)
+                    contextMenu.showForApp(storageId, desktopFile)
             }
             onRunnerContextMenuRequested: function(index) {
                 var item = panel.searchModel.get(index)
@@ -758,7 +758,7 @@ Kirigami.ShadowedRectangle {
             onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
             onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
             onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
-                contextMenu.showForApp(proxyIndex, storageId, desktopFile,
+                contextMenu.showForApp(storageId, desktopFile,
                                        categoryGridView.selectedSidList())
             }
         }
@@ -820,7 +820,7 @@ Kirigami.ShadowedRectangle {
                     // both popupIsSelected (for the toggle item) and the
                     // bulk-mode counts from it. Empty when nothing is
                     // selected.
-                    contextMenu.showForApp(index, storageId, desktopFile,
+                    contextMenu.showForApp(storageId, desktopFile,
                                            appGrid.selectedSidList())
                 }
                 onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {

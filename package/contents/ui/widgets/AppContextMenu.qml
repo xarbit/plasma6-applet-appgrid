@@ -49,7 +49,6 @@ Item {
     // Popup snapshot — populated by showForApp() before popping the
     // appropriate Menu. Lives here so both child Menus + their dynamic
     // delegates share one source of truth.
-    property int popupIndex: -1
     property string popupStorageId: ""
     property string popupDesktopFile: ""
     property bool popupIsFavorite: false
@@ -96,13 +95,12 @@ Item {
             menu.contentItem.boundsBehavior = Flickable.StopAtBounds
     }
 
-    function showForApp(index, storageId, desktopFile, selectedSids) {
+    function showForApp(storageId, desktopFile, selectedSids) {
         if (storageId && _lastClosedStorageId === storageId) {
             _lastClosedStorageId = ""
             reopenGuard.stop()
             return
         }
-        popupIndex = index
         popupStorageId = storageId
         popupDesktopFile = desktopFile
         popupSelectedSids = selectedSids || []
@@ -275,8 +273,8 @@ Item {
             icon.name: "view-hidden"
             text: i18nd("dev.xarbit.appgrid", "Hide Application")
             onClicked: {
-                if (!contextMenu.appsModel) return
-                contextMenu.appsModel.hideApp(contextMenu.popupIndex)
+                if (!contextMenu.appsModel || !contextMenu.popupStorageId) return
+                contextMenu.appsModel.hideByStorageId(contextMenu.popupStorageId)
             }
         }
     }
