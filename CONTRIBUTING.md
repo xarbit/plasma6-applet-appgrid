@@ -56,6 +56,46 @@ controllers under `tests/qml/`. New behaviour should land with coverage.
   `Kirigami.Units` for sizing and spacing so the launcher scales with
   the user's theme.
 
+## Commit messages
+
+Conventional-Commits style — the CI changelog generator (`git-cliff`) groups
+by type:
+
+```
+<type>(<scope>): <subject>
+
+<body — wrap at 72 cols, explain the why>
+```
+
+Common types: `feat`, `fix`, `refactor`, `perf`, `docs`, `chore`,
+`build`, `ci`, `polish`, `test`. Scope is the affected module (e.g.
+`search`, `config`, `ui`, `packaging`). Issue references in the
+subject (`fix(search): … (#151)`) when applicable.
+
+## Pull requests
+
+- Fork → branch → push → PR against `main` (stable bugs against
+  `maintenance/<series>`).
+- Try to keep PRs focused; unrelated cleanups tend to land more
+  smoothly in their own PR.
+- CI gates the merge: clang-format, clang-tidy, codespell, qmllint,
+  cppcheck, tests. Failures block — fix locally before pushing.
+- User-facing strings should be wrapped in
+  `i18nd("dev.xarbit.appgrid", …)` (or `i18ndc(...)` with a
+  translator context).
+- Pre-built packages, screenshots, and local-only notes are already
+  gitignored (`*.pkg.tar.zst`, `notes/`, `result/`, …) — please keep
+  it that way.
+
+## Reporting bugs / requesting features
+
+Please use the issue templates under
+[`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/). They prompt for
+the things triage almost always needs — AppGrid version (Settings →
+`i:` view), Plasma version, distro, install method, and reproducer
+steps. Triage labels follow `bug`, `enhancement`, `upstream-limitation`,
+`regression`, `needs-info`.
+
 ## AI-assisted code
 
 AI-assisted contributions are welcome — any assistant, commercial,
@@ -101,46 +141,6 @@ other patch:
 Tools are great when they help. Either way, the patch carries your
 name. As the project grows we're trying to keep the codebase coherent
 and the patterns clean — your care helps a lot.
-
-## Commit messages
-
-Conventional-Commits style — the CI changelog generator (`git-cliff`) groups
-by type:
-
-```
-<type>(<scope>): <subject>
-
-<body — wrap at 72 cols, explain the why>
-```
-
-Common types: `feat`, `fix`, `refactor`, `perf`, `docs`, `chore`,
-`build`, `ci`, `polish`, `test`. Scope is the affected module (e.g.
-`search`, `config`, `ui`, `packaging`). Issue references in the
-subject (`fix(search): … (#151)`) when applicable.
-
-## Pull requests
-
-- Fork → branch → push → PR against `main` (stable bugs against
-  `maintenance/<series>`).
-- Try to keep PRs focused; unrelated cleanups tend to land more
-  smoothly in their own PR.
-- CI gates the merge: clang-format, clang-tidy, codespell, qmllint,
-  cppcheck, tests. Failures block — fix locally before pushing.
-- User-facing strings should be wrapped in
-  `i18nd("dev.xarbit.appgrid", …)` (or `i18ndc(...)` with a
-  translator context).
-- Pre-built packages, screenshots, and local-only notes are already
-  gitignored (`*.pkg.tar.zst`, `notes/`, `result/`, …) — please keep
-  it that way.
-
-## Reporting bugs / requesting features
-
-Please use the issue templates under
-[`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/). They prompt for
-the things triage almost always needs — AppGrid version (Settings →
-`i:` view), Plasma version, distro, install method, and reproducer
-steps. Triage labels follow `bug`, `enhancement`, `upstream-limitation`,
-`regression`, `needs-info`.
 
 ## License
 
