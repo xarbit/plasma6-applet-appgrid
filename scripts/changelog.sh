@@ -2,24 +2,29 @@
 # SPDX-FileCopyrightText: 2026 AppGrid Contributors
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# Regenerates CHANGELOG.md across three commit ranges:
-#   1. Latest from main (Unreleased / 1.9.x)
-#   2. 1.8.x patch releases — tagged on maintenance/1.8.x, not on main
-#   3. Everything up to and including v1.8.0 (reachable from main)
+# Regenerates CHANGELOG.md across four commit ranges so every tag in every
+# branch lineage gets rendered:
+#   1. v1.9.0-rc.1..main         — 1.10 dev work (Unreleased / next-cycle).
+#   2. v1.8.0..v1.9.0-rc.1       — the 1.9.0-rc.1 section.
+#   3. v1.8.0..maintenance/1.8.x — 1.8.x patch releases (1.8.1..1.8.5),
+#                                  tagged on the maintenance branch, not main.
+#   4. <root>..v1.8.0            — everything up to and including v1.8.0
+#                                  (reachable from main).
 #
-# A single `git cliff` call would walk only the current branch and miss the
-# 1.8.x patches; concatenating the three ranges gives a complete history.
+# A single `git cliff` call would walk only the current branch and miss
+# tags reachable through sibling branches. Concatenating the ranges (in
+# latest-first order) gives a complete history.
 #
 # Runs --offline so cliff doesn't try to enrich commits via the GitHub API.
-# That call would 404 for the maintenance/1.8.x range (the branch lives
-# locally only; origin doesn't have it). PR numbers still render — the
-# Conventional Commits already carry "(#N)" in their messages.
+# Some refs (maintenance branches) live locally only and would 404 against
+# api.github.com. PR numbers still render — the Conventional Commits already
+# carry "(#N)" in their messages.
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-ROOT=$(git rev-list --max-parents=0 HEAD | tail -1)
+ROOT=$(git rev-list --max-parents=0 main | tail -1)
 
 {
     printf '# Changelog\n\n'
@@ -27,7 +32,8 @@ ROOT=$(git rev-list --max-parents=0 HEAD | tail -1)
     printf '     Hand-edits get clobbered on the next run. Put release narrative\n'
     printf '     in the GitHub release notes (gh release create) instead. -->\n\n'
     printf 'All notable changes to AppGrid are documented here.\n\n'
-    git cliff --offline --strip all v1.8.0..HEAD
+    git cliff --offline --strip all v1.9.0-rc.1..main
+    git cliff --offline --strip all v1.8.0..v1.9.0-rc.1
     git cliff --offline --strip all v1.8.0..maintenance/1.8.x
     git cliff --offline --strip all "${ROOT}..v1.8.0"
 } > CHANGELOG.md

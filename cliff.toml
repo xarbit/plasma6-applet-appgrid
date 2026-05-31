@@ -54,7 +54,11 @@ commit_parsers = [
 protect_breaking_commits = true
 filter_commits = false
 tag_pattern = "v[0-9]*"
-skip_tags = "v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\."
+# Hide rc tags whose stable already shipped — keeps the changelog
+# from accumulating rc.1 / rc.2 / rc.3 entries for past versions
+# while leaving the CURRENT rc cycle's tag visible. Extend this
+# pattern (`|^v1\.9\.0-rc\.`) once 1.9.0 stable ships.
+skip_tags = "^v1\\.8\\.0-rc\\."
 ignore_tags = ""
 topo_order = false
 sort_commits = "oldest"

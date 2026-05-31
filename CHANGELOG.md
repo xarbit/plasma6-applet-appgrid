@@ -8,6 +8,8 @@ All notable changes to AppGrid are documented here.
 
 ## [Unreleased]
 
+## [1.9.0-rc.1] - 2026-05-31
+
 ### Added
 
 - *(i18n)* Add Traditional Chinese (zh_TW) translation (#131)
