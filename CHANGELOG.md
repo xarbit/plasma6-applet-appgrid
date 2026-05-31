@@ -51,6 +51,10 @@ All notable changes to AppGrid are documented here.
 - *(menu)* Hard-stop right-click menu scroll, no rubber-band overshoot (#154)
 - *(search)* Keep result text readable on selection
 - *(ui)* Stop search field jumping some searches
+- *(menu)* Hide Application now works from search results (#157.2)
+- *(menu)* Show App context menu for KRunner-served app rows (#157.3)
+- *(menu)* Hide "Add to Selection" from search-results context (#157.1)
+- *(ui)* Hide clear button during header-slot shrink (#157.5)
 
 ### Performance
 
