@@ -28,6 +28,7 @@ else
     say "clean"
 fi
 
+# REUSE-IgnoreStart
 # 2. SPDX-License-Identifier on source files
 if [ "${#STAGED_SRC[@]}" -gt 0 ]; then
     hr "SPDX headers"
@@ -40,6 +41,7 @@ if [ "${#STAGED_SRC[@]}" -gt 0 ]; then
         say "clean"
     fi
 fi
+# REUSE-IgnoreEnd
 
 # 3. clang-format on staged C++ files
 if [ "${#STAGED_CXX[@]}" -gt 0 ] && command -v clang-format >/dev/null 2>&1; then

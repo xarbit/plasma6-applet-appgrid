@@ -26,6 +26,7 @@ else
     say "clean"
 fi
 
+# REUSE-IgnoreStart
 # 2. SPDX headers on all source-shaped files
 hr "SPDX headers"
 src=$(git ls-files '*.cpp' '*.h' '*.qml')
@@ -39,6 +40,7 @@ if [ -n "$src" ]; then
         say "clean ($(echo "$src" | wc -l) files)"
     fi
 fi
+# REUSE-IgnoreEnd
 
 # 3. clang-format across all C++ sources
 if command -v clang-format >/dev/null 2>&1; then

@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2026 AppGrid Contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Editor baseline so contributors don't have to know clang-format /
+# qmllint to land a clean diff. The pre-commit hook still gates the
+# real formatting rules — this just keeps the muscle-memory honest.
+# https://editorconfig.org
+
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Markdown trailing whitespace is significant (two-space line breaks);
+# leave it to the writer.
+[*.md]
+trim_trailing_whitespace = false
+
+# .po / .pot files are generated/managed by xgettext + msgmerge; don't
+# let editors trim whitespace inside translator-comment blocks.
+[*.{po,pot}]
+trim_trailing_whitespace = false
+
+# Makefiles need real tabs.
+[{Makefile,*.mk}]
+indent_style = tab
+
+# Debian source format / control files want a trailing newline but
+# editors should otherwise leave them alone.
+[debian/{control,copyright,rules}]
+indent_size = unset
