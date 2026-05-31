@@ -102,7 +102,7 @@ QAbstractItemModel *AppGridPlugin::runnerModel() const
     return const_cast<RunnerFilterModel *>(&m_runnerFilterModel);
 }
 
-KRunner::ResultsModel *AppGridPlugin::runnerSourceModel() const
+QObject *AppGridPlugin::runnerSourceModel() const
 {
     return m_runnerModel;
 }

@@ -301,9 +301,8 @@ ListView {
                 // Runner overflow only when KRunner actually exposes actions
                 // for this row (calculator yes, many runners no) — otherwise
                 // the button would pop an empty menu.
-                readonly property bool hasRunnerActions: !isApp && listView.model
-                    && listView.model.runnerActions(model.index).length > 0
-                visible: resultDelegate.highlighted && (isApp || hasRunnerActions)
+                visible: resultDelegate.highlighted
+                         && (isApp || (model.runnerActionsCount || 0) > 0)
                 Layout.alignment: Qt.AlignVCenter
                 icon.name: "overflow-menu"
                 PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "More options")

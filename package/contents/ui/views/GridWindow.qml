@@ -12,7 +12,6 @@
 import QtQuick
 import QtQuick.Window
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.plasmoid
 
 import "../controllers"
 
@@ -26,7 +25,7 @@ Window {
     // (dragSource, isDragInFlight, closeWindow(), …).
     property var appletInterface: null
 
-    ConfigCache { id: cfg; source: Plasmoid.configuration }
+    ConfigCache { id: cfg; source: root.configuration }
 
     // C++ models supplied by the owning plasmoid root; passed straight
     // through to GridPanel.
@@ -34,21 +33,11 @@ Window {
     required property var searchModel
     required property var runnerSourceModel
 
-    // Side-effect callbacks supplied by the plasmoid root.
     required property var configuration
-    required property var notifyAppLaunched
-    required property var runInTerminal
-    required property var runCommand
-    required property var runRunnerResult
-    required property var runRunnerAction
-    required property var runnerSubstitutionText
+    // Single Plasmoid-callback surface; see PlasmoidBridge.qml.
+    required property var plasmoidBridge
     required property var updateChecker
     required property string favoritesClientInstance
-    required property var appActions
-    required property var launchAppAction
-    required property var canManageInDiscover
-    required property var openInDiscover
-    required property var listDirectory
     required property var sysInfo
 
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
@@ -96,9 +85,9 @@ Window {
     function applyBlur() {
         if (cfg.enableBlur && visible) {
             const r = _panelRect()
-            Plasmoid.setBlurBehind(root, true, r.x, r.y, r.w, r.h, panel.radius)
+            root.plasmoidBridge.setBlurBehind(root, true, r.x, r.y, r.w, r.h, panel.radius)
         } else {
-            Plasmoid.setBlurBehind(root, false, 0, 0, 0, 0, 0)
+            root.plasmoidBridge.setBlurBehind(root, false, 0, 0, 0, 0, 0)
         }
     }
 
@@ -189,17 +178,17 @@ Window {
 
     function showGrid() {
         if (!windowConfigured) {
-            Plasmoid.configureWindow(root)
+            root.plasmoidBridge.configureWindow(root)
             windowConfigured = true
         }
 
         var useActive = cfg.openOnActiveScreen
 
-        if (Plasmoid.isWayland) {
-            Plasmoid.updateWindowScreen(root, useActive)
+        if (root.plasmoidBridge.isWayland) {
+            root.plasmoidBridge.updateWindowScreen(root, useActive)
         } else {
             // X11: position window on the target screen manually
-            var geo = Plasmoid.targetScreenGeometry(useActive)
+            var geo = root.plasmoidBridge.targetScreenGeometry(useActive)
             root.x = geo.x
             root.y = geo.y
             root.width = geo.width
@@ -242,7 +231,7 @@ Window {
         closeOnDeactivate = false
         deactivateGuard.stop()
         panel.resetOnClose()
-        Plasmoid.setBlurBehind(root, false, 0, 0, 0, 0, 0)
+        root.plasmoidBridge.setBlurBehind(root, false, 0, 0, 0, 0, 0)
         if (animationsEnabled && animStyle !== 0 && animLoader.item) {
             dimFadeOut.start()
             animLoader.item.close()
@@ -286,9 +275,9 @@ Window {
     function _applyDragInputRect() {
         if (_dragInFlight) {
             const r = _panelRect()
-            Plasmoid.setInputRect(root, r.x, r.y, r.w, r.h)
+            root.plasmoidBridge.setInputRect(root, r.x, r.y, r.w, r.h)
         } else {
-            Plasmoid.setInputRect(root, 0, 0, 0, 0)
+            root.plasmoidBridge.setInputRect(root, 0, 0, 0, 0)
         }
     }
     on_DragInFlightChanged: {
@@ -343,19 +332,9 @@ Window {
         searchModel: root.searchModel
         runnerSourceModel: root.runnerSourceModel
         configuration: root.configuration
-        notifyAppLaunched: root.notifyAppLaunched
-        runInTerminal: root.runInTerminal
-        runCommand: root.runCommand
-        runRunnerResult: root.runRunnerResult
-        runRunnerAction: root.runRunnerAction
-        runnerSubstitutionText: root.runnerSubstitutionText
+        plasmoidBridge: root.plasmoidBridge
         updateChecker: root.updateChecker
         favoritesClientInstance: root.favoritesClientInstance
-        appActions: root.appActions
-        launchAppAction: root.launchAppAction
-        canManageInDiscover: root.canManageInDiscover
-        openInDiscover: root.openInDiscover
-        listDirectory: root.listDirectory
         sysInfo: root.sysInfo
         // Static user offset + compact-mode downward shift, kept out of
         // the anchor system so the open/close animations (which drive

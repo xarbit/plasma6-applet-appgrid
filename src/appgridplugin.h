@@ -5,9 +5,13 @@
 
 #pragma once
 
-#include <KRunner/ResultsModel>
 #include <Plasma/Applet>
 #include <QRect>
+
+namespace KRunner
+{
+class ResultsModel;
+}
 
 #include "appfiltermodel.h"
 #include "appmodel.h"
@@ -35,7 +39,10 @@ class AppGridPlugin : public Plasma::Applet
     Q_OBJECT
     Q_PROPERTY(AppFilterModel *appsModel READ appsModel CONSTANT)
     Q_PROPERTY(QAbstractItemModel *runnerModel READ runnerModel CONSTANT)
-    Q_PROPERTY(KRunner::ResultsModel *runnerSourceModel READ runnerSourceModel CONSTANT)
+    // Opaque QObject* — QML uses it only via the dynamic queryString
+    // property, no static KRunner type knowledge needed across the QML/C++
+    // boundary; keeps <KRunner/ResultsModel> out of this header.
+    Q_PROPERTY(QObject *runnerSourceModel READ runnerSourceModel CONSTANT)
     Q_PROPERTY(UnifiedSearchModel *searchModel READ searchModel CONSTANT)
     Q_PROPERTY(bool isWayland READ isWayland CONSTANT)
     // Drives QML's "Check for updates" visibility + i: view "Install" row.
@@ -49,7 +56,7 @@ public:
 
     [[nodiscard]] AppFilterModel *appsModel() const;
     [[nodiscard]] QAbstractItemModel *runnerModel() const;
-    [[nodiscard]] KRunner::ResultsModel *runnerSourceModel() const;
+    [[nodiscard]] QObject *runnerSourceModel() const;
     [[nodiscard]] UnifiedSearchModel *searchModel() const;
     [[nodiscard]] bool isUniversalBuild() const;
 #ifdef APPGRID_UNIVERSAL_BUILD

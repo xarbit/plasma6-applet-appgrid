@@ -132,6 +132,14 @@ Flickable {
         if (multiSelectActive) selection.selectAll(virtualIndex)
     }
     function clearSelection() { selection.clear() }
+    // Reset to a clean, unselected, scrolled-to-top state. Used after
+    // search/filter changes and before re-showing the panel.
+    function resetView() {
+        contentY = 0
+        clearSelection()
+        currentIndex = -1
+        recentIndex = -1
+    }
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
     function selectedIconNames() { return selection.iconNames(appsModel) }
 

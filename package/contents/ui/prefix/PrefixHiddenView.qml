@@ -12,9 +12,9 @@ ColumnLayout {
     id: hiddenView
 
     required property var appsModel
-    // setHiddenApps(list) persists the hidden-apps list at the boundary.
-    required property var setHiddenApps
 
+    // Persistence is handled by GridPanel listening to
+    // AppFilterModel.hiddenAppsChanged — mutate the model and walk away.
     readonly property var hiddenApps: appsModel ? appsModel.hiddenApps : []
 
     anchors.fill: parent
@@ -36,10 +36,7 @@ ColumnLayout {
             visible: hiddenView.hiddenApps.length > 0
             icon.name: "edit-undo"
             text: i18nd("dev.xarbit.appgrid", "Unhide All")
-            onClicked: {
-                hiddenView.appsModel.hiddenApps = []
-                hiddenView.setHiddenApps([])
-            }
+            onClicked: hiddenView.appsModel.hiddenApps = []
         }
     }
 
@@ -130,10 +127,7 @@ ColumnLayout {
                         PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
                         PlasmaComponents.ToolTip.visible: hovered
                         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-                        onClicked: {
-                            hiddenView.appsModel.unhideApp(modelData)
-                            hiddenView.setHiddenApps(hiddenView.appsModel.hiddenApps)
-                        }
+                        onClicked: hiddenView.appsModel.unhideApp(modelData)
                     }
                 }
             }

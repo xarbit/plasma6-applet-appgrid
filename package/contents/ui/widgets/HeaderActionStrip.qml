@@ -13,7 +13,6 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.private.sessions as Sessions
 
 import "../js/headeractions.js" as HeaderActions
 
@@ -30,9 +29,8 @@ RowLayout {
     required property list<string> headerActions
     // Update-checker handle; null on distro packages and in tests.
     required property var updateChecker
-
-    Sessions.SessionManagement { id: sm }
-    Sessions.SessionsModel { id: sessionsModel }
+    // Bridge to Plasma's session/power SPI — see SessionActions.qml.
+    required property var sessionActions
 
     // Per-action presentation. Trigger + availability live in the functions
     // below since they depend on the live session/update state.
@@ -50,12 +48,12 @@ RowLayout {
         switch (id) {
         case "updateCheck":
             return !!updateChecker && updateChecker.enabled === true && updateChecker.hasUpdate === true
-        case "sleep": return sm.canSuspend
-        case "restart": return sm.canReboot
-        case "shutdown": return sm.canShutdown
-        case "lock": return sm.canLock
-        case "logout": return sm.canLogout
-        case "switchuser": return sessionsModel.canSwitchUser
+        case "sleep":      return sessionActions.canSuspend
+        case "restart":    return sessionActions.canReboot
+        case "shutdown":   return sessionActions.canShutdown
+        case "lock":       return sessionActions.canLock
+        case "logout":     return sessionActions.canLogout
+        case "switchuser": return sessionActions.canSwitchUser
         }
         return false
     }
@@ -63,12 +61,12 @@ RowLayout {
     function _run(id) {
         switch (id) {
         case "updateCheck": if (updateChecker) updateChecker.openReleasePage(); break
-        case "sleep": sm.suspend(); break
-        case "restart": sm.requestReboot(); break
-        case "shutdown": sm.requestShutdown(); break
-        case "lock": sm.lock(); break
-        case "logout": sm.requestLogout(); break
-        case "switchuser": sessionsModel.startNewSession(sessionsModel.shouldLock); break
+        case "sleep":      sessionActions.suspend(); break
+        case "restart":    sessionActions.reboot(); break
+        case "shutdown":   sessionActions.shutdown(); break
+        case "lock":       sessionActions.lock(); break
+        case "logout":     sessionActions.logout(); break
+        case "switchuser": sessionActions.switchUser(); break
         }
         actions.actionTriggered()
     }

@@ -100,6 +100,8 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
         return (row < 9) ? row + 1 : 0;
     case SourceIndexRole:
         return isApp ? row : (row - ac);
+    case RunnerActionsCountRole:
+        return isApp ? 0 : runnerActions(index.row()).size();
     default:
         break;
     }
@@ -184,6 +186,7 @@ QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
         {IsSectionBoundaryRole, "isSectionBoundary"},
         {SourceIndexRole, "sourceIndex"},
         {InstallSourceRole, "installSource"},
+        {RunnerActionsCountRole, "runnerActionsCount"},
     };
     return kRoleNames;
 }

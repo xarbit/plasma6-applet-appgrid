@@ -15,14 +15,10 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.private.kicker as Kicker
 import "../js/favoriteid.js" as FavoriteId
 
 Item {
     id: contextMenu
-
-    Kicker.ProcessRunner { id: processRunner }
-    Kicker.ContainmentInterface { id: containmentInterface }
 
     // Launch/Hide go up to GridPanel for Kirigami.PromptDialog gating.
     // Pin / Desktop / Copy run inline (immediately reversible).
@@ -37,13 +33,17 @@ Item {
     // Plasmoid-glue callbacks, injected from the boundary:
     //   appActions(sid) -> list        launchAppAction(sid, idx)
     //   canManageInDiscover(sid) -> bool   openInDiscover(sid)
-    //   setHiddenApps(list)            persists the hidden-apps list
+    //   pinToTaskManager(df)           addToDesktop(df)
+    //   editApplication(sid)           runRunnerAction(rowIdx, actionIdx)
+    // Hidden-apps list persists via AppFilterModel.hiddenAppsChanged
+    // (GridPanel listens), so menu items just mutate the model.
     required property var appActions
     required property var launchAppAction
     required property var canManageInDiscover
     required property var openInDiscover
-    required property var setHiddenApps
-    //   runRunnerAction(rowIdx, actionIdx) — dispatch a KRunner secondary action
+    required property var pinToTaskManager
+    required property var addToDesktop
+    required property var editApplication
     required property var runRunnerAction
 
     // Popup snapshot — populated by showForApp() before popping the
@@ -150,12 +150,12 @@ Item {
         return (a && a.desktopFile) ? a.desktopFile : ""
     }
 
-    function _bulkAddLauncher(target) {
-        if (!appsModel || !appletInterface) return
+    function _bulkAdd(addFn) {
+        if (!appsModel) return
         const sids = popupSelectedSids
         for (var i = 0; i < sids.length; ++i) {
             const df = _desktopFileFor(sids[i])
-            if (df) containmentInterface.addLauncher(appletInterface, target, df)
+            if (df) addFn(df)
         }
     }
 
@@ -241,25 +241,19 @@ Item {
         PlasmaComponents.MenuItem {
             icon.name: "pin"
             text: i18nd("dev.xarbit.appgrid", "Pin to Task Manager")
-            onClicked: containmentInterface.addLauncher(
-                contextMenu.appletInterface,
-                Kicker.ContainmentInterface.TaskManager,
-                contextMenu.popupDesktopFile)
+            onClicked: contextMenu.pinToTaskManager(contextMenu.popupDesktopFile)
         }
 
         PlasmaComponents.MenuItem {
             icon.name: "desktop"
             text: i18nd("dev.xarbit.appgrid", "Add to Desktop")
-            onClicked: containmentInterface.addLauncher(
-                contextMenu.appletInterface,
-                Kicker.ContainmentInterface.Desktop,
-                contextMenu.popupDesktopFile)
+            onClicked: contextMenu.addToDesktop(contextMenu.popupDesktopFile)
         }
 
         PlasmaComponents.MenuItem {
             icon.name: "document-edit"
             text: i18nd("dev.xarbit.appgrid", "Edit Application")
-            onClicked: processRunner.runMenuEditor(contextMenu.popupStorageId)
+            onClicked: contextMenu.editApplication(contextMenu.popupStorageId)
         }
 
         // Truly-conditional item — Instantiator creates/destroys instead
@@ -283,7 +277,6 @@ Item {
             onClicked: {
                 if (!contextMenu.appsModel) return
                 contextMenu.appsModel.hideApp(contextMenu.popupIndex)
-                contextMenu.setHiddenApps(contextMenu.appsModel.hiddenApps)
             }
         }
     }
@@ -330,7 +323,7 @@ Item {
             text: i18ndp("dev.xarbit.appgrid",
                          "Pin %1 to Task Manager", "Pin %1 to Task Manager",
                          contextMenu.popupSelectedSids.length)
-            onClicked: contextMenu._bulkAddLauncher(Kicker.ContainmentInterface.TaskManager)
+            onClicked: contextMenu._bulkAdd(contextMenu.pinToTaskManager)
         }
 
         PlasmaComponents.MenuItem {
@@ -338,7 +331,7 @@ Item {
             text: i18ndp("dev.xarbit.appgrid",
                          "Add %1 to Desktop", "Add %1 to Desktop",
                          contextMenu.popupSelectedSids.length)
-            onClicked: contextMenu._bulkAddLauncher(Kicker.ContainmentInterface.Desktop)
+            onClicked: contextMenu._bulkAdd(contextMenu.addToDesktop)
         }
 
         PlasmaComponents.MenuItem {

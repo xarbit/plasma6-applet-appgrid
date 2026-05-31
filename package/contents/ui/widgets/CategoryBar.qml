@@ -10,14 +10,15 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.private.kicker as Kicker
 
 import "../controllers"
 
 RowLayout {
     id: categoryBar
 
-    Kicker.ProcessRunner { id: processRunner }
+    // Injected from the boundary — opens KMenuEdit at the given menu
+    // group path (empty string opens at root).
+    required property var editCategoryInMenu
 
     property var appsModel: null
     property bool favoritesActive: false
@@ -507,15 +508,13 @@ RowLayout {
         PlasmaComponents.MenuItem {
             icon.name: "kmenuedit"
             text: i18nd("dev.xarbit.appgrid", "Edit \"%1\" in Menu Editor…", catContextMenu.categoryName)
-            onClicked: {
-                var menuPath = categoryBar.appsModel.categoryMenuPath(catContextMenu.categoryName)
-                processRunner.runMenuEditor(menuPath || "")
-            }
+            onClicked: categoryBar.editCategoryInMenu(
+                categoryBar.appsModel.categoryMenuPath(catContextMenu.categoryName))
         }
         PlasmaComponents.MenuItem {
             icon.name: "kmenuedit"
             text: i18nd("dev.xarbit.appgrid", "Open Menu Editor…")
-            onClicked: processRunner.runMenuEditor()
+            onClicked: categoryBar.editCategoryInMenu("")
         }
     }
 }

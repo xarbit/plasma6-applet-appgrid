@@ -102,7 +102,7 @@ AI-assisted contributions are welcome — any assistant, commercial,
 open, or local. AI is here, and it isn't going anywhere.
 
 To be straight about it: I work in the field and use AI at work and
-on personal projects. I don't fully trust the output, and I'd suggest
+on personal projects. I don't trust the output, and I'd suggest
 you don't either. It's a tool — a very helpful one — and like any
 tool it can be used well or poorly. Just be honest about where it
 helped.

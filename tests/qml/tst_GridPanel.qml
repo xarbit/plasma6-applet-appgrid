@@ -127,6 +127,19 @@ TestCase {
     function make() {
         var c = Qt.createComponent("../../package/contents/ui/views/GridPanel.qml")
         verify(c.status === Component.Ready, "GridPanel load error: " + c.errorString())
+        var bridgeStub = ({
+            notifyAppLaunched: function(sid) { testCase.launchedSids.push(sid) },
+            runInTerminal: function(cmd, shell) {},
+            runCommand: function(cmd, shell) {},
+            runRunnerResult: function(idx) { return false },
+            runRunnerAction: function(idx, actIdx) { return false },
+            runnerSubstitutionText: function(idx) { return "" },
+            appActions: function(sid) { return [] },
+            launchAppAction: function(sid, idx) {},
+            canManageInDiscover: function(sid) { return false },
+            openInDiscover: function(sid) {},
+            listDirectory: function(path) { return [] }
+        })
         var obj = c.createObject(null, {
             width: 600,
             height: 800,
@@ -134,19 +147,9 @@ TestCase {
             searchModel: searchModelStub,
             runnerSourceModel: runnerStub,
             configuration: configStub,
-            notifyAppLaunched: function(sid) { testCase.launchedSids.push(sid) },
-            runInTerminal: function(cmd, shell) {},
-            runCommand: function(cmd, shell) {},
-            runRunnerResult: function(idx) { return false },
-            runRunnerAction: function(idx, actIdx) { return false },
-            runnerSubstitutionText: function(idx) { return "" },
+            plasmoidBridge: bridgeStub,
             updateChecker: null,
             favoritesClientInstance: "dev.xarbit.appgrid.favorites.instance-test",
-            appActions: function(sid) { return [] },
-            launchAppAction: function(sid, idx) {},
-            canManageInDiscover: function(sid) { return false },
-            openInDiscover: function(sid) {},
-            listDirectory: function(path) { return [] },
             sysInfo: ({})
         })
         verify(obj !== null, "GridPanel create returned null")

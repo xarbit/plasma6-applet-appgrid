@@ -21,7 +21,6 @@ Item {
 
     // Per-mode dependencies, forwarded to the individual prefix views.
     required property var appsModel
-    required property var setHiddenApps
     required property var listDirectory
     required property var sysInfo
     required property var updateChecker
@@ -67,7 +66,6 @@ Item {
         anchors.fill: parent
         visible: prefixView.mode === "hidden"
         appsModel: prefixView.appsModel
-        setHiddenApps: prefixView.setHiddenApps
     }
 
     // -- File browser --

@@ -37,6 +37,7 @@ public:
         IsSectionBoundaryRole,
         SourceIndexRole,
         InstallSourceRole,
+        RunnerActionsCountRole,
     };
     Q_ENUM(Roles)
 

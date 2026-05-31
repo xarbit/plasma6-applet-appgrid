@@ -32,24 +32,10 @@ PlasmoidItem {
     readonly property alias isDragInFlight: dragSourceImpl.isDragInFlight
     DragSource { id: dragSourceImpl }
 
-    // Update checker (universal builds only) — see standalone main.qml.
-    Component.onCompleted: {
-        Migrations.migrateLauncherIcon(Plasmoid.configuration)
-        _syncUpdateChecker()
-        _syncFrecency()
-    }
-    Connections {
-        target: Plasmoid.configuration
-        function onCheckForUpdatesChanged() { appgrid._syncUpdateChecker() }
-        function onSearchUsesFrecencyChanged() { appgrid._syncFrecency() }
-    }
-    function _syncUpdateChecker() {
-        if (Plasmoid.updateChecker)
-            Plasmoid.updateChecker.enabled = Plasmoid.configuration.checkForUpdates === true
-    }
-    function _syncFrecency() {
-        Plasmoid.setSearchUsesFrecency(Plasmoid.configuration.searchUsesFrecency === true)
-    }
+    PlasmoidBridge { id: bridge }
+    PlasmoidConfigSync {}
+
+    Component.onCompleted: Migrations.migrateLauncherIcon(Plasmoid.configuration)
 
     Plasmoid.icon: Plasmoid.configuration.useCustomButtonImage
         ? Plasmoid.configuration.customButtonImage
@@ -75,19 +61,9 @@ PlasmoidItem {
             searchModel: Plasmoid.searchModel
             runnerSourceModel: Plasmoid.runnerSourceModel
             configuration: Plasmoid.configuration
-            notifyAppLaunched: function(sid) { Plasmoid.notifyAppLaunched(sid) }
-            runInTerminal: function(cmd, shell) { Plasmoid.runInTerminal(cmd, shell) }
-            runCommand: function(cmd, shell) { Plasmoid.runCommand(cmd, shell) }
-            runRunnerResult: function(idx) { return Plasmoid.runRunnerResult(idx) }
-            runRunnerAction: function(idx, actIdx) { return Plasmoid.runRunnerAction(idx, actIdx) }
-            runnerSubstitutionText: function(idx) { return Plasmoid.runnerSubstitutionText(idx) }
+            plasmoidBridge: bridge
             updateChecker: Plasmoid.updateChecker
             favoritesClientInstance: Const.FAVORITES_CLIENT_ID
-            appActions: function(sid) { return Plasmoid.appActions(sid) }
-            launchAppAction: function(sid, idx) { Plasmoid.launchAppAction(sid, idx) }
-            canManageInDiscover: function(sid) { return Plasmoid.canManageInDiscover(sid) }
-            openInDiscover: function(sid) { Plasmoid.openInDiscover(sid) }
-            listDirectory: function(path) { return Plasmoid.listDirectory(path) }
             sysInfo: Plasmoid.systemInfo()
             opacity: 1.0
             onCloseRequested: appgrid.expanded = false

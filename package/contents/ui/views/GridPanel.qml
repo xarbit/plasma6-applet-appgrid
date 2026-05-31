@@ -14,6 +14,7 @@ import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../widgets"
+import "../js/launchcounts.js" as LaunchCounts
 import "../js/migrations.js" as Migrations
 import "../js/searchresultnav.js" as SearchResultNav
 
@@ -46,18 +47,9 @@ Kirigami.ShadowedRectangle {
     // hiddenApps / favoritesPortedToKAstats / iconMigratedFrom17).
     required property var configuration
 
-    // Side-effect callbacks supplied by the plasmoid root. notifyAppLaunched
-    // broadcasts an app launch to KActivities (one-way courtesy ping for
-    // other Plasma launchers); runInTerminal / runCommand execute the
-    // prefix-mode `t:` and `:` shell hooks; runRunnerResult triggers a
-    // KRunner result by index. Injected so tests can capture call
-    // arguments without spawning real processes.
-    required property var notifyAppLaunched
-    required property var runInTerminal
-    required property var runCommand
-    required property var runRunnerResult
-    required property var runRunnerAction
-    required property var runnerSubstitutionText
+    // Single Plasmoid-callback surface; see PlasmoidBridge.qml. Tests
+    // inject a plain QtObject stub with the same method names.
+    required property var plasmoidBridge
 
     // Update-checker handle (null on distro packages); forwarded to HeaderActionStrip.
     required property var updateChecker
@@ -65,14 +57,8 @@ Kirigami.ShadowedRectangle {
     // KAStats favorites client id, built from the plasmoid id at the root.
     required property string favoritesClientInstance
 
-    // Plasmoid C++ invokables, forwarded to AppContextMenu.
-    required property var appActions
-    required property var launchAppAction
-    required property var canManageInDiscover
-    required property var openInDiscover
-
-    // Plasmoid C++ invokables/snapshots, forwarded to the prefix views.
-    required property var listDirectory
+    // System-info snapshot supplied by the plasmoid root, forwarded to
+    // the prefix views (i.e. `i:`).
     required property var sysInfo
 
     // -- Configuration (single source of truth for all config reads) --
@@ -265,27 +251,6 @@ Kirigami.ShadowedRectangle {
         }
     }
 
-    // -- Launch counts serialization helpers --
-    function launchCountsToMap(list) {
-        var map = {}
-        if (list) {
-            for (var i = 0; i < list.length; i++) {
-                var parts = list[i].split("=")
-                if (parts.length === 2)
-                    map[parts[0]] = parseInt(parts[1]) || 0
-            }
-        }
-        return map
-    }
-
-    function launchCountsToList(map) {
-        var list = []
-        for (var key in map)
-            if (map[key] > 0)
-                list.push(key + "=" + map[key])
-        return list
-    }
-
     // Sync model properties from config — called on init and reset
     function syncModelFromConfig() {
         if (!appsModel) return
@@ -296,7 +261,7 @@ Kirigami.ShadowedRectangle {
         appsModel.sortMode = sortMode
         appsModel.useSystemCategories = cfg.useSystemCategories
         appsModel.sortFavoritesAlphabetically = cfg.sortFavoritesAlphabetically
-        appsModel.launchCounts = launchCountsToMap(cfg.launchCounts)
+        appsModel.launchCounts = LaunchCounts.toMap(cfg.launchCounts)
         appsModel.knownApps = cfg.knownApps
         appsModel.recentApps = cfgShowRecentApps ? cfg.recentApps : []
         if (appsModel.knownApps.length === 0)
@@ -316,10 +281,13 @@ Kirigami.ShadowedRectangle {
             panel.configuration.recentApps = panel.appsModel.recentApps
         }
         function onLaunchCountsChanged() {
-            panel.configuration.launchCounts = panel.launchCountsToList(panel.appsModel.launchCounts)
+            panel.configuration.launchCounts = LaunchCounts.toList(panel.appsModel.launchCounts)
         }
         function onKnownAppsChanged() {
             panel.configuration.knownApps = panel.appsModel.knownApps
+        }
+        function onHiddenAppsChanged() {
+            panel.configuration.hiddenApps = panel.appsModel.hiddenApps
         }
     }
 
@@ -392,10 +360,7 @@ Kirigami.ShadowedRectangle {
         appGrid.recentIndex = -1
         searchResultsList.contentY = searchResultsList.originY
         searchResultsList.currentIndex = 0
-        categoryGridView.contentY = 0
-        categoryGridView.clearSelection()
-        categoryGridView.currentIndex = -1
-        categoryGridView.recentIndex = -1
+        categoryGridView.resetView()
         _needsScrollToTop = true
         searchBar.field.forceActiveFocus()
     }
@@ -409,13 +374,13 @@ Kirigami.ShadowedRectangle {
         }
         // KRunner UX: calculator hits paste the result back into the
         // search field so the user can keep extending the expression.
-        var subst = panel.runnerSubstitutionText(item.sourceIndex)
+        var subst = panel.plasmoidBridge.runnerSubstitutionText(item.sourceIndex)
         if (subst.length > 0) {
             searchBar.field.text = subst
             searchBar.field.cursorPosition = subst.length
             return
         }
-        if (panel.runRunnerResult(item.sourceIndex))
+        if (panel.plasmoidBridge.runRunnerResult(item.sourceIndex))
             closeRequested()
     }
 
@@ -426,7 +391,7 @@ Kirigami.ShadowedRectangle {
     // source — we don't read this data back).
     function _launchOneBySid(sid) {
         if (!sid) return
-        notifyAppLaunched(sid)
+        panel.plasmoidBridge.notifyAppLaunched(sid)
         appsModel.launchByStorageId(sid)
     }
 
@@ -434,7 +399,7 @@ Kirigami.ShadowedRectangle {
         if (!appsModel || index < 0)
             return
         const sid = appsModel.get(index).storageId
-        if (sid) notifyAppLaunched(sid)
+        if (sid) panel.plasmoidBridge.notifyAppLaunched(sid)
         appsModel.launch(index)
         closeRequested()
     }
@@ -495,14 +460,6 @@ Kirigami.ShadowedRectangle {
             SearchBar {
                 id: searchBar
 
-                SearchSessionManager {
-                    id: searchSession
-                    appsModel: panel.appsModel
-                    categoryBar: categoryBar
-                    searchAll: cfg.searchAll
-                    isPrefixMode: panel.isPrefixMode
-                }
-
                 // Debounce KRunner queries — fires after typing pauses
                 Timer {
                     id: runnerDebounce
@@ -539,10 +496,10 @@ Kirigami.ShadowedRectangle {
                 }
                 onAccepted: {
                     if (panel.prefixMode === "terminal") {
-                        panel.runInTerminal(panel.prefixArgument, cfg.terminalShell)
+                        panel.plasmoidBridge.runInTerminal(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === "command") {
-                        panel.runCommand(panel.prefixArgument, cfg.terminalShell)
+                        panel.plasmoidBridge.runCommand(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === "files") {
                         prefixModeView.activateFileCurrent()
@@ -645,6 +602,7 @@ Kirigami.ShadowedRectangle {
                     showActionLabels: cfg.showActionLabels
                     headerActions: cfg.headerActions
                     updateChecker: panel.updateChecker
+                    sessionActions: sessionActions
                     onActionTriggered: panel.closeRequested()
                     onImplicitWidthChanged: if (implicitWidth > headerSlot._reservedWidth)
                                                 headerSlot._reservedWidth = implicitWidth
@@ -678,6 +636,7 @@ Kirigami.ShadowedRectangle {
             visible: panel.showCatBar
             Layout.leftMargin: Kirigami.Units.smallSpacing
             appsModel: panel.appsModel
+            editCategoryInMenu: launcherActions.editMenuItem
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
             scrollOnlyMode: panel.showCategoryGrid
@@ -693,9 +652,7 @@ Kirigami.ShadowedRectangle {
                 if (!active) {
                     if (panel.isSortByCategory) {
                         categoryBar.scrollOnlySelected = ""
-                        categoryGridView.contentY = 0
-        categoryGridView.currentIndex = -1
-        categoryGridView.recentIndex = -1
+                        categoryGridView.resetView()
                     }
                 }
                 searchBar.field.forceActiveFocus()
@@ -708,9 +665,7 @@ Kirigami.ShadowedRectangle {
                             categoryGridView.scrollToCategory(name)
                         })
                     } else {
-                        categoryGridView.contentY = 0
-        categoryGridView.currentIndex = -1
-        categoryGridView.recentIndex = -1
+                        categoryGridView.resetView()
                     }
                 }
             }
@@ -734,8 +689,7 @@ Kirigami.ShadowedRectangle {
             sharedFavoritesModel: panel.sharedFavoritesModel
             showScrollbars: cfg.showScrollbars
             appsModel: panel.appsModel
-            setHiddenApps: function(list) { panel.configuration.hiddenApps = list }
-            listDirectory: panel.listDirectory
+            listDirectory: panel.plasmoidBridge.listDirectory
             sysInfo: panel.sysInfo
             updateChecker: panel.updateChecker
             favoritesPortedToKAstats: cfg.favoritesPortedToKAstats
@@ -894,19 +848,36 @@ Kirigami.ShadowedRectangle {
     // Context menu
     // -----------------------------------------------------------------------
 
+    LauncherActions {
+        id: launcherActions
+        applet: panel.appletInterface
+    }
+
+    SessionActions { id: sessionActions }
+
+    SearchSessionManager {
+        id: searchSession
+        appsModel: panel.appsModel
+        categoryBar: categoryBar
+        searchAll: cfg.searchAll
+        isPrefixMode: panel.isPrefixMode
+    }
+
     AppContextMenu {
         id: contextMenu
         appsModel: panel.appsModel
         sharedFavoritesModel: panel.sharedFavoritesModel
         appletInterface: panel.appletInterface
 
-        appActions: panel.appActions
-        launchAppAction: panel.launchAppAction
-        canManageInDiscover: panel.canManageInDiscover
-        openInDiscover: panel.openInDiscover
-        setHiddenApps: function(list) { panel.configuration.hiddenApps = list }
+        appActions: panel.plasmoidBridge.appActions
+        launchAppAction: panel.plasmoidBridge.launchAppAction
+        canManageInDiscover: panel.plasmoidBridge.canManageInDiscover
+        openInDiscover: panel.plasmoidBridge.openInDiscover
+        pinToTaskManager: launcherActions.pinToTaskManager
+        addToDesktop: launcherActions.addToDesktop
+        editApplication: launcherActions.editMenuItem
         runRunnerAction: function(rowIdx, actIdx) {
-            if (panel.runRunnerAction(rowIdx, actIdx))
+            if (panel.plasmoidBridge.runRunnerAction(rowIdx, actIdx))
                 closeRequested()
         }
 
@@ -955,9 +926,6 @@ Kirigami.ShadowedRectangle {
         if (!appsModel) return
         for (var i = 0; i < sids.length; ++i)
             appsModel.hideByStorageId(sids[i])
-        // Persist the new hidden-list to config so the change survives a
-        // plasmoid reload (mirrors the single Hide handler).
-        panel.configuration.hiddenApps = appsModel.hiddenApps
     }
 
     Kirigami.PromptDialog {
