@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'maintenance/*'
       - 'hotfix-*'
       - 'patch-*'
     paths-ignore:
@@ -15,7 +16,9 @@ on:
       - "PKGBUILD"
       - "packaging/**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'maintenance/*'
     paths-ignore:
       - "**.md"
       - "LICENSE"
