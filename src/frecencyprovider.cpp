@@ -5,6 +5,8 @@
 
 #include "frecencyprovider.h"
 
+#include "pluginhelpers.h"
+
 #include <PlasmaActivities/Stats/Query>
 #include <PlasmaActivities/Stats/ResultModel>
 #include <PlasmaActivities/Stats/Terms>
@@ -26,12 +28,11 @@ Q_LOGGING_CATEGORY(lcFrecency, "appgrid.frecency", QtWarningMsg)
 // Cap how many top-frecent apps we track. The ranking only needs enough rows
 // to win tiebreaks among search hits, not the full launch history.
 constexpr int kFrecencyLimit = 200;
-const QLatin1String kAppPrefix("applications:");
 
 QString storageIdFromResource(const QString &resource)
 {
-    if (resource.startsWith(kAppPrefix))
-        return resource.mid(kAppPrefix.size());
+    if (resource.startsWith(PluginHelpers::ApplicationsUrlPrefix))
+        return resource.mid(PluginHelpers::ApplicationsUrlPrefix.size());
     return {};
 }
 }
@@ -56,7 +57,7 @@ void FrecencyProvider::setEnabled(bool enabled)
     // Seed the chain with an explicit Query — the `Select | Order` overload
     // is not provided, so we cannot start the chain with two bare enums.
     const auto query = KAStats::Query(KASTerms::UsedResources) | KASTerms::HighScoredFirst | KASTerms::Agent::any() | KASTerms::Type::any()
-        | KASTerms::Activity::any() | KASTerms::Url::startsWith(QStringLiteral("applications:")) | KASTerms::Limit(kFrecencyLimit);
+        | KASTerms::Activity::any() | KASTerms::Url::startsWith(PluginHelpers::ApplicationsUrlPrefix) | KASTerms::Limit(kFrecencyLimit);
 
     m_model = new KAStats::ResultModel(query, this);
     connect(m_model, &QAbstractItemModel::modelReset, this, &FrecencyProvider::rebuildScores);

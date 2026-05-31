@@ -16,6 +16,11 @@
  */
 namespace PluginHelpers
 {
+/** URL scheme KActivities + KAStats use for desktop-file resources.
+ *  Owned here so FrecencyProvider, AppGridPlugin, and any future
+ *  consumer share one spelling. */
+inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
+
 /** Candidate shells from /etc/shells contents: trimmed, non-empty,
  *  non-comment lines. The caller verifies each path actually exists. */
 [[nodiscard]] QStringList parseShells(const QString &contents);

@@ -21,7 +21,7 @@ KCM.SimpleKCM {
     id: page
 
     readonly property bool isPanel: Plasmoid.pluginName === Const.PLUGIN_ID_PANEL
-    readonly property string defaultIcon: "dev.xarbit.appgrid"
+    readonly property string defaultIcon: Const.PLUGIN_ID_CENTER
 
     property string cfg_icon: Plasmoid.configuration.icon
     property bool cfg_useCustomButtonImage: Plasmoid.configuration.useCustomButtonImage

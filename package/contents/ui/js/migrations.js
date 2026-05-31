@@ -9,6 +9,7 @@
 //     import "migrations.js" as Migrations
 
 .pragma library
+.import "constants.js" as Const
 .import "headeractions.js" as HeaderActions
 
 // Legacy showSessionButtons toggle hid the whole power row. Carry that
@@ -45,7 +46,7 @@ function migrateLauncherIcon(cfg) {
         (cfg.knownApps && cfg.knownApps.length > 0)
         || (cfg.launchCounts && cfg.launchCounts.length > 0)
         || (cfg.favoriteApps && cfg.favoriteApps.length > 0)
-    if (hasPriorState && !cfg.useCustomButtonImage && cfg.icon === "dev.xarbit.appgrid")
+    if (hasPriorState && !cfg.useCustomButtonImage && cfg.icon === Const.PLUGIN_ID_CENTER)
         cfg.icon = "start-here-kde-symbolic"
     cfg.iconMigratedFrom17 = true
 }
