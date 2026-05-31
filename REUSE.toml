@@ -1,0 +1,50 @@
+version = 1
+SPDX-PackageName = "AppGrid"
+SPDX-PackageDownloadLocation = "https://github.com/xarbit/appgrid"
+
+# Translation catalogues — header lives in the .po itself but follows
+# the gettext convention, not the SPDX file-header form.
+[[annotations]]
+path = ["po/**.po", "po/**.pot"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "AppGrid Contributors"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+# Project icons and screenshots — released into the public domain so
+# distros and Flatpak metadata can redistribute freely.
+[[annotations]]
+path = ["images/**", "dev.xarbit.appgrid.svg", "package/contents/icons/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "AppGrid Contributors"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Project documentation.
+[[annotations]]
+path = ["README.md", "CONTRIBUTING.md", "CHANGELOG.md", "docs/**", "packaging/nix/README.md", "packaging/universal/INSTALL.TXT"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 AppGrid Contributors"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+# Build / packaging / tooling configs where a SPDX comment header would
+# either be syntactically illegal or noisy.
+[[annotations]]
+path = [
+    "PKGBUILD",
+    "packaging/aur/PKGBUILD*.in",
+    "packaging/deb/debian/control",
+    "packaging/deb/debian/copyright",
+    "packaging/deb/debian/source/format",
+    "metadata.json.in",
+    "metadata-panel.json.in",
+    "flake.lock",
+    "cliff.toml",
+    "CMakePresets.json",
+    ".gitignore",
+    ".clang-tidy",
+    ".qmllint.ini",
+    ".github/workflows/*.yml",
+    ".github/ISSUE_TEMPLATE/*.yml",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 AppGrid Contributors"
+SPDX-License-Identifier = "GPL-2.0-or-later"

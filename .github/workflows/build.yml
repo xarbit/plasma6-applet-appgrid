@@ -79,6 +79,7 @@ jobs:
       - name: Mark workspace as safe (container uid mismatch)
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
+      # REUSE-IgnoreStart
       - name: Check SPDX license headers
         run: |
           set -e
@@ -96,6 +97,7 @@ jobs:
             exit 1
           fi
           echo "all tracked source files carry SPDX-License-Identifier ($(echo "$files" | wc -l) files)"
+      # REUSE-IgnoreEnd
 
       - name: Check trailing whitespace
         run: |

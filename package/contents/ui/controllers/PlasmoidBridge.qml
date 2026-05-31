@@ -4,7 +4,7 @@
 
     Single Plasmoid-callback surface. Wraps every Plasmoid.Q_INVOKABLE
     that QML needs, so the two variant main.qml files don't each
-    re-declare a dozen forwarding lambdas, GridWindow/GridPanel hold
+    redeclare a dozen forwarding lambdas, GridWindow/GridPanel hold
     one bridge property instead of a fan of `required property var`
     slots, and tests can inject a plain QtObject stub with the same
     method names.
