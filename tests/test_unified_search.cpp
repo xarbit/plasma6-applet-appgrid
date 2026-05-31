@@ -36,6 +36,8 @@ private slots:
     void runnerActionsEmptyForAppRow();
     void runnerActionsEmptyWhenSourceLacksActionsRole();
     void runnerActionsEmptyForOutOfRangeRow();
+    void runnerActionsCountIsZeroForAppRow();
+    void runnerActionsCountIsZeroWhenSourceLacksActionsRole();
 
 private:
     StubAppModel m_appSource;
@@ -253,6 +255,26 @@ void TestUnifiedSearch::runnerActionsEmptyForOutOfRangeRow()
 {
     QCOMPARE(m_unified.runnerActions(-1), QVariantList());
     QCOMPARE(m_unified.runnerActions(999), QVariantList());
+}
+
+void TestUnifiedSearch::runnerActionsCountIsZeroForAppRow()
+{
+    StubApp app;
+    app.name = QStringLiteral("A");
+    app.desktopFile = QStringLiteral("a.desktop");
+    app.storageId = QStringLiteral("a.desktop");
+    m_appSource.setApps({app});
+    QCOMPARE(m_unified.data(m_unified.index(0, 0),
+                            UnifiedSearchModel::RunnerActionsCountRole).toInt(), 0);
+}
+
+void TestUnifiedSearch::runnerActionsCountIsZeroWhenSourceLacksActionsRole()
+{
+    // QStringListModel doesn't expose an "actions" role, so the unified
+    // model's m_runnerActionsRole stays -1 and the count role falls to 0.
+    m_runnerSource.setStringList({QStringLiteral("calc")});
+    QCOMPARE(m_unified.data(m_unified.index(0, 0),
+                            UnifiedSearchModel::RunnerActionsCountRole).toInt(), 0);
 }
 
 QTEST_MAIN(TestUnifiedSearch)
