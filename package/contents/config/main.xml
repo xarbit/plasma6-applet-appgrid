@@ -156,7 +156,7 @@
     </entry>
     <entry name="searchUsesFrecency" type="Bool">
       <label>Bias search result ranking with KActivities frecency (frequency + recency) scores so apps you use a lot recently surface above equally-scored alternatives.</label>
-      <default>false</default>
+      <default>true</default>
     </entry>
     <entry name="searchShowsHidden" type="Bool">
       <label>Surface hidden applications in search results so a deliberately hidden tool stays findable by name. Off (default) → hidden apps drop out of search the same way they drop out of the grid.</label>
