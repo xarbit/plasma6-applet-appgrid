@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 AppGrid Contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Pre-push: broader gate that mirrors the cheap-and-fast CI jobs over the
+# whole tree, so a push doesn't land work CI would reject. Skips the slow
+# ones (build, clang-tidy, cppcheck) — those run in CI proper.
+# Skip with `git push --no-verify` when intentional.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+fail=0
+say() { printf '  %s\n' "$*"; }
+hr()  { printf '== %s ==\n' "$*"; }
+
+# 1. trailing whitespace, entire tree
+hr "trailing whitespace"
+files=$(git ls-files '*.cpp' '*.h' '*.qml' '*.xml' '*.json' '*.md' 'CMakeLists.txt')
+if bad=$(echo "$files" | xargs grep -nHP '[ \t]+$' 2>/dev/null); then
+    say "trailing whitespace:"
+    printf '    %s\n' "$bad"
+    fail=1
+else
+    say "clean"
+fi
+
+# 2. SPDX headers on all source-shaped files
+hr "SPDX headers"
+src=$(git ls-files '*.cpp' '*.h' '*.qml')
+if [ -n "$src" ]; then
+    missing=$(echo "$src" | while read -r f; do grep -L 'SPDX-License-Identifier' "$f" || true; done)
+    if [ -n "$missing" ]; then
+        say "missing SPDX-License-Identifier:"
+        printf '    %s\n' $missing
+        fail=1
+    else
+        say "clean ($(echo "$src" | wc -l) files)"
+    fi
+fi
+
+# 3. clang-format across all C++ sources
+if command -v clang-format >/dev/null 2>&1; then
+    hr "clang-format"
+    if ! git ls-files 'src/*.cpp' 'src/*.h' | xargs clang-format --dry-run -Werror 2>&1; then
+        fail=1
+    else
+        say "clean"
+    fi
+fi
+
+# 4. ctest — only if a build dir is current. A pre-push gate shouldn't
+# trigger a full configure + build (slow); rely on dev-loop incremental
+# builds keeping build-ci usable.
+if [ -d build-ci ] && [ -f build-ci/CMakeCache.txt ]; then
+    hr "ctest"
+    if ! QT_QPA_PLATFORM=offscreen ctest --test-dir build-ci --output-on-failure 2>&1 | tail -5; then
+        fail=1
+    fi
+else
+    hr "ctest"
+    say "skipped — no build-ci/ (run 'cmake --preset ci && cmake --build --preset ci' to enable)"
+fi
+
+[ "$fail" -ne 0 ] && { echo; echo "pre-push failed — fix above or rerun with --no-verify"; exit 1; }
+exit 0

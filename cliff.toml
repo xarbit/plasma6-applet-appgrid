@@ -17,7 +17,7 @@ body = """
 ### {{ group | striptags | trim | upper_first }}
 {% for commit in commits %}
 - {% if commit.scope %}*({{ commit.scope }})* {% endif %}{{ commit.message | upper_first }}\
-{% if commit.github.pr_number %} (#{{ commit.github.pr_number }}){% endif %}\
+{% if commit.remote.pr_number %} (#{{ commit.remote.pr_number }}){% endif %}\
 {% endfor %}
 {% endfor %}\n
 """
@@ -29,17 +29,26 @@ conventional_commits = true
 filter_unconventional = true
 split_commits = false
 commit_parsers = [
+    # Internal-scope commits — skipped even when typed as fix/feat/perf.
+    # `fix(ci):` etc. would otherwise match `^fix` below and surface in
+    # the user-facing Fixed section. Order matters: cliff takes the
+    # first match, so this MUST precede the user-facing rules.
+    { message = '^(fix|feat|perf|revert)\((ci|build|test|docs|chore|deps|packaging)\)', skip = true },
+    # User-facing — kept (Keep a Changelog convention).
     { message = "^feat",     group = "Added" },
     { message = "^fix",      group = "Fixed" },
     { message = "^perf",     group = "Performance" },
-    { message = "^refactor", group = "Refactored" },
-    { message = "^polish",   group = "Polish" },
-    { message = "^docs",     group = "Documentation" },
-    { message = "^build",    group = "Build" },
-    { message = "^ci",       group = "CI" },
-    { message = "^chore",    group = "Chores" },
-    { message = "^test",     group = "Tests" },
     { message = "^revert",   group = "Reverted" },
+    # Internal churn — skipped. Live in git log instead. Promote a
+    # refactor/polish to feat:/fix: when it had user-visible impact.
+    { message = "^refactor", skip = true },
+    { message = "^polish",   skip = true },
+    { message = "^docs",     skip = true },
+    { message = "^build",    skip = true },
+    { message = "^ci",       skip = true },
+    { message = "^chore",    skip = true },
+    { message = "^test",     skip = true },
+    { message = "^style",    skip = true },
     { message = "^Merge",    skip = true },
 ]
 protect_breaking_commits = true

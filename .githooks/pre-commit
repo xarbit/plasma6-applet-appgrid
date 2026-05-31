@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 AppGrid Contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# Pre-commit: fast checks on STAGED files only so commits stay focused.
+# Skip with `git commit --no-verify` when intentional.
+
+set -euo pipefail
+
+# Collect staged files by category, restricted to Added/Copied/Modified.
+mapfile -t STAGED_ALL    < <(git diff --cached --name-only --diff-filter=ACM)
+mapfile -t STAGED_CXX    < <(git diff --cached --name-only --diff-filter=ACM -- 'src/*.cpp' 'src/*.h')
+mapfile -t STAGED_SRC    < <(git diff --cached --name-only --diff-filter=ACM -- '*.cpp' '*.h' '*.qml')
+
+[ "${#STAGED_ALL[@]}" -eq 0 ] && exit 0
+
+fail=0
+say() { printf '  %s\n' "$*"; }
+hr()  { printf '== %s ==\n' "$*"; }
+
+# 1. trailing whitespace
+hr "trailing whitespace"
+if bad=$(grep -nHP '[ \t]+$' -- "${STAGED_ALL[@]}" 2>/dev/null); then
+    say "trailing whitespace:"
+    printf '    %s\n' $bad
+    fail=1
+else
+    say "clean"
+fi
+
+# 2. SPDX-License-Identifier on source files
+if [ "${#STAGED_SRC[@]}" -gt 0 ]; then
+    hr "SPDX headers"
+    missing=$(grep -L 'SPDX-License-Identifier' -- "${STAGED_SRC[@]}" || true)
+    if [ -n "$missing" ]; then
+        say "missing SPDX-License-Identifier:"
+        printf '    %s\n' $missing
+        fail=1
+    else
+        say "clean"
+    fi
+fi
+
+# 3. clang-format on staged C++ files
+if [ "${#STAGED_CXX[@]}" -gt 0 ] && command -v clang-format >/dev/null 2>&1; then
+    hr "clang-format"
+    if ! clang-format --dry-run -Werror "${STAGED_CXX[@]}" 2>&1; then
+        say "run: clang-format -i ${STAGED_CXX[*]}"
+        fail=1
+    else
+        say "clean"
+    fi
+fi
+
+[ "$fail" -ne 0 ] && { echo; echo "pre-commit failed — fix above or rerun with --no-verify"; exit 1; }
+exit 0
