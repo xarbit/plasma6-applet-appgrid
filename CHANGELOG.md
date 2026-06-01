@@ -6,7 +6,7 @@
 
 All notable changes to AppGrid are documented here.
 
-## [1.9.0-rc.2] - 2026-06-01
+## [1.9.0-rc.3] - 2026-06-01
 
 ### Added
 
@@ -18,6 +18,8 @@ All notable changes to AppGrid are documented here.
 ### Fixed
 
 - *(panel)* Popup size survives alternatives-switch from Kicker/Kickoff
+
+## [1.9.0-rc.2] - 2026-06-01
 
 ## [1.9.0-rc.1] - 2026-05-31
 
