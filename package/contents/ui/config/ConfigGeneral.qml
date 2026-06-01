@@ -164,8 +164,17 @@ KCM.SimpleKCM {
         }
         QQC2.ComboBox {
             id: iconSize
-            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Icon size:")
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Size:")
             model: [i18nd("dev.xarbit.appgrid", "Small"), i18nd("dev.xarbit.appgrid", "Medium"), i18nd("dev.xarbit.appgrid", "Large")]
+        }
+        QQC2.Label {
+            Layout.fillWidth: true
+            Layout.maximumWidth: Kirigami.Units.gridUnit * 22
+            wrapMode: Text.WordWrap
+            font: Kirigami.Theme.smallFont
+            opacity: 0.7
+            text: i18nd("dev.xarbit.appgrid",
+                "Drives icon size plus the surrounding content density: search field, category buttons, and search results scale together. Control buttons stay fixed.")
         }
         QQC2.ComboBox {
             id: sortMode

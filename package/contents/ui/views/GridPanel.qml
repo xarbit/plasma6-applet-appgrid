@@ -141,6 +141,17 @@ Kirigami.ShadowedRectangle {
         return Kirigami.Units.iconSizes.huge
     }
 
+    // -- Density scaler: drives content-sizing (fonts, secondary icons)
+    // across the panel from the user's icon-size preference. Anchored at
+    // Large=1.0 (the previous default) so existing-user appearance is
+    // preserved; smaller icon presets scale content proportionally
+    // smaller. Each consumer keeps its own intrinsic multiplier (e.g.
+    // search field's 1.3, category button's 1.1) in code and applies
+    // densityScale on top.
+    // Control elements (close button, power buttons, pagination dots)
+    // stay fixed.
+    readonly property real densityScale: 0.8 + cfg.iconSize * 0.10
+
     // -- Prefix mode detection --
     PrefixDetector { id: prefixDetector; input: searchBar.text }
     readonly property string prefixMode: prefixDetector.mode
@@ -515,7 +526,7 @@ Kirigami.ShadowedRectangle {
                 // Track icon-size preference: small icons → smaller search
                 // field, large icons → larger. Keeps placeholder text in
                 // proportion with grid labels without a separate setting (#163).
-                fontScale: 1.0 + cfg.iconSize * 0.15
+                fontScale: panel.densityScale
 
                 // Debounce KRunner queries — fires after typing pauses
                 Timer {
@@ -646,7 +657,7 @@ Kirigami.ShadowedRectangle {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.preferredHeight: Math.max(headerActionStrip.implicitHeight,
                                                  Kirigami.Units.iconSizes.medium)
-                readonly property real _iconReservation: Kirigami.Units.iconSizes.medium
+                readonly property real _iconReservation: Kirigami.Units.iconSizes.medium * panel.densityScale
                 Layout.preferredWidth: panel.isSearching
                     ? (panel.showSearchResults && panel.currentResultIcon !== ""
                          ? _iconReservation : 0)
@@ -713,6 +724,7 @@ Kirigami.ShadowedRectangle {
             editCategoryInMenu: launcherActions.editMenuItem
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
+            fontScale: panel.densityScale
             scrollOnlyMode: panel.showCategoryGrid
             hideEmptyCategories: cfg.hideEmptyCategories
             onFavoritesToggled: function(active) {
@@ -787,6 +799,7 @@ Kirigami.ShadowedRectangle {
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             model: panel.isSearching ? panel.searchModel : null
             iconSize: panel.gridIconSize
+            fontScale: panel.densityScale
             showDividers: panel.cfgShowDividers
             shadowEnabled: cfg.iconShadow
             animateHighlight: cfg.hoverAnimation > 0

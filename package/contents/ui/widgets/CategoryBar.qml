@@ -24,6 +24,12 @@ RowLayout {
     property bool favoritesActive: false
     property bool favoritesFirst: false
 
+    // Caller-supplied font multiplier applied to All + category buttons
+    // so they stay in proportion with the user's icon-size preference.
+    // Defaults to 1.0 — the GridPanel boundary overrides with the
+    // densityScale derived from cfg.iconSize.
+    property real fontScale: 1.0
+
     // Reactive category list — updated when model categories change
     property var categoryList: []
 
@@ -297,7 +303,7 @@ RowLayout {
         visible: !categoryBar.isSortByCategory
         Kirigami.MnemonicData.enabled: false
         text: ""
-        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
+        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1 * categoryBar.fontScale
         leftPadding: Kirigami.Units.largeSpacing
         rightPadding: Kirigami.Units.largeSpacing
         contentItem: PlasmaComponents.Label {
@@ -436,7 +442,7 @@ RowLayout {
                     leftPadding: Kirigami.Units.largeSpacing
                     rightPadding: Kirigami.Units.largeSpacing
                     text: ""
-                    font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1
+                    font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1 * categoryBar.fontScale
                     contentItem: PlasmaComponents.Label {
                         text: categoryBar.altHeld
                             ? categoryBar.mnemonicRichText(modelData)
