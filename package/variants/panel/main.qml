@@ -77,6 +77,11 @@ PlasmoidItem {
                             panel.shakeAllIcons()
                     } else {
                         panel.resetOnClose()
+                        // Mirror Plasma's per-instance popupWidth/Height
+                        // into our globalConfig so the user's chosen size
+                        // survives an alternatives-switch from Kicker /
+                        // Kickoff. See #87.
+                        Plasmoid.persistPopupSize()
                     }
                 }
             }
