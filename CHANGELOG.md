@@ -11,6 +11,13 @@ All notable changes to AppGrid are documented here.
 ### Added
 
 - *(launcher)* Secondary global shortcut to open in compact mode
+- *(theme)* Optional Plasma theme chrome for the center variant
+- *(theme)* Split blur and background-contrast into independent toggles
+- *(theme)* Render dividers via Plasma theme's widgets/line SVG
+
+### Fixed
+
+- *(panel)* Popup size survives alternatives-switch from Kicker/Kickoff
 
 ## [1.9.0-rc.1] - 2026-05-31
 
