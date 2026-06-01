@@ -39,6 +39,7 @@
 #endif
 #include <LayerShellQt/window.h>
 #include <Plasma/Containment>
+#include <Plasma/Theme>
 #include <PlasmaQuick/AppletQuickItem>
 #include <QCursor>
 #include <QDir>
@@ -324,7 +325,7 @@ QRect AppGridPlugin::targetScreenGeometry(bool useActiveScreen)
     return target ? target->geometry() : QRect();
 }
 
-void AppGridPlugin::setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius)
+void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enable, int x, int y, int w, int h, int radius)
 {
     if (!window)
         return;
@@ -352,6 +353,22 @@ void AppGridPlugin::setBlurBehind(QWindow *window, bool enable, int x, int y, in
     }
 
     KWindowEffects::enableBlurBehind(window, enable, region);
+
+    // Pair the blur with the compositor's background-contrast filter using
+    // values from the active Plasma theme. Each theme tunes its own contrast/
+    // intensity/saturation triple to keep panel text legible against busy
+    // wallpapers after the blur softens the edges; honoring the theme means
+    // Breeze, Klassy, custom themes etc. each get the look they were
+    // designed for instead of a one-size-fits-all hardcoded value. Themes
+    // that opt out via backgroundContrastEnabled() get a clean disable.
+    Plasma::Theme theme;
+    const bool contrastEnabled = enable && theme.backgroundContrastEnabled();
+    KWindowEffects::enableBackgroundContrast(window,
+                                             contrastEnabled,
+                                             theme.backgroundContrast(),
+                                             theme.backgroundIntensity(),
+                                             theme.backgroundSaturation(),
+                                             region);
 }
 
 void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)

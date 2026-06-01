@@ -9,7 +9,7 @@ import org.kde.kirigami as Kirigami
 Item {
     id: root
     property Item target: null
-    property bool blurBeforeAnimation: false
+    property bool effectsBeforeAnimation: false
     signal openFinished()
     signal closeFinished()
 
