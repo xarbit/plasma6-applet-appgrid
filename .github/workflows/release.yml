@@ -54,8 +54,8 @@ jobs:
           pacman -S --noconfirm --needed \
             base-devel git cmake extra-cmake-modules \
             qt6-base qt6-declarative \
-            libplasma kpackage kio kservice ki18n \
-            kcoreaddons kwindowsystem krunner layer-shell-qt \
+            libplasma kpackage kio kservice ki18n kiconthemes \
+            kcoreaddons kwindowsystem kglobalaccel krunner layer-shell-qt \
             plasma-activities plasma-activities-stats \
             plasma-workspace appstream-qt
 
@@ -130,7 +130,7 @@ jobs:
                 libplasma-devel kf6-kpackage-devel kf6-kio-devel \
                 kf6-kservice-devel kf6-ki18n-devel kf6-kcoreaddons-devel \
                 kf6-kiconthemes-devel \
-                kf6-kwindowsystem-devel kf6-krunner-devel layer-shell-qt-devel \
+                kf6-kwindowsystem-devel kf6-kglobalaccel-devel kf6-krunner-devel layer-shell-qt-devel \
                 plasma-activities-devel plasma-activities-stats-devel \
                 plasma-workspace-devel \
                 appstream-qt-devel \
