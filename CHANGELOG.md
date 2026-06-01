@@ -6,7 +6,7 @@
 
 All notable changes to AppGrid are documented here.
 
-## [Unreleased]
+## [1.9.0-rc.2] - 2026-06-01
 
 ### Added
 
@@ -349,4 +349,3 @@ All notable changes to AppGrid are documented here.
 - Workflow
 - Update PKGBUILD
 - Added ki18n_install(po) — compiles .po files
-
