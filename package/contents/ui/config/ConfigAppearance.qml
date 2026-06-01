@@ -29,6 +29,7 @@ KCM.SimpleKCM {
     property alias cfg_dimBackground: dimBackground.checked
     property alias cfg_overrideRadius: overrideRadius.checked
     property alias cfg_cornerRadius: cornerRadius.value
+    property alias cfg_useThemeBackground: useThemeBackground.checked
     property alias cfg_hideGridWhenEmpty: hideGridWhenEmpty.checked
     property alias cfg_openAnimation: openAnimation.currentIndex
     property alias cfg_hoverAnimation: hoverAnimation.currentIndex
@@ -70,23 +71,45 @@ KCM.SimpleKCM {
             Kirigami.FormData.isSection: true
         }
 
+        QQC2.CheckBox {
+            id: useThemeBackground
+            visible: !page.isPanel
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Chrome:")
+            text: i18nd("dev.xarbit.appgrid", "Use Plasma theme background")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "Draw the panel using the active Plasma theme's dialog background — matches Kickoff and the panel-popup variant exactly. The theme owns the chrome and Plasma's defaults take over: full opacity, blur and contrast forced on, no wallpaper dim, corner radius from the theme. The custom controls for those are disabled while this is on.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        }
+
+        Item {
+            visible: !page.isPanel
+            Kirigami.FormData.isSection: true
+        }
+
         QQC2.Slider {
             id: backgroundOpacity
             visible: !page.isPanel
-            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Background opacity:")
+            enabled: !useThemeBackground.checked
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Background:")
             from: 10; to: 100; stepSize: 5
             Layout.fillWidth: true
             Layout.minimumWidth: Kirigami.Units.gridUnit * 14
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Panel opacity")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
         QQC2.CheckBox {
             id: enableBlur
             visible: !page.isPanel
-            text: i18nd("dev.xarbit.appgrid", "Enable background blur")
+            enabled: !useThemeBackground.checked
+            text: i18nd("dev.xarbit.appgrid", "Enable blur and contrast")
         }
         QQC2.CheckBox {
             id: dimBackground
             visible: !page.isPanel
-            text: i18nd("dev.xarbit.appgrid", "Dim background behind launcher")
+            enabled: !useThemeBackground.checked
+            text: i18nd("dev.xarbit.appgrid", "Dim wallpaper around launcher")
         }
 
         Item {
@@ -97,6 +120,7 @@ KCM.SimpleKCM {
         QQC2.CheckBox {
             id: overrideRadius
             visible: !page.isPanel
+            enabled: !useThemeBackground.checked
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Corner radius:")
             text: i18nd("dev.xarbit.appgrid", "Use custom corner radius")
         }
@@ -104,7 +128,7 @@ KCM.SimpleKCM {
             id: cornerRadius
             visible: !page.isPanel
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Radius (px):")
-            enabled: overrideRadius.checked
+            enabled: overrideRadius.checked && !useThemeBackground.checked
             from: 0; to: 60
         }
 

@@ -10,6 +10,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
 import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
@@ -222,18 +223,35 @@ Kirigami.ShadowedRectangle {
     // (#151). The blur region reads this same `radius` via GridWindow, so the
     // visible panel and its blur stay consistent at every animated height.
     readonly property int maxValidRadius: Math.floor(Math.min(width, height) / 2)
-    radius: nativePopup ? 0 : Math.min(requestedRadius, maxValidRadius)
+    // When useThemeChrome is on, the SVG owns the visible corner — use the
+    // theme's default so the child clip matches the SVG's drawn curve.
+    radius: nativePopup ? 0
+        : panel.useThemeChrome ? Math.min(Kirigami.Units.cornerRadius, maxValidRadius)
+        : Math.min(requestedRadius, maxValidRadius)
 
-    readonly property real bgOpacity: cfg.backgroundOpacity / 100
-    color: nativePopup ? "transparent"
-                       : ThemeColors.tint(Kirigami.Theme.backgroundColor, bgOpacity)
+    readonly property real bgOpacity: cfg.effectiveBackgroundOpacity / 100
+    // Three rendering paths:
+    //   - nativePopup:                 Plasma's popup framework owns the chrome.
+    //   - cfg.useThemeBackground:      KSvg.FrameSvgItem below draws the panel face.
+    //   - default (solid-color mode):  ShadowedRectangle's own color + border.
+    readonly property bool useThemeChrome: !nativePopup && cfg.useThemeBackground
 
-    border.width: nativePopup ? 0 : 1
-    border.color: nativePopup ? "transparent"
-                  : Kirigami.ColorUtils.linearInterpolation(
-                        Kirigami.Theme.backgroundColor,
-                        Kirigami.Theme.textColor, 0.2)
+    color: nativePopup || useThemeChrome
+        ? "transparent"
+        : ThemeColors.tint(Kirigami.Theme.backgroundColor, bgOpacity)
 
+    border.width: useThemeChrome || nativePopup ? 0 : 1
+    border.color: useThemeChrome || nativePopup
+        ? "transparent"
+        : Kirigami.ColorUtils.linearInterpolation(
+                Kirigami.Theme.backgroundColor,
+                Kirigami.Theme.textColor, 0.2)
+
+    // Layer-shell windows have no WM shadow, so the center variant always
+    // paints its own. The dialog SVG used under useThemeChrome would draw
+    // its own shadow too in theory, but that one renders inside the SVG's
+    // bounding box and gets clipped by GridPanel's edge — invisible. Keep
+    // ShadowedRectangle as the single, reliable shadow source for center.
     shadow.size: nativePopup ? 0 : Kirigami.Units.gridUnit
     shadow.color: nativePopup ? "transparent" : Qt.rgba(0, 0, 0, 0.4)
     shadow.xOffset: 0
@@ -241,6 +259,19 @@ Kirigami.ShadowedRectangle {
 
     Kirigami.Theme.colorSet: Kirigami.Theme.View
     Kirigami.Theme.inherit: false
+
+    // Theme-driven panel background. `dialogs/background` is the SVG Plasma
+    // themes ship for popup-style surfaces (Kickoff, Plasma dialogs); using
+    // it here gives the center variant the same look as the rest of the
+    // user's Plasma theme instead of a flat tinted rectangle. Panel variant
+    // skips this — Plasma's popup framework renders its own chrome around it.
+    KSvg.FrameSvgItem {
+        anchors.fill: parent
+        imagePath: "dialogs/background"
+        visible: panel.useThemeChrome
+        opacity: panel.bgOpacity
+        z: -1
+    }
 
     // Compact mode: wheel toggles the grid while the search field has
     // focus and there's no active query — down reveals, up collapses,

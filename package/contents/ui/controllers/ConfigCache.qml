@@ -37,6 +37,15 @@ QtObject {
     readonly property int backgroundOpacity: source.backgroundOpacity
     readonly property bool enableBlur: source.enableBlur
     readonly property bool dimBackground: source.dimBackground
+    // Theme-chrome mode mirrors panel-popup theming exactly: Plasma owns
+    // the look. The popup framework auto-applies blur + theme-tuned
+    // background-contrast behind every popup, so we force the same on
+    // here. Custom panel opacity and the dim wallpaper overlay step
+    // aside — popups have neither. The user-facing controls remain in
+    // config (stored values preserved) but are gated off in behavior.
+    readonly property int effectiveBackgroundOpacity: source.useThemeBackground ? 100 : source.backgroundOpacity
+    readonly property bool effectiveEnableBlur: source.useThemeBackground || source.enableBlur
+    readonly property bool effectiveDimBackground: source.dimBackground && !source.useThemeBackground
     readonly property int verticalOffset: source.verticalOffset
     readonly property bool showTooltips: source.showTooltips
     readonly property bool hoverHighlight: source.hoverHighlight
@@ -44,6 +53,7 @@ QtObject {
     readonly property bool iconShadow: source.iconShadow
     readonly property bool overrideRadius: source.overrideRadius
     readonly property int cornerRadius: source.cornerRadius
+    readonly property bool useThemeBackground: source.useThemeBackground
     readonly property int iconSize: source.iconSize
     readonly property int hoverAnimation: source.hoverAnimation
     readonly property bool shakeOnOpen: source.shakeOnOpen

@@ -88,7 +88,7 @@ Window {
     }
 
     function applyBackgroundEffects() {
-        if (cfg.enableBlur && visible) {
+        if (cfg.effectiveEnableBlur && visible) {
             const r = _panelRect()
             root.plasmoidBridge.setBackgroundEffects(root, true, r.x, r.y, r.w, r.h, panel.radius)
         } else {
@@ -314,7 +314,7 @@ Window {
     Rectangle {
         id: dimOverlay
         anchors.fill: parent
-        color: cfg.dimBackground ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
+        color: cfg.effectiveDimBackground ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
         opacity: 0
 
         MouseArea {

@@ -178,6 +178,13 @@
       <label>Custom corner radius in pixels.</label>
       <default>24</default>
     </entry>
+    <entry name="useThemeBackground" type="Bool">
+      <label>Draw the panel background using the active Plasma theme's
+             dialog SVG instead of a flat tinted color. Theme owns the
+             corner radius when on, so the custom radius setting is
+             disabled.</label>
+      <default>false</default>
+    </entry>
     <entry name="showRecentApps" type="Bool">
       <label>Whether to show recently used applications at the top of the grid.</label>
       <default>true</default>
