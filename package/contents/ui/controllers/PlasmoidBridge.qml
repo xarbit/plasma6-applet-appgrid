@@ -36,6 +36,6 @@ QtObject {
     function configureWindow(window)                       { Plasmoid.configureWindow(window) }
     function updateWindowScreen(window, useActiveScreen)   { Plasmoid.updateWindowScreen(window, useActiveScreen) }
     function targetScreenGeometry(useActiveScreen)         { return Plasmoid.targetScreenGeometry(useActiveScreen) }
-    function setBlurBehind(window, on, x, y, w, h, radius) { Plasmoid.setBlurBehind(window, on, x, y, w, h, radius) }
+    function setBackgroundEffects(window, on, x, y, w, h, radius) { Plasmoid.setBackgroundEffects(window, on, x, y, w, h, radius) }
     function setInputRect(window, x, y, w, h)              { Plasmoid.setInputRect(window, x, y, w, h) }
 }

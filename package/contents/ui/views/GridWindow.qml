@@ -87,17 +87,17 @@ Window {
         }
     }
 
-    function applyBlur() {
+    function applyBackgroundEffects() {
         if (cfg.enableBlur && visible) {
             const r = _panelRect()
-            root.plasmoidBridge.setBlurBehind(root, true, r.x, r.y, r.w, r.h, panel.radius)
+            root.plasmoidBridge.setBackgroundEffects(root, true, r.x, r.y, r.w, r.h, panel.radius)
         } else {
-            root.plasmoidBridge.setBlurBehind(root, false, 0, 0, 0, 0, 0)
+            root.plasmoidBridge.setBackgroundEffects(root, false, 0, 0, 0, 0, 0)
         }
     }
 
-    onWidthChanged: if (visible && (!animLoader.item || animLoader.item.blurBeforeAnimation)) applyBlur()
-    onHeightChanged: if (visible && (!animLoader.item || animLoader.item.blurBeforeAnimation)) applyBlur()
+    onWidthChanged: if (visible && (!animLoader.item || animLoader.item.effectsBeforeAnimation)) applyBackgroundEffects()
+    onHeightChanged: if (visible && (!animLoader.item || animLoader.item.effectsBeforeAnimation)) applyBackgroundEffects()
 
     // Compact-mode height animation changes panel.height while the overlay
     // window stays screen-sized; re-clip the blur region with it. No
@@ -107,7 +107,7 @@ Window {
         target: panel
         function onHeightChanged() {
             if (root.visible)
-                root.applyBlur()
+                root.applyBackgroundEffects()
         }
     }
 
@@ -140,8 +140,8 @@ Window {
         onLoaded: {
             item.target = panel
             item.openFinished.connect(function() {
-                if (!item.blurBeforeAnimation)
-                    applyBlur()
+                if (!item.effectsBeforeAnimation)
+                    applyBackgroundEffects()
                 if (cfg.shakeOnOpen)
                     panel.shakeAllIcons()
             })
@@ -217,7 +217,7 @@ Window {
             dimOverlay.opacity = 1.0
             visible = true
             requestActivate()
-            applyBlur()
+            applyBackgroundEffects()
             if (cfg.shakeOnOpen)
                 panel.shakeAllIcons()
         } else {
@@ -225,8 +225,8 @@ Window {
             dimOverlay.opacity = 0.0
             visible = true
             dimFadeIn.start()
-            if (animLoader.item.blurBeforeAnimation)
-                applyBlur()
+            if (animLoader.item.effectsBeforeAnimation)
+                applyBackgroundEffects()
             requestActivate()
             animLoader.item.open()
         }
@@ -236,7 +236,7 @@ Window {
         closeOnDeactivate = false
         deactivateGuard.stop()
         panel.resetOnClose()
-        root.plasmoidBridge.setBlurBehind(root, false, 0, 0, 0, 0, 0)
+        root.plasmoidBridge.setBackgroundEffects(root, false, 0, 0, 0, 0, 0)
         if (animationsEnabled && animStyle !== 0 && animLoader.item) {
             dimFadeOut.start()
             animLoader.item.close()

@@ -8,7 +8,7 @@ import QtQuick
 Item {
     id: root
     property Item target: null
-    property bool blurBeforeAnimation: true
+    property bool effectsBeforeAnimation: true
     signal openFinished()
     signal closeFinished()
 

@@ -77,8 +77,10 @@ public:
     /** Returns the target screen geometry for the overlay (used by QML on X11). */
     Q_INVOKABLE QRect targetScreenGeometry(bool useActiveScreen);
 
-    /** Set a rounded-rect blur region on @p window matching the panel geometry. */
-    Q_INVOKABLE void setBlurBehind(QWindow *window, bool enable, int x, int y, int w, int h, int radius);
+    /** Apply blur + background-contrast effects to a rounded-rect region of
+     *  @p window matching the panel geometry. The contrast triple is pulled
+     *  from the active Plasma theme so each theme controls its own look. */
+    Q_INVOKABLE void setBackgroundEffects(QWindow *window, bool enable, int x, int y, int w, int h, int radius);
 
     /**
      * Restrict pointer input on @p window to the rectangle (x,y,w,h). The
