@@ -6,6 +6,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
 import org.kde.plasma.components as PlasmaComponents
 
 import "../widgets"
@@ -103,12 +104,14 @@ ScrollableColumn {
                 }
             }
 
-            Kirigami.Separator {
+            KSvg.SvgItem {
                 visible: !modelData.section
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                opacity: 0.3
+                imagePath: "widgets/line"
+                elementId: "horizontal-line"
+                implicitHeight: 0.5
             }
         }
     }
