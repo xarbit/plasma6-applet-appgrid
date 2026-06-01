@@ -8,6 +8,10 @@ All notable changes to AppGrid are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- *(launcher)* Secondary global shortcut to open in compact mode
+
 ## [1.9.0-rc.1] - 2026-05-31
 
 ### Added
