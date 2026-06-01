@@ -48,14 +48,15 @@ PlasmoidItem {
             formFactor: Plasmoid.formFactor
             title: Plasmoid.title
             configuration: Plasmoid.configuration
-            onActivated: appgrid.toggleWindow()
+            onActivated: appgrid.toggleWindow(false)
             onPreloadRequested: appgrid.preloadWindow()
         }
     }
 
     Connections {
         target: Plasmoid
-        function onActivated() { appgrid.toggleWindow() }
+        function onActivated() { appgrid.toggleWindow(false) }
+        function onCompactActivated() { appgrid.toggleWindow(true) }
     }
 
 
@@ -70,11 +71,14 @@ PlasmoidItem {
         gridOpen = false
     }
 
-    function toggleWindow() {
+    // Pure toggle. forceCompact only matters on the open edge — close-time
+    // resets would race the close animation, so the value persists until
+    // the next openWindow() rewrites it.
+    function toggleWindow(forceCompact = false) {
         if (gridOpen) {
             closeWindow()
         } else {
-            openWindow()
+            openWindow(forceCompact)
         }
     }
 
@@ -99,13 +103,15 @@ PlasmoidItem {
         }
     }
 
-    function openWindow() {
+    function openWindow(forceCompact = false) {
         gridOpen = true
         if (!gridWindow) {
             preloadWindow()
             if (_gridWindowIncubator)
                 _gridWindowIncubator.forceCompletion()
         }
+        // Set before showGrid() so panel geometry is correct from frame one.
+        gridWindow.forceCompact = forceCompact
         gridWindow.showGrid()
     }
 
