@@ -19,6 +19,10 @@ RowLayout {
     // the layout around the search field is still settling (so the X
     // doesn't appear to slide in from the right with the field).
     property bool clearButtonEnabled: true
+    // Scaler applied to Kirigami.Theme.defaultFont.pointSize for the
+    // search field. Caller derives it from icon size so the placeholder
+    // stays in proportion with grid labels.
+    required property real fontScale
 
     signal accepted()
     signal moveDown()
@@ -52,7 +56,7 @@ RowLayout {
         id: textField
         Layout.fillWidth: true
         placeholderText: i18nd("dev.xarbit.appgrid", "Search apps or type ? for commands")
-        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.3
+        font.pointSize: Kirigami.Theme.defaultFont.pointSize * searchBar.fontScale
         background: Item {}
         color: Kirigami.Theme.textColor
         placeholderTextColor: Qt.rgba(

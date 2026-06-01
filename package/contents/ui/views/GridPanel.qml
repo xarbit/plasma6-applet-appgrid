@@ -512,6 +512,10 @@ Kirigami.ShadowedRectangle {
                 // doesn't appear to slide in from the right with the
                 // growing field; snaps in once the layout settles.
                 clearButtonEnabled: !headerSlotAnim.running
+                // Track icon-size preference: small icons → smaller search
+                // field, large icons → larger. Keeps placeholder text in
+                // proportion with grid labels without a separate setting (#163).
+                fontScale: 1.0 + cfg.iconSize * 0.15
 
                 // Debounce KRunner queries — fires after typing pauses
                 Timer {
