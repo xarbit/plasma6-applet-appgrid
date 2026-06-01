@@ -171,10 +171,10 @@ public:
 Q_SIGNALS:
     /**
      * Emitted when the user triggers the secondary "Open in Compact Mode"
-     * global shortcut (default Meta+Space; rebindable in System Settings →
-     * Keyboard → Shortcuts). QML reacts by opening the launcher with the
-     * compact-mode override active for that session, regardless of the
-     * persisted `hideGridWhenEmpty` config.
+     * global shortcut. Ships unbound; user assigns the key in System
+     * Settings → Keyboard → Shortcuts → AppGrid. QML reacts by opening
+     * the launcher with the compact-mode override active for that
+     * session, regardless of the persisted `hideGridWhenEmpty` config.
      */
     void compactActivated();
 
