@@ -35,6 +35,7 @@ BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kiconthemes-devel
 BuildRequires:  kf6-kwindowsystem-devel
+BuildRequires:  kf6-kglobalaccel-devel
 BuildRequires:  kf6-krunner-devel
 BuildRequires:  layer-shell-qt-devel
 BuildRequires:  plasma-activities-devel

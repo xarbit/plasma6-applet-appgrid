@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     ki18n
     kcoreaddons
     kwindowsystem
+    kglobalaccel
     kiconthemes
     krunner
     kirigami
