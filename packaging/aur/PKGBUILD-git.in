@@ -31,6 +31,7 @@ depends=(
     'libgcc'
     'kcoreaddons'
     'kwindowsystem'
+    'kglobalaccel'
     'kcmutils'
     'libplasma'
     'plasma-activities-stats'

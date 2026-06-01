@@ -30,6 +30,7 @@ makedepends=(
     'kcoreaddons'
     'krunner'
     'kwindowsystem'
+    'kglobalaccel'
     'kiconthemes'
     'plasma-activities-stats'
     'appstream-qt'

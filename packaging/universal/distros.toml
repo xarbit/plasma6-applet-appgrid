@@ -13,7 +13,7 @@ display  = "Arch / Arch-derivative"
 packages = [
     "qt6-base", "qt6-declarative",
     "libplasma", "kpackage", "kio", "kservice", "ki18n",
-    "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
+    "kcoreaddons", "kwindowsystem", "kglobalaccel", "krunner", "kirigami",
     "layer-shell-qt", "plasma-activities", "plasma-activities-stats",
     "plasma-workspace",
     "appstream-qt",
@@ -26,7 +26,7 @@ display  = "Fedora"
 packages = [
     "qt6-qtbase", "qt6-qtdeclarative",
     "libplasma", "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
-    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
+    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-kglobalaccel", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt", "plasma-activities", "plasma-activities-stats",
     "plasma-workspace",
     "appstream-qt",
@@ -42,7 +42,7 @@ packages = [
     "lib64Qt6Network", "lib64Qt6DBus",
     "lib64Plasma", "lib64PlasmaActivities", "lib64PlasmaActivitiesStats",
     "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
-    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
+    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-kglobalaccel", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt", "plasma-workspace",
     "lib64AppStreamQt6_3",
 ]
@@ -58,7 +58,7 @@ packages = [
     "libplasma6", "libkf6package6",
     "libkf6kiocore6", "libkf6kiogui6", "libkf6kiofilewidgets6",
     "libkf6service6", "libkf6i18n6", "libkf6coreaddons6",
-    "libkf6windowsystem6", "libkf6runner6",
+    "libkf6windowsystem6", "libkf6globalaccel6", "libkf6runner6",
     "qml6-module-org-kde-kirigami",
     "liblayershellqtinterface6", "libplasmaactivities6",
     "libplasmaactivitiesstats1",
@@ -76,7 +76,7 @@ packages = [
     "libQt6Network6", "libQt6DBus6",
     "libPlasma7", "libPlasmaActivities7", "libPlasmaActivitiesStats1",
     "kf6-kpackage", "kf6-kio", "kf6-kservice", "kf6-ki18n",
-    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-krunner", "kf6-kirigami",
+    "kf6-kcoreaddons", "kf6-kwindowsystem", "kf6-kglobalaccel", "kf6-krunner", "kf6-kirigami",
     "layer-shell-qt6", "plasma6-workspace",
     "libAppStreamQt3",
 ]
@@ -130,7 +130,7 @@ display  = "Unknown distro"
 packages = [
     "qt6-base", "qt6-declarative",
     "plasma", "kpackage", "kio", "kservice", "ki18n",
-    "kcoreaddons", "kwindowsystem", "krunner", "kirigami",
+    "kcoreaddons", "kwindowsystem", "kglobalaccel", "krunner", "kirigami",
     "layer-shell-qt", "plasma-activities", "plasma-workspace",
     "appstream-qt",
 ]
