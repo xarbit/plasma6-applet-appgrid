@@ -78,9 +78,11 @@ public:
     Q_INVOKABLE QRect targetScreenGeometry(bool useActiveScreen);
 
     /** Apply blur + background-contrast effects to a rounded-rect region of
-     *  @p window matching the panel geometry. The contrast triple is pulled
-     *  from the active Plasma theme so each theme controls its own look. */
-    Q_INVOKABLE void setBackgroundEffects(QWindow *window, bool enable, int x, int y, int w, int h, int radius);
+     *  @p window matching the panel geometry. @p enableBlur and @p enableContrast
+     *  are independent — each can be applied without the other. The contrast
+     *  triple is pulled from the active Plasma theme so each theme controls
+     *  its own look. */
+    Q_INVOKABLE void setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius);
 
     /**
      * Restrict pointer input on @p window to the rectangle (x,y,w,h). The

@@ -74,6 +74,11 @@
       <label>Whether to enable background blur effect.</label>
       <default>true</default>
     </entry>
+    <entry name="enableBackgroundContrast" type="Bool">
+      <label>Apply Plasma's background-contrast filter alongside the blur.
+             Theme-tuned values come from the active Plasma theme.</label>
+      <default>true</default>
+    </entry>
     <entry name="dimBackground" type="Bool">
       <label>Whether to dim the screen behind the launcher overlay.</label>
       <default>false</default>
