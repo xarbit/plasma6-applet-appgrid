@@ -88,11 +88,13 @@ Window {
     }
 
     function applyBackgroundEffects() {
-        if (cfg.effectiveEnableBlur && visible) {
+        const blur = cfg.effectiveEnableBlur
+        const contrast = cfg.effectiveEnableBackgroundContrast
+        if ((blur || contrast) && visible) {
             const r = _panelRect()
-            root.plasmoidBridge.setBackgroundEffects(root, true, r.x, r.y, r.w, r.h, panel.radius)
+            root.plasmoidBridge.setBackgroundEffects(root, blur, contrast, r.x, r.y, r.w, r.h, panel.radius)
         } else {
-            root.plasmoidBridge.setBackgroundEffects(root, false, 0, 0, 0, 0, 0)
+            root.plasmoidBridge.setBackgroundEffects(root, false, false, 0, 0, 0, 0, 0)
         }
     }
 
@@ -236,7 +238,7 @@ Window {
         closeOnDeactivate = false
         deactivateGuard.stop()
         panel.resetOnClose()
-        root.plasmoidBridge.setBackgroundEffects(root, false, 0, 0, 0, 0, 0)
+        root.plasmoidBridge.setBackgroundEffects(root, false, false, 0, 0, 0, 0, 0)
         if (animationsEnabled && animStyle !== 0 && animLoader.item) {
             dimFadeOut.start()
             animLoader.item.close()

@@ -26,6 +26,7 @@ KCM.SimpleKCM {
     property alias cfg_hoverHighlight: hoverHighlight.checked
     property alias cfg_backgroundOpacity: backgroundOpacity.value
     property alias cfg_enableBlur: enableBlur.checked
+    property alias cfg_enableBackgroundContrast: enableBackgroundContrast.checked
     property alias cfg_dimBackground: dimBackground.checked
     property alias cfg_overrideRadius: overrideRadius.checked
     property alias cfg_cornerRadius: cornerRadius.value
@@ -103,7 +104,21 @@ KCM.SimpleKCM {
             id: enableBlur
             visible: !page.isPanel
             enabled: !useThemeBackground.checked
-            text: i18nd("dev.xarbit.appgrid", "Enable blur and contrast")
+            text: i18nd("dev.xarbit.appgrid", "Enable background blur")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "Compositor blur applied behind the panel. Heavier on the GPU than the contrast filter; disable if you want a lighter touch.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        }
+        QQC2.CheckBox {
+            id: enableBackgroundContrast
+            visible: !page.isPanel
+            enabled: !useThemeBackground.checked
+            text: i18nd("dev.xarbit.appgrid", "Enable background contrast")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "Plasma theme-tuned color filter behind the panel — sharpens text legibility on busy wallpapers. Cheap on the GPU; pairs well with blur but works on its own too.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
         QQC2.CheckBox {
             id: dimBackground
