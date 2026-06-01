@@ -13,8 +13,6 @@ on:
       - "screenshots/**"
       - ".gitignore"
       - "dev.xarbit.appgrid.metainfo.xml"
-      - "PKGBUILD"
-      - "packaging/**"
   pull_request:
     branches:
       - main
