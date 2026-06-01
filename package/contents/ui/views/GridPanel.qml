@@ -77,6 +77,13 @@ Kirigami.ShadowedRectangle {
     readonly property alias cfgUseExtraRunners: cfg.useExtraRunners
     readonly property alias cfgHideGridWhenEmpty: cfg.hideGridWhenEmpty
 
+    // One-shot override set by the secondary "Open in Compact Mode" global
+    // shortcut. While true, the panel behaves as if hideGridWhenEmpty were
+    // enabled, regardless of the persisted config. Reset on close so the
+    // next normal open uses the user's chosen mode.
+    property bool forceCompact: false
+    readonly property bool effectiveHideGridWhenEmpty: cfgHideGridWhenEmpty || forceCompact
+
     // -- Sort helpers --
     readonly property bool isSortByCategory: sortMode === 2
 
@@ -94,7 +101,7 @@ Kirigami.ShadowedRectangle {
     VisibilityState {
         id: visibility
         nativePopup: panel.nativePopup
-        hideGridWhenEmpty: panel.cfgHideGridWhenEmpty
+        hideGridWhenEmpty: panel.effectiveHideGridWhenEmpty
         showCategoryBar: panel.cfgShowCategoryBar
         isSearching: panel.isSearching
         isPrefixMode: panel.isPrefixMode
@@ -168,7 +175,7 @@ Kirigami.ShadowedRectangle {
     // vertically centered when the user starts typing. Consumed by
     // GridWindow for the panel translate and the blur clip; zero when
     // compact mode is off.
-    readonly property real compactShift: cfgHideGridWhenEmpty
+    readonly property real compactShift: effectiveHideGridWhenEmpty
         ? (height - panelHeight) / 2
         : 0
 
@@ -196,7 +203,7 @@ Kirigami.ShadowedRectangle {
     property bool _snapHeight: false
 
     Behavior on height {
-        enabled: !panel.nativePopup && cfgHideGridWhenEmpty && !panel._snapHeight
+        enabled: !panel.nativePopup && effectiveHideGridWhenEmpty && !panel._snapHeight
         NumberAnimation {
             duration: Kirigami.Units.longDuration
             easing.type: Easing.OutCubic

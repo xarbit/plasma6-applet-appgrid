@@ -40,6 +40,11 @@ Window {
     required property string favoritesClientInstance
     required property var sysInfo
 
+    // Forwarded into GridPanel.forceCompact for the current session; the
+    // owning plasmoid flips this before showGrid() when the secondary
+    // shortcut fires, then resets it on close.
+    property bool forceCompact: false
+
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
 
     // User vertical nudge for the centered panel. The config value is a
@@ -336,6 +341,7 @@ Window {
         updateChecker: root.updateChecker
         favoritesClientInstance: root.favoritesClientInstance
         sysInfo: root.sysInfo
+        forceCompact: root.forceCompact
         // Static user offset + compact-mode downward shift, kept out of
         // the anchor system so the open/close animations (which drive
         // anchors.verticalCenterOffset) are unaffected.

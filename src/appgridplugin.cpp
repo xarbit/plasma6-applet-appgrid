@@ -13,9 +13,11 @@
 #include <AppStreamQt/pool.h>
 
 #include <KDesktopFile>
+#include <KGlobalAccel>
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/CommandLauncherJob>
 #include <KIO/OpenUrlJob>
+#include <KLocalizedString>
 #include <KRunner/AbstractRunner>
 #include <KRunner/QueryMatch>
 #include <KRunner/ResultsModel>
@@ -23,6 +25,9 @@
 #include <KTerminalLauncherJob>
 #include <KWindowEffects>
 #include <KWindowSystem>
+#include <QAction>
+#include <QIcon>
+#include <QKeySequence>
 
 #include <PlasmaActivities/ResourceInstance>
 
@@ -88,8 +93,47 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
                     quickItem->setProperty("expanded", false);
                 });
             }
+            // Compact mode is a center-variant feature (the popup variant
+            // is already small + anchored). Registering the shortcut only
+            // here also avoids a two-action contention on the same
+            // KGlobalAccel componentName when both variants are installed
+            // or briefly coexist during a variant switch.
+            registerCompactShortcut();
         }
     });
+}
+
+void AppGridPlugin::registerCompactShortcut()
+{
+    if (m_compactAction)
+        return;
+
+    // componentName + componentDisplayName are KGlobalAccel dynamic properties
+    // (not object identity). Matching the values Plasma uses for its own
+    // applet-activation shortcut (the applet's pluginId + display name) merges
+    // our action into the same group in System Settings → Keyboard, so the
+    // user sees both the "open" (Super, owned by Plasma) and "open compact"
+    // (Meta+Space, owned by us) shortcuts side-by-side under one AppGrid
+    // heading, with the applet's own icon.
+    const auto meta = pluginMetaData();
+    m_compactAction = new QAction(QIcon::fromTheme(meta.iconName()), i18n("Open in Compact Mode"), this);
+    m_compactAction->setObjectName(QStringLiteral("appgrid_open_compact"));
+    m_compactAction->setProperty("componentName", meta.pluginId());
+    m_compactAction->setProperty("componentDisplayName", meta.name());
+
+    // Two-call dance:
+    //   1. setDefaultShortcut(NoAutoloading): force-write Meta+Space as the
+    //      canonical default. NoAutoloading is required — Autoloading would
+    //      *read* the daemon's stored default into the action, which on a
+    //      partial/legacy install can be empty, leaving "Restore Defaults"
+    //      in the KCM bound to nothing.
+    //   2. setShortcut(Autoloading): honor the user's saved binding if any,
+    //      otherwise fall back to the default we just registered.
+    const QList<QKeySequence> defaults{QKeySequence(Qt::META | Qt::Key_Space)};
+    KGlobalAccel::self()->setDefaultShortcut(m_compactAction, defaults, KGlobalAccel::NoAutoloading);
+    KGlobalAccel::self()->setShortcut(m_compactAction, defaults, KGlobalAccel::Autoloading);
+
+    connect(m_compactAction, &QAction::triggered, this, &AppGridPlugin::compactActivated);
 }
 
 AppFilterModel *AppGridPlugin::appsModel() const

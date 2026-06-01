@@ -108,6 +108,7 @@ find_package(KF6KIO ${KF6_MIN_VERSION} REQUIRED)
 find_package(KF6WindowSystem ${KF6_MIN_VERSION} REQUIRED)
 find_package(KF6Package ${KF6_MIN_VERSION} REQUIRED)
 find_package(KF6IconThemes ${KF6_MIN_VERSION} REQUIRED)
+find_package(KF6GlobalAccel ${KF6_MIN_VERSION} REQUIRED)
 find_package(LayerShellQt REQUIRED)
 find_package(KF6Runner ${KF6_MIN_VERSION} REQUIRED)
 find_package(Plasma REQUIRED)
@@ -136,6 +137,7 @@ set(APPGRID_COMMON_LIBS
     KF6::KIOGui
     KF6::WindowSystem
     KF6::IconThemes
+    KF6::GlobalAccel
     LayerShellQt::Interface
     Plasma::PlasmaQuick
     KF6::Runner

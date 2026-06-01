@@ -8,6 +8,8 @@
 #include <Plasma/Applet>
 #include <QRect>
 
+class QAction;
+
 namespace KRunner
 {
 class ResultsModel;
@@ -166,10 +168,29 @@ public:
     /** Returns system/environment info for issue reporting. */
     Q_INVOKABLE QVariantMap systemInfo();
 
+Q_SIGNALS:
+    /**
+     * Emitted when the user triggers the secondary "Open in Compact Mode"
+     * global shortcut (default Meta+Space; rebindable in System Settings →
+     * Keyboard → Shortcuts). QML reacts by opening the launcher with the
+     * compact-mode override active for that session, regardless of the
+     * persisted `hideGridWhenEmpty` config.
+     */
+    void compactActivated();
+
 protected:
     bool m_useNativeActivation = false;
 
 private:
+    /**
+     * Register the secondary "Open in Compact Mode" global shortcut on
+     * this applet. Deferred from the constructor so the applet's plugin
+     * metadata (used as the KGlobalAccel component identity) is fully
+     * resolved by the time we register. Called only by the center variant;
+     * the popup variant skips it via the m_useNativeActivation gate.
+     */
+    void registerCompactShortcut();
+
     // --- Platform-specific window helpers ---
 
     [[nodiscard]] QScreen *screenForCursor() const;
@@ -192,6 +213,7 @@ private:
     RunnerFilterModel m_runnerFilterModel;
     UnifiedSearchModel m_searchModel;
     FrecencyProvider m_frecencyProvider;
+    QAction *m_compactAction = nullptr;
 #ifdef APPGRID_UNIVERSAL_BUILD
     mutable UpdateChecker *m_updateChecker = nullptr;
 #endif
