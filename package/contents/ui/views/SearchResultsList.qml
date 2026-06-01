@@ -23,6 +23,11 @@ ListView {
 
     property PlasmaComponents.TextField searchField: null
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Caller-supplied font multiplier for the result name Label so it
+    // stays proportional with the user's icon-size preference. Subtext
+    // sticks to Kirigami.Theme.smallFont (unaffected — it's secondary
+    // info and shrinks too far below 1.0).
+    property real fontScale: 1.0
     property bool showDividers: true
     property bool shadowEnabled: false
 
@@ -276,6 +281,7 @@ ListView {
                         text: model.name || ""
                         elide: Text.ElideRight
                         color: resultDelegate.labelColor
+                        font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.fontScale
                     }
                     InfoChip {
                         visible: model.installSource !== undefined

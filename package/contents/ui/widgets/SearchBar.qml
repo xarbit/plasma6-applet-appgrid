@@ -56,7 +56,7 @@ RowLayout {
         id: textField
         Layout.fillWidth: true
         placeholderText: i18nd("dev.xarbit.appgrid", "Search apps or type ? for commands")
-        font.pointSize: Kirigami.Theme.defaultFont.pointSize * searchBar.fontScale
+        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.3 * searchBar.fontScale
         background: Item {}
         color: Kirigami.Theme.textColor
         placeholderTextColor: Qt.rgba(
