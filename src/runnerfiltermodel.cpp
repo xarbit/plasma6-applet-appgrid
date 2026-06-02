@@ -20,20 +20,23 @@ RunnerFilterModel::RunnerFilterModel(QObject *parent)
 void RunnerFilterModel::setAppModel(AppFilterModel *model)
 {
     m_appModel = model;
-    const auto refresh = [this]() {
-        rebuildAppNameCache();
+    // App-model changes only mark the name cache dirty + re-filter; the
+    // O(app-count) rebuild is deferred to the next filter pass that needs it
+    // (ensureAppNameCache), coalescing the burst of signals one keystroke emits.
+    const auto markDirty = [this]() {
+        m_appNameCacheDirty = true;
         invalidate();
     };
-    connect(m_appModel, &QAbstractItemModel::modelReset, this, refresh);
-    connect(m_appModel, &QAbstractItemModel::layoutChanged, this, refresh);
-    connect(m_appModel, &QAbstractItemModel::rowsInserted, this, refresh);
-    connect(m_appModel, &QAbstractItemModel::rowsRemoved, this, refresh);
+    connect(m_appModel, &QAbstractItemModel::modelReset, this, markDirty);
+    connect(m_appModel, &QAbstractItemModel::layoutChanged, this, markDirty);
+    connect(m_appModel, &QAbstractItemModel::rowsInserted, this, markDirty);
+    connect(m_appModel, &QAbstractItemModel::rowsRemoved, this, markDirty);
     // Hidden-set + searchShowsHidden control whether KRunner-served
     // hidden apps drop out — same gate AppFilterModel applies on its
     // own rows.
     connect(m_appModel, &AppFilterModel::hiddenAppsChanged, this, &RunnerFilterModel::invalidate);
     connect(m_appModel, &AppFilterModel::searchShowsHiddenChanged, this, &RunnerFilterModel::invalidate);
-    rebuildAppNameCache();
+    m_appNameCacheDirty = true;
 }
 
 void RunnerFilterModel::setSourceModel(QAbstractItemModel *model)
@@ -56,18 +59,21 @@ void RunnerFilterModel::captureSourceRoles()
     }
 }
 
-void RunnerFilterModel::rebuildAppNameCache()
+void RunnerFilterModel::ensureAppNameCache() const
 {
-    m_appNameCache.clear();
-    if (!m_appModel)
+    if (!m_appNameCacheDirty)
         return;
-    const int n = m_appModel->rowCount();
-    m_appNameCache.reserve(n);
-    for (int i = 0; i < n; ++i) {
-        const auto name = m_appModel->index(i, 0).data(AppModel::NameRole).toString();
-        if (!name.isEmpty())
-            m_appNameCache.insert(name.toCaseFolded());
+    m_appNameCache.clear();
+    if (m_appModel) {
+        const int n = m_appModel->rowCount();
+        m_appNameCache.reserve(n);
+        for (int i = 0; i < n; ++i) {
+            const auto name = m_appModel->index(i, 0).data(AppModel::NameRole).toString();
+            if (!name.isEmpty())
+                m_appNameCache.insert(name.toCaseFolded());
+        }
     }
+    m_appNameCacheDirty = false;
 }
 
 QString RunnerFilterModel::storageIdFromRow(const QModelIndex &idx) const
@@ -87,7 +93,9 @@ bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
 
     // Dedup against visible app names so the unified view doesn't show
     // the same app twice (once via AppFilterModel, once via KRunner's
-    // services runner).
+    // services runner). The name cache is rebuilt here lazily on first use
+    // after an app-model change.
+    ensureAppNameCache();
     const auto runnerName = idx.data(Qt::DisplayRole).toString();
     if (m_appNameCache.contains(runnerName.toCaseFolded()))
         return false;
