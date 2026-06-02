@@ -28,16 +28,17 @@ Item {
 
     // --- Favorites reorder (Ctrl+Shift+Arrow) ---
 
-    function reorderable() {
-        return gridView.favoritesActive
+    // Reactive so the Shortcut `enabled` bindings below re-evaluate when any
+    // dependency changes — an imperative function call wouldn't track these
+    // inside a binding.
+    readonly property bool _canReorder: gridView.favoritesActive
                && gridView.sharedFavoritesModel
                && gridView.model === gridView.sharedFavoritesModel
                && !sortFavoritesAlphabetically
                && gridView.currentIndex >= 0
-    }
 
     function reorderTo(target) {
-        if (!reorderable()) return false
+        if (!shortcuts._canReorder) return false
         if (target < 0 || target >= gridView.count
                 || target === gridView.currentIndex) return false
         gridView.sharedFavoritesModel.moveRow(gridView.currentIndex, target)
@@ -47,23 +48,23 @@ Item {
 
     Shortcut {
         sequence: "Ctrl+Shift+Right"
-        enabled: shortcuts.reorderable() && gridView.currentIndex < gridView.count - 1
+        enabled: shortcuts._canReorder && gridView.currentIndex < gridView.count - 1
         onActivated: shortcuts.reorderTo(gridView.currentIndex + 1)
     }
     Shortcut {
         sequence: "Ctrl+Shift+Left"
-        enabled: shortcuts.reorderable() && gridView.currentIndex > 0
+        enabled: shortcuts._canReorder && gridView.currentIndex > 0
         onActivated: shortcuts.reorderTo(gridView.currentIndex - 1)
     }
     Shortcut {
         sequence: "Ctrl+Shift+Down"
-        enabled: shortcuts.reorderable()
+        enabled: shortcuts._canReorder
                  && gridView.currentIndex + gridView.effectiveColumns < gridView.count
         onActivated: shortcuts.reorderTo(gridView.currentIndex + gridView.effectiveColumns)
     }
     Shortcut {
         sequence: "Ctrl+Shift+Up"
-        enabled: shortcuts.reorderable()
+        enabled: shortcuts._canReorder
                  && gridView.currentIndex - gridView.effectiveColumns >= 0
         onActivated: shortcuts.reorderTo(gridView.currentIndex - gridView.effectiveColumns)
     }
