@@ -16,3 +16,6 @@ var PLUGIN_ID_PANEL = "dev.xarbit.appgrid.panel"
 // Plugin id of the centered popup variant — also the default launcher
 // icon name (the .desktop icon AppGrid ships under hicolor).
 var PLUGIN_ID_CENTER = "dev.xarbit.appgrid"
+
+// Freedesktop fallback icon, shown when an app exposes no icon name.
+var DEFAULT_ICON = "application-x-executable"
