@@ -8,10 +8,12 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 
+import "../js/prefixmodes.js" as PrefixModes
+
 ColumnLayout {
     id: commandView
 
-    property string mode: "terminal"   // "terminal" or "command"
+    property string mode: PrefixModes.TERMINAL
     property string argument: ""
 
     anchors.centerIn: parent
@@ -21,7 +23,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
         implicitWidth: Kirigami.Units.iconSizes.huge
         implicitHeight: Kirigami.Units.iconSizes.huge
-        source: commandView.mode === "terminal" ? "utilities-terminal" : "system-run"
+        source: commandView.mode === PrefixModes.TERMINAL ? "utilities-terminal" : "system-run"
         opacity: 0.5
     }
 
@@ -29,10 +31,10 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
         text: {
             if (commandView.argument.trim().length === 0)
-                return commandView.mode === "terminal"
+                return commandView.mode === PrefixModes.TERMINAL
                     ? i18nd("dev.xarbit.appgrid", "Type a command to run in terminal")
                     : i18nd("dev.xarbit.appgrid", "Type a command to execute")
-            return commandView.mode === "terminal"
+            return commandView.mode === PrefixModes.TERMINAL
                 ? i18nd("dev.xarbit.appgrid", "Press Enter to run in terminal")
                 : i18nd("dev.xarbit.appgrid", "Press Enter to execute")
         }

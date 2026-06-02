@@ -9,6 +9,7 @@
 import QtQuick
 
 import "../prefix" as Prefix
+import "../js/prefixmodes.js" as PrefixModes
 
 Item {
     id: prefixView
@@ -37,7 +38,7 @@ Item {
     // -- Help --
     Prefix.PrefixHelpView {
         anchors.fill: parent
-        visible: prefixView.mode === "help"
+        visible: prefixView.mode === PrefixModes.HELP
         showScrollbars: prefixView.showScrollbars
     }
 
@@ -45,13 +46,13 @@ Item {
     Prefix.PrefixCommandView {
         mode: prefixView.mode
         argument: prefixView.argument
-        visible: prefixView.mode === "terminal" || prefixView.mode === "command"
+        visible: prefixView.mode === PrefixModes.TERMINAL || prefixView.mode === PrefixModes.COMMAND
     }
 
     // -- System info --
     Prefix.PrefixInfoView {
         anchors.fill: parent
-        visible: prefixView.mode === "info"
+        visible: prefixView.mode === PrefixModes.INFO
         sharedFavoritesModel: prefixView.sharedFavoritesModel
         showScrollbars: prefixView.showScrollbars
         sysInfo: prefixView.sysInfo
@@ -64,7 +65,7 @@ Item {
     // -- Hidden apps --
     Prefix.PrefixHiddenView {
         anchors.fill: parent
-        visible: prefixView.mode === "hidden"
+        visible: prefixView.mode === PrefixModes.HIDDEN
         appsModel: prefixView.appsModel
     }
 
@@ -72,7 +73,7 @@ Item {
     Prefix.PrefixFileBrowser {
         id: fileBrowser
         anchors.fill: parent
-        visible: prefixView.mode === "files"
+        visible: prefixView.mode === PrefixModes.FILES
         path: prefixView.argument
         searchField: prefixView.searchField
         listDirectory: prefixView.listDirectory

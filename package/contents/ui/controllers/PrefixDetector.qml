@@ -9,29 +9,14 @@
 
 import QtQuick
 
+import "../js/prefixmodes.js" as PrefixModes
+
 QtObject {
     id: detector
 
     property string input: ""
 
-    readonly property string mode: {
-        var t = input
-        if (t.startsWith("t:")) return "terminal"
-        if (t.startsWith("i:")) return "info"
-        if (t.startsWith("h:")) return "hidden"
-        if (t.startsWith("?")) return "help"
-        if (t.startsWith("/") || t.startsWith("~/")) return "files"
-        if (t.startsWith(":")) return "command"
-        return ""
-    }
-
-    readonly property bool isPrefixMode: mode !== ""
-
-    readonly property string argument: {
-        var t = input
-        if (mode === "terminal") return t.substring(2).trim()
-        if (mode === "command") return t.substring(1).trim()
-        if (mode === "files") return t.trim()
-        return ""
-    }
+    readonly property string mode: PrefixModes.modeFor(input)
+    readonly property bool isPrefixMode: mode !== PrefixModes.NONE
+    readonly property string argument: PrefixModes.argumentFor(input, mode)
 }

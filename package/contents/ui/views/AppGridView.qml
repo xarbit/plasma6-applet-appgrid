@@ -12,6 +12,7 @@ import "../controllers"
 import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
 import "../js/gridnav.js" as GridNav
+import "../js/gridmetrics.js" as GridMetrics
 import "../js/constants.js" as Const
 
 GridView {
@@ -150,7 +151,7 @@ GridView {
     cellWidth: Math.floor(width / effectiveColumns)
     cellHeight: labelsHidden
                ? cellWidth
-               : iconSize + Kirigami.Units.gridUnit * 3 + Kirigami.Units.smallSpacing * 2
+               : GridMetrics.labelledCellHeight(iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
     boundsBehavior: Flickable.StopAtBounds
     keyNavigationEnabled: true
     currentIndex: -1

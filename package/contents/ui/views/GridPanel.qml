@@ -20,6 +20,8 @@ import "../js/migrations.js" as Migrations
 import "../js/searchresultnav.js" as SearchResultNav
 import "../js/themecolors.js" as ThemeColors
 import "../js/constants.js" as Const
+import "../js/gridmetrics.js" as GridMetrics
+import "../js/prefixmodes.js" as PrefixModes
 
 Kirigami.ShadowedRectangle {
     id: panel
@@ -170,8 +172,8 @@ Kirigami.ShadowedRectangle {
     // row would accumulate and clip the bottom row).
     readonly property real estCellWidth: gridIconSize + Kirigami.Units.gridUnit * 2
                                          + Kirigami.Units.smallSpacing * 2
-    readonly property real estCellHeight: gridIconSize + Kirigami.Units.gridUnit * 3
-                                          + Kirigami.Units.smallSpacing * 2
+    readonly property real estCellHeight: GridMetrics.labelledCellHeight(gridIconSize,
+                                          Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
 
     readonly property real panelMargin: nativePopup ? Kirigami.Units.largeSpacing : Kirigami.Units.largeSpacing * 2
     readonly property real headerHeight: Kirigami.Units.gridUnit * 5
@@ -564,13 +566,13 @@ Kirigami.ShadowedRectangle {
                         panel.launchSearchResult(number - 1)
                 }
                 onAccepted: {
-                    if (panel.prefixMode === "terminal") {
+                    if (panel.prefixMode === PrefixModes.TERMINAL) {
                         panel.plasmoidBridge.runInTerminal(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
-                    } else if (panel.prefixMode === "command") {
+                    } else if (panel.prefixMode === PrefixModes.COMMAND) {
                         panel.plasmoidBridge.runCommand(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
-                    } else if (panel.prefixMode === "files") {
+                    } else if (panel.prefixMode === PrefixModes.FILES) {
                         prefixModeView.activateFileCurrent()
                     } else if (!panel.isPrefixMode) {
                         if (panel.isSearching) {
@@ -618,7 +620,7 @@ Kirigami.ShadowedRectangle {
                 }
 
                 onMoveDown: {
-                    if (panel.prefixMode === "files") {
+                    if (panel.prefixMode === PrefixModes.FILES) {
                         prefixModeView.focusFileList()
                         return
                     }
@@ -822,9 +824,8 @@ Kirigami.ShadowedRectangle {
             groupedApps: panel.showCategoryGrid && panel.appsModel
                 ? panel.appsModel.groupedByCategory : []
             cellWidth: Math.floor(categoryGridView.width / panel.columns)
-            cellHeight: panel.gridIconSize
-                        + Kirigami.Units.gridUnit * 3
-                        + Kirigami.Units.smallSpacing * 2
+            cellHeight: GridMetrics.labelledCellHeight(panel.gridIconSize,
+                        Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
             iconSize: panel.gridIconSize
             hoverAnimation: cfg.hoverAnimation
             shadowEnabled: cfg.iconShadow
