@@ -6,6 +6,7 @@
 #include "appfiltermodel.h"
 
 #include "pluginhelpers.h"
+#include "searchranking.h"
 
 #include <KIO/ApplicationLauncherJob>
 #include <KJob>
@@ -164,49 +165,6 @@ void AppFilterModel::rebuildKnownSet()
     m_knownAppsSet = QSet<QString>(m_knownApps.cbegin(), m_knownApps.cend());
 }
 
-// --- Search helpers (filter + ranking share these) ---
-
-// Relevance tiers used by searchRelevance() and the promotion guard in
-// lessThan(). Lower number = better match. Named so the comparison sites
-// don't carry bare integers.
-constexpr int kTierNamePrefix = 0; // name starts with query
-constexpr int kTierNameWordBoundary = 1; // word-boundary substring in name
-constexpr int kTierGeneric = 2; // word-boundary in generic name / Comment fallback
-constexpr int kTierKeyword = 3; // keyword or category contains query
-constexpr int kTierNameMidword = 4; // mid-word substring fallback
-constexpr int kTierNoMatch = 5; // filtered out
-
-// Naive plural strip: "games" → "game". Capped at queries of 4+ chars so
-// short tokens like "es"/"is"/"os" don't lose their final letter. Lets a
-// plural query reach singular-category rows in both the filter step and
-// the tier-3 category check. No real stemmer — that's a wider problem;
-// this covers the common English case.
-static QString singularize(const QString &query)
-{
-    if (query.size() < 4 || !query.endsWith(QLatin1Char('s'), Qt::CaseInsensitive))
-        return {};
-    return query.chopped(1);
-}
-
-// True when `needle` appears at a word boundary in `haystack` — i.e. at
-// position 0 or just after a non-alphanumeric character. Stops a query
-// like "ter" from matching "ghostwriter" / "booster" as a meaningful
-// substring; those drop to the mid-word fallback tier instead.
-static bool containsAtWordBoundary(const QString &haystack, const QString &needle)
-{
-    if (needle.isEmpty())
-        return false;
-    int from = 0;
-    while (true) {
-        const int idx = haystack.indexOf(needle, from, Qt::CaseInsensitive);
-        if (idx < 0)
-            return false;
-        if (idx == 0 || !haystack.at(idx - 1).isLetterOrNumber())
-            return true;
-        from = idx + 1;
-    }
-}
-
 // --- Property accessors ---
 
 int AppFilterModel::count() const
@@ -239,7 +197,7 @@ void AppFilterModel::setSearchText(const QString &text)
         return;
     m_searchText = text;
     m_searchTextLower = text.toCaseFolded();
-    m_searchTextLowerSingular = singularize(m_searchTextLower);
+    m_searchTextLowerSingular = SearchRanking::singularize(m_searchTextLower);
     APPGRID_INVALIDATE_ALL(); // Re-run filter + sort for relevance ranking
     Q_EMIT searchTextChanged();
 }
@@ -575,60 +533,16 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 
 // --- Sorting ---
 
-// Search relevance: lower score = better match.
-//   0 = name prefix
-//   1 = word-boundary substring in name
-//   2 = word-boundary substring in generic name
-//   3 = keyword contains
-//   4 = mid-word substring in name (deep fallback — never out-ranks 0..3)
-//   5 = no match
+// Reads the app's text roles off @p idx and delegates to the pure
+// SearchRanking::relevance(). Lower score = better match.
 static int searchRelevance(const QModelIndex &idx, const QString &query)
 {
-    if (query.isEmpty())
-        return kTierNoMatch;
-
-    const auto name = idx.data(AppModel::NameRole).toString();
-    if (name.startsWith(query, Qt::CaseInsensitive))
-        return kTierNamePrefix;
-    if (containsAtWordBoundary(name, query))
-        return kTierNameWordBoundary;
-
-    const auto generic = idx.data(AppModel::GenericNameRole).toString();
-    if (containsAtWordBoundary(generic, query))
-        return kTierGeneric;
-    // Fallback: many .desktop files omit GenericName entirely (third-party
-    // apps especially), leaving Comment as the only descriptive field.
-    // Treat it as tier 2 only when GenericName is missing so apps that
-    // properly fill both don't get double-counted.
-    if (generic.isEmpty()) {
-        const auto comment = idx.data(AppModel::CommentRole).toString();
-        if (containsAtWordBoundary(comment, query))
-            return kTierGeneric;
-    }
-
-    const auto keywords = idx.data(AppModel::KeywordsRole).toStringList();
-    for (const auto &kw : keywords) {
-        if (kw.contains(query, Qt::CaseInsensitive))
-            return kTierKeyword;
-    }
-
-    // Categories share tier 3: typing "game" or "office" should pull in
-    // the matching freedesktop category siblings (Game, ArcadeGame,
-    // OfficeApp …). Plural queries also test the singularized form so
-    // "games" matches "Game" / "ArcadeGame" — see singularize() above.
-    const auto categories = idx.data(AppModel::CategoriesRole).toStringList();
-    const QString singularQuery = singularize(query);
-    for (const auto &cat : categories) {
-        if (cat.contains(query, Qt::CaseInsensitive))
-            return kTierKeyword;
-        if (!singularQuery.isEmpty() && cat.contains(singularQuery, Qt::CaseInsensitive))
-            return kTierKeyword;
-    }
-
-    if (name.contains(query, Qt::CaseInsensitive))
-        return kTierNameMidword;
-
-    return kTierNoMatch;
+    return SearchRanking::relevance(idx.data(AppModel::NameRole).toString(),
+                                    idx.data(AppModel::GenericNameRole).toString(),
+                                    idx.data(AppModel::CommentRole).toString(),
+                                    idx.data(AppModel::KeywordsRole).toStringList(),
+                                    idx.data(AppModel::CategoriesRole).toStringList(),
+                                    query);
 }
 
 bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
@@ -672,18 +586,18 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
             //   0 — name prefix (must always win)
             //   4 — mid-word substring fallback (must always lose)
             // Promotion endpoints (inviolate, never crossed by counts):
-            //   kTierNamePrefix — must always win
-            //   kTierNameMidword — must always lose
-            const bool endpointInvolved =
-                leftRel == kTierNamePrefix || rightRel == kTierNamePrefix || leftRel == kTierNameMidword || rightRel == kTierNameMidword;
+            //   TierNamePrefix — must always win
+            //   TierNameMidword — must always lose
+            const bool endpointInvolved = leftRel == SearchRanking::TierNamePrefix || rightRel == SearchRanking::TierNamePrefix
+                || leftRel == SearchRanking::TierNameMidword || rightRel == SearchRanking::TierNameMidword;
             // Also block the generic↔keyword boundary so a heavy *keyword*
             // match can't leap past a generic-name / Comment match.
             // Keywords are a marketing tag bag (Discover lists "games"
             // alongside "snap" and "addons"); generic/Comment text is a
             // semantic signal. The promotions that motivated the rule
             // (name-substring vs generic, keyword vs mid-word) still fire.
-            const bool keywordVsGenericBoundary =
-                (leftRel == kTierGeneric && rightRel == kTierKeyword) || (leftRel == kTierKeyword && rightRel == kTierGeneric);
+            const bool keywordVsGenericBoundary = (leftRel == SearchRanking::TierGeneric && rightRel == SearchRanking::TierKeyword)
+                || (leftRel == SearchRanking::TierKeyword && rightRel == SearchRanking::TierGeneric);
             if (!endpointInvolved && !keywordVsGenericBoundary && std::abs(leftRel - rightRel) <= 1 && leftCount != rightCount) {
                 return leftCount > rightCount;
             }

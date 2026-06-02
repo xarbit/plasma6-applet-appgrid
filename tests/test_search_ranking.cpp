@@ -8,6 +8,7 @@
 #include <QTest>
 
 #include "appfiltermodel.h"
+#include "searchranking.h"
 #include "stubappmodel.h"
 
 class TestSearchRanking : public QObject {
@@ -34,6 +35,11 @@ private slots:
     void frecencyFallsBackToLaunchCountWhenMapEmpty();
     void categoryMatchLandsInTier3();
     void pluralQueryReachesSingularCategory();
+
+    // Direct unit tests for the pure SearchRanking helpers.
+    void relevance_classifiesEachTier();
+    void singularize_rules();
+    void containsAtWordBoundary_rules();
 
 private:
     QString nameAt(int proxyRow) const;
@@ -407,6 +413,34 @@ void TestSearchRanking::pluralQueryReachesSingularCategory()
     m_filter.setSearchText(QStringLiteral("games"));
     QCOMPARE(m_filter.count(), 1);
     QCOMPARE(nameAt(0), QStringLiteral("Empire"));
+}
+
+void TestSearchRanking::relevance_classifiesEachTier()
+{
+    using namespace SearchRanking;
+    QCOMPARE(relevance(QStringLiteral("Firefox"), {}, {}, {}, {}, QStringLiteral("fire")), TierNamePrefix);
+    QCOMPARE(relevance(QStringLiteral("Mozilla Firefox"), {}, {}, {}, {}, QStringLiteral("fire")), TierNameWordBoundary);
+    QCOMPARE(relevance(QStringLiteral("Kate"), QStringLiteral("Text Editor"), {}, {}, {}, QStringLiteral("editor")), TierGeneric);
+    // Comment is the tier-2 source only when GenericName is empty.
+    QCOMPARE(relevance(QStringLiteral("Foo"), {}, QStringLiteral("A music player"), {}, {}, QStringLiteral("music")), TierGeneric);
+    QCOMPARE(relevance(QStringLiteral("Kate"), {}, {}, {QStringLiteral("ide")}, {}, QStringLiteral("ide")), TierKeyword);
+    QCOMPARE(relevance(QStringLiteral("ghostwriter"), {}, {}, {}, {}, QStringLiteral("ter")), TierNameMidword);
+    QCOMPARE(relevance(QStringLiteral("Kate"), {}, {}, {}, {}, QStringLiteral("zzz")), TierNoMatch);
+    QCOMPARE(relevance(QStringLiteral("Kate"), {}, {}, {}, {}, QString()), TierNoMatch);
+}
+
+void TestSearchRanking::singularize_rules()
+{
+    QCOMPARE(SearchRanking::singularize(QStringLiteral("games")), QStringLiteral("game"));
+    QVERIFY(SearchRanking::singularize(QStringLiteral("os")).isEmpty()); // shorter than 4 chars
+    QVERIFY(SearchRanking::singularize(QStringLiteral("game")).isEmpty()); // no trailing 's'
+}
+
+void TestSearchRanking::containsAtWordBoundary_rules()
+{
+    QVERIFY(SearchRanking::containsAtWordBoundary(QStringLiteral("Mozilla Firefox"), QStringLiteral("fire")));
+    QVERIFY(!SearchRanking::containsAtWordBoundary(QStringLiteral("ghostwriter"), QStringLiteral("ter")));
+    QVERIFY(!SearchRanking::containsAtWordBoundary(QStringLiteral("abc"), QString()));
 }
 
 QTEST_MAIN(TestSearchRanking)

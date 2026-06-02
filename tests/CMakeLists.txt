@@ -10,6 +10,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.cpp
     ${CMAKE_SOURCE_DIR}/src/unifiedsearchmodel.cpp
     ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
+    ${CMAKE_SOURCE_DIR}/src/searchranking.cpp
 )
 
 set(TEST_COMMON_LIBS
