@@ -1,0 +1,27 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Jason Scurtu",
+        "Email": "code@xarbit.dev"
+      }
+    ],
+    "Category": "Application Launchers",
+    "Copyright": "2026 Jason Scurtu",
+    "Description": "A modern style application launcher",
+    "FormFactors": ["desktop"],
+    "Icon": "dev.xarbit.appgrid",
+    "Id": "dev.xarbit.appgrid",
+    "License": "GPL-2.0-or-later",
+    "Name": "AppGrid Launcher Center",
+    "Version": "1.9.0-dev.4+self.g9d951fc",
+    "Website": "https://appgrid.xarbit.dev",
+    "BugReportUrl": "https://github.com/xarbit/plasma6-applet-appgrid/issues"
+  },
+  "KLocalizedString": {
+    "UseTranslationDomain": "dev.xarbit.appgrid"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-Provides": ["org.kde.plasma.launchermenu"]
+}
