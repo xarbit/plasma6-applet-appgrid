@@ -102,7 +102,7 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
     case SourceIndexRole:
         return isApp ? row : (row - ac);
     case RunnerActionsCountRole:
-        return isApp ? 0 : runnerActions(index.row()).size();
+        return isApp ? 0 : runnerActionsCount(index.row());
     default:
         break;
     }
@@ -186,7 +186,7 @@ QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
     return kRoleNames;
 }
 
-QVariantList UnifiedSearchModel::runnerActions(int row) const
+QVariantList UnifiedSearchModel::rawRunnerActions(int row) const
 {
     if (!m_runnerModel || m_runnerActionsRole < 0)
         return {};
@@ -194,11 +194,15 @@ QVariantList UnifiedSearchModel::runnerActions(int row) const
     if (row < ac || row >= rowCount())
         return {};
     // ResultsModel exposes ActionsRole as a QVariantList of QVariant-wrapped
-    // KRunner::Action — *not* as a typed QList<KRunner::Action>. Unwrap each
-    // element individually rather than .value<KRunner::Actions>(), which
-    // silently returns empty on the type mismatch.
-    const auto srcIdx = m_runnerModel->index(row - ac, 0);
-    const auto rawList = srcIdx.data(m_runnerActionsRole).toList();
+    // KRunner::Action — *not* as a typed QList<KRunner::Action>. The caller
+    // unwraps each element individually rather than .value<KRunner::Actions>(),
+    // which silently returns empty on the type mismatch.
+    return m_runnerModel->index(row - ac, 0).data(m_runnerActionsRole).toList();
+}
+
+QVariantList UnifiedSearchModel::runnerActions(int row) const
+{
+    const auto rawList = rawRunnerActions(row);
     QVariantList result;
     result.reserve(rawList.size());
     for (const auto &item : rawList) {
@@ -212,6 +216,18 @@ QVariantList UnifiedSearchModel::runnerActions(int row) const
         result.append(map);
     }
     return result;
+}
+
+int UnifiedSearchModel::runnerActionsCount(int row) const
+{
+    const auto rawList = rawRunnerActions(row);
+    int count = 0;
+    for (const auto &item : rawList) {
+        const auto action = item.value<KRunner::Action>();
+        if (!action.id().isEmpty() || !action.text().isEmpty())
+            ++count;
+    }
+    return count;
 }
 
 QVariantMap UnifiedSearchModel::get(int row) const

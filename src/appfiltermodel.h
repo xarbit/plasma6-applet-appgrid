@@ -164,6 +164,8 @@ protected:
 
 private:
     void recordLaunch(const QString &storageId);
+    // Re-run only the filter (Qt-version-bridged invalidateFilter); see .cpp.
+    void invalidateFilterCompat();
     void invalidateStorageIdCache();
     void ensureStorageIdCache() const;
     void invalidateHaystackCache();

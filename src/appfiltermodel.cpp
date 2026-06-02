@@ -14,23 +14,21 @@
 #include <cstdlib>
 #include <limits>
 
-// Qt 6.13 deprecated invalidateFilter() in favour of begin/endFilterChange().
-// Suppress the deprecation warning on older Qt where the replacement doesn't exist.
-// APPGRID_INVALIDATE_FILTER  — re-run filter only
-// APPGRID_INVALIDATE_ALL     — re-run filter + sort (for search relevance ranking)
+// Re-run only the filter (not the sort). Qt 6.13 replaced invalidateFilter()
+// with begin/endFilterChange(); bridge both without leaking a deprecation
+// warning on the older path. Sort-affecting changes call invalidate() directly.
+void AppFilterModel::invalidateFilterCompat()
+{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 13, 0)
-#define APPGRID_INVALIDATE_FILTER()                                                                                                                            \
-    do {                                                                                                                                                       \
-        beginFilterChange();                                                                                                                                   \
-        endFilterChange();                                                                                                                                     \
-    } while (0)
-#define APPGRID_INVALIDATE_ALL() invalidate()
+    beginFilterChange();
+    endFilterChange();
 #else
-#define APPGRID_INVALIDATE_FILTER()                                                                                                                            \
-    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") invalidateFilter();                                         \
-    _Pragma("GCC diagnostic pop")
-#define APPGRID_INVALIDATE_ALL() invalidate()
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
+    invalidateFilter();
+    QT_WARNING_POP
 #endif
+}
 
 // --- Constructor ---
 
@@ -158,7 +156,7 @@ void AppFilterModel::setFilterCategory(const QString &category)
     if (m_filterCategory == category)
         return;
     m_filterCategory = category;
-    APPGRID_INVALIDATE_FILTER();
+    invalidateFilterCompat();
     Q_EMIT filterCategoryChanged();
 }
 
@@ -174,7 +172,7 @@ void AppFilterModel::setSearchText(const QString &text)
     m_searchText = text;
     m_searchTextLower = text.toCaseFolded();
     m_searchTextLowerSingular = SearchRanking::singularize(m_searchTextLower);
-    APPGRID_INVALIDATE_ALL(); // Re-run filter + sort for relevance ranking
+    invalidate(); // Re-run filter + sort for relevance ranking
     Q_EMIT searchTextChanged();
 }
 
@@ -187,7 +185,7 @@ void AppFilterModel::setHiddenApps(const QStringList &list)
 {
     if (!m_book.setHidden(list))
         return;
-    APPGRID_INVALIDATE_FILTER();
+    invalidateFilterCompat();
     Q_EMIT hiddenAppsChanged();
 }
 
@@ -197,7 +195,7 @@ void AppFilterModel::hideApp(int proxyIndex)
     if (!idx.isValid())
         return;
     if (m_book.hide(idx.data(AppModel::StorageIdRole).toString())) {
-        APPGRID_INVALIDATE_FILTER();
+        invalidateFilterCompat();
         Q_EMIT hiddenAppsChanged();
     }
 }
@@ -205,7 +203,7 @@ void AppFilterModel::hideApp(int proxyIndex)
 void AppFilterModel::hideByStorageId(const QString &storageId)
 {
     if (m_book.hide(storageId)) {
-        APPGRID_INVALIDATE_FILTER();
+        invalidateFilterCompat();
         Q_EMIT hiddenAppsChanged();
     }
 }
@@ -213,7 +211,7 @@ void AppFilterModel::hideByStorageId(const QString &storageId)
 void AppFilterModel::unhideApp(const QString &storageId)
 {
     if (m_book.unhide(storageId)) {
-        APPGRID_INVALIDATE_FILTER();
+        invalidateFilterCompat();
         Q_EMIT hiddenAppsChanged();
     }
 }
@@ -324,7 +322,7 @@ void AppFilterModel::setSearchShowsHidden(bool enabled)
         return;
     m_searchShowsHidden = enabled;
     if (!m_searchText.isEmpty()) {
-        APPGRID_INVALIDATE_FILTER();
+        invalidateFilterCompat();
     }
     Q_EMIT searchShowsHiddenChanged();
 }
@@ -373,7 +371,7 @@ void AppFilterModel::setShowFavoritesOnly(bool enabled)
     if (m_showFavoritesOnly == enabled)
         return;
     m_showFavoritesOnly = enabled;
-    // Use invalidate() instead of APPGRID_INVALIDATE_FILTER() because
+    // Use invalidate() instead of invalidateFilterCompat() because
     // toggling favorites mode changes the sort order (lessThan sorts by
     // favorite position when enabled, alphabetical otherwise).
     // A filter-only refresh would keep the previous sort, causing

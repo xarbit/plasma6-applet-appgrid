@@ -65,6 +65,14 @@ private Q_SLOTS:
     void doReset();
 
 private:
+    // Raw KRunner ActionsRole list (QVariant-wrapped KRunner::Action) for a
+    // proxy row, with the app-row / bounds guards applied. Shared by
+    // runnerActions() and runnerActionsCount().
+    [[nodiscard]] QVariantList rawRunnerActions(int row) const;
+    // Number of non-empty actions without building the {id,icon,text} maps —
+    // for the RunnerActionsCountRole read that only needs the count.
+    [[nodiscard]] int runnerActionsCount(int row) const;
+
     AppFilterModel *m_appModel = nullptr;
     RunnerFilterModel *m_runnerModel = nullptr;
     int m_runnerSubtextRole = -1;
