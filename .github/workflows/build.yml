@@ -120,7 +120,7 @@ jobs:
         run: |
           codespell \
             --skip='build*,*.po,*.pot,po,*.svg' \
-            --ignore-words-list='growin' \
+            --ignore-words-list='growin,te' \
             --quiet-level=2 \
             src/ package/contents/ package/variants/ tests/ README.md
 

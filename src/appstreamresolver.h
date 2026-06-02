@@ -16,7 +16,7 @@
  * The pool is process-global (a function-local static) so the two plasmoid
  * variants running in one plasmashell share a single warmed pool. Extracted
  * from AppGridPlugin so that global state lives in one focused unit instead
- * of hidden behind statics in the applet.
+ * of hidden behind file-static functions in the applet.
  */
 namespace AppStreamResolver
 {
