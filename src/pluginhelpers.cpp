@@ -6,8 +6,11 @@
 #include "pluginhelpers.h"
 
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QMimeDatabase>
+#include <QSet>
+#include <QStandardPaths>
 #include <QVariantMap>
 
 namespace PluginHelpers
@@ -92,5 +95,50 @@ QVariantList listDirectoryAt(const QString &path)
             break;
     }
     return result;
+}
+
+QStringList parseMimeAppsDefaults(const QString &contents)
+{
+    QSet<QString> result;
+    bool inDefaults = false;
+    const auto lines = contents.split(QLatin1Char('\n'));
+    for (const auto &raw : lines) {
+        const QString line = raw.trimmed();
+        if (line.startsWith(QLatin1Char('['))) {
+            inDefaults = (line == QLatin1String("[Default Applications]"));
+            continue;
+        }
+        if (!inDefaults || line.isEmpty() || line.startsWith(QLatin1Char('#')))
+            continue;
+        const int eq = line.indexOf(QLatin1Char('='));
+        if (eq < 0)
+            continue;
+        // A value may list several .desktop entries separated by ';'.
+        const auto values = line.mid(eq + 1).split(QLatin1Char(';'), Qt::SkipEmptyParts);
+        for (const auto &v : values) {
+            const QString trimmed = v.trimmed();
+            if (!trimmed.isEmpty())
+                result.insert(trimmed);
+        }
+    }
+    return QStringList(result.cbegin(), result.cend());
+}
+
+QStringList loadMimeAppsDefaults()
+{
+    QSet<QString> all;
+    const QStringList paths = {
+        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
+        QStringLiteral("/usr/share/applications/mimeapps.list"),
+    };
+    for (const auto &path : paths) {
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+            continue;
+        const auto ids = parseMimeAppsDefaults(QString::fromUtf8(f.readAll()));
+        for (const auto &id : ids)
+            all.insert(id);
+    }
+    return QStringList(all.cbegin(), all.cend());
 }
 }

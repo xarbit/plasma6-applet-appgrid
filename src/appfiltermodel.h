@@ -117,9 +117,6 @@ public:
     // and by QML's context menu to toggle the Hide / Unhide label.
     [[nodiscard]] Q_INVOKABLE bool isHidden(const QString &storageId) const;
 
-    // Pure parser: extract storage IDs from the [Default Applications]
-    // section of a mimeapps.list file. Empty list on missing/invalid file.
-    [[nodiscard]] static QStringList parseMimeAppsDefaults(const QString &filePath);
     [[nodiscard]] Q_INVOKABLE QStringList categories() const;
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap get(int proxyRow) const;

@@ -9,6 +9,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/categorymapping.cpp
     ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.cpp
     ${CMAKE_SOURCE_DIR}/src/unifiedsearchmodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
 )
 
 set(TEST_COMMON_LIBS

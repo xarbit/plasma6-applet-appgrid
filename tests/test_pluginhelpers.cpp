@@ -177,6 +177,32 @@ private Q_SLOTS:
                 QCOMPARE(map.value(QStringLiteral("icon")).toString(), QStringLiteral("folder"));
         }
     }
+
+    void parseMimeAppsDefaults_extractsDefaultSection()
+    {
+        const QString contents = QStringLiteral(
+            "[Added Associations]\n"
+            "text/plain=ignored.desktop;\n"
+            "[Default Applications]\n"
+            "text/html=firefox.desktop;chromium.desktop\n"
+            "# comment line\n"
+            "application/pdf=okular.desktop\n"
+            "[Removed Associations]\n"
+            "text/html=alsoignored.desktop\n");
+        QStringList ids = parseMimeAppsDefaults(contents);
+        ids.sort();
+        QCOMPARE(ids, QStringList({QStringLiteral("chromium.desktop"),
+                                   QStringLiteral("firefox.desktop"),
+                                   QStringLiteral("okular.desktop")}));
+    }
+
+    void parseMimeAppsDefaults_emptyOnNoDefaultSection()
+    {
+        QVERIFY(parseMimeAppsDefaults(QString()).isEmpty());
+        QVERIFY(parseMimeAppsDefaults(QStringLiteral(
+                    "[Added Associations]\ntext/plain=foo.desktop\n"))
+                    .isEmpty());
+    }
 };
 
 QTEST_GUILESS_MAIN(TestPluginHelpers)

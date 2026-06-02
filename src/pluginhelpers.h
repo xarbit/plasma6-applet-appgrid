@@ -36,4 +36,12 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  by name, classifies dir/file icons, and caps at 200 entries. Each
  *  entry is a map: { name, path, isDir, icon }. */
 [[nodiscard]] QVariantList listDirectoryAt(const QString &path);
+
+/** Desktop ids from the [Default Applications] section of a mimeapps.list
+ *  file's @p contents. Order is unspecified; empty on no matches. */
+[[nodiscard]] QStringList parseMimeAppsDefaults(const QString &contents);
+
+/** Merged default-app desktop ids from the user and system mimeapps.list
+ *  files. Does the filesystem reads; parsing is parseMimeAppsDefaults(). */
+[[nodiscard]] QStringList loadMimeAppsDefaults();
 }

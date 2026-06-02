@@ -5,12 +5,10 @@
 
 #include "appfiltermodel.h"
 
+#include "pluginhelpers.h"
+
 #include <KIO/ApplicationLauncherJob>
 #include <KJob>
-
-#include <QFile>
-#include <QStandardPaths>
-#include <QTextStream>
 
 #include <cstdlib>
 #include <limits>
@@ -507,50 +505,9 @@ void AppFilterModel::setDefaultApps(const QStringList &list)
     Q_EMIT defaultAppsChanged();
 }
 
-QStringList AppFilterModel::parseMimeAppsDefaults(const QString &filePath)
-{
-    QSet<QString> result;
-    QFile f(filePath);
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
-        return {};
-
-    QTextStream in(&f);
-    bool inDefaults = false;
-    while (!in.atEnd()) {
-        QString line = in.readLine().trimmed();
-        if (line.startsWith(QLatin1Char('['))) {
-            inDefaults = (line == QLatin1String("[Default Applications]"));
-            continue;
-        }
-        if (!inDefaults || line.isEmpty() || line.startsWith(QLatin1Char('#')))
-            continue;
-        const int eq = line.indexOf(QLatin1Char('='));
-        if (eq < 0)
-            continue;
-        // value may contain multiple .desktop entries separated by ';'
-        const auto values = line.mid(eq + 1).split(QLatin1Char(';'), Qt::SkipEmptyParts);
-        for (const auto &v : values) {
-            const QString trimmed = v.trimmed();
-            if (!trimmed.isEmpty())
-                result.insert(trimmed);
-        }
-    }
-    return QStringList(result.cbegin(), result.cend());
-}
-
 void AppFilterModel::reloadDefaultApps()
 {
-    QSet<QString> all;
-    const QStringList paths = {
-        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
-        QStringLiteral("/usr/share/applications/mimeapps.list"),
-    };
-    for (const auto &path : paths) {
-        const auto ids = parseMimeAppsDefaults(path);
-        for (const auto &id : ids)
-            all.insert(id);
-    }
-    setDefaultApps(QStringList(all.cbegin(), all.cend()));
+    setDefaultApps(PluginHelpers::loadMimeAppsDefaults());
 }
 
 void AppFilterModel::recordLaunch(const QString &storageId)
