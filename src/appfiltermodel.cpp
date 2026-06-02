@@ -57,7 +57,7 @@ AppFilterModel::AppFilterModel(QObject *parent)
     // to QML so the next groupedByCategory read recomputes.
     auto markGroupedDirty = [this]() {
         m_groupedByCategoryDirty = true;
-        emit groupedByCategoryChanged();
+        Q_EMIT groupedByCategoryChanged();
     };
     connect(this, &AppFilterModel::hiddenAppsChanged, this, markGroupedDirty);
     connect(this, &AppFilterModel::showFavoritesOnlyChanged, this, markGroupedDirty);
@@ -227,7 +227,7 @@ void AppFilterModel::setFilterCategory(const QString &category)
         return;
     m_filterCategory = category;
     APPGRID_INVALIDATE_FILTER();
-    emit filterCategoryChanged();
+    Q_EMIT filterCategoryChanged();
 }
 
 QString AppFilterModel::searchText() const
@@ -243,7 +243,7 @@ void AppFilterModel::setSearchText(const QString &text)
     m_searchTextLower = text.toCaseFolded();
     m_searchTextLowerSingular = singularize(m_searchTextLower);
     APPGRID_INVALIDATE_ALL(); // Re-run filter + sort for relevance ranking
-    emit searchTextChanged();
+    Q_EMIT searchTextChanged();
 }
 
 QStringList AppFilterModel::hiddenApps() const
@@ -258,7 +258,7 @@ void AppFilterModel::setHiddenApps(const QStringList &list)
     m_hiddenApps = list;
     rebuildHiddenSet();
     APPGRID_INVALIDATE_FILTER();
-    emit hiddenAppsChanged();
+    Q_EMIT hiddenAppsChanged();
 }
 
 void AppFilterModel::hideApp(int proxyIndex)
@@ -271,7 +271,7 @@ void AppFilterModel::hideApp(int proxyIndex)
         m_hiddenApps.append(sid);
         m_hiddenAppsSet.insert(sid);
         APPGRID_INVALIDATE_FILTER();
-        emit hiddenAppsChanged();
+        Q_EMIT hiddenAppsChanged();
     }
 }
 
@@ -282,7 +282,7 @@ void AppFilterModel::hideByStorageId(const QString &storageId)
     m_hiddenApps.append(storageId);
     m_hiddenAppsSet.insert(storageId);
     APPGRID_INVALIDATE_FILTER();
-    emit hiddenAppsChanged();
+    Q_EMIT hiddenAppsChanged();
 }
 
 void AppFilterModel::unhideApp(const QString &storageId)
@@ -290,7 +290,7 @@ void AppFilterModel::unhideApp(const QString &storageId)
     if (m_hiddenAppsSet.remove(storageId)) {
         m_hiddenApps.removeAll(storageId);
         APPGRID_INVALIDATE_FILTER();
-        emit hiddenAppsChanged();
+        Q_EMIT hiddenAppsChanged();
     }
 }
 
@@ -307,7 +307,7 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
     rebuildFavoriteSet();
     if (m_showFavoritesOnly)
         invalidate();
-    emit favoriteAppsChanged();
+    Q_EMIT favoriteAppsChanged();
 }
 
 bool AppFilterModel::isFavorite(const QString &storageId) const
@@ -327,7 +327,7 @@ void AppFilterModel::setRecentApps(const QStringList &list)
     m_recentApps = list;
     rebuildRecentSet();
     invalidate();
-    emit recentAppsChanged();
+    Q_EMIT recentAppsChanged();
 }
 
 int AppFilterModel::maxRecentApps() const
@@ -340,7 +340,7 @@ void AppFilterModel::setMaxRecentApps(int max)
     if (m_maxRecentApps == max)
         return;
     m_maxRecentApps = max;
-    emit maxRecentAppsChanged();
+    Q_EMIT maxRecentAppsChanged();
 }
 
 bool AppFilterModel::isRecent(const QString &storageId) const
@@ -359,7 +359,7 @@ void AppFilterModel::setSortMode(int mode)
         return;
     m_sortMode = mode;
     invalidate();
-    emit sortModeChanged();
+    Q_EMIT sortModeChanged();
 }
 
 QVariantMap AppFilterModel::launchCountsMap() const
@@ -377,7 +377,7 @@ void AppFilterModel::setLaunchCountsMap(const QVariantMap &map)
         m_launchCounts.insert(it.key(), it.value().toInt());
     if (m_sortMode == MostUsed)
         invalidate();
-    emit launchCountsChanged();
+    Q_EMIT launchCountsChanged();
 }
 
 void AppFilterModel::setFrecencyScores(const QHash<QString, int> &scores)
@@ -411,7 +411,7 @@ void AppFilterModel::setSearchShowsHidden(bool enabled)
     if (!m_searchText.isEmpty()) {
         APPGRID_INVALIDATE_FILTER();
     }
-    emit searchShowsHiddenChanged();
+    Q_EMIT searchShowsHiddenChanged();
 }
 
 bool AppFilterModel::isHidden(const QString &storageId) const
@@ -430,7 +430,7 @@ void AppFilterModel::setKnownApps(const QStringList &list)
         return;
     m_knownApps = list;
     rebuildKnownSet();
-    emit knownAppsChanged();
+    Q_EMIT knownAppsChanged();
 }
 
 bool AppFilterModel::isNewApp(const QString &storageId) const
@@ -466,7 +466,7 @@ void AppFilterModel::setShowFavoritesOnly(bool enabled)
     // A filter-only refresh would keep the previous sort, causing
     // scrambled icon order on first open after login (#70).
     invalidate();
-    emit showFavoritesOnlyChanged();
+    Q_EMIT showFavoritesOnlyChanged();
 }
 
 bool AppFilterModel::useSystemCategories() const
@@ -480,8 +480,8 @@ void AppFilterModel::setUseSystemCategories(bool enabled)
     auto *src = qobject_cast<AppModel *>(sourceModel());
     if (src) {
         src->setUseSystemCategories(enabled);
-        emit useSystemCategoriesChanged();
-        emit categoriesChanged();
+        Q_EMIT useSystemCategoriesChanged();
+        Q_EMIT categoriesChanged();
     }
 }
 
@@ -504,7 +504,7 @@ void AppFilterModel::setDefaultApps(const QStringList &list)
     m_defaultApps = list;
     m_defaultAppsSet = QSet<QString>(list.cbegin(), list.cend());
     invalidate(); // search ranking depends on this
-    emit defaultAppsChanged();
+    Q_EMIT defaultAppsChanged();
 }
 
 QStringList AppFilterModel::parseMimeAppsDefaults(const QString &filePath)
@@ -558,12 +558,12 @@ void AppFilterModel::recordLaunch(const QString &storageId)
     if (storageId.isEmpty())
         return;
     m_launchCounts[storageId] = m_launchCounts.value(storageId, 0) + 1;
-    emit launchCountsChanged();
+    Q_EMIT launchCountsChanged();
 
     if (!m_knownAppsSet.contains(storageId)) {
         m_knownApps.append(storageId);
         m_knownAppsSet.insert(storageId);
-        emit knownAppsChanged();
+        Q_EMIT knownAppsChanged();
     }
 }
 
@@ -875,7 +875,7 @@ void AppFilterModel::setSortFavoritesAlphabetically(bool enabled)
     m_sortFavoritesAlphabetically = enabled;
     if (m_showFavoritesOnly)
         invalidate();
-    emit sortFavoritesAlphabeticallyChanged();
+    Q_EMIT sortFavoritesAlphabeticallyChanged();
 }
 
 // --- Launching ---
@@ -891,7 +891,7 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
     }
     rebuildRecentSet();
     invalidate();
-    emit recentAppsChanged();
+    Q_EMIT recentAppsChanged();
     recordLaunch(storageId);
 }
 

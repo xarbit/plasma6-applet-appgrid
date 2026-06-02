@@ -64,10 +64,10 @@ public:
     [[nodiscard]] bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
 
-signals:
+Q_SIGNALS:
     void useSystemCategoriesChanged();
 
-private slots:
+private Q_SLOTS:
     void reload();
 
 private:

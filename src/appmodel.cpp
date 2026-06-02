@@ -46,7 +46,7 @@ AppModel::AppModel(QObject *parent)
     connect(KIconLoader::global(), &KIconLoader::iconChanged, this, [this]() {
         if (m_apps.isEmpty())
             return;
-        emit dataChanged(index(0, 0), index(m_apps.size() - 1, 0), {IconRole});
+        Q_EMIT dataChanged(index(0, 0), index(m_apps.size() - 1, 0), {IconRole});
     });
 }
 
@@ -167,7 +167,7 @@ void AppModel::setUseSystemCategories(bool enabled)
     if (m_useSystemCategories == enabled)
         return;
     m_useSystemCategories = enabled;
-    emit useSystemCategoriesChanged();
+    Q_EMIT useSystemCategoriesChanged();
     reload();
 }
 

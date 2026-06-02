@@ -131,7 +131,7 @@ void UpdateChecker::setEnabled(bool enabled)
     if (m_enabled == enabled)
         return;
     m_enabled = enabled;
-    emit enabledChanged();
+    Q_EMIT enabledChanged();
     if (enabled) {
         runCheck(/*force=*/true);
         m_periodicTimer.start(nextPeriodicInterval());
@@ -178,11 +178,11 @@ void UpdateChecker::runCheck(bool force)
             const QString prevUrl = m_releaseUrl;
             loadState();
             if (m_latestVersion != prevVersion)
-                emit latestVersionChanged();
+                Q_EMIT latestVersionChanged();
             if (m_releaseUrl != prevUrl)
-                emit releaseUrlChanged();
+                Q_EMIT releaseUrlChanged();
             if (m_hasUpdate != wasAvailable)
-                emit hasUpdateChanged();
+                Q_EMIT hasUpdateChanged();
             return;
         }
     }
@@ -349,11 +349,11 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
     m_hasUpdate = isNewer(chosenVersion, m_currentVersion);
 
     if (m_latestVersion != prevVersion)
-        emit latestVersionChanged();
+        Q_EMIT latestVersionChanged();
     if (m_releaseUrl != prevUrl)
-        emit releaseUrlChanged();
+        Q_EMIT releaseUrlChanged();
     if (m_hasUpdate != wasAvailable)
-        emit hasUpdateChanged();
+        Q_EMIT hasUpdateChanged();
 
     saveState();
 }

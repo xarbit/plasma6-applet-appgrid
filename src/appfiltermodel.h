@@ -141,7 +141,7 @@ public:
     Q_INVOKABLE void markAllKnown();
     [[nodiscard]] Q_INVOKABLE int getLaunchCount(const QString &storageId) const;
 
-signals:
+Q_SIGNALS:
     void defaultAppsChanged();
     void filterCategoryChanged();
     void searchTextChanged();
