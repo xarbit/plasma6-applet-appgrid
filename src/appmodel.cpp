@@ -16,7 +16,6 @@
 
 #include <QIcon>
 
-#include <QStandardPaths>
 #include <QTimer>
 
 #include <QCollator>
@@ -260,10 +259,11 @@ void AppModel::loadApplications()
             appEntry.keywords = service->keywords();
             appEntry.comment = service->comment();
 
-            // Detect install source from exec line and resolved path
-            const auto exec = service->exec();
-            const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-            appEntry.installSource = detectInstallSource(exec, resolvedPath);
+            // Detect install source from the exec line and the installed
+            // .desktop path. entryPath() is already the resolved absolute path
+            // (KService applies XDG precedence), so no QStandardPaths::locate()
+            // stat per app is needed — it would just return entryPath() back.
+            appEntry.installSource = detectInstallSource(service->exec(), service->entryPath());
 
             if (systemMode) {
                 auto cat = category.isEmpty() ? QStringLiteral("Other") : category;
