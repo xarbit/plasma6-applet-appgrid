@@ -1,6 +1,6 @@
 version = 1
 SPDX-PackageName = "AppGrid"
-SPDX-PackageDownloadLocation = "https://github.com/xarbit/appgrid"
+SPDX-PackageDownloadLocation = "https://github.com/xarbit/plasma6-applet-appgrid"
 
 # Translation catalogues — header lives in the .po itself but follows
 # the gettext convention, not the SPDX file-header form.
