@@ -40,6 +40,11 @@
     </developer>
 
     <releases>
+        <release version="1.9.0-rc.4" date="2026-06-02">
+            <description>
+                <p>See CHANGELOG.md for the full list of changes.</p>
+            </description>
+        </release>
         <release version="1.9.0-rc.3" date="2026-06-01">
             <description>
                 <p>See CHANGELOG.md for the full list of changes.</p>
