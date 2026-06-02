@@ -111,9 +111,14 @@ QVariantMap LaunchBookkeeping::launchCountsMap() const
     return map;
 }
 
-void LaunchBookkeeping::setLaunchCountsFromMap(const QVariantMap &map)
+bool LaunchBookkeeping::setLaunchCountsFromMap(const QVariantMap &map)
 {
-    m_launchCounts.clear();
+    QHash<QString, int> next;
+    next.reserve(map.size());
     for (auto it = map.cbegin(); it != map.cend(); ++it)
-        m_launchCounts.insert(it.key(), it.value().toInt());
+        next.insert(it.key(), it.value().toInt());
+    if (next == m_launchCounts)
+        return false;
+    m_launchCounts = next;
+    return true;
 }

@@ -102,6 +102,12 @@ void TestLaunchBookkeeping::launchCounts_mapRoundtripAndBump()
     const QVariantMap m = b.launchCountsMap();
     QCOMPARE(m.value(QStringLiteral("a.desktop")).toInt(), 4);
     QCOMPARE(m.value(QStringLiteral("b.desktop")).toInt(), 1);
+
+    // Re-setting the same map reports no change (lets the model skip the
+    // emit/writeback on every open); a different map reports changed.
+    const QVariantMap same = b.launchCountsMap();
+    QVERIFY(!b.setLaunchCountsFromMap(same));
+    QVERIFY(b.setLaunchCountsFromMap({{QStringLiteral("a.desktop"), 99}}));
 }
 
 QTEST_GUILESS_MAIN(TestLaunchBookkeeping)

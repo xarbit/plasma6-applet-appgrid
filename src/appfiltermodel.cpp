@@ -297,7 +297,8 @@ QVariantMap AppFilterModel::launchCountsMap() const
 
 void AppFilterModel::setLaunchCountsMap(const QVariantMap &map)
 {
-    m_book.setLaunchCountsFromMap(map);
+    if (!m_book.setLaunchCountsFromMap(map))
+        return; // no change — skip the emit/writeback/re-sort (e.g. re-sync on every open)
     invalidateRowScoreCache(); // cached launchCount changed
     if (m_sortMode == MostUsed)
         invalidate();

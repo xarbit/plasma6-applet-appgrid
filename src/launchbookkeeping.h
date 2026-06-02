@@ -82,7 +82,7 @@ public:
 
     // -- Launch counts --
     [[nodiscard]] QVariantMap launchCountsMap() const;
-    void setLaunchCountsFromMap(const QVariantMap &map);
+    bool setLaunchCountsFromMap(const QVariantMap &map); // true if changed
     [[nodiscard]] const QHash<QString, int> &launchCounts() const
     {
         return m_launchCounts;
