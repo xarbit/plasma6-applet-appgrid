@@ -46,9 +46,14 @@ BUGADDR="https://github.com/xarbit/plasma6-applet-appgrid/issues"
 # Collect all translatable source files (QML + C++) into a temp list
 { find package/contents/ui -name '*.qml'; find src -name '*.cpp'; } | sort > "${PODIR}/sourcefiles.list"
 
-# Run xgettext to extract strings into the .pot template
-# Additional -k flags for domain-aware i18nd/i18ndc variants used in this project
-xgettext ${XGETTEXT_FLAGS} --msgid-bugs-address="${BUGADDR}" \
+# Run xgettext to extract strings into the .pot template.
+# Additional -k flags for domain-aware i18nd/i18ndc variants used in this project.
+# --language=C: xgettext has no QML parser, so by suffix it warns "unknown type
+# ... trying C" once per .qml file. The i18n* calls are plain function-call
+# syntax that the C scanner extracts fine, so we just pick C explicitly —
+# silences the per-file warnings, identical output. (C++ is not used: it errors
+# on non-ASCII string literals in the QML even with --from-code.)
+xgettext ${XGETTEXT_FLAGS} --language=C --msgid-bugs-address="${BUGADDR}" \
     -ki18nd:2 -ki18ndc:2c,3 -ki18ndp:2,3 \
     --files-from="${PODIR}/sourcefiles.list" \
     -D "${PWD}" -o "${PODIR}/dev.xarbit.appgrid.pot"
