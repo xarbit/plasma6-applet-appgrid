@@ -6,12 +6,9 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-Item {
+AnimationBase {
     id: root
-    property Item target: null
     property bool effectsBeforeAnimation: true
-    signal openFinished()
-    signal closeFinished()
 
     function open() {
         target.scale = 1.0

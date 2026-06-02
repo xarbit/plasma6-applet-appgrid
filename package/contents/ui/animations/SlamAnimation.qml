@@ -6,16 +6,11 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-Item {
+AnimationBase {
     id: root
-    property Item target: null
-    property bool effectsBeforeAnimation: false
-    signal openFinished()
-    signal closeFinished()
 
     function open() { openAnim.start() }
     function close() { closeAnim.start() }
-    function reset() {}
 
     SequentialAnimation {
         id: openAnim

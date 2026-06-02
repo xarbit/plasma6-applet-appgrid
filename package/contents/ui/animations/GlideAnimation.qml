@@ -6,12 +6,8 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-Item {
+AnimationBase {
     id: root
-    property Item target: null
-    property bool effectsBeforeAnimation: false
-    signal openFinished()
-    signal closeFinished()
 
     readonly property real glideDistance: Kirigami.Units.gridUnit * 2
 

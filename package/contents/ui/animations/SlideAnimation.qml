@@ -11,12 +11,8 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-Item {
+AnimationBase {
     id: root
-    property Item target: null
-    property bool effectsBeforeAnimation: false
-    signal openFinished()
-    signal closeFinished()
 
     // +1 = slide up from below center, -1 = slide down from above.
     property int direction: 1
@@ -31,7 +27,6 @@ Item {
         openAnim.start()
     }
     function close() { closeAnim.start() }
-    function reset() {}
 
     NumberAnimation {
         id: openAnim

@@ -6,12 +6,8 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
-Item {
+AnimationBase {
     id: root
-    property Item target: null
-    property bool effectsBeforeAnimation: false
-    signal openFinished()
-    signal closeFinished()
 
     // Offset to place the panel's bottom edge at the very bottom of the screen
     readonly property real bottomOffset: target && target.parent
@@ -26,7 +22,6 @@ Item {
         target.transformOrigin = Item.Bottom
         closeAnim.start()
     }
-    function reset() {}
 
     // Open: panel grows from the bottom of the screen upward to center
     SequentialAnimation {
