@@ -36,14 +36,16 @@ SharedPool &shared()
 void warm()
 {
     static bool started = false;
-    if (started)
+    if (started) {
         return;
+    }
     started = true;
     SharedPool &s = shared();
     QObject::connect(&s.pool, &AppStream::Pool::loadFinished, &s.pool, [](bool success) {
         shared().ready = success;
-        if (!success)
+        if (!success) {
             qWarning() << "AppGrid: AppStream pool load failed:" << shared().pool.lastError();
+        }
     });
     s.pool.loadAsync();
 }
@@ -51,12 +53,14 @@ void warm()
 QString resolve(const QString &desktopId)
 {
     SharedPool &s = shared();
-    if (!s.ready)
+    if (!s.ready) {
         return {};
+    }
     const auto components = s.pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
     for (const AppStream::Component &component : components) {
-        if (!component.id().isEmpty())
+        if (!component.id().isEmpty()) {
             return component.id();
+        }
     }
     return {};
 }

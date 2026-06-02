@@ -31,8 +31,9 @@ constexpr int kFrecencyLimit = 200;
 
 QString storageIdFromResource(const QString &resource)
 {
-    if (resource.startsWith(PluginHelpers::ApplicationsUrlPrefix))
+    if (resource.startsWith(PluginHelpers::ApplicationsUrlPrefix)) {
         return resource.mid(PluginHelpers::ApplicationsUrlPrefix.size());
+    }
     return {};
 }
 }
@@ -46,8 +47,9 @@ FrecencyProvider::~FrecencyProvider() = default;
 
 void FrecencyProvider::setEnabled(bool enabled)
 {
-    if (m_enabled == enabled)
+    if (m_enabled == enabled) {
         return;
+    }
     m_enabled = enabled;
     if (!enabled) {
         teardownModel();
@@ -81,8 +83,9 @@ void FrecencyProvider::teardownModel()
 
 void FrecencyProvider::rebuildScores()
 {
-    if (!m_model)
+    if (!m_model) {
         return;
+    }
 
     const int rows = m_model->rowCount();
     QHash<QString, int> next;
@@ -91,18 +94,21 @@ void FrecencyProvider::rebuildScores()
     // Insert into the map keyed by `key`, but never demote an existing higher
     // score (matters when two distinct apps collide on the normalised form).
     const auto add = [&next](const QString &key, int score) {
-        if (key.isEmpty())
+        if (key.isEmpty()) {
             return;
+        }
         const auto it = next.find(key);
-        if (it == next.end() || it.value() < score)
+        if (it == next.end() || it.value() < score) {
             next.insert(key, score);
+        }
     };
     for (int r = 0; r < rows; ++r) {
         const QModelIndex idx = m_model->index(r, 0);
         const QString resource = idx.data(KAStats::ResultModel::ResourceRole).toString();
         const QString sid = storageIdFromResource(resource);
-        if (sid.isEmpty())
+        if (sid.isEmpty()) {
             continue;
+        }
         // Rank-based score (top row = `rows`, last row = 1) instead of the
         // raw KAStats score. Stable ordering even as absolute scores drift.
         const int score = rows - r;
@@ -111,10 +117,11 @@ void FrecencyProvider::rebuildScores()
         // KDE eras stored Konsole as both "org.kde.konsole.desktop" and
         // "konsole.desktop". AppModel::StorageIdRole may report either,
         // so index both spellings so the AppFilterModel lookup hits.
-        if (sid.startsWith(kdePrefix))
+        if (sid.startsWith(kdePrefix)) {
             add(sid.mid(kdePrefix.size()), score);
-        else
+        } else {
             add(kdePrefix + sid, score);
+        }
     }
 
     if (next != m_scores) {
@@ -122,8 +129,9 @@ void FrecencyProvider::rebuildScores()
         if (lcFrecency().isDebugEnabled()) {
             QStringList sample = m_scores.keys();
             std::sort(sample.begin(), sample.end());
-            if (sample.size() > 10)
+            if (sample.size() > 10) {
                 sample = sample.mid(0, 10);
+            }
             qCDebug(lcFrecency) << "scores populated:" << m_scores.size() << "keys; sample:" << sample;
         }
         Q_EMIT scoresChanged();

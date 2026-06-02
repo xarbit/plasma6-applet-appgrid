@@ -81,8 +81,9 @@ public:
 // file://, mailto:, javascript:, etc.
 bool UpdateChecker::isAllowedReleaseScheme(const QUrl &url)
 {
-    if (!url.isValid() || url.host().isEmpty())
+    if (!url.isValid() || url.host().isEmpty()) {
         return false;
+    }
     const QString scheme = url.scheme().toLower();
     return scheme == QLatin1String("http") || scheme == QLatin1String("https");
 }
@@ -91,8 +92,9 @@ bool UpdateChecker::isAllowedReleaseScheme(const QUrl &url)
 // `-prerelease` and `+build` tails. Accepts "1.8.0-dev.42+g1a2b3c4".
 bool UpdateChecker::isValidVersionString(const QString &v)
 {
-    if (v.isEmpty() || v.size() > 64)
+    if (v.isEmpty() || v.size() > 64) {
         return false;
+    }
     static const QRegularExpression re(QStringLiteral("^v?\\d+(\\.\\d+){0,3}(-[0-9A-Za-z.\\-]+)?(\\+[0-9A-Za-z.\\-]+)?$"));
     return re.match(v).hasMatch();
 }
@@ -119,8 +121,9 @@ UpdateChecker::UpdateChecker(const QString &currentVersion, QObject *parent)
     m_periodicTimer.setSingleShot(true);
     connect(&m_periodicTimer, &QTimer::timeout, this, [this]() {
         runCheck(/*force=*/false);
-        if (m_enabled)
+        if (m_enabled) {
             m_periodicTimer.start(nextPeriodicInterval());
+        }
     });
 }
 
@@ -128,8 +131,9 @@ UpdateChecker::~UpdateChecker() = default;
 
 void UpdateChecker::setEnabled(bool enabled)
 {
-    if (m_enabled == enabled)
+    if (m_enabled == enabled) {
         return;
+    }
     m_enabled = enabled;
     Q_EMIT enabledChanged();
     if (enabled) {
@@ -147,8 +151,9 @@ void UpdateChecker::checkNow()
 
 void UpdateChecker::openReleasePage()
 {
-    if (m_releaseUrl.isEmpty())
+    if (m_releaseUrl.isEmpty()) {
         return;
+    }
     const QUrl url(m_releaseUrl);
     if (!isAllowedReleaseScheme(url)) {
         qWarning("AppGrid update check: refusing release URL with scheme %s", qPrintable(url.scheme()));
@@ -159,13 +164,15 @@ void UpdateChecker::openReleasePage()
 
 void UpdateChecker::runCheck(bool force)
 {
-    if (!force && !m_enabled)
+    if (!force && !m_enabled) {
         return;
+    }
     // Already checking — let the in-flight reply finish before rebuilding
     // the QNAM. Avoids parenting a fresh request to a QNAM that's about to
     // delete a still-pending reply.
-    if (m_replyInFlight)
+    if (m_replyInFlight) {
         return;
+    }
 
     // Sibling-plasmoid de-dup: cache freshly written by the other variant
     // means we can just reload + emit instead of hitting the network.
@@ -177,12 +184,15 @@ void UpdateChecker::runCheck(bool force)
             const QString prevVersion = m_latestVersion;
             const QString prevUrl = m_releaseUrl;
             loadState();
-            if (m_latestVersion != prevVersion)
+            if (m_latestVersion != prevVersion) {
                 Q_EMIT latestVersionChanged();
-            if (m_releaseUrl != prevUrl)
+            }
+            if (m_releaseUrl != prevUrl) {
                 Q_EMIT releaseUrlChanged();
-            if (m_hasUpdate != wasAvailable)
+            }
+            if (m_hasUpdate != wasAvailable) {
                 Q_EMIT hasUpdateChanged();
+            }
             return;
         }
     }
@@ -206,8 +216,9 @@ void UpdateChecker::runCheck(bool force)
     req.setRawHeader("Cache-Control", "no-store");
     req.setRawHeader("Connection", "close");
 
-    if (!force && !m_etag.isEmpty())
+    if (!force && !m_etag.isEmpty()) {
         req.setRawHeader("If-None-Match", m_etag.toUtf8());
+    }
 
     req.setTransferTimeout(kRequestTimeoutMs);
 
@@ -306,8 +317,9 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
 
     // Capture ETag even on errors — server may have set one.
     const QByteArray etag = reply->rawHeader("ETag");
-    if (!etag.isEmpty())
+    if (!etag.isEmpty()) {
         m_etag = QString::fromLatin1(etag);
+    }
 
     const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
@@ -348,12 +360,15 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
     m_releaseUrl = chosenUrl;
     m_hasUpdate = isNewer(chosenVersion, m_currentVersion);
 
-    if (m_latestVersion != prevVersion)
+    if (m_latestVersion != prevVersion) {
         Q_EMIT latestVersionChanged();
-    if (m_releaseUrl != prevUrl)
+    }
+    if (m_releaseUrl != prevUrl) {
         Q_EMIT releaseUrlChanged();
-    if (m_hasUpdate != wasAvailable)
+    }
+    if (m_hasUpdate != wasAvailable) {
         Q_EMIT hasUpdateChanged();
+    }
 
     saveState();
 }
@@ -361,22 +376,26 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
 void UpdateChecker::loadState()
 {
     QFile f(stateFilePath());
-    if (!f.open(QIODevice::ReadOnly))
+    if (!f.open(QIODevice::ReadOnly)) {
         return;
+    }
     // Treat the cache as untrusted — could have been tampered with.
     const auto bytes = f.read(kMaxResponseBytes);
     const auto doc = QJsonDocument::fromJson(bytes);
-    if (!doc.isObject())
+    if (!doc.isObject()) {
         return;
+    }
     const auto obj = doc.object();
 
     const QString version = obj.value(QStringLiteral("latestVersion")).toString();
-    if (isValidVersionString(version))
+    if (isValidVersionString(version)) {
         m_latestVersion = version;
+    }
 
     const QString rel = obj.value(QStringLiteral("releaseUrl")).toString();
-    if (!rel.isEmpty() && isAllowedReleaseScheme(QUrl(rel)))
+    if (!rel.isEmpty() && isAllowedReleaseScheme(QUrl(rel))) {
         m_releaseUrl = rel;
+    }
 
     // Schema-aware ETag load: a cache from an older parser version may
     // not have populated all current fields. Holding onto that ETag would
@@ -390,15 +409,17 @@ void UpdateChecker::loadState()
     } else {
         m_etag = obj.value(QStringLiteral("etag")).toString();
         const int etagAge = obj.value(QStringLiteral("etagAge")).toInt();
-        if (etagAge >= 0 && etagAge < kEtagResetEvery)
+        if (etagAge >= 0 && etagAge < kEtagResetEvery) {
             m_etagAge = etagAge;
+        }
     }
 
     // Reject future lastCheck — clock skew or tampering. Otherwise the
     // periodic timer could be tricked into believing we already checked.
     const auto lc = QDateTime::fromString(obj.value(QStringLiteral("lastCheck")).toString(), Qt::ISODate);
-    if (lc.isValid() && lc <= QDateTime::currentDateTimeUtc().addDays(1))
+    if (lc.isValid() && lc <= QDateTime::currentDateTimeUtc().addDays(1)) {
         m_lastCheck = lc;
+    }
 
     m_hasUpdate = !m_latestVersion.isEmpty() && isNewer(m_latestVersion, m_currentVersion);
 }
@@ -416,8 +437,9 @@ void UpdateChecker::saveState()
     QFile f(tmpPath);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QDir().mkpath(QFileInfo(f).absolutePath());
-        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             return;
+        }
     }
     QJsonObject obj{
         {QStringLiteral("schema"), kCacheSchema},
@@ -437,8 +459,9 @@ void UpdateChecker::saveState()
 #ifdef Q_OS_WIN
     QFile::remove(finalPath);
 #endif
-    if (!QFile::rename(tmpPath, finalPath))
+    if (!QFile::rename(tmpPath, finalPath)) {
         QFile::remove(tmpPath);
+    }
 }
 
 bool UpdateChecker::isNewer(const QString &candidate, const QString &current)
@@ -468,12 +491,15 @@ bool UpdateChecker::isNewer(const QString &candidate, const QString &current)
     for (int i = 0; i < n; ++i) {
         const int ia = i < pa.size() ? pa[i].toInt() : 0;
         const int ib = i < pb.size() ? pb[i].toInt() : 0;
-        if (ia != ib)
+        if (ia != ib) {
             return ia > ib;
+        }
     }
-    if (aPre.isEmpty() && !bPre.isEmpty())
+    if (aPre.isEmpty() && !bPre.isEmpty()) {
         return true;
-    if (!aPre.isEmpty() && bPre.isEmpty())
+    }
+    if (!aPre.isEmpty() && bPre.isEmpty()) {
         return false;
+    }
     return QString::compare(aPre, bPre) > 0;
 }

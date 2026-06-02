@@ -93,3 +93,7 @@ AllowShortLambdasOnASingleLine: Empty
 
 # We do not want clang-format to put all arguments on a new line
 AllowAllArgumentsOnNextLine: false
+
+# Always brace single-statement control bodies (KDE Frameworks Coding Style).
+# The WebKit base does not add these, so enforce them here.
+InsertBraces: true

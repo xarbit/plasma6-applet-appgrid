@@ -48,8 +48,9 @@ void RunnerFilterModel::setSourceModel(QAbstractItemModel *model)
 void RunnerFilterModel::captureSourceRoles()
 {
     m_urlsRole = -1;
-    if (!sourceModel())
+    if (!sourceModel()) {
         return;
+    }
     const auto roles = sourceModel()->roleNames();
     for (auto it = roles.begin(); it != roles.end(); ++it) {
         if (it.value() == QByteArrayLiteral("urls")) {
@@ -61,16 +62,18 @@ void RunnerFilterModel::captureSourceRoles()
 
 void RunnerFilterModel::ensureAppNameCache() const
 {
-    if (!m_appNameCacheDirty)
+    if (!m_appNameCacheDirty) {
         return;
+    }
     m_appNameCache.clear();
     if (m_appModel) {
         const int n = m_appModel->rowCount();
         m_appNameCache.reserve(n);
         for (int i = 0; i < n; ++i) {
             const auto name = m_appModel->index(i, 0).data(AppModel::NameRole).toString();
-            if (!name.isEmpty())
+            if (!name.isEmpty()) {
                 m_appNameCache.insert(name.toCaseFolded());
+            }
         }
     }
     m_appNameCacheDirty = false;
@@ -78,16 +81,18 @@ void RunnerFilterModel::ensureAppNameCache() const
 
 QString RunnerFilterModel::storageIdFromRow(const QModelIndex &idx) const
 {
-    if (m_urlsRole < 0)
+    if (m_urlsRole < 0) {
         return {};
+    }
     const QString path = PluginHelpers::desktopPathFromRunnerUrls(idx.data(m_urlsRole));
     return path.isEmpty() ? QString() : QFileInfo(path).fileName();
 }
 
 bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    if (!m_appModel)
+    if (!m_appModel) {
         return true;
+    }
 
     const auto idx = sourceModel()->index(sourceRow, 0, sourceParent);
 
@@ -97,8 +102,9 @@ bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
     // after an app-model change.
     ensureAppNameCache();
     const auto runnerName = idx.data(Qt::DisplayRole).toString();
-    if (m_appNameCache.contains(runnerName.toCaseFolded()))
+    if (m_appNameCache.contains(runnerName.toCaseFolded())) {
         return false;
+    }
 
     // Hidden-app filter — mirrors AppFilterModel: hidden rows drop out
     // unless searchShowsHidden is on (the default). Without this,
@@ -106,8 +112,9 @@ bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
     // services runner's row for the same .desktop file.
     if (!m_appModel->searchShowsHidden()) {
         const auto sid = storageIdFromRow(idx);
-        if (!sid.isEmpty() && m_appModel->isHidden(sid))
+        if (!sid.isEmpty() && m_appModel->isHidden(sid)) {
             return false;
+        }
     }
 
     return true;

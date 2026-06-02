@@ -43,23 +43,26 @@ AppModel::AppModel(QObject *parent)
     // setting a global theme-name override on Qt's icon engine — which
     // blocked subsequent system theme changes from propagating (#103).
     connect(KIconLoader::global(), &KIconLoader::iconChanged, this, [this]() {
-        if (m_apps.isEmpty())
+        if (m_apps.isEmpty()) {
             return;
+        }
         Q_EMIT dataChanged(index(0, 0), index(m_apps.size() - 1, 0), {IconRole});
     });
 }
 
 int AppModel::rowCount(const QModelIndex &parent) const
 {
-    if (parent.isValid())
+    if (parent.isValid()) {
         return 0;
+    }
     return m_apps.size();
 }
 
 QVariant AppModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() < 0 || index.row() >= m_apps.size())
+    if (!index.isValid() || index.row() < 0 || index.row() >= m_apps.size()) {
         return {};
+    }
 
     const auto &app = m_apps[index.row()];
     switch (role) {
@@ -107,26 +110,36 @@ QHash<int, QByteArray> AppModel::roleNames() const
 static QString translateCategory(const QString &name)
 {
     // Each string must appear literally for xgettext extraction
-    if (name == QLatin1String("Utilities"))
+    if (name == QLatin1String("Utilities")) {
         return i18n("Utilities");
-    if (name == QLatin1String("Development"))
+    }
+    if (name == QLatin1String("Development")) {
         return i18n("Development");
-    if (name == QLatin1String("Graphics"))
+    }
+    if (name == QLatin1String("Graphics")) {
         return i18n("Graphics");
-    if (name == QLatin1String("Internet"))
+    }
+    if (name == QLatin1String("Internet")) {
         return i18n("Internet");
-    if (name == QLatin1String("Multimedia"))
+    }
+    if (name == QLatin1String("Multimedia")) {
         return i18n("Multimedia");
-    if (name == QLatin1String("Office"))
+    }
+    if (name == QLatin1String("Office")) {
         return i18n("Office");
-    if (name == QLatin1String("Games"))
+    }
+    if (name == QLatin1String("Games")) {
         return i18n("Games");
-    if (name == QLatin1String("Education"))
+    }
+    if (name == QLatin1String("Education")) {
         return i18n("Education");
-    if (name == QLatin1String("System"))
+    }
+    if (name == QLatin1String("System")) {
         return i18n("System");
-    if (name == QLatin1String("Other"))
+    }
+    if (name == QLatin1String("Other")) {
         return i18n("Other");
+    }
     return name;
 }
 
@@ -135,24 +148,30 @@ QStringList AppModel::mapCategories(const QStringList &categories)
     QSet<QString> result;
     for (const auto &cat : categories) {
         const auto bucket = mapCategoryToken(cat);
-        if (!bucket.isEmpty())
+        if (!bucket.isEmpty()) {
             result.insert(translateCategory(bucket));
+        }
     }
-    if (result.isEmpty())
+    if (result.isEmpty()) {
         result.insert(translateCategory(QStringLiteral("Other")));
+    }
     return result.values();
 }
 
 QString AppModel::detectInstallSource(const QString &exec, const QString &resolvedPath)
 {
-    if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id=")))
+    if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id="))) {
         return QStringLiteral("Web App");
-    if (exec.contains(QLatin1String("flatpak")) || resolvedPath.contains(QLatin1String("flatpak")))
+    }
+    if (exec.contains(QLatin1String("flatpak")) || resolvedPath.contains(QLatin1String("flatpak"))) {
         return QStringLiteral("Flatpak");
-    if (exec.contains(QLatin1String("/snap/")) || resolvedPath.contains(QLatin1String("snap")))
+    }
+    if (exec.contains(QLatin1String("/snap/")) || resolvedPath.contains(QLatin1String("snap"))) {
         return QStringLiteral("Snap");
-    if (exec.contains(QLatin1String("appimage"), Qt::CaseInsensitive))
+    }
+    if (exec.contains(QLatin1String("appimage"), Qt::CaseInsensitive)) {
         return QStringLiteral("AppImage");
+    }
     return QStringLiteral("System");
 }
 
@@ -163,8 +182,9 @@ bool AppModel::useSystemCategories() const
 
 void AppModel::setUseSystemCategories(bool enabled)
 {
-    if (m_useSystemCategories == enabled)
+    if (m_useSystemCategories == enabled) {
         return;
+    }
     m_useSystemCategories = enabled;
     Q_EMIT useSystemCategoriesChanged();
     reload();
@@ -188,45 +208,53 @@ void AppModel::loadApplications()
 
     std::function<void(KServiceGroup::Ptr, const QString &)> walkGroup;
     walkGroup = [&](KServiceGroup::Ptr group, const QString &category) {
-        if (!group || !group->isValid())
+        if (!group || !group->isValid()) {
             return;
+        }
 
         const auto entries = group->entries(true /* sorted */, true /* excludeNoDisplay */, false /* allowSeparators */, true /* sortByGenericName */);
 
         for (const auto &entry : entries) {
             if (entry->isType(KST_KServiceGroup)) {
                 auto subGroup = KServiceGroup::Ptr(static_cast<KServiceGroup *>(entry.data()));
-                if (!subGroup || !subGroup->isValid() || subGroup->noDisplay())
+                if (!subGroup || !subGroup->isValid() || subGroup->noDisplay()) {
                     continue;
+                }
 
                 QString subCategory = category;
                 if (systemMode && subCategory.isEmpty()) {
                     subCategory = subGroup->caption();
-                    if (subCategory.isEmpty())
+                    if (subCategory.isEmpty()) {
                         subCategory = subGroup->name();
+                    }
                     // Store menu path for kmenuedit (e.g. "Education/")
                     QString relPath = subGroup->relPath();
-                    if (relPath.endsWith(QLatin1Char('/')))
+                    if (relPath.endsWith(QLatin1Char('/'))) {
                         relPath.chop(1);
+                    }
                     m_categoryMenuPaths[subCategory] = relPath;
                 }
                 walkGroup(subGroup, subCategory);
                 continue;
             }
 
-            if (!entry->isType(KST_KService))
+            if (!entry->isType(KST_KService)) {
                 continue;
+            }
 
             auto service = KService::Ptr(static_cast<KService *>(entry.data()));
 
-            if (!service->isApplication())
+            if (!service->isApplication()) {
                 continue;
-            if (service->noDisplay() || service->exec().isEmpty())
+            }
+            if (service->noDisplay() || service->exec().isEmpty()) {
                 continue;
+            }
 
             const QString storageId = service->storageId();
-            if (storageId.isEmpty())
+            if (storageId.isEmpty()) {
                 continue;
+            }
 
             // In system mode, an app can appear in multiple menu groups.
             // Add the new category to the existing entry instead of duplicating.
@@ -247,8 +275,9 @@ void AppModel::loadApplications()
             seen.insert(storageId);
 
             const QString name = service->name();
-            if (name.isEmpty())
+            if (name.isEmpty()) {
                 continue;
+            }
 
             AppEntry appEntry;
             appEntry.name = name;
@@ -272,8 +301,9 @@ void AppModel::loadApplications()
                 appEntry.categories = mapCategories(service->categories());
             }
 
-            for (const auto &cat : std::as_const(appEntry.categories))
+            for (const auto &cat : std::as_const(appEntry.categories)) {
                 categorySet.insert(cat);
+            }
             seenIndex.insert(storageId, m_apps.size());
             m_apps.append(appEntry);
         }
@@ -294,21 +324,25 @@ void AppModel::loadApplications()
 
 void AppModel::launch(int index)
 {
-    if (index < 0 || index >= m_apps.size())
+    if (index < 0 || index >= m_apps.size()) {
         return;
+    }
 
     const auto &app = m_apps[index];
     auto service = KService::serviceByDesktopPath(app.desktopFile);
-    if (!service)
+    if (!service) {
         service = KService::serviceByDesktopName(app.desktopFile);
-    if (!service)
+    }
+    if (!service) {
         return;
+    }
 
     auto *job = new KIO::ApplicationLauncherJob(service);
     job->setAutoDelete(true);
     connect(job, &KJob::finished, this, [](KJob *j) {
-        if (j->error())
+        if (j->error()) {
             qWarning() << "AppGrid: failed to launch application:" << j->errorString();
+        }
     });
     job->start();
 }

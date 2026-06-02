@@ -101,8 +101,9 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
 
 void AppGridPlugin::registerCompactShortcut()
 {
-    if (m_compactAction)
+    if (m_compactAction) {
         return;
+    }
 
     // componentName + componentDisplayName are KGlobalAccel dynamic properties
     // (not object identity). Matching the values Plasma uses for its own
@@ -182,8 +183,9 @@ UpdateChecker *AppGridPlugin::updateChecker() const
 
 QModelIndex AppGridPlugin::runnerSourceIndex(int proxyIndex) const
 {
-    if (!m_runnerModel || proxyIndex < 0 || proxyIndex >= m_runnerFilterModel.rowCount())
+    if (!m_runnerModel || proxyIndex < 0 || proxyIndex >= m_runnerFilterModel.rowCount()) {
         return {};
+    }
     return m_runnerFilterModel.mapToSource(m_runnerFilterModel.index(proxyIndex, 0));
 }
 
@@ -202,14 +204,16 @@ bool AppGridPlugin::runRunnerAction(int index, int actionIndex)
 QString AppGridPlugin::runnerSubstitutionText(int index)
 {
     const auto sourceIdx = runnerSourceIndex(index);
-    if (!sourceIdx.isValid())
+    if (!sourceIdx.isValid()) {
         return {};
+    }
     // calculator is the only KRunner plugin where "keep iterating the
     // expression" beats "run and close". Extend the list as other in-place
     // runners earn their place.
     const auto match = m_runnerModel->getQueryMatch(sourceIdx);
-    if (!match.runner() || match.runner()->id() != QLatin1String("calculator"))
+    if (!match.runner() || match.runner()->id() != QLatin1String("calculator")) {
         return {};
+    }
     return match.text();
 }
 
@@ -221,8 +225,9 @@ QScreen *AppGridPlugin::screenForCursor() const
 {
     const QPoint pos = QCursor::pos();
     for (auto *screen : QGuiApplication::screens()) {
-        if (screen->geometry().contains(pos))
+        if (screen->geometry().contains(pos)) {
             return screen;
+        }
     }
     return nullptr;
 }
@@ -263,8 +268,9 @@ void AppGridPlugin::updateScreenWayland(QWindow *window, QScreen *target, bool u
         }
     } else {
         // Old API (LayerShellQt < 6.6) — deprecated but needed for compatibility
-        if (target)
+        if (target) {
             window->setScreen(target);
+        }
         QT_WARNING_PUSH
         QT_WARNING_DISABLE_DEPRECATED
         layer->setScreenConfiguration(useActiveScreen ? LayerShellQt::Window::ScreenFromCompositor : LayerShellQt::Window::ScreenFromQWindow);
@@ -286,8 +292,9 @@ void AppGridPlugin::configureX11(QWindow *window)
 
 void AppGridPlugin::configureWindow(QWindow *window)
 {
-    if (!window)
+    if (!window) {
         return;
+    }
 
     auto fmt = window->format();
     fmt.setAlphaBufferSize(8);
@@ -305,8 +312,9 @@ void AppGridPlugin::configureWindow(QWindow *window)
 
 void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
 {
-    if (!window || !KWindowSystem::isPlatformWayland())
+    if (!window || !KWindowSystem::isPlatformWayland()) {
         return;
+    }
 
     QScreen *target = useActiveScreen ? screenForCursor() : screenForPanel();
     updateScreenWayland(window, target, useActiveScreen);
@@ -315,15 +323,17 @@ void AppGridPlugin::updateWindowScreen(QWindow *window, bool useActiveScreen)
 QRect AppGridPlugin::targetScreenGeometry(bool useActiveScreen)
 {
     QScreen *target = useActiveScreen ? screenForCursor() : screenForPanel();
-    if (!target)
+    if (!target) {
         target = QGuiApplication::primaryScreen();
+    }
     return target ? target->geometry() : QRect();
 }
 
 void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius)
 {
-    if (!window)
+    if (!window) {
         return;
+    }
 
     QRegion region;
     if ((enableBlur || enableContrast) && w > 0 && h > 0) {
@@ -368,8 +378,9 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
 
 void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)
 {
-    if (!window)
+    if (!window) {
         return;
+    }
 
     if (w <= 0 || h <= 0) {
         // Empty region = "remove mask" per Qt docs, restores full-window input.
@@ -383,8 +394,9 @@ void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)
 
 void AppGridPlugin::notifyAppLaunched(const QString &storageId)
 {
-    if (storageId.isEmpty())
+    if (storageId.isEmpty()) {
         return;
+    }
     // Standard convention used by Kicker, Kickoff and friends: the resource
     // URL is "applications:<storage-id>", tagged with our agent so other
     // tools can attribute the launch to AppGrid.
@@ -413,14 +425,16 @@ void AppGridPlugin::setSearchShowsHidden(bool enabled)
 // Falls back to /bin/sh if empty or not found.
 static QString validatedShell(const QString &shell)
 {
-    if (shell.isEmpty())
+    if (shell.isEmpty()) {
         return QStringLiteral("/bin/sh");
+    }
 
     QFile file(QStringLiteral("/etc/shells"));
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QString contents = QString::fromUtf8(file.readAll());
-        if (PluginHelpers::parseShells(contents).contains(shell))
+        if (PluginHelpers::parseShells(contents).contains(shell)) {
             return shell;
+        }
     }
 
     qWarning() << "AppGrid: shell not in /etc/shells, falling back to /bin/sh:" << shell;
@@ -429,8 +443,9 @@ static QString validatedShell(const QString &shell)
 
 void AppGridPlugin::runInTerminal(const QString &command, const QString &shell)
 {
-    if (command.trimmed().isEmpty())
+    if (command.trimmed().isEmpty()) {
         return;
+    }
 
     const QString sh = validatedShell(shell);
 
@@ -444,8 +459,9 @@ void AppGridPlugin::runInTerminal(const QString &command, const QString &shell)
 
 void AppGridPlugin::runCommand(const QString &command, const QString &shell)
 {
-    if (command.trimmed().isEmpty())
+    if (command.trimmed().isEmpty()) {
         return;
+    }
 
     const QString sh = validatedShell(shell);
     QProcess::startDetached(sh, {QStringLiteral("-c"), command});
@@ -454,15 +470,17 @@ void AppGridPlugin::runCommand(const QString &command, const QString &shell)
 QStringList AppGridPlugin::availableShells()
 {
     QFile file(QStringLiteral("/etc/shells"));
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return {};
+    }
     const QString contents = QString::fromUtf8(file.readAll());
 
     QStringList shells;
     const auto candidates = PluginHelpers::parseShells(contents);
     for (const QString &shell : candidates) {
-        if (QFile::exists(shell))
+        if (QFile::exists(shell)) {
             shells.append(shell);
+        }
     }
     return shells;
 }
@@ -471,13 +489,15 @@ QVariantList AppGridPlugin::appActions(const QString &storageId)
 {
     QVariantList result;
     auto service = KService::serviceByStorageId(storageId);
-    if (!service)
+    if (!service) {
         return result;
+    }
 
     const auto actions = service->actions();
     for (const auto &action : actions) {
-        if (action.text().isEmpty())
+        if (action.text().isEmpty()) {
             continue;
+        }
         QVariantMap map;
         map[QStringLiteral("text")] = action.text();
         map[QStringLiteral("icon")] = action.icon();
@@ -490,12 +510,14 @@ QVariantList AppGridPlugin::appActions(const QString &storageId)
 void AppGridPlugin::launchAppAction(const QString &storageId, int actionIndex)
 {
     auto service = KService::serviceByStorageId(storageId);
-    if (!service)
+    if (!service) {
         return;
+    }
 
     const auto actions = service->actions();
-    if (actionIndex < 0 || actionIndex >= actions.size())
+    if (actionIndex < 0 || actionIndex >= actions.size()) {
         return;
+    }
 
     auto *job = new KIO::ApplicationLauncherJob(actions.at(actionIndex));
     job->start();
@@ -508,11 +530,13 @@ bool AppGridPlugin::isDiscoverAvailable() const
 
 bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
 {
-    if (storageId.isEmpty() || !isDiscoverAvailable())
+    if (storageId.isEmpty() || !isDiscoverAvailable()) {
         return false;
+    }
     auto service = KService::serviceByStorageId(storageId);
-    if (!service)
+    if (!service) {
         return false;
+    }
 
     // The .desktop we would launch from is the installed copy, so its
     // location authoritatively identifies the backend (PackageKit / Flatpak
@@ -520,8 +544,9 @@ bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
     // tell apart multiple sources of the same component.
     const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
     const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
-    if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend))
+    if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend)) {
         return false;
+    }
 
     // Only offer the menu when AppStream actually knows the component, so we
     // never open Discover on a dead appstream:// id.
@@ -530,20 +555,24 @@ bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
 
 void AppGridPlugin::openInDiscover(const QString &storageId)
 {
-    if (storageId.isEmpty() || !isDiscoverAvailable())
+    if (storageId.isEmpty() || !isDiscoverAvailable()) {
         return;
+    }
     auto service = KService::serviceByStorageId(storageId);
-    if (!service)
+    if (!service) {
         return;
+    }
 
     // X-AppStream-Component wins if the .desktop declares one; otherwise ask
     // the AppStream pool for the canonical id.
     KDesktopFile desktopFile(service->entryPath());
     QString appId = desktopFile.desktopGroup().readEntry("X-AppStream-Component", QString());
-    if (appId.isEmpty())
+    if (appId.isEmpty()) {
         appId = AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop"));
-    if (appId.isEmpty())
+    }
+    if (appId.isEmpty()) {
         return;
+    }
 
     const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
     const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
@@ -591,8 +620,9 @@ QVariantMap AppGridPlugin::systemInfo()
     QFile osRelease(QStringLiteral("/etc/os-release"));
     if (osRelease.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QString pretty = PluginHelpers::parseOsPrettyName(QString::fromUtf8(osRelease.readAll()));
-        if (!pretty.isEmpty())
+        if (!pretty.isEmpty()) {
             info[QStringLiteral("os")] = pretty;
+        }
     }
 
     // Screen info

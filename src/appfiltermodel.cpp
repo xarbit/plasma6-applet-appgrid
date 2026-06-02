@@ -75,8 +75,9 @@ AppFilterModel::AppFilterModel(QObject *parent)
         invalidateHaystackCache();
         invalidateRowScoreCache();
         auto *src = sourceModel();
-        if (!src)
+        if (!src) {
             return;
+        }
         // Row-set changes shift source rows + their name/sid/category, so the
         // row-score cache goes with the storage-id / haystack caches. The
         // dataChanged below is icon-only (AppModel) and touches no RowScore
@@ -103,12 +104,14 @@ void AppFilterModel::invalidateHaystackCache()
 QString AppFilterModel::ensureHaystack(int sourceRow) const
 {
     const auto cached = m_haystackCache.constFind(sourceRow);
-    if (cached != m_haystackCache.constEnd())
+    if (cached != m_haystackCache.constEnd()) {
         return *cached;
+    }
 
     auto *src = sourceModel();
-    if (!src)
+    if (!src) {
         return {};
+    }
 
     const auto idx = src->index(sourceRow, 0);
     QStringList parts{
@@ -132,8 +135,9 @@ void AppFilterModel::invalidateStorageIdCache()
 
 void AppFilterModel::ensureStorageIdCache() const
 {
-    if (!m_storageIdCacheDirty)
+    if (!m_storageIdCacheDirty) {
         return;
+    }
     m_storageIdToSourceRow.clear();
     auto *src = sourceModel();
     if (src) {
@@ -141,8 +145,9 @@ void AppFilterModel::ensureStorageIdCache() const
         m_storageIdToSourceRow.reserve(n);
         for (int i = 0; i < n; ++i) {
             const auto sid = src->index(i, 0).data(AppModel::StorageIdRole).toString();
-            if (!sid.isEmpty())
+            if (!sid.isEmpty()) {
                 m_storageIdToSourceRow.insert(sid, i);
+            }
         }
     }
     m_storageIdCacheDirty = false;
@@ -162,8 +167,9 @@ QString AppFilterModel::filterCategory() const
 
 void AppFilterModel::setFilterCategory(const QString &category)
 {
-    if (m_filterCategory == category)
+    if (m_filterCategory == category) {
         return;
+    }
     m_filterCategory = category;
     invalidateFilterCompat();
     Q_EMIT filterCategoryChanged();
@@ -176,8 +182,9 @@ QString AppFilterModel::searchText() const
 
 void AppFilterModel::setSearchText(const QString &text)
 {
-    if (m_searchText == text)
+    if (m_searchText == text) {
         return;
+    }
     m_searchText = text;
     m_searchTextLower = text.toCaseFolded();
     m_searchTextLowerSingular = SearchRanking::singularize(m_searchTextLower);
@@ -193,8 +200,9 @@ QStringList AppFilterModel::hiddenApps() const
 
 void AppFilterModel::setHiddenApps(const QStringList &list)
 {
-    if (!m_book.setHidden(list))
+    if (!m_book.setHidden(list)) {
         return;
+    }
     invalidateFilterCompat();
     Q_EMIT hiddenAppsChanged();
 }
@@ -202,8 +210,9 @@ void AppFilterModel::setHiddenApps(const QStringList &list)
 void AppFilterModel::hideApp(int proxyIndex)
 {
     const auto idx = index(proxyIndex, 0);
-    if (!idx.isValid())
+    if (!idx.isValid()) {
         return;
+    }
     if (m_book.hide(idx.data(AppModel::StorageIdRole).toString())) {
         invalidateFilterCompat();
         Q_EMIT hiddenAppsChanged();
@@ -233,10 +242,12 @@ QStringList AppFilterModel::favoriteApps() const
 
 void AppFilterModel::setFavoriteApps(const QStringList &list)
 {
-    if (!m_book.setFavorites(list))
+    if (!m_book.setFavorites(list)) {
         return;
-    if (m_showFavoritesOnly)
+    }
+    if (m_showFavoritesOnly) {
         invalidate();
+    }
     Q_EMIT favoriteAppsChanged();
 }
 
@@ -252,8 +263,9 @@ QStringList AppFilterModel::recentApps() const
 
 void AppFilterModel::setRecentApps(const QStringList &list)
 {
-    if (!m_book.setRecent(list))
+    if (!m_book.setRecent(list)) {
         return;
+    }
     invalidate();
     Q_EMIT recentAppsChanged();
 }
@@ -265,8 +277,9 @@ int AppFilterModel::maxRecentApps() const
 
 void AppFilterModel::setMaxRecentApps(int max)
 {
-    if (m_maxRecentApps == max)
+    if (m_maxRecentApps == max) {
         return;
+    }
     m_maxRecentApps = max;
     Q_EMIT maxRecentAppsChanged();
 }
@@ -283,8 +296,9 @@ int AppFilterModel::sortMode() const
 
 void AppFilterModel::setSortMode(int mode)
 {
-    if (m_sortMode == mode)
+    if (m_sortMode == mode) {
         return;
+    }
     m_sortMode = mode;
     invalidate();
     Q_EMIT sortModeChanged();
@@ -297,30 +311,36 @@ QVariantMap AppFilterModel::launchCountsMap() const
 
 void AppFilterModel::setLaunchCountsMap(const QVariantMap &map)
 {
-    if (!m_book.setLaunchCountsFromMap(map))
+    if (!m_book.setLaunchCountsFromMap(map)) {
         return; // no change — skip the emit/writeback/re-sort (e.g. re-sync on every open)
+    }
     invalidateRowScoreCache(); // cached launchCount changed
-    if (m_sortMode == MostUsed)
+    if (m_sortMode == MostUsed) {
         invalidate();
+    }
     Q_EMIT launchCountsChanged();
 }
 
 void AppFilterModel::setFrecencyScores(const QHash<QString, int> &scores)
 {
-    if (m_frecencyScores == scores)
+    if (m_frecencyScores == scores) {
         return;
+    }
     m_frecencyScores = scores;
-    if (m_searchUsesFrecency && !m_searchText.isEmpty())
+    if (m_searchUsesFrecency && !m_searchText.isEmpty()) {
         invalidate();
+    }
 }
 
 void AppFilterModel::setSearchUsesFrecency(bool enabled)
 {
-    if (m_searchUsesFrecency == enabled)
+    if (m_searchUsesFrecency == enabled) {
         return;
+    }
     m_searchUsesFrecency = enabled;
-    if (!m_searchText.isEmpty())
+    if (!m_searchText.isEmpty()) {
         invalidate();
+    }
 }
 
 bool AppFilterModel::searchShowsHidden() const
@@ -330,8 +350,9 @@ bool AppFilterModel::searchShowsHidden() const
 
 void AppFilterModel::setSearchShowsHidden(bool enabled)
 {
-    if (m_searchShowsHidden == enabled)
+    if (m_searchShowsHidden == enabled) {
         return;
+    }
     m_searchShowsHidden = enabled;
     if (!m_searchText.isEmpty()) {
         invalidateFilterCompat();
@@ -351,8 +372,9 @@ QStringList AppFilterModel::knownApps() const
 
 void AppFilterModel::setKnownApps(const QStringList &list)
 {
-    if (!m_book.setKnown(list))
+    if (!m_book.setKnown(list)) {
         return;
+    }
     Q_EMIT knownAppsChanged();
 }
 
@@ -364,12 +386,14 @@ bool AppFilterModel::isNewApp(const QString &storageId) const
 void AppFilterModel::markAllKnown()
 {
     auto *src = sourceModel();
-    if (!src)
+    if (!src) {
         return;
+    }
     QStringList all;
     all.reserve(src->rowCount());
-    for (int i = 0; i < src->rowCount(); ++i)
+    for (int i = 0; i < src->rowCount(); ++i) {
         all.append(src->index(i, 0).data(AppModel::StorageIdRole).toString());
+    }
     setKnownApps(all);
 }
 
@@ -380,8 +404,9 @@ bool AppFilterModel::showFavoritesOnly() const
 
 void AppFilterModel::setShowFavoritesOnly(bool enabled)
 {
-    if (m_showFavoritesOnly == enabled)
+    if (m_showFavoritesOnly == enabled) {
         return;
+    }
     m_showFavoritesOnly = enabled;
     // Use invalidate() instead of invalidateFilterCompat() because
     // toggling favorites mode changes the sort order (lessThan sorts by
@@ -415,8 +440,9 @@ int AppFilterModel::getLaunchCount(const QString &storageId) const
 
 QString AppFilterModel::completionFor(const QString &query) const
 {
-    if (query.isEmpty())
+    if (query.isEmpty()) {
         return {};
+    }
     const QString folded = query.toCaseFolded();
     const int limit = qMin(rowCount(), 25);
 
@@ -424,8 +450,9 @@ QString AppFilterModel::completionFor(const QString &query) const
     // name (e.g. "vi" → "Visual Studio Code"), highest-ranked first.
     for (int i = 0; i < limit; ++i) {
         const QString name = index(i, 0).data(AppModel::NameRole).toString();
-        if (name.size() > query.size() && name.toCaseFolded().startsWith(folded))
+        if (name.size() > query.size() && name.toCaseFolded().startsWith(folded)) {
             return name;
+        }
     }
 
     // Pass 2: no name prefix-matched — complete to the best matching *word*
@@ -439,14 +466,16 @@ QString AppFilterModel::completionFor(const QString &query) const
         };
         for (const auto &field : fields) {
             const QString word = SearchRanking::completionWord(field, query);
-            if (!word.isEmpty())
+            if (!word.isEmpty()) {
                 return word;
+            }
         }
         const auto keywords = idx.data(AppModel::KeywordsRole).toStringList();
         for (const auto &keyword : keywords) {
             const QString word = SearchRanking::completionWord(keyword, query);
-            if (!word.isEmpty())
+            if (!word.isEmpty()) {
                 return word;
+            }
         }
     }
     return {};
@@ -461,8 +490,9 @@ QStringList AppFilterModel::defaultApps() const
 
 void AppFilterModel::setDefaultApps(const QStringList &list)
 {
-    if (m_defaultApps == list)
+    if (m_defaultApps == list) {
         return;
+    }
     m_defaultApps = list;
     m_defaultAppsSet = QSet<QString>(list.cbegin(), list.cend());
     invalidateRowScoreCache(); // cached isDefault changed
@@ -488,17 +518,20 @@ void AppFilterModel::reloadPreferredApps()
         // Otherwise it's an exec line (legacy kdeglobals TerminalApplication=)
         // — match an application by its executable basename.
         const QString binary = PluginHelpers::execBinaryName(value);
-        if (binary.isEmpty())
+        if (binary.isEmpty()) {
             continue;
+        }
         const auto matches = KApplicationTrader::query([&binary](const KService::Ptr &service) {
             return PluginHelpers::execBinaryName(service->exec()) == binary;
         });
-        if (!matches.isEmpty())
+        if (!matches.isEmpty()) {
             resolved.insert(matches.first()->storageId());
+        }
     }
 
-    if (m_preferredAppsSet == resolved)
+    if (m_preferredAppsSet == resolved) {
         return;
+    }
     m_preferredAppsSet = resolved;
     invalidateRowScoreCache(); // cached isPreferred changed
     invalidate();
@@ -506,14 +539,16 @@ void AppFilterModel::reloadPreferredApps()
 
 void AppFilterModel::recordLaunch(const QString &storageId)
 {
-    if (storageId.isEmpty())
+    if (storageId.isEmpty()) {
         return;
+    }
     m_book.bumpLaunch(storageId);
     invalidateRowScoreCache(); // cached launchCount changed
     Q_EMIT launchCountsChanged();
 
-    if (m_book.addKnown(storageId))
+    if (m_book.addKnown(storageId)) {
         Q_EMIT knownAppsChanged();
+    }
 }
 
 // --- Filtering ---
@@ -528,20 +563,23 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     // chooses) without un-hiding it from the grid.
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
     if (m_book.isHidden(sid)) {
-        if (m_searchText.isEmpty() || !m_searchShowsHidden)
+        if (m_searchText.isEmpty() || !m_searchShowsHidden) {
             return false;
+        }
     }
 
     // Favorites-only filter
     if (m_showFavoritesOnly) {
-        if (sid.isEmpty() || !m_book.isFavorite(sid))
+        if (sid.isEmpty() || !m_book.isFavorite(sid)) {
             return false;
+        }
     }
 
     if (!m_filterCategory.isEmpty()) {
         const auto itemCategories = idx.data(AppModel::CategoriesRole).toStringList();
-        if (!itemCategories.contains(m_filterCategory))
+        if (!itemCategories.contains(m_filterCategory)) {
             return false;
+        }
     }
 
     if (!m_searchTextLower.isEmpty()) {
@@ -551,16 +589,18 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
         // the singular form so "games" still reaches a row whose category
         // is "Game"/"ArcadeGame"/etc.
         const auto &haystack = ensureHaystack(sourceRow);
-        if (!haystack.contains(m_searchTextLower) && (m_searchTextLowerSingular.isEmpty() || !haystack.contains(m_searchTextLowerSingular)))
+        if (!haystack.contains(m_searchTextLower) && (m_searchTextLowerSingular.isEmpty() || !haystack.contains(m_searchTextLowerSingular))) {
             return false;
+        }
     }
 
     // In "All" view (no category, no search), hide recents from the main grid
     // (they are shown in the header section instead).
     // Skip when: sorting by most-used, showing favorites, or filtering by category/search.
     if (m_sortMode == Alphabetical && !m_showFavoritesOnly && m_filterCategory.isEmpty() && m_searchText.isEmpty() && m_book.hasRecent()
-        && m_book.isRecent(sid))
+        && m_book.isRecent(sid)) {
         return false;
+    }
 
     return true;
 }
@@ -586,8 +626,9 @@ const AppFilterModel::RowScore &AppFilterModel::rowScore(const QModelIndex &sour
     // never invalidates the cache.
     const int sourceRow = sourceIndex.row();
     const auto cached = m_rowScoreCache.constFind(sourceRow);
-    if (cached != m_rowScoreCache.constEnd())
+    if (cached != m_rowScoreCache.constEnd()) {
         return *cached;
+    }
 
     RowScore s;
     s.sid = sourceIndex.data(AppModel::StorageIdRole).toString();
@@ -598,8 +639,9 @@ const AppFilterModel::RowScore &AppFilterModel::rowScore(const QModelIndex &sour
     s.isPreferred = m_preferredAppsSet.contains(s.sid);
     // Relevance only matters while searching; skip its role reads + case-folds
     // in the alphabetical / most-used / by-category sort modes.
-    if (!m_searchText.isEmpty())
+    if (!m_searchText.isEmpty()) {
         s.relevance = searchRelevance(sourceIndex, m_searchText);
+    }
     return *m_rowScoreCache.insert(sourceRow, s);
 }
 
@@ -616,8 +658,9 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
     // In favorites mode, sort by position in favoriteApps list — unless the
     // user opted into alphabetical ordering.
     if (m_showFavoritesOnly) {
-        if (m_sortFavoritesAlphabetically)
+        if (m_sortFavoritesAlphabetically) {
             return QString::localeAwareCompare(l.name, r.name) < 0;
+        }
         // O(1) position lookup via LaunchBookkeeping. A sid missing from the
         // favorites gets the sentinel position so it sorts after every real
         // entry.
@@ -661,22 +704,27 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
         // Within the same relevance tier, the KDE default apps (default
         // terminal / browser from kdeglobals) outrank everything — including
         // mime defaults and launch count / frecency.
-        if (l.isPreferred != r.isPreferred)
+        if (l.isPreferred != r.isPreferred) {
             return l.isPreferred; // true sorts before false
+        }
 
         // Then the user's mime defaults (e.g. default browser via mimeapps).
-        if (l.isDefault != r.isDefault)
+        if (l.isDefault != r.isDefault) {
             return l.isDefault;
+        }
 
-        if (leftCount != rightCount)
+        if (leftCount != rightCount) {
             return leftCount > rightCount;
+        }
     } else if (m_sortMode == MostUsed) {
-        if (l.launchCount != r.launchCount)
+        if (l.launchCount != r.launchCount) {
             return l.launchCount > r.launchCount;
+        }
     } else if (m_sortMode == ByCategory) {
         const int cmp = QString::localeAwareCompare(l.category, r.category);
-        if (cmp != 0)
+        if (cmp != 0) {
             return cmp < 0;
+        }
     }
 
     return QString::localeAwareCompare(l.name, r.name) < 0;
@@ -686,8 +734,9 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
 
 QVariantList AppFilterModel::appsByCategory() const
 {
-    if (!m_groupedByCategoryDirty)
+    if (!m_groupedByCategoryDirty) {
         return m_groupedByCategoryCache;
+    }
 
     QMap<QString, QVariantList> catMap;
     for (int i = 0; i < rowCount(); ++i) {
@@ -703,8 +752,9 @@ QVariantList AppFilterModel::appsByCategory() const
         app[QStringLiteral("installSource")] = idx.data(AppModel::InstallSourceRole);
         app[QStringLiteral("proxyIndex")] = i;
 
-        for (const auto &cat : cats)
+        for (const auto &cat : cats) {
             catMap[cat].append(app);
+        }
     }
 
     QVariantList result;
@@ -722,18 +772,21 @@ QVariantList AppFilterModel::appsByCategory() const
 QStringList AppFilterModel::nonEmptyCategories() const
 {
     auto *src = sourceModel();
-    if (!src)
+    if (!src) {
         return {};
+    }
 
     QSet<QString> cats;
     for (int i = 0; i < src->rowCount(); ++i) {
         const auto idx = src->index(i, 0);
         const auto sid = idx.data(AppModel::StorageIdRole).toString();
-        if (m_book.isHidden(sid))
+        if (m_book.isHidden(sid)) {
             continue;
+        }
         const auto appCats = idx.data(AppModel::CategoriesRole).toStringList();
-        for (const auto &c : appCats)
+        for (const auto &c : appCats) {
             cats.insert(c);
+        }
     }
     return cats.values();
 }
@@ -754,12 +807,14 @@ QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
 {
     QVariantMap map;
     auto *src = sourceModel();
-    if (!src || storageId.isEmpty())
+    if (!src || storageId.isEmpty()) {
         return map;
+    }
     ensureStorageIdCache();
     const int row = m_storageIdToSourceRow.value(storageId, -1);
-    if (row < 0)
+    if (row < 0) {
         return map;
+    }
     const auto idx = src->index(row, 0);
     map[QStringLiteral("name")] = idx.data(AppModel::NameRole);
     map[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
@@ -775,11 +830,13 @@ QVariantMap AppFilterModel::get(int proxyRow) const
 {
     QVariantMap map;
     const auto idx = index(proxyRow, 0);
-    if (!idx.isValid())
+    if (!idx.isValid()) {
         return map;
+    }
     const auto roles = roleNames();
-    for (auto it = roles.cbegin(); it != roles.cend(); ++it)
+    for (auto it = roles.cbegin(); it != roles.cend(); ++it) {
         map.insert(QString::fromUtf8(it.value()), idx.data(it.key()));
+    }
     return map;
 }
 
@@ -790,11 +847,13 @@ bool AppFilterModel::sortFavoritesAlphabetically() const
 
 void AppFilterModel::setSortFavoritesAlphabetically(bool enabled)
 {
-    if (m_sortFavoritesAlphabetically == enabled)
+    if (m_sortFavoritesAlphabetically == enabled) {
         return;
+    }
     m_sortFavoritesAlphabetically = enabled;
-    if (m_showFavoritesOnly)
+    if (m_showFavoritesOnly) {
         invalidate();
+    }
     Q_EMIT sortFavoritesAlphabeticallyChanged();
 }
 
@@ -802,8 +861,9 @@ void AppFilterModel::setSortFavoritesAlphabetically(bool enabled)
 
 void AppFilterModel::recordRecentLaunch(const QString &storageId)
 {
-    if (storageId.isEmpty())
+    if (storageId.isEmpty()) {
         return;
+    }
     m_book.recordRecent(storageId, m_maxRecentApps);
     invalidate();
     Q_EMIT recentAppsChanged();
@@ -815,8 +875,9 @@ void AppFilterModel::launch(int proxyIndex)
     const auto idx = index(proxyIndex, 0);
     const auto sourceIdx = mapToSource(idx);
     auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (!model)
+    if (!model) {
         return;
+    }
 
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
     recordRecentLaunch(sid);
@@ -827,12 +888,14 @@ void AppFilterModel::launch(int proxyIndex)
 void AppFilterModel::launchByStorageId(const QString &storageId)
 {
     auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (!model || storageId.isEmpty())
+    if (!model || storageId.isEmpty()) {
         return;
+    }
     ensureStorageIdCache();
     const int row = m_storageIdToSourceRow.value(storageId, -1);
-    if (row < 0)
+    if (row < 0) {
         return;
+    }
     recordRecentLaunch(storageId);
     model->launch(row);
 }

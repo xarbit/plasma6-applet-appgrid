@@ -38,14 +38,18 @@ void UnifiedSearchModel::setRunnerModel(RunnerFilterModel *model)
 
     const auto roles = model->roleNames();
     for (auto it = roles.begin(); it != roles.end(); ++it) {
-        if (it.value() == QByteArrayLiteral("subtext"))
+        if (it.value() == QByteArrayLiteral("subtext")) {
             m_runnerSubtextRole = it.key();
-        if (it.value() == QByteArrayLiteral("category"))
+        }
+        if (it.value() == QByteArrayLiteral("category")) {
             m_runnerCategoryRole = it.key();
-        if (it.value() == QByteArrayLiteral("urls"))
+        }
+        if (it.value() == QByteArrayLiteral("urls")) {
             m_runnerUrlsRole = it.key();
-        if (it.value() == QByteArrayLiteral("actions"))
+        }
+        if (it.value() == QByteArrayLiteral("actions")) {
             m_runnerActionsRole = it.key();
+        }
     }
 }
 
@@ -76,17 +80,20 @@ int UnifiedSearchModel::runnerResultCount() const
 
 int UnifiedSearchModel::rowCount(const QModelIndex &parent) const
 {
-    if (parent.isValid())
+    if (parent.isValid()) {
         return 0;
+    }
     return appResultCount() + runnerResultCount();
 }
 
 QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() < 0 || index.row() >= rowCount())
+    if (!index.isValid() || index.row() < 0 || index.row() >= rowCount()) {
         return {};
-    if (!m_appModel || !m_runnerModel)
+    }
+    if (!m_appModel || !m_runnerModel) {
         return {};
+    }
 
     const int row = index.row();
     const int ac = appResultCount();
@@ -145,11 +152,13 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             return m_runnerCategoryRole >= 0 ? srcIdx.data(m_runnerCategoryRole) : QVariant();
         case StorageIdRole:
         case DesktopFileRole: {
-            if (m_runnerUrlsRole < 0)
+            if (m_runnerUrlsRole < 0) {
                 return QString();
+            }
             const QString path = PluginHelpers::desktopPathFromRunnerUrls(srcIdx.data(m_runnerUrlsRole));
-            if (path.isEmpty())
+            if (path.isEmpty()) {
                 return QString();
+            }
             return role == StorageIdRole ? QFileInfo(path).fileName() : path;
         }
         case IsNewRole:
@@ -188,11 +197,13 @@ QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
 
 QVariantList UnifiedSearchModel::rawRunnerActions(int row) const
 {
-    if (!m_runnerModel || m_runnerActionsRole < 0)
+    if (!m_runnerModel || m_runnerActionsRole < 0) {
         return {};
+    }
     const int ac = appResultCount();
-    if (row < ac || row >= rowCount())
+    if (row < ac || row >= rowCount()) {
         return {};
+    }
     // ResultsModel exposes ActionsRole as a QVariantList of QVariant-wrapped
     // KRunner::Action — *not* as a typed QList<KRunner::Action>. The caller
     // unwraps each element individually rather than .value<KRunner::Actions>(),
@@ -207,8 +218,9 @@ QVariantList UnifiedSearchModel::runnerActions(int row) const
     result.reserve(rawList.size());
     for (const auto &item : rawList) {
         const auto action = item.value<KRunner::Action>();
-        if (action.id().isEmpty() && action.text().isEmpty())
+        if (action.id().isEmpty() && action.text().isEmpty()) {
             continue;
+        }
         QVariantMap map;
         map[QStringLiteral("id")] = action.id();
         map[QStringLiteral("icon")] = action.iconSource();
@@ -224,8 +236,9 @@ int UnifiedSearchModel::runnerActionsCount(int row) const
     int count = 0;
     for (const auto &item : rawList) {
         const auto action = item.value<KRunner::Action>();
-        if (!action.id().isEmpty() || !action.text().isEmpty())
+        if (!action.id().isEmpty() || !action.text().isEmpty()) {
             ++count;
+        }
     }
     return count;
 }
@@ -233,18 +246,21 @@ int UnifiedSearchModel::runnerActionsCount(int row) const
 QVariantMap UnifiedSearchModel::get(int row) const
 {
     QVariantMap map;
-    if (row < 0 || row >= rowCount())
+    if (row < 0 || row >= rowCount()) {
         return map;
+    }
     const auto idx = index(row, 0);
     const auto roles = roleNames();
-    for (auto it = roles.begin(); it != roles.end(); ++it)
+    for (auto it = roles.begin(); it != roles.end(); ++it) {
         map[QString::fromLatin1(it.value())] = data(idx, it.key());
+    }
     return map;
 }
 
 QString UnifiedSearchModel::iconNameAt(int row) const
 {
-    if (row < 0 || row >= rowCount())
+    if (row < 0 || row >= rowCount()) {
         return {};
+    }
     return data(index(row, 0), IconRole).toString();
 }

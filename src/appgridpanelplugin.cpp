@@ -49,8 +49,9 @@ void AppGridPanelPlugin::restorePopupSizeIfStranger()
     // Kicker after an alternatives switch) writes popupWidth/popupHeight
     // without touching the tag — leaving a stale tag attached to a
     // foreign size. Detect that by comparing.
-    if (instW > 0 && instH > 0 && tag == ownerTag(instW, instH))
+    if (instW > 0 && instH > 0 && tag == ownerTag(instW, instH)) {
         return;
+    }
 
     const int globalW = global.readEntry(QStringLiteral("appgridPopupWidth"), -1);
     const int globalH = global.readEntry(QStringLiteral("appgridPopupHeight"), -1);
@@ -76,8 +77,9 @@ void AppGridPanelPlugin::persistPopupSize()
 
     const int w = inst.readEntry(QStringLiteral("popupWidth"), 0);
     const int h = inst.readEntry(QStringLiteral("popupHeight"), 0);
-    if (w <= 0 || h <= 0)
+    if (w <= 0 || h <= 0) {
         return;
+    }
 
     global.writeEntry(QStringLiteral("appgridPopupWidth"), w);
     global.writeEntry(QStringLiteral("appgridPopupHeight"), h);

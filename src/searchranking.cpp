@@ -9,22 +9,26 @@ namespace SearchRanking
 {
 QString singularize(const QString &query)
 {
-    if (query.size() < 4 || !query.endsWith(QLatin1Char('s'), Qt::CaseInsensitive))
+    if (query.size() < 4 || !query.endsWith(QLatin1Char('s'), Qt::CaseInsensitive)) {
         return {};
+    }
     return query.chopped(1);
 }
 
 bool containsAtWordBoundary(const QString &haystack, const QString &needle)
 {
-    if (needle.isEmpty())
+    if (needle.isEmpty()) {
         return false;
+    }
     int from = 0;
     while (true) {
         const int idx = haystack.indexOf(needle, from, Qt::CaseInsensitive);
-        if (idx < 0)
+        if (idx < 0) {
             return false;
-        if (idx == 0 || !haystack.at(idx - 1).isLetterOrNumber())
+        }
+        if (idx == 0 || !haystack.at(idx - 1).isLetterOrNumber()) {
             return true;
+        }
         from = idx + 1;
     }
 }
@@ -36,26 +40,32 @@ int relevance(const QString &name,
               const QStringList &categories,
               const QString &query)
 {
-    if (query.isEmpty())
+    if (query.isEmpty()) {
         return TierNoMatch;
+    }
 
-    if (name.startsWith(query, Qt::CaseInsensitive))
+    if (name.startsWith(query, Qt::CaseInsensitive)) {
         return TierNamePrefix;
-    if (containsAtWordBoundary(name, query))
+    }
+    if (containsAtWordBoundary(name, query)) {
         return TierNameWordBoundary;
+    }
 
-    if (containsAtWordBoundary(genericName, query))
+    if (containsAtWordBoundary(genericName, query)) {
         return TierGeneric;
+    }
     // Fallback: many .desktop files omit GenericName entirely (third-party
     // apps especially), leaving Comment as the only descriptive field. Treat
     // it as tier 2 only when GenericName is missing so apps that properly fill
     // both don't get double-counted.
-    if (genericName.isEmpty() && containsAtWordBoundary(comment, query))
+    if (genericName.isEmpty() && containsAtWordBoundary(comment, query)) {
         return TierGeneric;
+    }
 
     for (const auto &kw : keywords) {
-        if (kw.contains(query, Qt::CaseInsensitive))
+        if (kw.contains(query, Qt::CaseInsensitive)) {
             return TierKeyword;
+        }
     }
 
     // Categories share tier 3: typing "game" or "office" should pull in the
@@ -64,35 +74,42 @@ int relevance(const QString &name,
     // "Game" / "ArcadeGame" — see singularize().
     const QString singularQuery = singularize(query);
     for (const auto &cat : categories) {
-        if (cat.contains(query, Qt::CaseInsensitive))
+        if (cat.contains(query, Qt::CaseInsensitive)) {
             return TierKeyword;
-        if (!singularQuery.isEmpty() && cat.contains(singularQuery, Qt::CaseInsensitive))
+        }
+        if (!singularQuery.isEmpty() && cat.contains(singularQuery, Qt::CaseInsensitive)) {
             return TierKeyword;
+        }
     }
 
-    if (name.contains(query, Qt::CaseInsensitive))
+    if (name.contains(query, Qt::CaseInsensitive)) {
         return TierNameMidword;
+    }
 
     return TierNoMatch;
 }
 
 QString completionWord(const QString &text, const QString &query)
 {
-    if (query.isEmpty() || text.isEmpty())
+    if (query.isEmpty() || text.isEmpty()) {
         return {};
+    }
     const QString folded = query.toCaseFolded();
     const int n = text.size();
     int i = 0;
     while (i < n) {
-        while (i < n && !text.at(i).isLetterOrNumber())
+        while (i < n && !text.at(i).isLetterOrNumber()) {
             ++i;
+        }
         const int start = i;
-        while (i < n && text.at(i).isLetterOrNumber())
+        while (i < n && text.at(i).isLetterOrNumber()) {
             ++i;
+        }
         if (i - start > query.size()) {
             const QString word = text.mid(start, i - start);
-            if (word.toCaseFolded().startsWith(folded))
+            if (word.toCaseFolded().startsWith(folded)) {
                 return word;
+            }
         }
     }
     return {};
