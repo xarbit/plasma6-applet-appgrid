@@ -66,6 +66,16 @@ Window {
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Tool
 
+    // No transient parent. Created with the applet (a panel child) as QML
+    // parent, this Window would otherwise inherit the panel's surface as its
+    // transientParent — so on first show Qt's QWaylandWindow treats it as a
+    // child popup (addChildPopup → LayerShellQt attachPopup) before our
+    // configureWindow() promotes it to its own layer surface, logging
+    // "Cannot attach popup of unknown type" (fatal xdg_wm_base error on strict
+    // compositors). Detaching it makes this a standalone top-level that becomes
+    // a layer surface cleanly.
+    transientParent: null
+
     property bool windowConfigured: false
 
     // -----------------------------------------------------------------------
