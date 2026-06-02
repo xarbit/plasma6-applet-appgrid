@@ -55,6 +55,10 @@ public:
 
     [[nodiscard]] Q_INVOKABLE QVariantMap get(int row) const;
 
+    // Single icon-name read for a row — avoids building the full get() map just
+    // to show the selected result's icon in the search field (per keystroke).
+    [[nodiscard]] Q_INVOKABLE QString iconNameAt(int row) const;
+
     // Secondary actions for a KRunner row (e.g. calculator "Copy result").
     // Empty list for app rows or when the runner provides no actions.
     // Each entry is {id, icon, text} so QML can populate a menu directly.

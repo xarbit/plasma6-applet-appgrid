@@ -241,3 +241,10 @@ QVariantMap UnifiedSearchModel::get(int row) const
         map[QString::fromLatin1(it.value())] = data(idx, it.key());
     return map;
 }
+
+QString UnifiedSearchModel::iconNameAt(int row) const
+{
+    if (row < 0 || row >= rowCount())
+        return {};
+    return data(index(row, 0), IconRole).toString();
+}

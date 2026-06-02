@@ -124,8 +124,8 @@ Kirigami.ShadowedRectangle {
         if (!showSearchResults || !panel.searchModel || searchResultsList.count <= 0)
             return ""
         const idx = searchResultsList.currentIndex >= 0 ? searchResultsList.currentIndex : 0
-        const item = panel.searchModel.get(idx)
-        return item ? (item.iconName || Const.DEFAULT_ICON) : ""
+        const icon = panel.searchModel.iconNameAt(idx)
+        return icon.length > 0 ? icon : Const.DEFAULT_ICON
     }
 
     // Inline-completion suffix for the search field, shown ghosted and accepted
