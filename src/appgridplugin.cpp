@@ -6,6 +6,7 @@
 #include "appgridplugin.h"
 
 #include "appgridconstants.h"
+#include "discoverbackends.h"
 #include "pluginhelpers.h"
 
 #include <AppStreamQt/component-box.h>
@@ -512,69 +513,6 @@ bool AppGridPlugin::isDiscoverAvailable() const
     return static_cast<bool>(KService::serviceByDesktopName(QStringLiteral("org.kde.discover")));
 }
 
-// Maps an AppModel install-source string to the Discover backend name that
-// handles it. Returns empty for sources Discover doesn't manage.
-static QString backendForSource(const QString &source)
-{
-    if (source == QLatin1String("System"))
-        return QStringLiteral("packagekit");
-    if (source == QLatin1String("Flatpak"))
-        return QStringLiteral("flatpak");
-    if (source == QLatin1String("Snap"))
-        return QStringLiteral("snap");
-    return {};
-}
-
-// CLI the backend drives — its presence gates the menu. PackageKit is NOT
-// here: it is reached over a D-Bus-activated system service (checked
-// separately), and pkcon is an optional client that several distros (e.g.
-// Arch) don't ship, which produced false negatives.
-static QString toolForBackend(const QString &backend)
-{
-    if (backend == QLatin1String("flatpak"))
-        return QStringLiteral("flatpak");
-    if (backend == QLatin1String("snap"))
-        return QStringLiteral("snap");
-    return {};
-}
-
-// PackageKit registers a D-Bus-activated system service; the service file is
-// the reliable "installed" signal — the daemon lives in libexec and the CLI
-// may be absent. Standard freedesktop location, with a source-install fallback.
-static bool packageKitServicePresent()
-{
-    static const QLatin1String bases[] = {QLatin1String("/usr/share"), QLatin1String("/usr/local/share")};
-    for (const auto &base : bases) {
-        if (QFileInfo::exists(base + QLatin1String("/dbus-1/system-services/org.freedesktop.PackageKit.service")))
-            return true;
-    }
-    return false;
-}
-
-// True when the Discover backend plugin is present and its runtime dependency
-// is satisfied (Flatpak/Snap CLI, or the PackageKit D-Bus service). Called per
-// right-click so backend installs are picked up without a restart; the lookup
-// (one libraryPaths scan + one findExecutable / stat) is cheap.
-static bool discoverBackendInstalled(const QString &name)
-{
-    const QString relPath = QStringLiteral("discover/") + name + QStringLiteral("-backend.so");
-    bool pluginFound = false;
-    for (const auto &dir : QCoreApplication::libraryPaths()) {
-        if (QFileInfo::exists(dir + QLatin1Char('/') + relPath)) {
-            pluginFound = true;
-            break;
-        }
-    }
-    if (!pluginFound)
-        return false;
-
-    if (name == QLatin1String("packagekit"))
-        return packageKitServicePresent();
-
-    const QString tool = toolForBackend(name);
-    return tool.isEmpty() || !QStandardPaths::findExecutable(tool).isEmpty();
-}
-
 // --- AppStream component id resolver --------------------------------
 // AppStream::Pool is the canonical resolver Kicker and Discover use: it
 // indexes metainfo from every backend (distro/PackageKit, Flatpak, Snap),
@@ -639,8 +577,8 @@ bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
     // / Snap) — more reliable than the AppStream id, which on its own can't
     // tell apart multiple sources of the same component.
     const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = backendForSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
-    if (backend.isEmpty() || !discoverBackendInstalled(backend))
+    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend))
         return false;
 
     // Only offer the menu when AppStream actually knows the component, so we
@@ -666,7 +604,7 @@ void AppGridPlugin::openInDiscover(const QString &storageId)
         return;
 
     const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = backendForSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
 
     // Target the backend that owns the installed copy so a multi-source app
     // (e.g. Flatpak + distro) opens the right version instead of Discover's

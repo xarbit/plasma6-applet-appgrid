@@ -192,6 +192,8 @@ set(APPGRID_SOURCES
     src/appfiltermodel.h
     src/categorymapping.cpp
     src/categorymapping.h
+    src/discoverbackends.cpp
+    src/discoverbackends.h
     src/pluginhelpers.cpp
     src/pluginhelpers.h
     src/searchranking.cpp
@@ -254,6 +256,8 @@ set(APPGRID_PANEL_SOURCES
     src/appfiltermodel.h
     src/categorymapping.cpp
     src/categorymapping.h
+    src/discoverbackends.cpp
+    src/discoverbackends.h
     src/pluginhelpers.cpp
     src/pluginhelpers.h
     src/searchranking.cpp

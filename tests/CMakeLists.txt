@@ -72,6 +72,15 @@ add_executable(test_launchbookkeeping
 target_link_libraries(test_launchbookkeeping PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_launchbookkeeping COMMAND test_launchbookkeeping)
 
+# DiscoverBackends — Plasma-free string/filesystem mapping (QtCore only).
+add_executable(test_discoverbackends
+    test_discoverbackends.cpp
+    ${CMAKE_SOURCE_DIR}/src/discoverbackends.cpp
+    ${CMAKE_SOURCE_DIR}/src/discoverbackends.h
+)
+target_link_libraries(test_discoverbackends PRIVATE Qt6::Test Qt6::Core)
+add_test(NAME test_discoverbackends COMMAND test_discoverbackends)
+
 # UpdateChecker only exists in universal builds; gate the test to match so
 # distro-package CI runs (which don't compile updatechecker.cpp) don't try
 # to link against missing symbols.
