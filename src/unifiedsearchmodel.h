@@ -77,6 +77,10 @@ private:
     // for the RunnerActionsCountRole read that only needs the count.
     [[nodiscard]] int runnerActionsCount(int row) const;
 
+    // Forward a source model's structural-change signals to onSourceChanged().
+    // Shared by setAppModel() + setRunnerModel().
+    void connectSourceSignals(QAbstractItemModel *model);
+
     AppFilterModel *m_appModel = nullptr;
     RunnerFilterModel *m_runnerModel = nullptr;
     int m_runnerSubtextRole = -1;

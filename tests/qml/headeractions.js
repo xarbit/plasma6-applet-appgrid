@@ -54,9 +54,12 @@ function _excluded(id, universalBuild) {
     return id === "updateCheck" && !uni;
 }
 
-function parse(configList, universalBuild) {
-    var bar = [];
-    var menu = [];
+// Walk the config StringList in order, invoking callback(id, placement) for
+// each token that is a known, not-yet-seen, not-excluded action. Returns the
+// `seen` set so callers can append the catalogue actions that were absent.
+// Shared by parse() and entries(), which only differ in how they consume each
+// (id, placement) pair.
+function _walkConfig(configList, universalBuild, callback) {
     var seen = {};
     var list = configList || [];
     for (var i = 0; i < list.length; ++i) {
@@ -67,12 +70,21 @@ function parse(configList, universalBuild) {
         if (_defaultPlacement(id) === null || seen[id] || _excluded(id, universalBuild))
             continue;
         seen[id] = true;
+        callback(id, placement);
+    }
+    return seen;
+}
+
+function parse(configList, universalBuild) {
+    var bar = [];
+    var menu = [];
+    var seen = _walkConfig(configList, universalBuild, function (id, placement) {
         if (placement === "bar")
             bar.push(id);
         else if (placement === "menu")
             menu.push(id);
         // "off" or anything else → disabled, skipped
-    }
+    });
     for (var j = 0; j < CATALOGUE.length; ++j) {
         var c = CATALOGUE[j];
         if (seen[c.id] || _excluded(c.id, universalBuild))
@@ -90,20 +102,11 @@ function parse(configList, universalBuild) {
 // config are appended at their default placement. Unknown ids dropped.
 function entries(configList, universalBuild) {
     var out = [];
-    var seen = {};
-    var list = configList || [];
-    for (var i = 0; i < list.length; ++i) {
-        var token = String(list[i]);
-        var sep = token.indexOf(":");
-        var id = sep >= 0 ? token.substring(0, sep) : token;
-        var placement = sep >= 0 ? token.substring(sep + 1) : _defaultPlacement(id);
-        if (_defaultPlacement(id) === null || seen[id] || _excluded(id, universalBuild))
-            continue;
-        seen[id] = true;
+    var seen = _walkConfig(configList, universalBuild, function (id, placement) {
         if (placement !== "bar" && placement !== "menu" && placement !== "off")
             placement = _defaultPlacement(id);
         out.push({ id: id, placement: placement });
-    }
+    });
     for (var j = 0; j < CATALOGUE.length; ++j) {
         if (!seen[CATALOGUE[j].id] && !_excluded(CATALOGUE[j].id, universalBuild))
             out.push({ id: CATALOGUE[j].id, placement: CATALOGUE[j].placement });

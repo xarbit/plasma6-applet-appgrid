@@ -19,22 +19,24 @@ UnifiedSearchModel::UnifiedSearchModel(QObject *parent)
 {
 }
 
-void UnifiedSearchModel::setAppModel(AppFilterModel *model)
+void UnifiedSearchModel::connectSourceSignals(QAbstractItemModel *model)
 {
-    m_appModel = model;
     connect(model, &QAbstractItemModel::modelReset, this, &UnifiedSearchModel::onSourceChanged);
     connect(model, &QAbstractItemModel::layoutChanged, this, &UnifiedSearchModel::onSourceChanged);
     connect(model, &QAbstractItemModel::rowsInserted, this, &UnifiedSearchModel::onSourceChanged);
     connect(model, &QAbstractItemModel::rowsRemoved, this, &UnifiedSearchModel::onSourceChanged);
 }
 
+void UnifiedSearchModel::setAppModel(AppFilterModel *model)
+{
+    m_appModel = model;
+    connectSourceSignals(model);
+}
+
 void UnifiedSearchModel::setRunnerModel(RunnerFilterModel *model)
 {
     m_runnerModel = model;
-    connect(model, &QAbstractItemModel::modelReset, this, &UnifiedSearchModel::onSourceChanged);
-    connect(model, &QAbstractItemModel::layoutChanged, this, &UnifiedSearchModel::onSourceChanged);
-    connect(model, &QAbstractItemModel::rowsInserted, this, &UnifiedSearchModel::onSourceChanged);
-    connect(model, &QAbstractItemModel::rowsRemoved, this, &UnifiedSearchModel::onSourceChanged);
+    connectSourceSignals(model);
 
     const auto roles = model->roleNames();
     for (auto it = roles.begin(); it != roles.end(); ++it) {
