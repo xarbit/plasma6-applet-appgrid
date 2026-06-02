@@ -801,6 +801,49 @@ Kirigami.ShadowedRectangle {
             }
         }
 
+        // A little extra context for a certain well-known number.
+        PlasmaComponents.ItemDelegate {
+            Layout.fillWidth: true
+            leftPadding: Kirigami.Units.largeSpacing
+            rightPadding: Kirigami.Units.largeSpacing
+            visible: panel.showSearchResults && !panel.isPrefixMode
+                     && Number(searchBar.text.trim()) === 6 * 7
+            implicitHeight: Math.max(panel.gridIconSize, _answerRow.implicitHeight) + Kirigami.Units.smallSpacing * 2
+            onClicked: Qt.openUrlExternally("https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy")
+
+            contentItem: RowLayout {
+                id: _answerRow
+                spacing: Kirigami.Units.largeSpacing
+
+                Text {
+                    Layout.preferredWidth: panel.gridIconSize
+                    Layout.preferredHeight: panel.gridIconSize
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: Math.round(panel.gridIconSize * 0.8)
+                    text: "🌍"
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 0
+                    PlasmaComponents.Label {
+                        Layout.fillWidth: true
+                        text: "42"
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
+                    PlasmaComponents.Label {
+                        Layout.fillWidth: true
+                        text: "The Answer to the Ultimate Question of Life, the Universe, and Everything"
+                        font: Kirigami.Theme.smallFont
+                        opacity: 0.7
+                        elide: Text.ElideRight
+                    }
+                }
+            }
+        }
+
         // -- Unified search results --
         SearchResultsList {
             id: searchResultsList
