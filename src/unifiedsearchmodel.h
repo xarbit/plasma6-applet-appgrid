@@ -33,6 +33,7 @@ public:
         StorageIdRole,
         DesktopFileRole,
         IsNewRole,
+        IsHiddenRole,
         ShortcutNumberRole,
         IsSectionBoundaryRole,
         SourceIndexRole,

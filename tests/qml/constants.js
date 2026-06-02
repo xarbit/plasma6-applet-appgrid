@@ -19,3 +19,7 @@ var PLUGIN_ID_CENTER = "dev.xarbit.appgrid"
 
 // Freedesktop fallback icon, shown when an app exposes no icon name.
 var DEFAULT_ICON = "application-x-executable"
+
+// Row opacity for a hidden app shown in search results (when "show hidden in
+// search" is on): dimmed enough to read as hidden, legible enough to still pick.
+var HIDDEN_RESULT_OPACITY = 0.55

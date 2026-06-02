@@ -135,6 +135,8 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             return srcIdx.data(AppModel::DesktopFileRole);
         case IsNewRole:
             return m_appModel->isNewApp(srcIdx.data(AppModel::StorageIdRole).toString());
+        case IsHiddenRole:
+            return m_appModel->isHidden(srcIdx.data(AppModel::StorageIdRole).toString());
         case InstallSourceRole:
             return srcIdx.data(AppModel::InstallSourceRole);
         default:
@@ -164,6 +166,7 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             return role == StorageIdRole ? QFileInfo(path).fileName() : path;
         }
         case IsNewRole:
+        case IsHiddenRole:
             return false;
         case InstallSourceRole:
             return QString();
@@ -188,6 +191,7 @@ QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
         {StorageIdRole, "storageId"},
         {DesktopFileRole, "desktopFile"},
         {IsNewRole, "isNew"},
+        {IsHiddenRole, "isHidden"},
         {ShortcutNumberRole, "shortcutNumber"},
         {IsSectionBoundaryRole, "isSectionBoundary"},
         {SourceIndexRole, "sourceIndex"},

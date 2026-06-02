@@ -222,6 +222,7 @@ ListView {
             : Kirigami.Theme.textColor
 
         Accessible.name: (model.shortcutNumber > 0 ? "Alt+" + model.shortcutNumber + ": " : "") + (model.name || "")
+                         + (resultDelegate.itemHidden ? ", " + i18nd("dev.xarbit.appgrid", "hidden") : "")
         Accessible.role: Accessible.Button
         Accessible.description: model.subtext || ""
         Accessible.focusable: true
@@ -234,6 +235,10 @@ ListView {
         // surfaced through a different model lane.
         readonly property bool actsLikeApp: model.resultType === "app"
                                             || (model.storageId || "").length > 0
+
+        // Hidden apps surface in results only with "show hidden in search" on;
+        // flag them so the row dims and shows the hidden indicator below.
+        readonly property bool itemHidden: model.isHidden === true
 
         TapHandler {
             acceptedButtons: Qt.RightButton
@@ -261,6 +266,7 @@ ListView {
 
         contentItem: RowLayout {
             spacing: Kirigami.Units.largeSpacing
+            opacity: resultDelegate.itemHidden ? Const.HIDDEN_RESULT_OPACITY : 1.0
 
             ShortcutBadge { number: model.shortcutNumber }
 
@@ -283,6 +289,14 @@ ListView {
                         elide: Text.ElideRight
                         color: resultDelegate.labelColor
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.fontScale
+                    }
+                    // Hidden indicator, paired with the row dim.
+                    Kirigami.Icon {
+                        visible: resultDelegate.itemHidden
+                        source: "view-hidden"
+                        implicitWidth: Kirigami.Units.iconSizes.small
+                        implicitHeight: Kirigami.Units.iconSizes.small
+                        Layout.alignment: Qt.AlignVCenter
                     }
                     InfoChip {
                         visible: model.installSource !== undefined
