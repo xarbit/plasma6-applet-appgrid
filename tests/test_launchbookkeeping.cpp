@@ -13,7 +13,7 @@
 class TestLaunchBookkeeping : public QObject
 {
     Q_OBJECT
-private slots:
+private Q_SLOTS:
     void hide_addsAndDedups();
     void unhide_removes();
     void setHidden_detectsNoChange();

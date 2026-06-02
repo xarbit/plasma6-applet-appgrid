@@ -40,7 +40,7 @@
 class AppModelTest : public QObject
 {
     Q_OBJECT
-private slots:
+private Q_SLOTS:
     /// Covers BOTH scenarios in the file header: #86 (icon file changed
     /// on disk) and #103 (system theme switch). Both reduce to "did the
     /// process receive KIconLoader::iconChanged?". KIconLoader emits

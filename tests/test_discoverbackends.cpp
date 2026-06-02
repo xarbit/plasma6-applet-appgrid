@@ -13,7 +13,7 @@
 class TestDiscoverBackends : public QObject
 {
     Q_OBJECT
-private slots:
+private Q_SLOTS:
     void forInstallSource_maps();
     void toolForBackend_maps();
     void isBackendInstalled_falseForUnknown();

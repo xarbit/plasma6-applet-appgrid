@@ -17,7 +17,7 @@
 class TestRunnerFilter : public QObject {
     Q_OBJECT
 
-private slots:
+private Q_SLOTS:
     void init();
     void hidesRunnerRowMatchingAppName();
     void matchIsCaseInsensitive();

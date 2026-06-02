@@ -14,7 +14,7 @@
 class TestCategoryMapping : public QObject {
     Q_OBJECT
 
-private slots:
+private Q_SLOTS:
     void unknownTokenReturnsEmpty()
     {
         QVERIFY(mapCategoryToken(QStringLiteral("DoesNotExist")).isEmpty());

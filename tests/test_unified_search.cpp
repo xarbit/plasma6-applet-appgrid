@@ -19,7 +19,7 @@
 class TestUnifiedSearch : public QObject {
     Q_OBJECT
 
-private slots:
+private Q_SLOTS:
     void init();
     void emptyHasZeroRowCount();
     void appOnlyMaps1to1();

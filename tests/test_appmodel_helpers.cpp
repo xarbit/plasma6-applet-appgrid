@@ -13,7 +13,7 @@
 
 class TestAppModelHelpers : public QObject {
     Q_OBJECT
-private slots:
+private Q_SLOTS:
     void detectsFlatpakFromExec();
     void detectsFlatpakFromPath();
     void detectsSnapFromExec();

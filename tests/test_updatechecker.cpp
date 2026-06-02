@@ -23,7 +23,7 @@ class TestUpdateChecker : public QObject
 {
     Q_OBJECT
 
-private slots:
+private Q_SLOTS:
     void initTestCase()
     {
         // Sandbox QStandardPaths so cache lands in a throwaway dir, not

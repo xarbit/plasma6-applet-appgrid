@@ -6,7 +6,6 @@ project(AppGrid VERSION 1.10.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_AUTOMOC ON)
 
 # ECM ships KDEInstallDirs, which defines the KDE_INSTALL_* paths this build
 # installs into. Include it before find_package(Qt6) — Qt pulls in
@@ -14,12 +13,18 @@ set(CMAKE_AUTOMOC ON)
 # by CMAKE_INSTALL_*, which ECM warns about.
 find_package(ECM 6.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+
+# Test suite off by default so distro/makepkg builds stay lean; the ci/tests
+# presets turn it on. Declared before KDECMakeSettings, which pulls in CTest and
+# would otherwise default it ON.
+option(BUILD_TESTING "Build the test suite" OFF)
+
 include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings NO_POLICY_SCOPE)
 
 # X11 support — disable when targeting Plasma 6.8+ (Wayland-only)
 option(ENABLE_X11 "Enable X11 session support" ON)
-
-option(BUILD_TESTING "Build the test suite" OFF)
 
 # Universal-build flag — enables the in-app update checker (notify-only,
 # opt-in via config). Distros that ship via their package manager should
