@@ -23,6 +23,8 @@
 import QtQuick
 import org.kde.kirigami as Kirigami
 
+import "../js/constants.js" as Const
+
 Item {
     id: source
 
@@ -74,7 +76,7 @@ Item {
                 y: index * 8
                 width: 48
                 height: 48
-                source: stackComposite.icons[index] || "application-x-executable"
+                source: stackComposite.icons[index] || Const.DEFAULT_ICON
             }
         }
 

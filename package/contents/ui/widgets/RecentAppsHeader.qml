@@ -11,6 +11,7 @@ import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../js/themecolors.js" as ThemeColors
+import "../js/constants.js" as Const
 
 Column {
     id: recentHeader
@@ -93,7 +94,7 @@ Column {
                     id: recentIcon
                     anchors.fill: parent
                     appName: recentDelegate.appData.name || ""
-                    appIcon: recentDelegate.appData.iconName || "application-x-executable"
+                    appIcon: recentDelegate.appData.iconName || Const.DEFAULT_ICON
                     appGenericName: recentDelegate.appData.genericName || ""
                     appComment: recentDelegate.appData.comment || ""
                     installSource: recentDelegate.appData.installSource || ""

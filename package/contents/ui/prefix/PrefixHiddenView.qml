@@ -8,6 +8,8 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 
+import "../js/constants.js" as Const
+
 ColumnLayout {
     id: hiddenView
 
@@ -99,7 +101,7 @@ ColumnLayout {
                     Kirigami.Icon {
                         implicitWidth: Kirigami.Units.iconSizes.medium
                         implicitHeight: Kirigami.Units.iconSizes.medium
-                        source: hiddenDelegate.appInfo.iconName || "application-x-executable"
+                        source: hiddenDelegate.appInfo.iconName || Const.DEFAULT_ICON
                     }
 
                     ColumnLayout {

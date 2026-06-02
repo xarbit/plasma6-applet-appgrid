@@ -12,6 +12,7 @@ import "../controllers"
 import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
 import "../js/gridnav.js" as GridNav
+import "../js/constants.js" as Const
 
 GridView {
     id: gridView
@@ -122,7 +123,7 @@ GridView {
         shufflesUpdated()
     }
 
-    readonly property string defaultIcon: "application-x-executable"
+    readonly property string defaultIcon: Const.DEFAULT_ICON
 
     function getDisplayIcon(index) {
         return iconSwaps[index] !== undefined ? iconSwaps[index] : ""
@@ -563,8 +564,8 @@ GridView {
                 : (model.name || "")
             appIcon: delegateRoot._fromShared
                 ? ((delegateRoot._appData && delegateRoot._appData.iconName)
-                   || model.decoration || "application-x-executable")
-                : (model.iconName || "application-x-executable")
+                   || model.decoration || gridView.defaultIcon)
+                : (model.iconName || gridView.defaultIcon)
             displayIcon: delegateRoot._fromShared ? "" : gridView.getDisplayIcon(model.index)
             appGenericName: delegateRoot._fromShared
                 ? (delegateRoot._appData ? delegateRoot._appData.genericName || "" : "")

@@ -17,6 +17,7 @@ import org.kde.plasma.extras as PlasmaExtras
 import "../controllers"
 import "../widgets"
 import "../js/themecolors.js" as ThemeColors
+import "../js/constants.js" as Const
 
 ListView {
     id: listView
@@ -266,7 +267,7 @@ ListView {
             ShadowedIcon {
                 implicitWidth: listView.iconSize
                 implicitHeight: listView.iconSize
-                source: model.iconName || "application-x-executable"
+                source: model.iconName || Const.DEFAULT_ICON
                 shadowEnabled: listView.shadowEnabled
             }
 

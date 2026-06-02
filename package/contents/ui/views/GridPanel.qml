@@ -19,6 +19,7 @@ import "../js/launchcounts.js" as LaunchCounts
 import "../js/migrations.js" as Migrations
 import "../js/searchresultnav.js" as SearchResultNav
 import "../js/themecolors.js" as ThemeColors
+import "../js/constants.js" as Const
 
 Kirigami.ShadowedRectangle {
     id: panel
@@ -122,7 +123,7 @@ Kirigami.ShadowedRectangle {
             return ""
         const idx = searchResultsList.currentIndex >= 0 ? searchResultsList.currentIndex : 0
         const item = panel.searchModel.get(idx)
-        return item ? (item.iconName || "application-x-executable") : ""
+        return item ? (item.iconName || Const.DEFAULT_ICON) : ""
     }
 
     // Whichever grid view currently owns a SelectionState — used to route

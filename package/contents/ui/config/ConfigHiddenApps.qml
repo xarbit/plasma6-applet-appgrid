@@ -11,6 +11,8 @@ import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
+import "../js/constants.js" as Const
+
 KCM.SimpleKCM {
     id: page
 
@@ -122,7 +124,7 @@ KCM.SimpleKCM {
                         Kirigami.Icon {
                             implicitWidth: Kirigami.Units.iconSizes.smallMedium
                             implicitHeight: Kirigami.Units.iconSizes.smallMedium
-                            source: appInfo.iconName || "application-x-executable"
+                            source: appInfo.iconName || Const.DEFAULT_ICON
                         }
                         ColumnLayout {
                             Layout.fillWidth: true

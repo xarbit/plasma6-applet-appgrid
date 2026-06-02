@@ -14,6 +14,7 @@ import org.kde.plasma.components as PlasmaComponents
 import "../controllers"
 import "../widgets"
 import "../js/gridnav.js" as GridNav
+import "../js/constants.js" as Const
 
 Flickable {
     id: categoryGrid
@@ -432,7 +433,7 @@ Flickable {
                                 id: catIconDelegate
                                 anchors.fill: parent
                                 appName: modelData.name || ""
-                                appIcon: modelData.iconName || "application-x-executable"
+                                appIcon: modelData.iconName || Const.DEFAULT_ICON
                                 appComment: modelData.comment || ""
                                 installSource: modelData.installSource || ""
                                 showTooltip: categoryGrid.showTooltips

@@ -12,12 +12,13 @@ import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../js/themecolors.js" as ThemeColors
+import "../js/constants.js" as Const
 
 Item {
     id: root
 
     property string appName: ""
-    property string appIcon: "application-x-executable"
+    property string appIcon: Const.DEFAULT_ICON
     property string appGenericName: ""
     property string appComment: ""
     property string installSource: ""
@@ -157,7 +158,7 @@ Item {
             ShadowedIcon {
                 id: delegateIcon
                 anchors.fill: parent
-                source: root.displayIcon || root.appIcon || "application-x-executable"
+                source: root.displayIcon || root.appIcon || Const.DEFAULT_ICON
                 shadowEnabled: root.shadowEnabled
                 // No icon brighten — hover is shown by the Rectangle above (#106).
                 active: false

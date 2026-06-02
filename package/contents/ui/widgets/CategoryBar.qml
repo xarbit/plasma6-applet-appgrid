@@ -69,9 +69,6 @@ RowLayout {
         names: [allLabel].concat(categoryList).concat([favoritesLabel])
     }
 
-    // Trigger from outside; kept for API compatibility with previous code.
-    function rebuildMnemonics() { /* MnemonicResolver recomputes via binding */ }
-
     function mnemonicIndex(name) { return mnemonicResolver.indexFor(name) }
     function mnemonicRichText(name) { return mnemonicResolver.richTextFor(name) }
 
@@ -266,12 +263,12 @@ RowLayout {
         })
     }
 
-    Component.onCompleted: { refreshCategories(); rebuildMnemonics() }
-    onAppsModelChanged: { refreshCategories(); rebuildMnemonics() }
+    Component.onCompleted: refreshCategories()
+    onAppsModelChanged: refreshCategories()
     Connections {
         target: categoryBar.appsModel
-        function onCategoriesChanged() { categoryBar.refreshCategories(); categoryBar.rebuildMnemonics() }
-        function onHiddenAppsChanged() { categoryBar.refreshCategories(); categoryBar.rebuildMnemonics() }
+        function onCategoriesChanged() { categoryBar.refreshCategories() }
+        function onHiddenAppsChanged() { categoryBar.refreshCategories() }
     }
 
     Layout.fillWidth: true
