@@ -4,7 +4,10 @@
 #
 # Regenerates CHANGELOG.md across four commit ranges so every tag in every
 # branch lineage gets rendered:
-#   1. v1.9.0-rc.1..main         — 1.10 dev work (Unreleased / next-cycle).
+#   1. v1.9.0-rc.1..maintenance/1.9.x — the 1.9.x release line (rc.2..rc.N),
+#                                  tagged on this branch, not main. main carries
+#                                  the diverged 1.10 dev work and is excluded
+#                                  here so the 1.9.x changelog stays 1.9-only.
 #   2. v1.8.0..v1.9.0-rc.1       — the 1.9.0-rc.1 section.
 #   3. v1.8.0..maintenance/1.8.x — 1.8.x patch releases (1.8.1..1.8.5),
 #                                  tagged on the maintenance branch, not main.
@@ -32,7 +35,7 @@ ROOT=$(git rev-list --max-parents=0 main | tail -1)
     printf '     Hand-edits get clobbered on the next run. Put release narrative\n'
     printf '     in the GitHub release notes (gh release create) instead. -->\n\n'
     printf 'All notable changes to AppGrid are documented here.\n\n'
-    git cliff --offline --strip all v1.9.0-rc.1..main
+    git cliff --offline --strip all v1.9.0-rc.1..maintenance/1.9.x
     git cliff --offline --strip all v1.8.0..v1.9.0-rc.1
     git cliff --offline --strip all v1.8.0..maintenance/1.8.x
     git cliff --offline --strip all "${ROOT}..v1.8.0"
