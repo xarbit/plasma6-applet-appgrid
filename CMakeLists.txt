@@ -22,6 +22,7 @@ option(BUILD_TESTING "Build the test suite" OFF)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
+include(FeatureSummary)
 
 # X11 support — disable when targeting Plasma 6.8+ (Wayland-only)
 option(ENABLE_X11 "Enable X11 session support" ON)
@@ -111,6 +112,7 @@ endif()
 # (Plasma 6.0 → KF6 6.0). Newer APIs must be gated behind explicit
 # version checks rather than raising this minimum.
 set(KF6_MIN_VERSION 6.0)
+set(PLASMA_MIN_VERSION 6.0)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     CoreAddons
     GlobalAccel
@@ -122,8 +124,8 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     WindowSystem
 )
 find_package(LayerShellQt REQUIRED)
-find_package(Plasma REQUIRED)
-find_package(PlasmaQuick REQUIRED)
+find_package(Plasma ${PLASMA_MIN_VERSION} REQUIRED)
+find_package(PlasmaQuick ${PLASMA_MIN_VERSION} REQUIRED)
 # Write-side: KActivities::ResourceInstance::notifyAccessed broadcasts AppGrid
 # launches to the system-wide KActivities database so Kickoff / KRunner / Plasma
 # Activities see AppGrid as a contributing launcher.
@@ -333,3 +335,5 @@ if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
