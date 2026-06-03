@@ -399,6 +399,12 @@ Kirigami.ShadowedRectangle {
         headerActionStrip.closeMenus()
         _resetSearchSession()
 
+        // Clear any stale Alt-held state: the panel popup item is reused
+        // across open/close, so a missed Alt key-release (focus left the
+        // window, or it was closed mid-Alt) would otherwise leave the
+        // category mnemonics underlined on the next open (#168).
+        categoryBar.altHeld = false
+
         // Restore starting tab
         var startFav = cfgShowCategoryBar && cfgStartWithFavorites
         categoryBar.favoritesActive = startFav
