@@ -118,6 +118,13 @@ RowLayout {
             case Qt.Key_PageDown: searchBar.pageDown(); event.accepted = true; return
             case Qt.Key_Home:     searchBar.home();     event.accepted = true; return
             case Qt.Key_End:      searchBar.end();      event.accepted = true; return
+            // Right arrow accepts the ghost completion when the cursor is at the
+            // end; otherwise it falls through to normal cursor movement.
+            case Qt.Key_Right:
+                if (textField.cursorPosition === textField.text.length
+                        && searchBar.acceptCompletion())
+                    event.accepted = true
+                return
             }
             if (event.modifiers & Qt.AltModifier) {
                 var num = event.key - Qt.Key_0
