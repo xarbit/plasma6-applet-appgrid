@@ -6,7 +6,17 @@
 
 All notable changes to AppGrid are documented here.
 
-##  [1.9.0-rc.4] - 2026-06-02
+## [1.9.0-rc.5] - 2026-06-04
+
+### Fixed
+
+- *(category)* Clear stale Alt-held underline state on open (#168)
+- *(category)* Favorites button selects instead of toggling (#169)
+- *(appearance)* Relabel dim option to match what it dims (#170)
+- *(category)* Uniform button height across the category bar (#171)
+- *(category)* Enlarge the favorites icon to fill the button (#171)
+
+## [1.9.0-rc.4] - 2026-06-02
 
 ### Added
 
@@ -22,7 +32,7 @@ All notable changes to AppGrid are documented here.
 - Regenerate message template
 - Silence xgettext QML warnings with --language=C
 
-## [1.9.0-rc.3] - 2026-06-01
+## [1.9.0-rc.2] - 2026-06-01
 
 ### Added
 
