@@ -30,6 +30,21 @@ RowLayout {
     // densityScale derived from cfg.iconSize.
     property real fontScale: 1.0
 
+    // -- Shared button geometry (#171) --
+    // Every button in the bar — favorites, "All", the scroll arrows and the
+    // category tabs — takes its font, height and icon size from these values,
+    // so the icon-only buttons track the scaled text buttons instead of
+    // standing taller at the Small/Medium presets. All follow fontScale; the
+    // 1.1 nudges the bar font just above the body text.
+    readonly property real buttonFontPointSize: Kirigami.Theme.defaultFont.pointSize * 1.1 * fontScale
+    readonly property real buttonIconSize: Math.round(Kirigami.Units.iconSizes.smallMedium * fontScale)
+    readonly property real buttonHeight: Math.ceil(_barFontMetrics.height) + Kirigami.Units.smallSpacing * 2
+
+    FontMetrics {
+        id: _barFontMetrics
+        font.pointSize: categoryBar.buttonFontPointSize
+    }
+
     // Reactive category list — updated when model categories change
     property var categoryList: []
 
@@ -285,7 +300,7 @@ RowLayout {
     Layout.fillWidth: true
     spacing: Kirigami.Units.smallSpacing
 
-    readonly property int scrollArrowWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
+    readonly property real scrollArrowWidth: categoryBar.buttonIconSize + Kirigami.Units.smallSpacing * 2
 
     // -- Favorites (left) --
     FavoritesTabButton {
@@ -300,7 +315,8 @@ RowLayout {
         visible: !categoryBar.isSortByCategory
         Kirigami.MnemonicData.enabled: false
         text: ""
-        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1 * categoryBar.fontScale
+        Layout.preferredHeight: categoryBar.buttonHeight
+        font.pointSize: categoryBar.buttonFontPointSize
         leftPadding: Kirigami.Units.largeSpacing
         rightPadding: Kirigami.Units.largeSpacing
         contentItem: PlasmaComponents.Label {
@@ -334,6 +350,9 @@ RowLayout {
         enabled: scrollable
         opacity: scrollable ? 1 : 0
         implicitWidth: scrollable ? categoryBar.scrollArrowWidth : 0
+        Layout.preferredHeight: categoryBar.buttonHeight
+        icon.width: categoryBar.buttonIconSize
+        icon.height: categoryBar.buttonIconSize
 
         Behavior on implicitWidth {
             NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
@@ -341,6 +360,11 @@ RowLayout {
         Behavior on opacity {
             NumberAnimation { duration: Kirigami.Units.shortDuration }
         }
+
+        // Tooltip mirrors the accessible name each instance sets (#171).
+        PlasmaComponents.ToolTip.text: Accessible.name
+        PlasmaComponents.ToolTip.visible: hovered && scrollable
+        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
         Accessible.role: Accessible.Button
     }
@@ -358,9 +382,9 @@ RowLayout {
     Flickable {
         id: catFlick
         Layout.fillWidth: true
-        implicitHeight: catRow.implicitHeight
+        implicitHeight: categoryBar.buttonHeight
         contentWidth: catRow.width
-        contentHeight: catRow.implicitHeight
+        contentHeight: categoryBar.buttonHeight
         clip: true
         flickableDirection: Flickable.HorizontalFlick
         boundsBehavior: Flickable.StopAtBounds
@@ -433,13 +457,14 @@ RowLayout {
                 model: categoryBar.categoryList
                 delegate: PlasmaComponents.ToolButton {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     required property int index
                     required property string modelData
                     Kirigami.MnemonicData.enabled: false
                     leftPadding: Kirigami.Units.largeSpacing
                     rightPadding: Kirigami.Units.largeSpacing
                     text: ""
-                    font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.1 * categoryBar.fontScale
+                    font.pointSize: categoryBar.buttonFontPointSize
                     contentItem: PlasmaComponents.Label {
                         text: categoryBar.altHeld
                             ? categoryBar.mnemonicRichText(modelData)

@@ -4,6 +4,7 @@
 */
 
 import QtQuick
+import QtQuick.Layouts
 
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
@@ -17,7 +18,11 @@ PlasmaComponents.ToolButton {
 
     required property var categoryBar
 
+    // Match the scaled height/icon of the rest of the category bar (#171).
+    Layout.preferredHeight: root.categoryBar.buttonHeight
     icon.name: "bookmarks-bookmarked"
+    icon.width: root.categoryBar.buttonIconSize
+    icon.height: root.categoryBar.buttonIconSize
     checked: root.categoryBar.favoritesActive
     onClicked: root.categoryBar.selectFavorites()
 
