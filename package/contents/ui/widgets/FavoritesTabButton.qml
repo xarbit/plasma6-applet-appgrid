@@ -18,11 +18,15 @@ PlasmaComponents.ToolButton {
 
     required property var categoryBar
 
-    // Match the scaled height/icon of the rest of the category bar (#171).
+    // Match the bar's button height, but fill it with a larger icon: zero the
+    // vertical padding so the favorites glyph reaches favoritesIconSize without
+    // growing the button (#171).
     Layout.preferredHeight: root.categoryBar.buttonHeight
+    topPadding: 0
+    bottomPadding: 0
     icon.name: "bookmarks-bookmarked"
-    icon.width: root.categoryBar.buttonIconSize
-    icon.height: root.categoryBar.buttonIconSize
+    icon.width: root.categoryBar.favoritesIconSize
+    icon.height: root.categoryBar.favoritesIconSize
     checked: root.categoryBar.favoritesActive
     onClicked: root.categoryBar.selectFavorites()
 
