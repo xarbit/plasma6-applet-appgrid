@@ -23,3 +23,8 @@ var DEFAULT_ICON = "application-x-executable"
 // Row opacity for a hidden app shown in search results (when "show hidden in
 // search" is on): dimmed enough to read as hidden, legible enough to still pick.
 var HIDDEN_RESULT_OPACITY = 0.55
+
+// Alpha of the black scrim drawn behind the centered launcher when the
+// "dim screen behind launcher" option is on (#170). The window is a
+// fullscreen layer-shell surface, so the scrim covers everything under it.
+var DIM_OVERLAY_OPACITY = 0.35
