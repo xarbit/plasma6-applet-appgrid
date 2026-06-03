@@ -124,7 +124,7 @@ KCM.SimpleKCM {
             id: dimBackground
             visible: !page.isPanel
             enabled: !useThemeBackground.checked
-            text: i18nd("dev.xarbit.appgrid", "Dim wallpaper around launcher")
+            text: i18nd("dev.xarbit.appgrid", "Dim everything behind launcher")
         }
 
         Item {

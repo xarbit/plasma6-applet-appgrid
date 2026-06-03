@@ -14,6 +14,7 @@ import QtQuick.Window
 import org.kde.kirigami as Kirigami
 
 import "../controllers"
+import "../js/constants.js" as Const
 
 Window {
     id: root
@@ -326,7 +327,7 @@ Window {
     Rectangle {
         id: dimOverlay
         anchors.fill: parent
-        color: cfg.effectiveDimBackground ? Qt.rgba(0, 0, 0, 0.35) : "transparent"
+        color: cfg.effectiveDimBackground ? Qt.rgba(0, 0, 0, Const.DIM_OVERLAY_OPACITY) : "transparent"
         opacity: 0
 
         MouseArea {
