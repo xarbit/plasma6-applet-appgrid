@@ -98,7 +98,7 @@ RowLayout {
     // Alt+arrow navigation, and programmatic selection.
     function selectByName(name) {
         if (name === favoritesLabel)
-            favoritesToggled(true)
+            selectFavorites()
         else if (name === allLabel)
             selectAll()
         else
@@ -109,9 +109,9 @@ RowLayout {
     function selectByMnemonic(key) {
         var name = mnemonicResolver.nameForKey(key)
         if (!name) return false
-        // A mnemonic on Favorites toggles it; every other tab selects.
+        // Favorites and every other tab select; nothing toggles (#169).
         if (name === favoritesLabel)
-            favoritesToggled(!favoritesActive)
+            selectFavorites()
         else
             selectByName(name)
         return true
@@ -138,6 +138,14 @@ RowLayout {
             categoryBar.appsModel.filterCategory = ""
         scrollOnlySelected = ""
         categorySelected("")
+    }
+
+    // Selecting favorites is one-way: it activates the favorites tab and
+    // never toggles back to All. Leaving favorites goes through selectAll()
+    // (the All button / Alt+A), which keeps click and keyboard consistent
+    // and stops the favorites button cycling All↔Favorites (#169).
+    function selectFavorites() {
+        favoritesToggled(true)
     }
 
     function selectCategory(name) {
@@ -280,21 +288,10 @@ RowLayout {
     readonly property int scrollArrowWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
 
     // -- Favorites (left) --
-    PlasmaComponents.ToolButton {
+    FavoritesTabButton {
         id: favButtonLeft
         visible: categoryBar.favoritesFirst
-        icon.name: "bookmarks-bookmarked"
-        checked: categoryBar.favoritesActive
-        onClicked: categoryBar.favoritesToggled(!categoryBar.favoritesActive)
-
-        PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
-        PlasmaComponents.ToolTip.visible: hovered
-        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-
-        Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
-        Accessible.role: Accessible.Button
-
-        FavoritesTabDragHover { target: categoryBar }
+        categoryBar: categoryBar
     }
 
     // -- "All" button (hidden in scrollOnly/ByCategory mode) --
@@ -489,21 +486,10 @@ RowLayout {
     }
 
     // -- Favorites (right) --
-    PlasmaComponents.ToolButton {
+    FavoritesTabButton {
         id: favButtonRight
         visible: !categoryBar.favoritesFirst
-        icon.name: "bookmarks-bookmarked"
-        checked: categoryBar.favoritesActive
-        onClicked: categoryBar.favoritesToggled(!categoryBar.favoritesActive)
-
-        PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
-        PlasmaComponents.ToolTip.visible: hovered
-        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-
-        Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
-        Accessible.role: Accessible.Button
-
-        FavoritesTabDragHover { target: categoryBar }
+        categoryBar: categoryBar
     }
 
     // -- Category context menu (system categories mode only) --
