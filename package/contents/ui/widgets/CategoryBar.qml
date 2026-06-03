@@ -40,6 +40,12 @@ RowLayout {
     readonly property real buttonIconSize: Math.round(Kirigami.Units.iconSizes.smallMedium * fontScale)
     readonly property real buttonHeight: Math.ceil(_barFontMetrics.height) + Kirigami.Units.smallSpacing * 2
 
+    // Favorites is the primary tab marker, so its icon fills the full button
+    // height instead of sitting at the shared (smaller) buttonIconSize — it
+    // reads clearly without making the button or the bar any taller. The
+    // FavoritesTabButton drops its vertical padding so the icon can reach this.
+    readonly property real favoritesIconSize: buttonHeight
+
     FontMetrics {
         id: _barFontMetrics
         font.pointSize: categoryBar.buttonFontPointSize
