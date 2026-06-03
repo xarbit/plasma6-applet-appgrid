@@ -181,7 +181,7 @@
     </entry>
     <entry name="gridColumns" type="Int">
       <label>Maximum number of icons per row.</label>
-      <default>7</default>
+      <default>6</default>
     </entry>
     <entry name="gridRows" type="Int">
       <label>Maximum number of visible rows.</label>
