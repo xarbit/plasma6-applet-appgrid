@@ -33,7 +33,6 @@ KCM.SimpleKCM {
     property alias cfg_sortMode: sortMode.currentIndex
     property alias cfg_showCategoryBar: showCategoryBar.checked
     property alias cfg_startWithFavorites: startWithFavorites.checked
-    property alias cfg_hideLabelsOnFavorites: hideLabelsOnFavorites.checked
     property alias cfg_sortFavoritesAlphabetically: sortFavoritesAlphabetically.checked
     property alias cfg_showRecentApps: showRecentApps.checked
     property alias cfg_useSystemCategories: useSystemCategories.checked
@@ -192,11 +191,6 @@ KCM.SimpleKCM {
         QQC2.CheckBox {
             id: startWithFavorites
             text: i18nd("dev.xarbit.appgrid", "Start with favorites tab")
-            enabled: showCategoryBar.checked
-        }
-        QQC2.CheckBox {
-            id: hideLabelsOnFavorites
-            text: i18nd("dev.xarbit.appgrid", "Hide app labels on favorites tab")
             enabled: showCategoryBar.checked
         }
         QQC2.CheckBox {

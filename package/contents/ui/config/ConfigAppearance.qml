@@ -36,6 +36,7 @@ KCM.SimpleKCM {
     property alias cfg_hoverAnimation: hoverAnimation.currentIndex
     property alias cfg_shakeOnOpen: shakeOnOpen.checked
     property alias cfg_independentTextSize: independentTextSize.checked
+    property alias cfg_hideLabelsOnFavorites: hideLabelsOnFavorites.checked
 
     Kirigami.FormLayout {
         QQC2.CheckBox {
@@ -74,6 +75,11 @@ KCM.SimpleKCM {
                 "By default the Size setting scales the whole panel. Check this to make Size change only the app icons, leaving labels, secondary icons, and spacing at the default — e.g. Medium icons with the default font.")
             QQC2.ToolTip.visible: hovered
             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        }
+        QQC2.CheckBox {
+            id: hideLabelsOnFavorites
+            text: i18nd("dev.xarbit.appgrid", "Hide app labels on favorites tab")
+            enabled: Plasmoid.configuration.showCategoryBar
         }
 
         Item {
