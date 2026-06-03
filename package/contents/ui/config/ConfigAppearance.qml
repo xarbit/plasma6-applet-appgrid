@@ -35,6 +35,7 @@ KCM.SimpleKCM {
     property alias cfg_openAnimation: openAnimation.currentIndex
     property alias cfg_hoverAnimation: hoverAnimation.currentIndex
     property alias cfg_shakeOnOpen: shakeOnOpen.checked
+    property alias cfg_independentTextSize: independentTextSize.checked
 
     Kirigami.FormLayout {
         QQC2.CheckBox {
@@ -65,6 +66,14 @@ KCM.SimpleKCM {
         QQC2.CheckBox {
             id: hoverHighlight
             text: i18nd("dev.xarbit.appgrid", "Highlight icons on hover")
+        }
+        QQC2.CheckBox {
+            id: independentTextSize
+            text: i18nd("dev.xarbit.appgrid", "Apply Size to app icons only")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "By default the Size setting scales the whole panel. Check this to make Size change only the app icons, leaving labels, secondary icons, and spacing at the default — e.g. Medium icons with the default font.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
 
         Item {

@@ -168,8 +168,9 @@ Kirigami.ShadowedRectangle {
     // search field's 1.3, category button's 1.1) in code and applies
     // densityScale on top.
     // Control elements (close button, power buttons, pagination dots)
-    // stay fixed.
-    readonly property real densityScale: 0.8 + cfg.iconSize * 0.10
+    // stay fixed. independentTextSize pins this to 1.0 so the Size preset
+    // changes only the app icons, not text/spacing (#167).
+    readonly property real densityScale: cfg.independentTextSize ? 1.0 : (0.8 + cfg.iconSize * 0.10)
 
     // -- Prefix mode detection --
     PrefixDetector { id: prefixDetector; input: searchBar.text }

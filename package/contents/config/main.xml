@@ -214,6 +214,10 @@
       <label>Icon size preset (0=Small, 1=Medium, 2=Large).</label>
       <default>2</default>
     </entry>
+    <entry name="independentTextSize" type="Bool">
+      <label>Decouple text/spacing from the icon-size preset: when on, Size changes only the app icons while labels, secondary icons, and spacing stay at the default size.</label>
+      <default>false</default>
+    </entry>
     <entry name="sortMode" type="Int">
       <label>Sort mode (0=Alphabetical, 1=Most Used).</label>
       <default>1</default>
