@@ -13,7 +13,7 @@ import org.kde.plasma.plasmoid
 
 import "../js/constants.js" as Const
 
-KCM.SimpleKCM {
+KCM.ScrollViewKCM {
     id: page
 
     property var cfg_hiddenApps: Plasmoid.configuration.hiddenApps
@@ -64,7 +64,7 @@ KCM.SimpleKCM {
         }
     }
 
-    ColumnLayout {
+    header: ColumnLayout {
         spacing: Kirigami.Units.smallSpacing
 
         QQC2.Label {
@@ -76,84 +76,77 @@ KCM.SimpleKCM {
         }
 
         Kirigami.SearchField {
-            id: searchField
             Layout.fillWidth: true
             Layout.topMargin: Kirigami.Units.smallSpacing
             enabled: (page.cfg_hiddenApps || []).length > 0
             placeholderText: i18nd("dev.xarbit.appgrid", "Filter hidden apps…")
             onTextChanged: page._filter = text
         }
+    }
+
+    // ScrollViewKCM hosts the ListView as its scrollable view: it fills the
+    // page and scrolls natively (wheel + drag over the rows, not just the
+    // scrollbar — #162). The empty/no-match states overlay the view.
+    view: ListView {
+        id: hiddenList
+        model: page._filteredApps
+        spacing: 0
+        reuseItems: true
 
         Kirigami.PlaceholderMessage {
-            Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.gridUnit * 2
+            anchors.centerIn: parent
+            width: parent.width - Kirigami.Units.gridUnit * 4
             visible: (page.cfg_hiddenApps || []).length === 0
             icon.name: "view-visible"
             text: i18nd("dev.xarbit.appgrid", "No hidden applications")
         }
 
         Kirigami.PlaceholderMessage {
-            Layout.fillWidth: true
-            Layout.topMargin: Kirigami.Units.gridUnit * 2
+            anchors.centerIn: parent
+            width: parent.width - Kirigami.Units.gridUnit * 4
             visible: (page.cfg_hiddenApps || []).length > 0 && page._filteredApps.length === 0
             icon.name: "system-search-symbolic"
             text: i18nd("dev.xarbit.appgrid", "No matches")
         }
 
-        QQC2.ScrollView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: Kirigami.Units.gridUnit * 10
-            visible: page._filteredApps.length > 0
-            clip: true
+        delegate: QQC2.ItemDelegate {
+            width: hiddenList.width
+            required property string modelData
+            property var appInfo: Plasmoid.appsModel.getByStorageId(modelData) || ({})
 
-            ListView {
-                id: hiddenList
-                model: page._filteredApps
-                spacing: 0
-                reuseItems: true
+            contentItem: RowLayout {
+                spacing: Kirigami.Units.largeSpacing
 
-                delegate: QQC2.ItemDelegate {
-                    width: hiddenList.width
-                    required property string modelData
-                    property var appInfo: Plasmoid.appsModel.getByStorageId(modelData) || ({})
-
-                    contentItem: RowLayout {
-                        spacing: Kirigami.Units.largeSpacing
-
-                        Kirigami.Icon {
-                            implicitWidth: Kirigami.Units.iconSizes.smallMedium
-                            implicitHeight: Kirigami.Units.iconSizes.smallMedium
-                            source: appInfo.iconName || Const.DEFAULT_ICON
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 0
-                            QQC2.Label {
-                                Layout.fillWidth: true
-                                text: appInfo.name || modelData
-                                elide: Text.ElideRight
-                            }
-                            QQC2.Label {
-                                Layout.fillWidth: true
-                                visible: !!appInfo.name
-                                text: modelData
-                                font: Kirigami.Theme.smallFont
-                                opacity: 0.4
-                                elide: Text.ElideRight
-                            }
-                        }
-                        QQC2.ToolButton {
-                            icon.name: "view-visible"
-                            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
-                            QQC2.ToolTip.visible: hovered
-                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                            onClicked: page._unhide(modelData)
-                        }
+                Kirigami.Icon {
+                    implicitWidth: Kirigami.Units.iconSizes.smallMedium
+                    implicitHeight: Kirigami.Units.iconSizes.smallMedium
+                    source: appInfo.iconName || Const.DEFAULT_ICON
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 0
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: appInfo.name || modelData
+                        elide: Text.ElideRight
                     }
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        visible: !!appInfo.name
+                        text: modelData
+                        font: Kirigami.Theme.smallFont
+                        opacity: 0.4
+                        elide: Text.ElideRight
+                    }
+                }
+                QQC2.ToolButton {
+                    icon.name: "view-visible"
+                    QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: page._unhide(modelData)
                 }
             }
         }
-
     }
 }
