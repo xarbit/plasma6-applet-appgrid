@@ -12,6 +12,7 @@
     "Description": "A modern style application launcher (panel popup)",
     "FormFactors": ["desktop"],
     "Icon": "dev.xarbit.appgrid",
+    "Id": "dev.xarbit.appgrid.panel",
     "License": "GPL-2.0-or-later",
     "Name": "AppGrid Launcher Panel",
     "Version": "@APPGRID_VERSION_STRING@",
