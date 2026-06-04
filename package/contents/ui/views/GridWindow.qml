@@ -77,7 +77,9 @@ Window {
     // a layer surface cleanly.
     transientParent: null
 
-    property bool windowConfigured: false
+    // X11 only: set the window flags once (re-setting can recreate the native
+    // window). Wayland reconfigures its layer surface on every show instead.
+    property bool _x11FlagsConfigured: false
 
     // -----------------------------------------------------------------------
     // Blur management
@@ -195,9 +197,18 @@ Window {
     }
 
     function showGrid() {
-        if (!windowConfigured) {
+        if (root.plasmoidBridge.isWayland) {
+            // Re-assert the layer-shell config on every show. Hiding the window
+            // (closeGrid sets visible=false) can tear down the wl_surface; the
+            // recreated surface comes back WITHOUT our layer anchors/exclusive-
+            // zone unless we reconfigure it, reverting to a compositor-placed
+            // top-level the size of the whole screen (lost-window / fullscreen
+            // leak). configureWayland is idempotent (LayerShellQt::Window::get
+            // returns the existing config), so re-calling is cheap and safe.
             root.plasmoidBridge.configureWindow(root)
-            windowConfigured = true
+        } else if (!root._x11FlagsConfigured) {
+            root.plasmoidBridge.configureWindow(root)
+            root._x11FlagsConfigured = true
         }
 
         var useActive = cfg.openOnActiveScreen
