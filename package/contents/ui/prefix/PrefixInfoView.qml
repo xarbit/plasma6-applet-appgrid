@@ -9,6 +9,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 
 import "../widgets"
+import "../js/sysinfoformat.js" as SysInfoFormat
 
 ScrollableColumn {
     id: infoView
@@ -175,22 +176,8 @@ ScrollableColumn {
             ? i18nd("dev.xarbit.appgrid", "Copied!")
             : i18nd("dev.xarbit.appgrid", "Copy to Clipboard")
         onClicked: {
-            var info = infoView.sysInfo
-            var lines = [
-                "AppGrid: " + (info.appgridVersion || ""),
-                "Install: " + (info.installType || ""),
-                "Variant: " + (info.variant || ""),
-                "Session: " + (info.sessionType || ""),
-                "Plasma: " + (info.plasmaVersion || ""),
-                "KF: " + (info.kfVersion || ""),
-                "Qt: " + (info.qtVersion || ""),
-                "OS: " + (info.os || ""),
-                "Screens: " + (info.screens || ""),
-                "Favorites: " + (infoView._migrated
-                    ? "KAStats (" + infoView._kastatsCount + "; backup " + infoView._localCount + ")"
-                    : "not migrated (" + infoView._localCount + ")")
-            ]
-            infoClipboard.text = lines.join("\n")
+            infoClipboard.text = SysInfoFormat.clipboardText(infoView.sysInfo, infoView._migrated,
+                                                             infoView._kastatsCount, infoView._localCount)
             infoClipboard.selectAll()
             infoClipboard.copy()
             copyTimer.start()
