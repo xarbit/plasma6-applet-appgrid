@@ -32,6 +32,10 @@ private Q_SLOTS:
     void completionForCompletesNamePrefix();
     void completionForCompletesWordAcrossFields();
     void completionForEmptyQueryReturnsEmpty();
+    void launchByStorageIdRecordsRecent();
+    void launchByStorageIdIgnoresUnknownAndEmpty();
+    void launchByProxyIndexRecordsRecent();
+    void launchByProxyIndexIgnoresInvalidIndex();
     void getReturnsEmptyForInvalidRow();
     void nonEmptyCategoriesSkipsHiddenApps();
     void appsByCategoryGroupsMultiCategoryApp();
@@ -201,6 +205,56 @@ void TestAppFilterModel::completionForEmptyQueryReturnsEmpty()
         {QStringLiteral("Kate"), {}, {}, {}, {}, QStringLiteral("kate"), {}, {}, {}},
     });
     QVERIFY(m_filter.completionFor(QString()).isEmpty());
+}
+
+// launch()/launchByStorageId run their recents bookkeeping before delegating
+// the real KService launch to AppModel — so with a plain stub source the
+// bookkeeping (sid resolution + recordRecentLaunch) is observable while the
+// actual launch is a no-op (the qobject_cast<AppModel*> fails).
+
+void TestAppFilterModel::launchByStorageIdRecordsRecent()
+{
+    m_filter.setMaxRecentApps(6);
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+    });
+    m_filter.launchByStorageId(QStringLiteral("b"));
+    QCOMPARE(m_filter.recentApps(), QStringList{QStringLiteral("b")});
+}
+
+void TestAppFilterModel::launchByStorageIdIgnoresUnknownAndEmpty()
+{
+    m_filter.setMaxRecentApps(6);
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+    });
+    m_filter.launchByStorageId(QStringLiteral("nonexistent"));
+    QVERIFY(m_filter.recentApps().isEmpty());
+    m_filter.launchByStorageId(QString());
+    QVERIFY(m_filter.recentApps().isEmpty());
+}
+
+void TestAppFilterModel::launchByProxyIndexRecordsRecent()
+{
+    m_filter.setMaxRecentApps(6);
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+    });
+    // Alphabetical → proxy row 0 is "A" (storageId "a").
+    m_filter.launch(0);
+    QCOMPARE(m_filter.recentApps(), QStringList{QStringLiteral("a")});
+}
+
+void TestAppFilterModel::launchByProxyIndexIgnoresInvalidIndex()
+{
+    m_filter.setMaxRecentApps(6);
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+    });
+    m_filter.launch(99);
+    QVERIFY(m_filter.recentApps().isEmpty());
 }
 
 void TestAppFilterModel::getReturnsEmptyForInvalidRow()

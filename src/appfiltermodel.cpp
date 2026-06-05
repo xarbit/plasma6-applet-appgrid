@@ -877,22 +877,21 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
 void AppFilterModel::launch(int proxyIndex)
 {
     const auto idx = index(proxyIndex, 0);
-    const auto sourceIdx = mapToSource(idx);
-    auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (!model) {
-        return;
-    }
-
+    // Record the recent + bump the launch count before delegating the actual
+    // launch. The bookkeeping reads only the proxy's own data + LaunchBookkeeping,
+    // so it must not hinge on the source being a concrete AppModel (it isn't in
+    // tests). recordRecentLaunch no-ops on an empty sid (invalid index).
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
     recordRecentLaunch(sid);
 
-    model->launch(sourceIdx.row());
+    if (auto *model = qobject_cast<AppModel *>(sourceModel())) {
+        model->launch(mapToSource(idx).row());
+    }
 }
 
 void AppFilterModel::launchByStorageId(const QString &storageId)
 {
-    auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (!model || storageId.isEmpty()) {
+    if (storageId.isEmpty()) {
         return;
     }
     ensureStorageIdCache();
@@ -901,5 +900,7 @@ void AppFilterModel::launchByStorageId(const QString &storageId)
         return;
     }
     recordRecentLaunch(storageId);
-    model->launch(row);
+    if (auto *model = qobject_cast<AppModel *>(sourceModel())) {
+        model->launch(row);
+    }
 }
