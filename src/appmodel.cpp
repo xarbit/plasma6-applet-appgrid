@@ -5,6 +5,7 @@
 
 #include "appmodel.h"
 
+#include "appmodelassembly.h"
 #include "categorymapping.h"
 
 #include <KIO/ApplicationLauncherJob>
@@ -15,11 +16,8 @@
 #include <KServiceGroup>
 #include <KSycoca>
 
-#include <QCollator>
 #include <QIcon>
 #include <QTimer>
-
-#include <algorithm>
 
 AppModel::AppModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -190,19 +188,14 @@ void AppModel::setUseSystemCategories(bool enabled)
 
 void AppModel::loadApplications()
 {
-    QSet<QString> seen;
-    // Index storageId → m_apps row for O(1) "merge category into existing
-    // entry" lookups when an app appears in multiple menu groups (system
-    // categories mode). Without this the merge loop scans m_apps linearly
-    // for each duplicate hit — quadratic on large + heavily-categorized
-    // installs (Office;Calendar;Documentation, etc.).
-    QHash<QString, int> seenIndex;
-    QSet<QString> categorySet;
-
-    // Traverse the XDG menu hierarchy via KServiceGroup.
+    // Traverse the XDG menu hierarchy via KServiceGroup, emitting one AppEntry
+    // per service *occurrence* (an app reachable from several menu groups
+    // yields several). The dedup/merge/sort/category-collect is pure — see
+    // AppModelAssembly::assemble — so the walk only does KService extraction.
     // In system mode: top-level group captions define categories (respects kmenuedit).
     // In simple mode: the hardcoded mapping table maps desktop categories to clean groups.
     const bool systemMode = m_useSystemCategories;
+    QVector<AppEntry> occurrences;
 
     std::function<void(KServiceGroup::Ptr, const QString &)> walkGroup;
     walkGroup = [&](KServiceGroup::Ptr group, const QString &category) {
@@ -254,31 +247,8 @@ void AppModel::loadApplications()
                 continue;
             }
 
-            // In system mode, an app can appear in multiple menu groups.
-            // Add the new category to the existing entry instead of duplicating.
-            if (seen.contains(storageId)) {
-                if (systemMode) {
-                    auto cat = category.isEmpty() ? QStringLiteral("Other") : category;
-                    const int existingIdx = seenIndex.value(storageId, -1);
-                    if (existingIdx >= 0) {
-                        auto &existing = m_apps[existingIdx];
-                        if (!existing.categories.contains(cat)) {
-                            existing.categories.append(cat);
-                            categorySet.insert(cat);
-                        }
-                    }
-                }
-                continue;
-            }
-            seen.insert(storageId);
-
-            const QString name = service->name();
-            if (name.isEmpty()) {
-                continue;
-            }
-
             AppEntry appEntry;
-            appEntry.name = name;
+            appEntry.name = service->name();
             appEntry.icon = service->icon();
             appEntry.desktopFile = service->entryPath();
             appEntry.genericName = service->genericName();
@@ -293,31 +263,20 @@ void AppModel::loadApplications()
             appEntry.installSource = detectInstallSource(service->exec(), service->entryPath());
 
             if (systemMode) {
-                auto cat = category.isEmpty() ? QStringLiteral("Other") : category;
-                appEntry.categories.append(cat);
+                appEntry.categories.append(category.isEmpty() ? QStringLiteral("Other") : category);
             } else {
                 appEntry.categories = mapCategories(service->categories());
             }
 
-            for (const auto &cat : std::as_const(appEntry.categories)) {
-                categorySet.insert(cat);
-            }
-            seenIndex.insert(storageId, m_apps.size());
-            m_apps.append(appEntry);
+            occurrences.append(appEntry);
         }
     };
 
     walkGroup(KServiceGroup::root(), QString());
 
-    // Sort alphabetically
-    QCollator collator;
-    collator.setCaseSensitivity(Qt::CaseInsensitive);
-    std::sort(m_apps.begin(), m_apps.end(), [&collator](const AppEntry &a, const AppEntry &b) {
-        return collator.compare(a.name, b.name) < 0;
-    });
-
-    m_categories = categorySet.values();
-    m_categories.sort();
+    auto assembled = AppModelAssembly::assemble(occurrences, systemMode);
+    m_apps = std::move(assembled.apps);
+    m_categories = std::move(assembled.categories);
 }
 
 void AppModel::launch(int index)

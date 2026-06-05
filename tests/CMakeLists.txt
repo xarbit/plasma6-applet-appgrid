@@ -5,6 +5,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 
 set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/appmodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp
     ${CMAKE_SOURCE_DIR}/src/appfiltermodel.cpp
     ${CMAKE_SOURCE_DIR}/src/categorymapping.cpp
     ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.cpp
@@ -81,6 +82,16 @@ add_executable(test_frecency_scoring
 )
 target_link_libraries(test_frecency_scoring PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_frecency_scoring COMMAND test_frecency_scoring)
+
+# AppModelAssembly — pure dedup/merge/sort extracted from AppModel, free of
+# KService so it tests with QtCore only.
+add_executable(test_appmodel_assembly
+    test_appmodel_assembly.cpp
+    ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp
+    ${CMAKE_SOURCE_DIR}/src/appmodelassembly.h
+)
+target_link_libraries(test_appmodel_assembly PRIVATE Qt6::Test Qt6::Core)
+add_test(NAME test_appmodel_assembly COMMAND test_appmodel_assembly)
 
 # DiscoverBackends — Plasma-free string/filesystem mapping (QtCore only).
 add_executable(test_discoverbackends
