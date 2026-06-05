@@ -186,7 +186,11 @@ QStringList parseKdeDefaultApps(const QString &contents)
             continue;
         }
         const QString key = line.left(eq).trimmed();
-        if (key == QLatin1String("TerminalApplication") || key == QLatin1String("BrowserApplication")) {
+        // *Application keys carry an exec line (legacy); *Service keys carry the
+        // .desktop id (current Plasma 6). Accept both — reloadPreferredApps
+        // resolves either shape.
+        if (key == QLatin1String("TerminalApplication") || key == QLatin1String("BrowserApplication") || key == QLatin1String("TerminalService")
+            || key == QLatin1String("BrowserService")) {
             const QString value = line.mid(eq + 1).trimmed();
             if (!value.isEmpty()) {
                 values.append(value);

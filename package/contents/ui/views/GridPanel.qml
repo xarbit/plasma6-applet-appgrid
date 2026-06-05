@@ -435,6 +435,9 @@ Kirigami.ShadowedRectangle {
         // Sync model from config and reset filter state
         syncModelFromConfig()
         if (appsModel) {
+            // Re-read the default terminal/browser + mime defaults so a change
+            // since the last open boosts the new default while searching.
+            appsModel.reloadDefaultApps()
             appsModel.searchText = ""
             appsModel.filterCategory = ""
             appsModel.showFavoritesOnly = startFav

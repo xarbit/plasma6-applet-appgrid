@@ -236,6 +236,21 @@ private Q_SLOTS:
         QVERIFY(v.contains(QStringLiteral("firefox.desktop")));
     }
 
+    void parseKdeDefaultApps_extractsServiceKeys()
+    {
+        // Current Plasma 6 writes the .desktop id under *Service keys, alongside
+        // (or instead of) the legacy *Application exec lines.
+        const QString contents = QStringLiteral(
+            "[General]\n"
+            "TerminalApplication=alacritty\n"
+            "TerminalService=Alacritty.desktop\n"
+            "BrowserService=vivaldi-stable.desktop\n");
+        const QStringList v = parseKdeDefaultApps(contents);
+        QVERIFY(v.contains(QStringLiteral("alacritty")));
+        QVERIFY(v.contains(QStringLiteral("Alacritty.desktop")));
+        QVERIFY(v.contains(QStringLiteral("vivaldi-stable.desktop")));
+    }
+
     void parseKdeDefaultApps_emptyOutsideGeneral()
     {
         QVERIFY(parseKdeDefaultApps(QString()).isEmpty());

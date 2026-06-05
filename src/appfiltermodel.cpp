@@ -503,6 +503,10 @@ void AppFilterModel::setDefaultApps(const QStringList &list)
 void AppFilterModel::reloadDefaultApps()
 {
     setDefaultApps(PluginHelpers::loadMimeAppsDefaults());
+    // The kdeglobals terminal/browser preferences live in a separate file and
+    // change independently of mimeapps; refresh them on the same trigger so a
+    // default-app change is picked up without a plasmashell restart.
+    reloadPreferredApps();
 }
 
 void AppFilterModel::reloadPreferredApps()
