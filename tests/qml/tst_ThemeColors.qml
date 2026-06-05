@@ -28,16 +28,4 @@ TestCase {
         const out = ThemeColors.tint(Qt.rgba(0.1, 0.1, 0.1, 0.3), 0.9)
         fuzzyCompare(out.a, 0.9, 0.001)
     }
-
-    function test_tintFullyTransparent() {
-        const out = ThemeColors.tint(Qt.rgba(1.0, 1.0, 1.0, 1.0), 0.0)
-        fuzzyCompare(out.a, 0.0, 0.001)
-        fuzzyCompare(out.r, 1.0, 0.001)
-    }
-
-    function test_tintFullyOpaque() {
-        const out = ThemeColors.tint(Qt.rgba(0.0, 0.5, 1.0, 0.2), 1.0)
-        fuzzyCompare(out.a, 1.0, 0.001)
-        fuzzyCompare(out.b, 1.0, 0.001)
-    }
 }

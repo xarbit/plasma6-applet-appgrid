@@ -213,7 +213,8 @@ void TestAppFilterModel::countSignalEmitsOnSourceChange()
     m_source.setApps({
         {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
     });
-    QVERIFY(spy.count() >= 1);
+    // Exactly once: the ctor de-duplicates countChanged to one emit per reset.
+    QCOMPARE(spy.count(), 1);
     QCOMPARE(m_filter.count(), 1);
 }
 
@@ -299,7 +300,8 @@ void TestAppFilterModel::hiddenAppsChangedTriggersGroupedSignal()
 {
     QSignalSpy spy(&m_filter, &AppFilterModel::groupedByCategoryChanged);
     m_filter.setHiddenApps({QStringLiteral("a")});
-    QVERIFY(spy.count() >= 1);
+    // Exactly once: the markGroupedDirty lambda coalesces to a single emit.
+    QCOMPARE(spy.count(), 1);
 }
 
 void TestAppFilterModel::recordRecentLaunchPrependsAndBumpsCount()

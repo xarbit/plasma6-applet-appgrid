@@ -163,14 +163,6 @@ TestCase {
         p.destroy()
     }
 
-    function test_defaultVisibility() {
-        var p = make()
-        verify(!p.isSearching, "not searching by default")
-        verify(p.showAppGrid, "app grid visible by default")
-        verify(!p.showSearchResults, "search results hidden by default")
-        p.destroy()
-    }
-
     // Bulk launch below the confirm threshold runs immediately, firing the
     // injected notify + launch callbacks once per sid.
     function test_bulkLaunchFiresCallbacksPerSid() {

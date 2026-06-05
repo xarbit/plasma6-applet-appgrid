@@ -114,7 +114,7 @@ TestCase {
         compare(Object.keys(r.map).length, 1)
     }
 
-    function test_indexForUnassignedDuplicateIsMinusOne() {
+    function test_indexForDuplicateReturnsAssignedPosition() {
         var r = resolver(["X", "X"])
         // First "X" assigned; resolver compares by value so both
         // strings hit the same map entry — indexFor returns the

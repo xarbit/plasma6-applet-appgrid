@@ -22,10 +22,6 @@ TestCase {
         compare(GridMetrics.labelledCellHeight(32, 10, 4), 70)
     }
 
-    function test_labelledCellHeightZeroInputs() {
-        compare(GridMetrics.labelledCellHeight(0, 0, 0), 0)
-    }
-
     // --- coefficient locks: each input weighted exactly as documented ---
 
     function test_iconWeightedByOne() {

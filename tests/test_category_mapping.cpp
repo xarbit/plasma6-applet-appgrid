@@ -108,7 +108,7 @@ private Q_SLOTS:
 
     // --- table integrity ---
 
-    void noDuplicateValuesForSameKey()
+    void allValuesAreKnownBuckets()
     {
         // QHash deduplicates by key automatically, but a key collision
         // in the source file would silently shadow the earlier entry.
