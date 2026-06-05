@@ -7,6 +7,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/appmodel.cpp
     ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp
     ${CMAKE_SOURCE_DIR}/src/appfiltermodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/defaultappsresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/categorymapping.cpp
     ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.cpp
     ${CMAKE_SOURCE_DIR}/src/unifiedsearchmodel.cpp

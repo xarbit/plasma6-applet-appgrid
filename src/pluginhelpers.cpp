@@ -105,54 +105,82 @@ QVariantList listDirectoryAt(const QString &path)
     return result;
 }
 
-QStringList parseMimeAppsDefaults(const QString &contents)
+namespace
 {
-    QSet<QString> result;
-    bool inDefaults = false;
+// Invoke @p fn(key, value) for every "key=value" line inside @p sectionHeader
+// (e.g. "[Default Applications]") of an INI-style file's @p contents. Section
+// headers, comments and keyless lines are skipped. Shared by the mimeapps and
+// kdeglobals parsers so the section/comment handling lives in one place.
+template<typename Fn>
+void forEachIniEntry(const QString &contents, QLatin1String sectionHeader, Fn &&fn)
+{
+    bool inSection = false;
     const auto lines = contents.split(QLatin1Char('\n'));
     for (const auto &raw : lines) {
         const QString line = raw.trimmed();
         if (line.startsWith(QLatin1Char('['))) {
-            inDefaults = (line == QLatin1String("[Default Applications]"));
+            inSection = (line == sectionHeader);
             continue;
         }
-        if (!inDefaults || line.isEmpty() || line.startsWith(QLatin1Char('#'))) {
+        if (!inSection || line.isEmpty() || line.startsWith(QLatin1Char('#'))) {
             continue;
         }
         const int eq = line.indexOf(QLatin1Char('='));
-        if (eq < 0) {
+        if (eq <= 0) { // no '=' or empty key
             continue;
         }
+        fn(line.left(eq).trimmed(), line.mid(eq + 1).trimmed());
+    }
+}
+
+// The mimeapps.list files in XDG precedence (user first, then system).
+QStringList mimeAppsListPaths()
+{
+    return {
+        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
+        QStringLiteral("/usr/share/applications/mimeapps.list"),
+    };
+}
+
+// Run @p parser over every mimeapps.list and merge the de-duplicated result.
+// The path list and read loop live here rather than in each caller.
+template<typename Parser>
+QStringList mergeMimeAppsLists(Parser &&parser)
+{
+    QSet<QString> all;
+    for (const auto &path : mimeAppsListPaths()) {
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            continue;
+        }
+        const auto items = parser(QString::fromUtf8(f.readAll()));
+        for (const auto &item : items) {
+            all.insert(item);
+        }
+    }
+    return QStringList(all.cbegin(), all.cend());
+}
+}
+
+QStringList parseMimeAppsDefaults(const QString &contents)
+{
+    QSet<QString> result;
+    forEachIniEntry(contents, QLatin1String("[Default Applications]"), [&result](const QString &, const QString &value) {
         // A value may list several .desktop entries separated by ';'.
-        const auto values = line.mid(eq + 1).split(QLatin1Char(';'), Qt::SkipEmptyParts);
-        for (const auto &v : values) {
-            const QString trimmed = v.trimmed();
+        const auto ids = value.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+        for (const auto &id : ids) {
+            const QString trimmed = id.trimmed();
             if (!trimmed.isEmpty()) {
                 result.insert(trimmed);
             }
         }
-    }
+    });
     return QStringList(result.cbegin(), result.cend());
 }
 
 QStringList loadMimeAppsDefaults()
 {
-    QSet<QString> all;
-    const QStringList paths = {
-        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
-        QStringLiteral("/usr/share/applications/mimeapps.list"),
-    };
-    for (const auto &path : paths) {
-        QFile f(path);
-        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            continue;
-        }
-        const auto ids = parseMimeAppsDefaults(QString::fromUtf8(f.readAll()));
-        for (const auto &id : ids) {
-            all.insert(id);
-        }
-    }
-    return QStringList(all.cbegin(), all.cend());
+    return mergeMimeAppsLists(parseMimeAppsDefaults);
 }
 
 QString desktopPathFromRunnerUrls(const QVariant &urlsData)
@@ -167,47 +195,30 @@ QString desktopPathFromRunnerUrls(const QVariant &urlsData)
     return {};
 }
 
-QStringList parseKdeDefaultApps(const QString &contents)
+QStringList parseKdeTerminalDefaults(const QString &contents)
 {
     QStringList values;
-    bool inGeneral = false;
-    const auto lines = contents.split(QLatin1Char('\n'));
-    for (const auto &raw : lines) {
-        const QString line = raw.trimmed();
-        if (line.startsWith(QLatin1Char('['))) {
-            inGeneral = (line == QLatin1String("[General]"));
-            continue;
+    // TerminalApplication carries an exec line (legacy); TerminalService the
+    // .desktop id (current Plasma 6). The browser default is intentionally NOT
+    // read from kdeglobals — it comes from KApplicationTrader (x-scheme-handler),
+    // so a stale BrowserApplication can't shadow the real default. Terminals
+    // have no mimetype, so kdeglobals is their only override source.
+    forEachIniEntry(contents, QLatin1String("[General]"), [&values](const QString &key, const QString &value) {
+        if ((key == QLatin1String("TerminalApplication") || key == QLatin1String("TerminalService")) && !value.isEmpty()) {
+            values.append(value);
         }
-        if (!inGeneral || line.isEmpty() || line.startsWith(QLatin1Char('#'))) {
-            continue;
-        }
-        const int eq = line.indexOf(QLatin1Char('='));
-        if (eq < 0) {
-            continue;
-        }
-        const QString key = line.left(eq).trimmed();
-        // *Application keys carry an exec line (legacy); *Service keys carry the
-        // .desktop id (current Plasma 6). Accept both — reloadPreferredApps
-        // resolves either shape.
-        if (key == QLatin1String("TerminalApplication") || key == QLatin1String("BrowserApplication") || key == QLatin1String("TerminalService")
-            || key == QLatin1String("BrowserService")) {
-            const QString value = line.mid(eq + 1).trimmed();
-            if (!value.isEmpty()) {
-                values.append(value);
-            }
-        }
-    }
+    });
     return values;
 }
 
-QStringList loadKdeDefaultApps()
+QStringList loadKdeTerminalDefaults()
 {
     const QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QStringLiteral("/kdeglobals");
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return {};
     }
-    return parseKdeDefaultApps(QString::fromUtf8(f.readAll()));
+    return parseKdeTerminalDefaults(QString::fromUtf8(f.readAll()));
 }
 
 QString execBinaryName(const QString &execLine)

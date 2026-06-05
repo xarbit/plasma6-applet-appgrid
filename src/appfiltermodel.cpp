@@ -5,13 +5,8 @@
 
 #include "appfiltermodel.h"
 
-#include "pluginhelpers.h"
+#include "defaultappsresolver.h"
 #include "searchranking.h"
-
-#include <KApplicationTrader>
-#include <KIO/ApplicationLauncherJob>
-#include <KJob>
-#include <KService>
 
 #include <cstdlib>
 #include <limits>
@@ -42,7 +37,6 @@ AppFilterModel::AppFilterModel(QObject *parent)
     sort(0);
 
     reloadDefaultApps();
-    reloadPreferredApps();
 
     // countChanged: modelReset covers invalidate() / setSourceModel; the row
     // signals cover incremental row insertion/removal. Earlier code also
@@ -502,43 +496,16 @@ void AppFilterModel::setDefaultApps(const QStringList &list)
 
 void AppFilterModel::reloadDefaultApps()
 {
-    setDefaultApps(PluginHelpers::loadMimeAppsDefaults());
-    // The kdeglobals terminal/browser preferences live in a separate file and
-    // change independently of mimeapps; refresh them on the same trigger so a
-    // default-app change is picked up without a plasmashell restart.
-    reloadPreferredApps();
-}
-
-void AppFilterModel::reloadPreferredApps()
-{
-    QSet<QString> resolved;
-    const auto values = PluginHelpers::loadKdeDefaultApps();
-    for (const QString &value : values) {
-        // A .desktop id resolves directly.
-        if (const auto byId = KService::serviceByStorageId(value)) {
-            resolved.insert(byId->storageId());
-            continue;
-        }
-        // Otherwise it's an exec line (legacy kdeglobals TerminalApplication=)
-        // — match an application by its executable basename.
-        const QString binary = PluginHelpers::execBinaryName(value);
-        if (binary.isEmpty()) {
-            continue;
-        }
-        const auto matches = KApplicationTrader::query([&binary](const KService::Ptr &service) {
-            return PluginHelpers::execBinaryName(service->exec()) == binary;
-        });
-        if (!matches.isEmpty()) {
-            resolved.insert(matches.first()->storageId());
-        }
+    // DefaultAppsResolver reads every source (mimeapps, KApplicationTrader,
+    // kdeglobals). setDefaultApps already change-detects + re-sorts + notifies
+    // for the broad default set; handle the preferred (role-default) set here.
+    const auto resolved = DefaultAppsResolver::resolve();
+    setDefaultApps(QStringList(resolved.defaults.cbegin(), resolved.defaults.cend()));
+    if (resolved.preferred != m_preferredAppsSet) {
+        m_preferredAppsSet = resolved.preferred;
+        invalidateRowScoreCache(); // cached isPreferred changed
+        invalidate();
     }
-
-    if (m_preferredAppsSet == resolved) {
-        return;
-    }
-    m_preferredAppsSet = resolved;
-    invalidateRowScoreCache(); // cached isPreferred changed
-    invalidate();
 }
 
 void AppFilterModel::recordLaunch(const QString &storageId)
@@ -705,14 +672,14 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
             return leftRel < rightRel;
         }
 
-        // Within the same relevance tier, the KDE default apps (default
-        // terminal / browser from kdeglobals) outrank everything — including
-        // mime defaults and launch count / frecency.
+        // Within the same relevance tier, the user's role defaults (default
+        // browser / mail / file manager / terminal) outrank everything —
+        // including other mime defaults and launch count / frecency.
         if (l.isPreferred != r.isPreferred) {
             return l.isPreferred; // true sorts before false
         }
 
-        // Then the user's mime defaults (e.g. default browser via mimeapps).
+        // Then any other mime default (e.g. the text editor for text/plain).
         if (l.isDefault != r.isDefault) {
             return l.isDefault;
         }

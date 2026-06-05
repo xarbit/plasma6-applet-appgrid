@@ -221,40 +221,32 @@ private Q_SLOTS:
         QVERIFY(desktopPathFromRunnerUrls(QVariant()).isEmpty());
     }
 
-    void parseKdeDefaultApps_extractsTerminalAndBrowser()
+    void parseKdeTerminalDefaults_readsTerminalKeysOnly()
     {
+        // TerminalApplication (exec line) + TerminalService (.desktop id, current
+        // Plasma 6) are both read. Browser keys are NOT — the browser default
+        // comes from KApplicationTrader, so a stale kdeglobals copy can't shadow
+        // it. Keys outside [General] are ignored.
         const QString contents = QStringLiteral(
             "[General]\n"
             "TerminalApplication=/usr/bin/ghostty --gtk-single-instance=true\n"
+            "TerminalService=org.kde.konsole.desktop\n"
             "BrowserApplication=firefox.desktop\n"
-            "ColorScheme=Foo\n"
+            "BrowserService=vivaldi-stable.desktop\n"
             "[KDE]\n"
             "TerminalApplication=should-be-ignored\n");
-        QStringList v = parseKdeDefaultApps(contents);
-        QCOMPARE(v.size(), 2);
+        const QStringList v = parseKdeTerminalDefaults(contents);
         QVERIFY(v.contains(QStringLiteral("/usr/bin/ghostty --gtk-single-instance=true")));
-        QVERIFY(v.contains(QStringLiteral("firefox.desktop")));
+        QVERIFY(v.contains(QStringLiteral("org.kde.konsole.desktop")));
+        QVERIFY(!v.contains(QStringLiteral("firefox.desktop")));
+        QVERIFY(!v.contains(QStringLiteral("vivaldi-stable.desktop")));
+        QVERIFY(!v.contains(QStringLiteral("should-be-ignored")));
     }
 
-    void parseKdeDefaultApps_extractsServiceKeys()
+    void parseKdeTerminalDefaults_emptyOutsideGeneral()
     {
-        // Current Plasma 6 writes the .desktop id under *Service keys, alongside
-        // (or instead of) the legacy *Application exec lines.
-        const QString contents = QStringLiteral(
-            "[General]\n"
-            "TerminalApplication=alacritty\n"
-            "TerminalService=Alacritty.desktop\n"
-            "BrowserService=vivaldi-stable.desktop\n");
-        const QStringList v = parseKdeDefaultApps(contents);
-        QVERIFY(v.contains(QStringLiteral("alacritty")));
-        QVERIFY(v.contains(QStringLiteral("Alacritty.desktop")));
-        QVERIFY(v.contains(QStringLiteral("vivaldi-stable.desktop")));
-    }
-
-    void parseKdeDefaultApps_emptyOutsideGeneral()
-    {
-        QVERIFY(parseKdeDefaultApps(QString()).isEmpty());
-        QVERIFY(parseKdeDefaultApps(QStringLiteral("[KDE]\nTerminalApplication=x\n")).isEmpty());
+        QVERIFY(parseKdeTerminalDefaults(QString()).isEmpty());
+        QVERIFY(parseKdeTerminalDefaults(QStringLiteral("[KDE]\nTerminalApplication=x\n")).isEmpty());
     }
 
     void execBinaryName_stripsPathAndArgs()

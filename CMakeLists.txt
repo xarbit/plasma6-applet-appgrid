@@ -173,6 +173,8 @@ set(APPGRID_COMMON_SOURCES
     src/appmodelassembly.cpp
     src/appmodelassembly.h
     src/appfiltermodel.cpp
+    src/defaultappsresolver.cpp
+    src/defaultappsresolver.h
     src/appfiltermodel.h
     src/categorymapping.cpp
     src/categorymapping.h

@@ -50,15 +50,17 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  back to its desktop file; the caller takes fileName() for the storage id. */
 [[nodiscard]] QString desktopPathFromRunnerUrls(const QVariant &urlsData);
 
-/** Raw KDE "default applications" values (the componentchooser set) from the
- *  [General] section of a kdeglobals file's @p contents — currently the
- *  Terminal and Browser entries. Each value is either a .desktop id or an exec
- *  line; resolving it to a storage id is the caller's job. Empty if none. */
-[[nodiscard]] QStringList parseKdeDefaultApps(const QString &contents);
+/** Terminal-default values (TerminalApplication / TerminalService) from the
+ *  [General] section of a kdeglobals file's @p contents. Each value is either a
+ *  .desktop id or an exec line; resolving it to a storage id is the caller's
+ *  job. Empty if none. The browser default is NOT read from kdeglobals — it is
+ *  resolved via KApplicationTrader (x-scheme-handler), the authoritative source
+ *  System Settings uses; terminals have no mimetype, so kdeglobals is theirs. */
+[[nodiscard]] QStringList parseKdeTerminalDefaults(const QString &contents);
 
-/** Those KDE default-app values read from the user's kdeglobals. Does the
- *  filesystem read; parsing is parseKdeDefaultApps(). */
-[[nodiscard]] QStringList loadKdeDefaultApps();
+/** Those terminal-default values read from the user's kdeglobals. Does the
+ *  filesystem read; parsing is parseKdeTerminalDefaults(). */
+[[nodiscard]] QStringList loadKdeTerminalDefaults();
 
 /** Executable basename from an exec line: "/usr/bin/ghostty --foo" → "ghostty",
  *  "firefox.desktop" → "firefox.desktop" (no path/args). Used to match a KDE
