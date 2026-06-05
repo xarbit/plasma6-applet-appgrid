@@ -4,8 +4,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/issues\n"
-"POT-Creation-Date: 2026-05-19 16:33+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
+"issues\n"
+"POT-Creation-Date: 2026-06-05 14:35+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Latvian\n"
@@ -13,233 +14,359 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==0 || (n%100>=11 && n%100<=19) ? 0 : n%10==1 && n%100!=11 ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==0 || (n%100>=11 && n%100<=19) ? 0 : "
+"n%10==1 && n%100!=11 ? 1 : 2);\n"
 
-#: package/contents/ui/AppContextMenu.qml:158
-msgid "Remove from Favorites"
-msgstr "Noņemt no izlases"
+#: package/contents/ui/config/ConfigAppearance.qml:44
+msgid "Grid:"
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:159
-msgid "Add to Favorites"
-msgstr "Pievienot izlasei"
+#: package/contents/ui/config/ConfigAppearance.qml:45
+msgid "Show divider lines"
+msgstr "Rādīt atdalošās līnijas"
 
-#: package/contents/ui/AppContextMenu.qml:176
-#: package/contents/ui/AppContextMenu.qml:300
-msgid "Remove from Selection"
-msgstr "Noņemt no atlases"
+#: package/contents/ui/config/ConfigAppearance.qml:49
+msgid "Show scrollbars"
+msgstr "Rādīt ritjoslas"
 
-#: package/contents/ui/AppContextMenu.qml:177
-msgid "Add to Selection"
-msgstr "Pievienot atlasei"
+#: package/contents/ui/config/ConfigAppearance.qml:53
+#, fuzzy
+#| msgid "Show tooltips on hover"
+msgid "Show tooltips on app icons"
+msgstr "Rādīt rīkpadomus uzbraucot"
 
-#: package/contents/ui/AppContextMenu.qml:185
-msgid "Pin to Task Manager"
-msgstr "Piespraust uzdevumu pārvaldniekam"
+#: package/contents/ui/config/ConfigAppearance.qml:55
+msgid ""
+"Hover-tooltips on grid + recents + by-category app icons. Other tooltips "
+"(header actions, More options, settings) are always shown — Qt/KDE has no "
+"system-wide tooltip toggle to follow."
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:194
-msgid "Add to Desktop"
-msgstr "Pievienot darbvirsmai"
+#: package/contents/ui/config/ConfigAppearance.qml:61
+msgid "Show new app badge"
+msgstr "Rādīt jaunu lietotņu nozīmīti"
 
-#: package/contents/ui/AppContextMenu.qml:203
-msgid "Edit Application"
-msgstr "Rediģēt lietotni"
+#: package/contents/ui/config/ConfigAppearance.qml:65
+#, fuzzy
+#| msgid "No hidden applications"
+msgid "Drop shadow behind app icons"
+msgstr "Nav slēptu lietotņu"
 
-#: package/contents/ui/AppContextMenu.qml:211
-msgid "Hide Application"
-msgstr "Slēpt lietotni"
+#: package/contents/ui/config/ConfigAppearance.qml:69
+#, fuzzy
+#| msgid "Animate icons on open"
+msgid "Highlight icons on hover"
+msgstr "Animēt ikonas atverot"
 
-#: package/contents/ui/AppContextMenu.qml:230
-msgid "Add %1 to Favorites"
-msgid_plural "Add %1 to Favorites"
-msgstr[0] "Pievienot %1 izlasei"
-msgstr[1] "Pievienot %1 izlasei"
-msgstr[2] "Pievienot %1 izlasei"
+#: package/contents/ui/config/ConfigAppearance.qml:73
+msgid "Apply Size to app icons only"
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:244
-msgid "Remove %1 from Favorites"
-msgid_plural "Remove %1 from Favorites"
-msgstr[0] "Noņemt %1 no izlases"
-msgstr[1] "Noņemt %1 no izlases"
-msgstr[2] "Noņemt %1 no izlases"
+#: package/contents/ui/config/ConfigAppearance.qml:75
+msgid ""
+"By default the Size setting scales the whole panel. Check this to make Size "
+"change only the app icons, leaving labels, secondary icons, and spacing at "
+"the default — e.g. Medium icons with the default font."
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:257
-msgid "Pin %1 to Task Manager"
-msgid_plural "Pin %1 to Task Manager"
-msgstr[0] "Piespraust %1 uzdevumu pārvaldniekam"
-msgstr[1] "Piespraust %1 uzdevumu pārvaldniekam"
-msgstr[2] "Piespraust %1 uzdevumu pārvaldniekam"
+#: package/contents/ui/config/ConfigAppearance.qml:81
+msgid "Hide app labels on favorites tab"
+msgstr "Slēpt lietotņu etiķetes izlases cilnē"
 
-#: package/contents/ui/AppContextMenu.qml:265
-msgid "Add %1 to Desktop"
-msgid_plural "Add %1 to Desktop"
-msgstr[0] "Pievienot %1 darbvirsmai"
-msgstr[1] "Pievienot %1 darbvirsmai"
-msgstr[2] "Pievienot %1 darbvirsmai"
+#: package/contents/ui/config/ConfigAppearance.qml:93
+msgid "Chrome:"
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:273
-msgid "Launch %1 application"
-msgid_plural "Launch %1 applications"
-msgstr[0] "Palaist %1 lietotni"
-msgstr[1] "Palaist %1 lietotnes"
-msgstr[2] "Palaist %1 lietotnes"
+#: package/contents/ui/config/ConfigAppearance.qml:94
+msgid "Use Plasma theme background"
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:283
-msgid "Copy %1 path"
-msgid_plural "Copy %1 paths"
-msgstr[0] "Kopēt %1 ceļu"
-msgstr[1] "Kopēt %1 ceļus"
-msgstr[2] "Kopēt %1 ceļus"
+#: package/contents/ui/config/ConfigAppearance.qml:96
+msgid ""
+"Draw the panel using the active Plasma theme's dialog background — matches "
+"Kickoff and the panel-popup variant exactly. The theme owns the chrome and "
+"Plasma's defaults take over: full opacity, blur and contrast forced on, no "
+"wallpaper dim, corner radius from the theme. The custom controls for those "
+"are disabled while this is on."
+msgstr ""
 
-#: package/contents/ui/AppContextMenu.qml:291
-msgid "Hide %1 application"
-msgid_plural "Hide %1 applications"
-msgstr[0] "Slēpt %1 lietotni"
-msgstr[1] "Slēpt %1 lietotnes"
-msgstr[2] "Slēpt %1 lietotnes"
+#: package/contents/ui/config/ConfigAppearance.qml:110
+#, fuzzy
+#| msgid "Background opacity:"
+msgid "Background:"
+msgstr "Fona necaurredzamība:"
 
-#: package/contents/ui/AppIconDelegate.qml:216
-msgid "new"
-msgstr "jauna"
+#: package/contents/ui/config/ConfigAppearance.qml:114
+#, fuzzy
+#| msgid "Background opacity:"
+msgid "Panel opacity"
+msgstr "Fona necaurredzamība:"
 
-#: package/contents/ui/AppIconDelegate.qml:217
-msgid "selected"
-msgstr "atlasīts"
+#: package/contents/ui/config/ConfigAppearance.qml:122
+msgid "Enable background blur"
+msgstr "Iespējot fona aizmiglošanu"
 
-#: package/contents/ui/CategoryBar.qml:67
-#: package/contents/ui/CategoryBar.qml:204
-#: package/contents/ui/CategoryBar.qml:205
-msgid "All"
-msgstr "Visas"
+#: package/contents/ui/config/ConfigAppearance.qml:124
+msgid ""
+"Compositor blur applied behind the panel. Heavier on the GPU than the "
+"contrast filter; disable if you want a lighter touch."
+msgstr ""
 
-#: package/contents/ui/CategoryBar.qml:68
-#: package/contents/ui/CategoryBar.qml:183
-#: package/contents/ui/CategoryBar.qml:187
-#: package/contents/ui/CategoryBar.qml:343
-#: package/contents/ui/CategoryBar.qml:347
-#: package/contents/ui/prefix/PrefixInfoView.qml:121
-#: package/contents/ui/RecentAppsHeader.qml:111
-msgid "Favorites"
-msgstr "Izlase"
+#: package/contents/ui/config/ConfigAppearance.qml:132
+#, fuzzy
+#| msgid "Enable background blur"
+msgid "Enable background contrast"
+msgstr "Iespējot fona aizmiglošanu"
 
-#: package/contents/ui/CategoryBar.qml:220
-msgid "All applications"
-msgstr "Visas lietotnes"
+#: package/contents/ui/config/ConfigAppearance.qml:134
+msgid ""
+"Plasma theme-tuned color filter behind the panel — sharpens text legibility "
+"on busy wallpapers. Cheap on the GPU; pairs well with blur but works on its "
+"own too."
+msgstr ""
 
-#: package/contents/ui/CategoryBar.qml:234
-msgid "Scroll categories left"
-msgstr "Ritināt pa kreisi"
+#: package/contents/ui/config/ConfigAppearance.qml:142
+#, fuzzy
+#| msgid "Dim background behind launcher"
+msgid "Dim everything behind launcher"
+msgstr "Aptumšot fonu aiz palaidēja"
 
-#: package/contents/ui/CategoryBar.qml:331
-msgid "Scroll categories right"
-msgstr "Ritināt pa labi"
+#: package/contents/ui/config/ConfigAppearance.qml:154
+msgid "Corner radius:"
+msgstr "Stūra rādiuss:"
 
-#: package/contents/ui/CategoryBar.qml:360
-msgid "Edit \"%1\" in Menu Editor…"
-msgstr "Rediģēt \"%1\" izvēlņu redaktorā…"
+#: package/contents/ui/config/ConfigAppearance.qml:155
+msgid "Use custom corner radius"
+msgstr "Izmantot pielāgotu stūra rādiusu"
 
-#: package/contents/ui/CategoryBar.qml:368
-msgid "Open Menu Editor…"
-msgstr "Atvērt izvēlņu redaktoru…"
+#: package/contents/ui/config/ConfigAppearance.qml:160
+msgid "Radius (px):"
+msgstr ""
 
-#: package/contents/ui/ConfigGeneral.qml:85
+#: package/contents/ui/config/ConfigAppearance.qml:173
+msgid "Compact mode:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:174
+msgid "Hide app grid until I start typing"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:181
+msgid "Tip: press the Down arrow key to reveal the grid without typing."
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:194
+#, fuzzy
+#| msgid "Open/close animation:"
+msgid "Open/close:"
+msgstr "Atvēršanas/aizvēršanas animācija:"
+
+#: package/contents/ui/config/ConfigAppearance.qml:196
+#: package/contents/ui/config/ConfigAppearance.qml:214
+msgid "None"
+msgstr "Nav"
+
+#: package/contents/ui/config/ConfigAppearance.qml:197
+msgid "Fade"
+msgstr "Izgaišana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:198
+msgid "Scale"
+msgstr "Mērogs"
+
+#: package/contents/ui/config/ConfigAppearance.qml:199
+msgid "Pop"
+msgstr "Izlēciens"
+
+#: package/contents/ui/config/ConfigAppearance.qml:200
+msgid "Slide Up"
+msgstr "Slīdēt augšup"
+
+#: package/contents/ui/config/ConfigAppearance.qml:201
+msgid "Slide Down"
+msgstr "Slīdēt lejup"
+
+#: package/contents/ui/config/ConfigAppearance.qml:202
+msgid "Glide"
+msgstr "Slīdēšana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:203
+msgid "Buzz"
+msgstr "Vibrācija"
+
+#: package/contents/ui/config/ConfigAppearance.qml:204
+msgid "Twist"
+msgstr "Pagrieziens"
+
+#: package/contents/ui/config/ConfigAppearance.qml:205
+msgid "Slam"
+msgstr "Trieciens"
+
+#: package/contents/ui/config/ConfigAppearance.qml:206
+msgid "Grow Up"
+msgstr "Augt augšup"
+
+#: package/contents/ui/config/ConfigAppearance.qml:212
+#, fuzzy
+#| msgid "Icon size:"
+msgid "Icon hover:"
+msgstr "Ikonu izmērs:"
+
+#: package/contents/ui/config/ConfigAppearance.qml:215
+msgid "Shake"
+msgstr "Kratīšana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:216
+msgid "Grow"
+msgstr "Palielināšana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:217
+msgid "Bounce"
+msgstr "Atlēkšana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:218
+msgid "Spin"
+msgstr "Griešana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:219
+msgid "Shuffle"
+msgstr "Jaukšana"
+
+#: package/contents/ui/config/ConfigAppearance.qml:225
+#, fuzzy
+#| msgid "Animate icons on open"
+msgid "Animate icons when the launcher opens"
+msgstr "Animēt ikonas atverot"
+
+#: package/contents/ui/config/ConfigGeneral.qml:48
 msgid "Icon:"
 msgstr "Ikona:"
 
-#: package/contents/ui/ConfigGeneral.qml:146
+#: package/contents/ui/config/ConfigGeneral.qml:57
+msgctxt ""
+"@info:tooltip %1 is the icon-theme name or, if an image was dropped in, the "
+"file path of the configured launcher icon"
+msgid "Icon name is \"%1\""
+msgstr ""
+
+#: package/contents/ui/config/ConfigGeneral.qml:118
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Izvēlēties…"
 
-#: package/contents/ui/ConfigGeneral.qml:151
+#: package/contents/ui/config/ConfigGeneral.qml:123
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Notīrīt ikonu"
 
-#: package/contents/ui/ConfigGeneral.qml:164
+#: package/contents/ui/config/ConfigGeneral.qml:136
 msgid "Text label:"
 msgstr "Teksta etiķete:"
 
-#: package/contents/ui/ConfigGeneral.qml:166
+#: package/contents/ui/config/ConfigGeneral.qml:139
 msgid "Type here to add a text label"
 msgstr "Rakstiet šeit, lai pievienotu teksta etiķeti"
 
-#: package/contents/ui/ConfigGeneral.qml:183
+#: package/contents/ui/config/ConfigGeneral.qml:155
 msgid "Icons per row:"
 msgstr "Ikonas rindā:"
 
-#: package/contents/ui/ConfigGeneral.qml:189
+#: package/contents/ui/config/ConfigGeneral.qml:161
 msgid "Visible rows:"
 msgstr "Redzamās rindas:"
 
-#: package/contents/ui/ConfigGeneral.qml:195
-msgid "Icon size:"
-msgstr "Ikonu izmērs:"
+#: package/contents/ui/config/ConfigGeneral.qml:166
+msgid "Size:"
+msgstr ""
 
-#: package/contents/ui/ConfigGeneral.qml:196
+#: package/contents/ui/config/ConfigGeneral.qml:167
 msgid "Small"
 msgstr "Mazs"
 
-#: package/contents/ui/ConfigGeneral.qml:196
+#: package/contents/ui/config/ConfigGeneral.qml:167
 msgid "Medium"
 msgstr "Vidējs"
 
-#: package/contents/ui/ConfigGeneral.qml:196
+#: package/contents/ui/config/ConfigGeneral.qml:167
 msgid "Large"
 msgstr "Liels"
 
-#: package/contents/ui/ConfigGeneral.qml:201
+#: package/contents/ui/config/ConfigGeneral.qml:176
+msgid ""
+"Drives icon size plus the surrounding content density: search field, "
+"category buttons, and search results scale together. Control buttons stay "
+"fixed."
+msgstr ""
+
+#: package/contents/ui/config/ConfigGeneral.qml:180
 msgid "Sort order:"
 msgstr "Kārtošanas secība:"
 
-#: package/contents/ui/ConfigGeneral.qml:202
+#: package/contents/ui/config/ConfigGeneral.qml:181
 msgid "Alphabetical"
 msgstr "Alfabētiskā"
 
-#: package/contents/ui/ConfigGeneral.qml:202
+#: package/contents/ui/config/ConfigGeneral.qml:181
 msgid "Most Used"
 msgstr "Visbiežāk lietotās"
 
-#: package/contents/ui/ConfigGeneral.qml:202
+#: package/contents/ui/config/ConfigGeneral.qml:181
 msgid "By Category"
 msgstr "Pēc kategorijas"
 
-#: package/contents/ui/ConfigGeneral.qml:211
+#: package/contents/ui/config/ConfigGeneral.qml:188
 msgid "Behavior:"
 msgstr "Uzvedība:"
 
-#: package/contents/ui/ConfigGeneral.qml:212
+#: package/contents/ui/config/ConfigGeneral.qml:189
 msgid "Show category bar"
 msgstr "Rādīt kategoriju joslu"
 
-#: package/contents/ui/ConfigGeneral.qml:217
-msgid "Open on screen with mouse focus (otherwise on panel screen)"
-msgstr "Atvērt ekrānā ar peles fokusu (citādi paneļa ekrānā)"
-
-#: package/contents/ui/ConfigGeneral.qml:222
-msgid "Search all apps regardless of active tab"
-msgstr "Meklēt visās lietotnēs"
-
-#: package/contents/ui/ConfigGeneral.qml:227
+#: package/contents/ui/config/ConfigGeneral.qml:193
 msgid "Start with favorites tab"
 msgstr "Sākt ar izlases cilni"
 
-#: package/contents/ui/ConfigGeneral.qml:233
+#: package/contents/ui/config/ConfigGeneral.qml:198
+msgid "Sort favorites alphabetically"
+msgstr "Kārtot izlasi alfabētiski"
+
+#: package/contents/ui/config/ConfigGeneral.qml:202
 msgid "Show recently used applications"
 msgstr "Rādīt nesen lietotās lietotnes"
 
-#: package/contents/ui/ConfigGeneral.qml:239
+#: package/contents/ui/config/ConfigGeneral.qml:207
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Sistēmas kategorijas (KDE izvēlņu redaktors)"
 
-#: package/contents/ui/ConfigGeneral.qml:245
+#: package/contents/ui/config/ConfigGeneral.qml:212
 msgid "Hide empty categories"
 msgstr "Slēpt tukšās kategorijas"
 
-#: package/contents/ui/ConfigGeneral.qml:253
+#: package/contents/ui/config/ConfigGeneral.qml:218
+msgid "Open on screen with mouse focus (otherwise on panel screen)"
+msgstr "Atvērt ekrānā ar peles fokusu (citādi paneļa ekrānā)"
+
+#: package/contents/ui/config/ConfigGeneral.qml:229
+msgid "Vertical position:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigGeneral.qml:240
+msgid "Terminal shell:"
+msgstr "Termināļa čaula:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:245
+msgid "Default (/bin/sh)"
+msgstr "Noklusējuma (/bin/sh)"
+
+#: package/contents/ui/config/ConfigGeneral.qml:271
+msgid "Updates:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigGeneral.qml:272
 msgid "Check the AppGrid website for new releases"
 msgstr "Pārbaudīt AppGrid vietni jaunajiem laidieniem"
 
-#: package/contents/ui/ConfigGeneral.qml:254
+#: package/contents/ui/config/ConfigGeneral.qml:273
 msgid ""
 "Anonymous request once per day to %1. Shows an indicator near the session "
 "buttons when a new version is available; no automatic install."
@@ -247,204 +374,378 @@ msgstr ""
 "Anonīms pieprasījums reizi dienā uz %1. Rāda indikatoru pie sesijas pogām, "
 "kad ir pieejama jauna versija; bez automātiskas instalēšanas."
 
-#: package/contents/ui/ConfigGeneral.qml:261
-msgid "Terminal shell:"
-msgstr "Termināļa čaula:"
+#: package/contents/ui/config/ConfigHeaderActions.qml:41
+msgid ""
+"Bar actions appear directly in the launcher header; Menu actions go behind a "
+"single ⋮ button (hidden when empty); Off hides the action."
+msgstr ""
 
-#: package/contents/ui/ConfigGeneral.qml:265
-msgid "Default (/bin/sh)"
-msgstr "Noklusējuma (/bin/sh)"
-
-#: package/contents/ui/ConfigGeneral.qml:285
-msgid "Appearance:"
-msgstr "Izskats:"
-
-#: package/contents/ui/ConfigGeneral.qml:286
-msgid "Show divider lines"
-msgstr "Rādīt atdalošās līnijas"
-
-#: package/contents/ui/ConfigGeneral.qml:291
-msgid "Show scrollbars"
-msgstr "Rādīt ritjoslas"
-
-#: package/contents/ui/ConfigGeneral.qml:296
-msgid "Show tooltips on hover"
-msgstr "Rādīt rīkpadomus uzbraucot"
-
-#: package/contents/ui/ConfigGeneral.qml:301
-msgid "Show new app badge"
-msgstr "Rādīt jaunu lietotņu nozīmīti"
-
-#: package/contents/ui/ConfigGeneral.qml:306
-msgid "Hide app labels on favorites tab"
-msgstr "Slēpt lietotņu etiķetes izlases cilnē"
-
-#: package/contents/ui/ConfigGeneral.qml:312
-msgid "Sort favorites alphabetically"
-msgstr "Kārtot izlasi alfabētiski"
-
-#: package/contents/ui/ConfigGeneral.qml:317
-msgid "Open/close animation:"
-msgstr "Atvēršanas/aizvēršanas animācija:"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-#: package/contents/ui/ConfigGeneral.qml:334
-msgid "None"
-msgstr "Nav"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Fade"
-msgstr "Izgaišana"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Scale"
-msgstr "Mērogs"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Pop"
-msgstr "Izlēciens"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Slide Up"
-msgstr "Slīdēt augšup"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Slide Down"
-msgstr "Slīdēt lejup"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Glide"
-msgstr "Slīdēšana"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Buzz"
-msgstr "Vibrācija"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Twist"
-msgstr "Pagrieziens"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Slam"
-msgstr "Trieciens"
-
-#: package/contents/ui/ConfigGeneral.qml:318
-msgid "Grow Up"
-msgstr "Augt augšup"
-
-#: package/contents/ui/ConfigGeneral.qml:323
-msgid "Enable background blur"
-msgstr "Iespējot fona aizmiglošanu"
-
-#: package/contents/ui/ConfigGeneral.qml:328
-msgid "Dim background behind launcher"
-msgstr "Aptumšot fonu aiz palaidēja"
-
-#: package/contents/ui/ConfigGeneral.qml:333
-msgid "Icon animation:"
-msgstr "Ikonu animācija:"
-
-#: package/contents/ui/ConfigGeneral.qml:334
-msgid "Shake"
-msgstr "Kratīšana"
-
-#: package/contents/ui/ConfigGeneral.qml:334
-msgid "Grow"
-msgstr "Palielināšana"
-
-#: package/contents/ui/ConfigGeneral.qml:334
-msgid "Bounce"
-msgstr "Atlēkšana"
-
-#: package/contents/ui/ConfigGeneral.qml:334
-msgid "Spin"
-msgstr "Griešana"
-
-#: package/contents/ui/ConfigGeneral.qml:334
-msgid "Shuffle"
-msgstr "Jaukšana"
-
-#: package/contents/ui/ConfigGeneral.qml:339
-msgid "Animate icons on open"
-msgstr "Animēt ikonas atverot"
-
-#: package/contents/ui/ConfigGeneral.qml:345
-msgid "Show power/session buttons"
-msgstr "Rādīt barošanas/sesijas pogas"
-
-#: package/contents/ui/ConfigGeneral.qml:350
-msgid "Show labels on power/session buttons"
+#: package/contents/ui/config/ConfigHeaderActions.qml:46
+#, fuzzy
+#| msgid "Show labels on power/session buttons"
+msgid "Show labels on header buttons"
 msgstr "Rādīt birkas uz barošanas/sesijas pogām"
 
-#: package/contents/ui/ConfigGeneral.qml:356
-msgid "Expand search to bookmarks, files, and websites"
-msgstr "Paplašināt meklēšanu uz grāmatzīmēm, failiem un tīmekļa vietnēm"
+#: package/contents/ui/config/ConfigHeaderActions.qml:52
+#, fuzzy
+#| msgid "Show labels on power/session buttons"
+msgid "Hide label on the menu button"
+msgstr "Rādīt birkas uz barošanas/sesijas pogām"
 
-#: package/contents/ui/ConfigGeneral.qml:360
-msgid "Configure Search Plugins…"
-msgstr "Konfigurēt meklēšanas spraudņus…"
+#: package/contents/ui/config/ConfigHiddenApps.qml:38
+#: package/contents/ui/prefix/PrefixHiddenView.qml:40
+msgid "Unhide All"
+msgstr "Rādīt visus"
 
-#: package/contents/ui/ConfigGeneral.qml:367
-msgid "Background opacity:"
-msgstr "Fona necaurredzamība:"
-
-#: package/contents/ui/ConfigGeneral.qml:383
-msgid "Corner radius:"
-msgstr "Stūra rādiuss:"
-
-#: package/contents/ui/ConfigGeneral.qml:384
-msgid "Use custom corner radius"
-msgstr "Izmantot pielāgotu stūra rādiusu"
-
-#: package/contents/ui/ConfigGeneral.qml:396
-msgid "px"
-msgstr "pikseļi"
-
-#: package/contents/ui/ConfigGeneral.qml:408
-msgid "Reset to Defaults"
-msgstr "Atjaunot noklusējuma vērtības"
-
-#: package/contents/ui/ConfigGeneral.qml:452
-msgid "Hidden apps:"
-msgstr "Slēptās lietotnes:"
-
-#: package/contents/ui/ConfigGeneral.qml:459
+#: package/contents/ui/config/ConfigHiddenApps.qml:75
 msgid ""
 "Right-click any app in the grid to hide it, or type h: in the search bar."
 msgstr ""
 "Ar peles labo pogu noklikšķiniet uz jebkuras lietotnes režģī, lai to "
 "paslēptu, vai ievadiet h: meklēšanas joslā."
 
-#: package/contents/ui/ConfigGeneral.qml:466
-msgid "No hidden applications."
-msgstr "Nav slēptu lietotņu."
+#: package/contents/ui/config/ConfigHiddenApps.qml:82
+#, fuzzy
+#| msgid "Hidden apps:"
+msgid "Filter hidden apps…"
+msgstr "Slēptās lietotnes:"
 
-#: package/contents/ui/ConfigGeneral.qml:512
-#: package/contents/ui/prefix/PrefixHiddenView.qml:127
+#: package/contents/ui/config/ConfigHiddenApps.qml:101
+#: package/contents/ui/prefix/PrefixHiddenView.qml:65
+msgid "No hidden applications"
+msgstr "Nav slēptu lietotņu"
+
+#: package/contents/ui/config/ConfigHiddenApps.qml:109
+msgid "No matches"
+msgstr ""
+
+#: package/contents/ui/config/ConfigHiddenApps.qml:144
+#: package/contents/ui/prefix/PrefixHiddenView.qml:129
 msgid "Unhide"
 msgstr "Parādīt"
 
-#: package/contents/ui/ConfigGeneral.qml:529
-#: package/contents/ui/prefix/PrefixHiddenView.qml:35
-msgid "Unhide All"
-msgstr "Rādīt visus"
+#: package/contents/ui/config/ConfigSearch.qml:25
+#, fuzzy
+#| msgid "Search"
+msgid "Search:"
+msgstr "Meklēt"
 
-#: package/contents/ui/GridPanel.qml:868
+#: package/contents/ui/config/ConfigSearch.qml:26
+msgid "Search all apps regardless of active tab"
+msgstr "Meklēt visās lietotnēs"
+
+#: package/contents/ui/config/ConfigSearch.qml:33
+msgid "Plugins:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:34
+msgid "Use KDE search plugins (KRunner)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:35
+msgid ""
+"Includes the calculator, unit conversion, file search, bookmarks, web "
+"shortcuts and other KRunner plugins. Use \"Configure Search Plugins\" to "
+"choose which are active."
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:41
+msgid "Configure Search Plugins…"
+msgstr "Konfigurēt meklēšanas spraudņus…"
+
+#: package/contents/ui/config/ConfigSearch.qml:51
+msgid "Ranking:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:52
+msgid "Prefer frequently-used apps in search results (KActivities)"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:54
+msgid ""
+"Uses system-wide KActivities frecency (frequency + recency) data so apps "
+"you've launched a lot lately surface above equally-ranked alternatives. "
+"Affects only search results — the app grid keeps its own predictable "
+"ordering."
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:63
+msgid "Hidden apps:"
+msgstr "Slēptās lietotnes:"
+
+#: package/contents/ui/config/ConfigSearch.qml:64
+#, fuzzy
+#| msgid "No hidden applications"
+msgid "Show hidden applications in search results"
+msgstr "Nav slēptu lietotņu"
+
+#: package/contents/ui/config/ConfigSearch.qml:66
+msgid ""
+"Hidden apps stay out of the grid (right-click → Hide Application) and, by "
+"default, also out of search results. Turn this on to keep a hidden app "
+"findable by name without un-hiding it from the grid."
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:75
+msgid "Completion:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:76
+msgid "Show inline completion as you type"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:78
+msgid ""
+"Greys the rest of the best matching term after what you've typed (e.g. "
+"\"te\" → \"terminal\"); press Tab to accept it."
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:87
+msgid "Shortcuts:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:88
+msgid "Show the Alt+number badge on search results"
+msgstr ""
+
+#: package/contents/ui/config/ConfigSearch.qml:90
+msgid ""
+"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to "
+"hide the badges; the shortcuts still work."
+msgstr ""
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:29
+msgid "Update"
+msgstr ""
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:30
+#: package/contents/ui/widgets/HeaderActionStrip.qml:42
+msgid "Sleep"
+msgstr "Miega režīms"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:31
+#: package/contents/ui/widgets/HeaderActionStrip.qml:43
+msgid "Restart"
+msgstr "Pārstartēt"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:32
+#: package/contents/ui/widgets/HeaderActionStrip.qml:44
+msgid "Shut Down"
+msgstr "Izslēgt"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:33
+#: package/contents/ui/widgets/HeaderActionStrip.qml:45
+msgid "Lock"
+msgstr "Bloķēt"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:34
+#: package/contents/ui/widgets/HeaderActionStrip.qml:46
+msgid "Log Out"
+msgstr "Atteikties"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:35
+#: package/contents/ui/widgets/HeaderActionStrip.qml:47
+msgid "Switch User"
+msgstr "Pārslēgt lietotāju"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:39
+msgid "Bar"
+msgstr ""
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:40
+msgid "Menu"
+msgstr ""
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:41
+#, fuzzy
+#| msgid "Office"
+msgid "Off"
+msgstr "Birojs"
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:117
+msgid "Move up"
+msgstr ""
+
+#: package/contents/ui/config/HeaderActionsConfig.qml:126
+msgid "Move down"
+msgstr ""
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:35
+msgid "Type a command to run in terminal"
+msgstr "Ievadiet komandu, ko palaist terminālī"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:36
+msgid "Type a command to execute"
+msgstr "Ievadiet komandu, ko izpildīt"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:38
+msgid "Press Enter to run in terminal"
+msgstr "Nospiediet Enter, lai palaistu terminālī"
+
+#: package/contents/ui/prefix/PrefixCommandView.qml:39
+msgid "Press Enter to execute"
+msgstr "Nospiediet Enter, lai izpildītu"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:16
+msgid "Quick Commands"
+msgstr "Ātrās komandas"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:24
+msgid "Run"
+msgstr "Palaist"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:25
+msgid "Terminal"
+msgstr "Terminālis"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:26
+msgid "Run Command"
+msgstr "Palaist komandu"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:28
+msgid "Browse"
+msgstr "Pārlūkot"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:29
+msgid "Browse Files"
+msgstr "Pārlūkot failus"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:30
+msgid "Browse Home"
+msgstr "Pārlūkot mājas mapi"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:32
+msgid "Tools"
+msgstr "Rīki"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:33
+msgid "System Info"
+msgstr "Sistēmas info"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:34
+msgid "Hidden Apps"
+msgstr "Slēptās lietotnes"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:35
+msgid "This Help"
+msgstr "Šī palīdzība"
+
+#: package/contents/ui/prefix/PrefixHelpView.qml:118
+msgid "Alt+1 – Alt+9 launches search results instantly"
+msgstr "Alt+1 – Alt+9 nekavējoties palaiž meklēšanas rezultātus"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:31
+msgid "Hidden Applications"
+msgstr "Slēptās lietotnes"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:71
+msgid "Right-click any app in the grid to hide it"
+msgstr ""
+"Ar peles labo pogu noklikšķiniet uz jebkuras lietotnes režģī, lai to paslēptu"
+
+#: package/contents/ui/prefix/PrefixHiddenView.qml:143
+msgid "%1 hidden application(s)"
+msgstr "%1 slēptās lietotnes"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:32
+msgid "System Information"
+msgstr "Sistēmas informācija"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:41
+msgid "Install"
+msgstr ""
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:42
+msgid "Variant"
+msgstr ""
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:43
+msgid "Session"
+msgstr "Sesija"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:48
+msgid "Screens"
+msgstr ""
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:82
+msgid "Update %1 available"
+msgstr "Pieejams atjauninājums %1"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:84
+msgid "Check for updates"
+msgstr "Pārbaudīt atjauninājumus"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:88
+msgid "Click to open release notes for %1"
+msgstr "Noklikšķiniet, lai atvērtu %1 laidiena piezīmes"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:91
+msgid ""
+"Force an immediate check against the AppGrid website (bypasses the 24h "
+"schedule)."
+msgstr "Piespiest nekavējoties pārbaudīt AppGrid vietni (apiet 24h grafiku)."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:125
+#: package/contents/ui/widgets/CategoryBar.qml:87
+#: package/contents/ui/widgets/FavoritesTabButton.qml:36
+#: package/contents/ui/widgets/FavoritesTabButton.qml:40
+#: package/contents/ui/widgets/RecentAppsHeader.qml:144
+msgid "Favorites"
+msgstr "Izlase"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:135
+msgid "KAStats (%1 entries; legacy backup: %2)"
+msgstr "KAStats (%1 ieraksti; vecākā dublējumkopija: %2)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:137
+msgid "Not migrated (legacy: %1 entries)"
+msgstr "Nav migrēts (vecs: %1 ieraksti)"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:145
+msgid "Re-run migration"
+msgstr "Atkārtoti palaist migrāciju"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:146
+msgid ""
+"Clears the migration flag. On next open, AppGrid recomputes the favorites "
+"list as the union of the legacy backup and current KAStats entries. Nothing "
+"is lost; missing legacy items are re-added."
+msgstr "Notīra migrācijas karogu. Nākamajā atvēršanā AppGrid pārrēķina "
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:160
+msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
+msgstr ""
+"Migrācijas karogs notīrīts. Atveriet AppGrid atkārtoti, lai vēlreiz palaistu "
+"pārnešanu."
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:176
+msgid "Copied!"
+msgstr "Nokopēts!"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:177
+msgid "Copy to Clipboard"
+msgstr "Kopēt starpliktuvē"
+
+#: package/contents/ui/prefix/PrefixInfoView.qml:200
+msgid "Include this info when reporting issues on GitHub"
+msgstr "Iekļaujiet šo informāciju, ziņojot par problēmām GitHub"
+
+#: package/contents/ui/views/GridPanel.qml:1093
 msgid "Launch all selected?"
 msgstr "Palaist visus atlasītos?"
 
-#: package/contents/ui/GridPanel.qml:870
+#: package/contents/ui/views/GridPanel.qml:1095
 msgid "Open %1 application at once?"
 msgid_plural "Open %1 applications at once?"
 msgstr[0] "Atvērt %1 lietotni vienlaicīgi?"
 msgstr[1] "Atvērt %1 lietotnes vienlaicīgi?"
 msgstr[2] "Atvērt %1 lietotnes vienlaicīgi?"
 
-#: package/contents/ui/GridPanel.qml:880
+#: package/contents/ui/views/GridPanel.qml:1105
 msgid "Hide selected applications?"
 msgstr "Slēpt atlasītās lietotnes?"
 
-#: package/contents/ui/GridPanel.qml:882
+#: package/contents/ui/views/GridPanel.qml:1107
 msgid ""
 "Hide %1 application from AppGrid? You can unhide it later in Settings → "
 "Hidden Applications."
@@ -461,265 +762,276 @@ msgstr[2] ""
 "Slēpt %1 lietotņu no AppGrid? Vēlāk tās varat rādīt iestatījumos → Slēptās "
 "lietotnes."
 
-#: package/contents/ui/PowerButtons.qml:34
-msgid "Update available"
-msgstr "Pieejams atjauninājums"
+#: package/contents/ui/views/SearchResultsList.qml:153
+#, fuzzy
+#| msgid "Application"
+msgid "Applications"
+msgstr "Lietotne"
 
-#: package/contents/ui/PowerButtons.qml:39
-msgid "AppGrid %1 is available — click to view release notes"
-msgstr "AppGrid %1 ir pieejams — noklikšķiniet, lai skatītu laidiena piezīmes"
+#: package/contents/ui/views/SearchResultsList.qml:156
+#, fuzzy
+#| msgid "Configure Search Plugins…"
+msgid "Search Plugins"
+msgstr "Konfigurēt meklēšanas spraudņus…"
 
-#: package/contents/ui/PowerButtons.qml:50
-msgid "AppGrid update available"
-msgstr "Pieejams AppGrid atjauninājums"
-
-#: package/contents/ui/PowerButtons.qml:66
-#: package/contents/ui/PowerButtons.qml:69
-#: package/contents/ui/PowerButtons.qml:73
-msgid "Sleep"
-msgstr "Miega režīms"
-
-#: package/contents/ui/PowerButtons.qml:80
-#: package/contents/ui/PowerButtons.qml:83
-#: package/contents/ui/PowerButtons.qml:87
-msgid "Restart"
-msgstr "Pārstartēt"
-
-#: package/contents/ui/PowerButtons.qml:94
-#: package/contents/ui/PowerButtons.qml:97
-#: package/contents/ui/PowerButtons.qml:101
-msgid "Shut Down"
-msgstr "Izslēgt"
-
-#: package/contents/ui/PowerButtons.qml:110
-#: package/contents/ui/PowerButtons.qml:113
-#: package/contents/ui/PowerButtons.qml:119
-msgid "Session"
-msgstr "Sesija"
-
-#: package/contents/ui/PowerButtons.qml:129
-msgid "Lock"
-msgstr "Bloķēt"
-
-#: package/contents/ui/PowerButtons.qml:136
-msgid "Log Out"
-msgstr "Atteikties"
-
-#: package/contents/ui/PowerButtons.qml:143
-msgid "Switch User"
-msgstr "Pārslēgt lietotāju"
-
-#: package/contents/ui/prefix/PrefixCommandView.qml:33
-msgid "Type a command to run in terminal"
-msgstr "Ievadiet komandu, ko palaist terminālī"
-
-#: package/contents/ui/prefix/PrefixCommandView.qml:34
-msgid "Type a command to execute"
-msgstr "Ievadiet komandu, ko izpildīt"
-
-#: package/contents/ui/prefix/PrefixCommandView.qml:36
-msgid "Press Enter to run in terminal"
-msgstr "Nospiediet Enter, lai palaistu terminālī"
-
-#: package/contents/ui/prefix/PrefixCommandView.qml:37
-msgid "Press Enter to execute"
-msgstr "Nospiediet Enter, lai izpildītu"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:17
-msgid "Quick Commands"
-msgstr "Ātrās komandas"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:25
-msgid "Run"
-msgstr "Palaist"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:26
-msgid "Terminal"
-msgstr "Terminālis"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:27
-msgid "Run Command"
-msgstr "Palaist komandu"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:29
-msgid "Browse"
-msgstr "Pārlūkot"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:30
-msgid "Browse Files"
-msgstr "Pārlūkot failus"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:31
-msgid "Browse Home"
-msgstr "Pārlūkot mājas mapi"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:33
-msgid "Tools"
-msgstr "Rīki"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:34
-msgid "System Info"
-msgstr "Sistēmas info"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:35
-msgid "Hidden Apps"
-msgstr "Slēptās lietotnes"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:36
-msgid "This Help"
-msgstr "Šī palīdzība"
-
-#: package/contents/ui/prefix/PrefixHelpView.qml:124
-msgid "Alt+1 – Alt+9 launches search results instantly"
-msgstr "Alt+1 – Alt+9 nekavējoties palaiž meklēšanas rezultātus"
-
-#: package/contents/ui/prefix/PrefixHiddenView.qml:26
-msgid "Hidden Applications"
-msgstr "Slēptās lietotnes"
-
-#: package/contents/ui/prefix/PrefixHiddenView.qml:63
-msgid "No hidden applications"
-msgstr "Nav slēptu lietotņu"
-
-#: package/contents/ui/prefix/PrefixHiddenView.qml:69
-msgid "Right-click any app in the grid to hide it"
+#: package/contents/ui/views/SearchResultsList.qml:206
+msgid "No results for \"%1\""
 msgstr ""
-"Ar peles labo pogu noklikšķiniet uz jebkuras lietotnes režģī, lai to "
-"paslēptu"
 
-#: package/contents/ui/prefix/PrefixHiddenView.qml:144
-msgid "%1 hidden application(s)"
-msgstr "%1 slēptās lietotnes"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:27
-msgid "System Information"
-msgstr "Sistēmas informācija"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:77
-msgid "Update %1 available"
-msgstr "Pieejams atjauninājums %1"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:79
-msgid "Check for updates"
-msgstr "Pārbaudīt atjauninājumus"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:83
-msgid "Click to open release notes for %1"
-msgstr "Noklikšķiniet, lai atvērtu %1 laidiena piezīmes"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:86
-msgid ""
-"Force an immediate check against the AppGrid website (bypasses the 24h "
-"schedule)."
-msgstr "Piespiest nekavējoties pārbaudīt AppGrid vietni (apiet 24h grafiku)."
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:131
-msgid "KAStats (%1 entries; legacy backup: %2)"
-msgstr "KAStats (%1 ieraksti; vecākā dublējumkopija: %2)"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:133
-msgid "Not migrated (legacy: %1 entries)"
-msgstr "Nav migrēts (vecs: %1 ieraksti)"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:141
-msgid "Re-run migration"
-msgstr "Atkārtoti palaist migrāciju"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:142
-msgid ""
-"Clears the migration flag. On next open, AppGrid recomputes the favorites "
-"list as the union of the legacy backup and current KAStats entries. Nothing "
-"is lost; missing legacy items are re-added."
-msgstr "Notīra migrācijas karogu. Nākamajā atvēršanā AppGrid pārrēķina "
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:156
-msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
+#: package/contents/ui/views/SearchResultsList.qml:228
+msgid "hidden"
 msgstr ""
-"Migrācijas karogs notīrīts. Atveriet AppGrid atkārtoti, lai vēlreiz palaistu"
-" pārnešanu."
 
-#: package/contents/ui/prefix/PrefixInfoView.qml:174
-msgid "Copied!"
-msgstr "Nokopēts!"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:175
-msgid "Copy to Clipboard"
-msgstr "Kopēt starpliktuvē"
-
-#: package/contents/ui/prefix/PrefixInfoView.qml:212
-msgid "Include this info when reporting issues on GitHub"
-msgstr "Iekļaujiet šo informāciju, ziņojot par problēmām GitHub"
-
-#: package/contents/ui/RecentAppsHeader.qml:38
-msgid "Recently Used"
-msgstr "Nesen lietotās"
-
-#: package/contents/ui/RecentAppsHeader.qml:112
-msgid "All Apps"
-msgstr "Visas lietotnes"
-
-#: package/contents/ui/SearchBar.qml:38
-msgid "Search apps or type ? for commands"
-msgstr "Meklēt lietotnes vai ievadiet ? komandām"
-
-#: package/contents/ui/SearchBar.qml:64
-msgid "Search applications"
-msgstr "Meklēt lietotnes"
-
-#: package/contents/ui/SearchBar.qml:79
-msgid "Clear search"
-msgstr "Notīrīt meklēšanu"
-
-#: package/contents/ui/SearchResultsList.qml:183
+#: package/contents/ui/views/SearchResultsList.qml:311
 msgid "Application"
 msgstr "Lietotne"
 
-#: src/appmodel.cpp:240
+#: package/contents/ui/views/SearchResultsList.qml:339
+msgid "More options"
+msgstr ""
+
+#: package/contents/ui/widgets/AppContextMenu.qml:221
+msgid "Remove from Favorites"
+msgstr "Noņemt no izlases"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:222
+msgid "Add to Favorites"
+msgstr "Pievienot izlasei"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:244
+#: package/contents/ui/widgets/AppContextMenu.qml:390
+msgid "Remove from Selection"
+msgstr "Noņemt no atlases"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:245
+msgid "Add to Selection"
+msgstr "Pievienot atlasei"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:261
+msgid "Pin to Task Manager"
+msgstr "Piespraust uzdevumu pārvaldniekam"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:267
+msgid "Add to Desktop"
+msgstr "Pievienot darbvirsmai"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:273
+msgid "Edit Application"
+msgstr "Rediģēt lietotni"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:283
+msgid "Manage in Discover…"
+msgstr ""
+
+#: package/contents/ui/widgets/AppContextMenu.qml:295
+#, fuzzy
+#| msgid "Hide Application"
+msgid "Unhide Application"
+msgstr "Slēpt lietotni"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:296
+msgid "Hide Application"
+msgstr "Slēpt lietotni"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:320
+msgid "Add %1 to Favorites"
+msgid_plural "Add %1 to Favorites"
+msgstr[0] "Pievienot %1 izlasei"
+msgstr[1] "Pievienot %1 izlasei"
+msgstr[2] "Pievienot %1 izlasei"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:334
+msgid "Remove %1 from Favorites"
+msgid_plural "Remove %1 from Favorites"
+msgstr[0] "Noņemt %1 no izlases"
+msgstr[1] "Noņemt %1 no izlases"
+msgstr[2] "Noņemt %1 no izlases"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:347
+msgid "Pin %1 to Task Manager"
+msgid_plural "Pin %1 to Task Manager"
+msgstr[0] "Piespraust %1 uzdevumu pārvaldniekam"
+msgstr[1] "Piespraust %1 uzdevumu pārvaldniekam"
+msgstr[2] "Piespraust %1 uzdevumu pārvaldniekam"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:355
+msgid "Add %1 to Desktop"
+msgid_plural "Add %1 to Desktop"
+msgstr[0] "Pievienot %1 darbvirsmai"
+msgstr[1] "Pievienot %1 darbvirsmai"
+msgstr[2] "Pievienot %1 darbvirsmai"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:363
+msgid "Launch %1 application"
+msgid_plural "Launch %1 applications"
+msgstr[0] "Palaist %1 lietotni"
+msgstr[1] "Palaist %1 lietotnes"
+msgstr[2] "Palaist %1 lietotnes"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:373
+msgid "Copy %1 path"
+msgid_plural "Copy %1 paths"
+msgstr[0] "Kopēt %1 ceļu"
+msgstr[1] "Kopēt %1 ceļus"
+msgstr[2] "Kopēt %1 ceļus"
+
+#: package/contents/ui/widgets/AppContextMenu.qml:381
+msgid "Hide %1 application"
+msgid_plural "Hide %1 applications"
+msgstr[0] "Slēpt %1 lietotni"
+msgstr[1] "Slēpt %1 lietotnes"
+msgstr[2] "Slēpt %1 lietotnes"
+
+#: package/contents/ui/widgets/AppIconDelegate.qml:210
+msgid "Source: %1"
+msgstr ""
+
+#: package/contents/ui/widgets/AppIconDelegate.qml:237
+msgid "new"
+msgstr "jauna"
+
+#: package/contents/ui/widgets/AppIconDelegate.qml:238
+msgid "selected"
+msgstr "atlasīts"
+
+#: package/contents/ui/widgets/CategoryBar.qml:86
+#: package/contents/ui/widgets/CategoryBar.qml:292
+#: package/contents/ui/widgets/CategoryBar.qml:293
+msgid "All"
+msgstr "Visas"
+
+#: package/contents/ui/widgets/CategoryBar.qml:308
+msgid "All applications"
+msgstr "Visas lietotnes"
+
+#: package/contents/ui/widgets/CategoryBar.qml:351
+msgid "Scroll categories left"
+msgstr "Ritināt pa kreisi"
+
+#: package/contents/ui/widgets/CategoryBar.qml:484
+msgid "Scroll categories right"
+msgstr "Ritināt pa labi"
+
+#: package/contents/ui/widgets/CategoryBar.qml:501
+msgid "Edit \"%1\" in Menu Editor…"
+msgstr "Rediģēt \"%1\" izvēlņu redaktorā…"
+
+#: package/contents/ui/widgets/CategoryBar.qml:507
+msgid "Open Menu Editor…"
+msgstr "Atvērt izvēlņu redaktoru…"
+
+#: package/contents/ui/widgets/HeaderActionStrip.qml:41
+msgid "Update available"
+msgstr "Pieejams atjauninājums"
+
+#: package/contents/ui/widgets/HeaderActionStrip.qml:97
+msgid "AppGrid %1 is available — click to view release notes"
+msgstr "AppGrid %1 ir pieejams — noklikšķiniet, lai skatītu laidiena piezīmes"
+
+#: package/contents/ui/widgets/HeaderActionStrip.qml:115
+msgid "More"
+msgstr ""
+
+#: package/contents/ui/widgets/HeaderActionStrip.qml:127
+#: package/contents/ui/widgets/HeaderActionStrip.qml:130
+msgid "More actions"
+msgstr ""
+
+#: package/contents/ui/widgets/RecentAppsHeader.qml:62
+msgid "Recently Used"
+msgstr "Nesen lietotās"
+
+#: package/contents/ui/widgets/RecentAppsHeader.qml:145
+msgid "All Apps"
+msgstr "Visas lietotnes"
+
+#: package/contents/ui/widgets/SearchBar.qml:77
+msgid "Search apps or type ? for commands"
+msgstr "Meklēt lietotnes vai ievadiet ? komandām"
+
+#: package/contents/ui/widgets/SearchBar.qml:141
+msgid "Search applications"
+msgstr "Meklēt lietotnes"
+
+#: package/contents/ui/widgets/SearchBar.qml:153
+#: package/contents/ui/widgets/SearchBar.qml:156
+msgid "Clear search"
+msgstr "Notīrīt meklēšanu"
+
+#: src/appgridplugin.cpp:116
+msgid "Open in Compact Mode"
+msgstr ""
+
+#: src/appmodel.cpp:110
 msgid "Utilities"
 msgstr "Utilītas"
 
-#: src/appmodel.cpp:241
+#: src/appmodel.cpp:113
 msgid "Development"
 msgstr "Izstrāde"
 
-#: src/appmodel.cpp:242
+#: src/appmodel.cpp:116
 msgid "Graphics"
 msgstr "Grafika"
 
-#: src/appmodel.cpp:243
+#: src/appmodel.cpp:119
 msgid "Internet"
 msgstr "Internets"
 
-#: src/appmodel.cpp:244
+#: src/appmodel.cpp:122
 msgid "Multimedia"
 msgstr "Multimedija"
 
-#: src/appmodel.cpp:245
+#: src/appmodel.cpp:125
 msgid "Office"
 msgstr "Birojs"
 
-#: src/appmodel.cpp:246
+#: src/appmodel.cpp:128
 msgid "Games"
 msgstr "Spēles"
 
-#: src/appmodel.cpp:247
+#: src/appmodel.cpp:131
 msgid "Education"
 msgstr "Izglītība"
 
-#: src/appmodel.cpp:248
+#: src/appmodel.cpp:134
 msgid "System"
 msgstr "Sistēma"
 
-#: src/appmodel.cpp:249
+#: src/appmodel.cpp:137
 msgid "Other"
 msgstr "Citi"
 
+#~ msgid "Appearance:"
+#~ msgstr "Izskats:"
+
+#~ msgid "Icon animation:"
+#~ msgstr "Ikonu animācija:"
+
+#~ msgid "Show power/session buttons"
+#~ msgstr "Rādīt barošanas/sesijas pogas"
+
+#~ msgid "Expand search to bookmarks, files, and websites"
+#~ msgstr "Paplašināt meklēšanu uz grāmatzīmēm, failiem un tīmekļa vietnēm"
+
+#~ msgid "px"
+#~ msgstr "pikseļi"
+
+#~ msgid "Reset to Defaults"
+#~ msgstr "Atjaunot noklusējuma vērtības"
+
+#~ msgid "No hidden applications."
+#~ msgstr "Nav slēptu lietotņu."
+
+#~ msgid "AppGrid update available"
+#~ msgstr "Pieejams AppGrid atjauninājums"
+
 #~ msgid ""
-#~ "Anonymous request once per day to "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 #~ msgstr ""
-#~ "Anonīms pieprasījums vienreiz dienā uz "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonīms pieprasījums vienreiz dienā uz https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 
 #~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
 #~ msgstr "Notīra migrācijas karogu. Nākamajā atvēršanā AppGrid pārrēķina "
@@ -759,6 +1071,3 @@ msgstr "Citi"
 
 #~ msgid "Browse files from home"
 #~ msgstr "Pārlūkot failus no mājas mapes"
-
-#~ msgid "Search"
-#~ msgstr "Meklēt"
