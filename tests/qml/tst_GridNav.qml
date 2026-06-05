@@ -62,6 +62,19 @@ TestCase {
         compare(GridNav.gridLandingFromRecents(6, 6, 20), 0)
     }
 
+    // --- degenerate empty-grid / empty-recents landings ---
+
+    function test_gridLandingEmptyGridIsNegative() {
+        // No grid cells → clamp yields -1 (caller treats as "nothing to land on").
+        compare(GridNav.gridLandingFromRecents(2, 6, 0), -1)
+    }
+
+    function test_recentsLandingEmptyRecentsIsInvalid() {
+        // No recents row → an invalid (negative) index. Callers must gate on
+        // recentCount > 0 before landing here; this documents that contract.
+        verify(GridNav.recentsLandingFromGrid(2, 0, 6) < 0)
+    }
+
     // --- arrowMoveWithSelection routing ---
 
     function test_arrowMovePlainWhenNoMultiSelect() {

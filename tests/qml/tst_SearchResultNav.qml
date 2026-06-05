@@ -28,6 +28,12 @@ TestCase {
         compare(SearchResultNav.nextIndex(4, 5, 1, true), 0)
     }
 
+    // Up from the top with wrap on jumps to the last result (the wrap arm of
+    // the step<0 branch — the only nextIndex branch left uncovered).
+    function test_upWrapsToBottom() {
+        compare(SearchResultNav.nextIndex(0, 5, -1, true), 4)
+    }
+
     function test_singleResultStaysSelected() {
         compare(SearchResultNav.nextIndex(0, 1, 1, false), 0)
         compare(SearchResultNav.nextIndex(0, 1, -1, false), 0)

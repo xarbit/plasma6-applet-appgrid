@@ -33,7 +33,10 @@ TestCase {
         property bool showScrollbars: true
         property int backgroundOpacity: 90
         property bool enableBlur: true
+        property bool enableBackgroundContrast: false
+        property bool useThemeBackground: false
         property bool dimBackground: true
+        property bool independentTextSize: false
         property int verticalOffset: 0
         property bool showTooltips: true
         property bool hoverHighlight: true
@@ -63,6 +66,11 @@ TestCase {
         property var launchCounts: []
         property bool searchAll: false
         property bool useExtraRunners: false
+        property bool searchUsesFrecency: false
+        property bool searchShowsHidden: false
+        property bool searchInlineCompletion: false
+        property bool showSearchShortcuts: false
+        property bool hideMenuButtonLabel: false
         property string terminalShell: ""
         property var powerButtonOrder: []
         property var powerButtonsHidden: []
@@ -88,6 +96,7 @@ TestCase {
         property int maxRecentApps: 6
         property bool showFavoritesOnly: false
         property bool sortFavoritesAlphabetically: false
+        property bool searchShowsHidden: false
         property int sortMode: 0
         property bool useSystemCategories: false
         property string filterCategory: ""

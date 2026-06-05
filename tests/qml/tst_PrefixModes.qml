@@ -59,6 +59,16 @@ TestCase {
         compare(PrefixModes.modeFor("~user"), PrefixModes.NONE)
     }
 
+    // Help only triggers on a leading '?'; embedded '?' classifies as plain.
+    function test_modeForEmbeddedQuestionMarkIsNone() {
+        compare(PrefixModes.modeFor("foo?bar"), PrefixModes.NONE)
+    }
+
+    // Bare "/" opens the file browser at the filesystem root.
+    function test_modeForFilesRootPath() {
+        compare(PrefixModes.modeFor("/"), PrefixModes.FILES)
+    }
+
     // --- argumentFor: strip the trigger, trim, only for arg-carrying modes ---
 
     function test_argumentForTerminalStripsAndTrims() {
@@ -85,5 +95,21 @@ TestCase {
     function test_argumentForEmptyAfterTrigger() {
         compare(PrefixModes.argumentFor("t:", PrefixModes.TERMINAL), "")
         compare(PrefixModes.argumentFor(":", PrefixModes.COMMAND), "")
+    }
+
+    // Everything after the trigger is preserved verbatim (only trimmed): a
+    // pipe / embedded '?' in a command, or an embedded ':' in a file path,
+    // must not re-classify or get mangled.
+    function test_argumentForCommandKeepsPipes() {
+        compare(PrefixModes.argumentFor(":ls -la | grep x", PrefixModes.COMMAND),
+                "ls -la | grep x")
+    }
+
+    function test_argumentForCommandKeepsEmbeddedQuestionMark() {
+        compare(PrefixModes.argumentFor(":echo what?", PrefixModes.COMMAND), "echo what?")
+    }
+
+    function test_argumentForFilesKeepsEmbeddedColon() {
+        compare(PrefixModes.argumentFor("/tmp/foo:bar", PrefixModes.FILES), "/tmp/foo:bar")
     }
 }

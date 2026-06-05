@@ -122,6 +122,16 @@ TestCase {
         compare(r.indexFor("X"), 0)
     }
 
+    // When an earlier name took the first letter, the next name is assigned a
+    // later letter — indexFor / richTextFor must point at that letter's real
+    // position, not index 0. ("Apple" takes A, so "Ant" gets N at index 1.)
+    function test_indexForAssignedLetterAfterFirstChar() {
+        var r = resolver(["Apple", "Ant"])
+        compare(r.map["N"], "Ant")
+        compare(r.indexFor("Ant"), 1)
+        compare(r.richTextFor("Ant"), "A<u>n</u>t")
+    }
+
     function test_collisionFallsThroughAllTakenLetters() {
         // First name "AB" claims A (first letter wins). Second name
         // "ABC" tries A (taken), then B (free) — B wins. C never
