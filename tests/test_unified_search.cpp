@@ -11,10 +11,61 @@
 #include <QStringListModel>
 #include <QTest>
 
+#include <KRunner/Action>
+
 #include "appfiltermodel.h"
 #include "runnerfiltermodel.h"
 #include "stubappmodel.h"
 #include "unifiedsearchmodel.h"
+
+// KRunner-shaped source exposing an "actions" role: a QVariantList of
+// QVariant-wrapped KRunner::Action, exactly as ResultsModel hands them over.
+// QStringListModel can't carry this role, so without it the unwrap loop in
+// UnifiedSearchModel::runnerActions never runs.
+class RunnerActionsStubModel : public QAbstractListModel
+{
+public:
+    static constexpr int ActionsRole = Qt::UserRole + 1;
+    struct Row {
+        QString display;
+        QVariantList actions;
+    };
+
+    void setRows(const QVector<Row> &rows)
+    {
+        beginResetModel();
+        m_rows = rows;
+        endResetModel();
+    }
+
+    int rowCount(const QModelIndex & = {}) const override
+    {
+        return static_cast<int>(m_rows.size());
+    }
+
+    QVariant data(const QModelIndex &idx, int role) const override
+    {
+        if (!idx.isValid() || idx.row() >= m_rows.size()) {
+            return {};
+        }
+        const auto &r = m_rows.at(idx.row());
+        if (role == Qt::DisplayRole) {
+            return r.display;
+        }
+        if (role == ActionsRole) {
+            return r.actions;
+        }
+        return {};
+    }
+
+    QHash<int, QByteArray> roleNames() const override
+    {
+        return {{Qt::DisplayRole, QByteArrayLiteral("display")}, {ActionsRole, QByteArrayLiteral("actions")}};
+    }
+
+private:
+    QVector<Row> m_rows;
+};
 
 class TestUnifiedSearch : public QObject {
     Q_OBJECT
@@ -34,10 +85,8 @@ private Q_SLOTS:
     void dataReturnsEmptyForInvalidIndex();
     void roleNamesContainsAllPublicRoles();
     void runnerActionsEmptyForAppRow();
-    void runnerActionsEmptyWhenSourceLacksActionsRole();
     void runnerActionsEmptyForOutOfRangeRow();
-    void runnerActionsCountIsZeroForAppRow();
-    void runnerActionsCountIsZeroWhenSourceLacksActionsRole();
+    void runnerActionsUnwrapsAndSkipsEmpty();
 
 private:
     StubAppModel m_appSource;
@@ -245,36 +294,37 @@ void TestUnifiedSearch::runnerActionsEmptyForAppRow()
     QCOMPARE(m_unified.runnerActions(0), QVariantList());
 }
 
-void TestUnifiedSearch::runnerActionsEmptyWhenSourceLacksActionsRole()
-{
-    m_runnerSource.setStringList({QStringLiteral("calc")});
-    QCOMPARE(m_unified.runnerActions(0), QVariantList());
-}
-
 void TestUnifiedSearch::runnerActionsEmptyForOutOfRangeRow()
 {
     QCOMPARE(m_unified.runnerActions(-1), QVariantList());
     QCOMPARE(m_unified.runnerActions(999), QVariantList());
 }
 
-void TestUnifiedSearch::runnerActionsCountIsZeroForAppRow()
+void TestUnifiedSearch::runnerActionsUnwrapsAndSkipsEmpty()
 {
-    StubApp app;
-    app.name = QStringLiteral("A");
-    app.desktopFile = QStringLiteral("a.desktop");
-    app.storageId = QStringLiteral("a.desktop");
-    m_appSource.setApps({app});
-    QCOMPARE(m_unified.data(m_unified.index(0, 0),
-                            UnifiedSearchModel::RunnerActionsCountRole).toInt(), 0);
-}
+    RunnerActionsStubModel rich;
+    const KRunner::Action valid(QStringLiteral("act1"), QStringLiteral("icon1"), QStringLiteral("Do Thing"));
+    const KRunner::Action empty; // id + text empty → dropped by the unwrap filter
+    rich.setRows({
+        {QStringLiteral("calc"), {QVariant::fromValue(valid), QVariant::fromValue(empty)}},
+    });
+    m_runnerFilter.setSourceModel(&rich);
+    // Re-resolve the actions role: setRunnerModel cached it against the empty
+    // QStringListModel from init(), which had no "actions" role.
+    m_unified.setRunnerModel(&m_runnerFilter);
 
-void TestUnifiedSearch::runnerActionsCountIsZeroWhenSourceLacksActionsRole()
-{
-    // QStringListModel doesn't expose an "actions" role, so the unified
-    // model's m_runnerActionsRole stays -1 and the count role falls to 0.
-    m_runnerSource.setStringList({QStringLiteral("calc")});
+    // Row 0 is the runner row (no apps). The empty action is skipped; the valid
+    // one is unwrapped into {id, icon, text}.
+    const auto actions = m_unified.runnerActions(0);
+    QCOMPARE(actions.size(), 1);
+    const auto map = actions.first().toMap();
+    QCOMPARE(map.value(QStringLiteral("id")).toString(), QStringLiteral("act1"));
+    QCOMPARE(map.value(QStringLiteral("icon")).toString(), QStringLiteral("icon1"));
+    QCOMPARE(map.value(QStringLiteral("text")).toString(), QStringLiteral("Do Thing"));
+
+    // The count role mirrors the unwrap, also skipping the empty action.
     QCOMPARE(m_unified.data(m_unified.index(0, 0),
-                            UnifiedSearchModel::RunnerActionsCountRole).toInt(), 0);
+                            UnifiedSearchModel::RunnerActionsCountRole).toInt(), 1);
 }
 
 QTEST_MAIN(TestUnifiedSearch)
