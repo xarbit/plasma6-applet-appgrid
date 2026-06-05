@@ -47,19 +47,17 @@ RowLayout {
         "switchuser": { "icon": HeaderActions.iconFor("switchuser"), "label": i18nd("dev.xarbit.appgrid", "Switch User") }
     })
 
-    function _available(id) {
-        switch (id) {
-        case "updateCheck":
-            return !!updateChecker && updateChecker.enabled === true && updateChecker.hasUpdate === true
-        case "sleep":      return sessionActions.canSuspend
-        case "restart":    return sessionActions.canReboot
-        case "shutdown":   return sessionActions.canShutdown
-        case "lock":       return sessionActions.canLock
-        case "logout":     return sessionActions.canLogout
-        case "switchuser": return sessionActions.canSwitchUser
-        }
-        return false
-    }
+    // Live availability per action id. A binding (not a function) so barItems /
+    // menuItems re-evaluate when a session capability or the update state flips.
+    readonly property var _availability: ({
+        "updateCheck": !!updateChecker && updateChecker.enabled === true && updateChecker.hasUpdate === true,
+        "sleep": sessionActions.canSuspend,
+        "restart": sessionActions.canReboot,
+        "shutdown": sessionActions.canShutdown,
+        "lock": sessionActions.canLock,
+        "logout": sessionActions.canLogout,
+        "switchuser": sessionActions.canSwitchUser
+    })
 
     function _run(id) {
         switch (id) {
@@ -74,9 +72,9 @@ RowLayout {
         actions.actionTriggered()
     }
 
-    readonly property var _parsed: HeaderActions.parse(headerActions, !!updateChecker)
-    readonly property var barItems: _parsed.bar.filter(id => actions._available(id))
-    readonly property var menuItems: _parsed.menu.filter(id => actions._available(id))
+    readonly property var _layout: HeaderActions.layout(headerActions, !!updateChecker, _availability)
+    readonly property var barItems: _layout.bar
+    readonly property var menuItems: _layout.menu
 
     // The live overflow menu, so closeMenus() can reach it.
     property var overflowMenu: null

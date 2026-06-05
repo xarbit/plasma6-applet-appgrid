@@ -49,16 +49,7 @@ ColumnLayout {
             arr.push({ id: actionModel.get(i).actionId, placement: actionModel.get(i).placement })
         return arr
     }
-    function _matches(target) {
-        if (actionModel.count !== target.length)
-            return false
-        for (var i = 0; i < target.length; ++i) {
-            var m = actionModel.get(i)
-            if (m.actionId !== target[i].id || m.placement !== target[i].placement)
-                return false
-        }
-        return true
-    }
+    function _matches(target) { return HeaderActions.entriesEqual(_entries(), target) }
     function _sync() {
         var target = HeaderActions.entries(root.actions, root.universalBuild)
         // Skip the rebuild when already in sync — our own edits round-trip

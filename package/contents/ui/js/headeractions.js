@@ -97,6 +97,29 @@ function parse(configList, universalBuild) {
     return { bar: bar, menu: menu };
 }
 
+// Render layout for the live header strip: parse(), then drop actions that are
+// not currently available. `available` is a map { id: bool } of live capability
+// (session caps, update presence); an id missing from it counts as unavailable.
+// Keeps the parse/split/filter as one tested step so the widget only binds.
+function layout(configList, universalBuild, available) {
+    var p = parse(configList, universalBuild);
+    function keep(id) { return !!(available && available[id]); }
+    return { bar: p.bar.filter(keep), menu: p.menu.filter(keep) };
+}
+
+// Deep-equal two ordered entry lists ([{ id, placement }]). The config editor
+// uses it to skip rebuilding its row model when the incoming config already
+// matches what is shown (a rebuild mid-edit would drop row state).
+function entriesEqual(a, b) {
+    if (a.length !== b.length)
+        return false;
+    for (var i = 0; i < a.length; ++i) {
+        if (a[i].id !== b[i].id || a[i].placement !== b[i].placement)
+            return false;
+    }
+    return true;
+}
+
 // Full ordered entry list for the config editor: every catalogue action with
 // its placement (bar | menu | off). Config order first; ids absent from the
 // config are appended at their default placement. Unknown ids dropped.

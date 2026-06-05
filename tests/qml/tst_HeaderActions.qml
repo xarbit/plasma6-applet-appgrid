@@ -120,4 +120,50 @@ TestCase {
         compare(HeaderActions.iconFor("updateCheck"), "system-software-update");
         compare(HeaderActions.iconFor("bogus"), "");
     }
+
+    // --- layout: parse + availability filter ---
+
+    function test_layoutDropsUnavailableActions() {
+        // Only sleep + lock are available; the rest of the default layout falls
+        // away while order is preserved.
+        var avail = { "sleep": true, "lock": true };
+        var r = HeaderActions.layout([], true, avail);
+        compare(r.bar.join(","), "sleep");
+        compare(r.menu.join(","), "lock");
+    }
+
+    function test_layoutMissingIdCountsUnavailable() {
+        // An id absent from the availability map is treated as unavailable.
+        var r = HeaderActions.layout(["sleep:bar"], true, {});
+        compare(r.bar.length, 0);
+        compare(r.menu.length, 0);
+    }
+
+    function test_layoutKeepsConfigOrderAmongAvailable() {
+        var avail = { "restart": true, "shutdown": true };
+        var r = HeaderActions.layout(["shutdown:bar", "restart:bar"], true, avail);
+        compare(r.bar.join(","), "shutdown,restart");
+    }
+
+    // --- entriesEqual: ordered deep compare ---
+
+    function test_entriesEqualMatches() {
+        var a = [{ id: "sleep", placement: "bar" }, { id: "lock", placement: "menu" }];
+        var b = [{ id: "sleep", placement: "bar" }, { id: "lock", placement: "menu" }];
+        verify(HeaderActions.entriesEqual(a, b));
+    }
+
+    function test_entriesEqualDiffersOnLength() {
+        var a = [{ id: "sleep", placement: "bar" }];
+        var b = [{ id: "sleep", placement: "bar" }, { id: "lock", placement: "menu" }];
+        verify(!HeaderActions.entriesEqual(a, b));
+    }
+
+    function test_entriesEqualDiffersOnPlacementOrOrder() {
+        var base = [{ id: "sleep", placement: "bar" }, { id: "lock", placement: "menu" }];
+        verify(!HeaderActions.entriesEqual(base,
+            [{ id: "sleep", placement: "menu" }, { id: "lock", placement: "menu" }]));
+        verify(!HeaderActions.entriesEqual(base,
+            [{ id: "lock", placement: "menu" }, { id: "sleep", placement: "bar" }]));
+    }
 }
