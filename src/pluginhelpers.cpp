@@ -112,7 +112,7 @@ namespace
 // headers, comments and keyless lines are skipped. Shared by the mimeapps and
 // kdeglobals parsers so the section/comment handling lives in one place.
 template<typename Fn>
-void forEachIniEntry(const QString &contents, QLatin1String sectionHeader, Fn &&fn)
+void forEachIniEntry(const QString &contents, const QLatin1String &sectionHeader, Fn &&fn)
 {
     bool inSection = false;
     const auto lines = contents.split(QLatin1Char('\n'));
