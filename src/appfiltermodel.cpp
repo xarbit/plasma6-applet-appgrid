@@ -865,9 +865,13 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
         return;
     }
     m_book.recordRecent(storageId, m_maxRecentApps);
+    // Bump the launch count before re-sorting so Most Used reflects this launch
+    // on the first click, not the next. recordLaunch clears the row-score cache
+    // but does not itself re-sort; the invalidate() below does, now reading the
+    // incremented count.
+    recordLaunch(storageId);
     invalidate();
     Q_EMIT recentAppsChanged();
-    recordLaunch(storageId);
 }
 
 void AppFilterModel::launch(int proxyIndex)

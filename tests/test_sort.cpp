@@ -18,6 +18,7 @@ private Q_SLOTS:
     void alphabeticalSortCaseInsensitive();
     void mostUsedSortsByLaunchCount();
     void mostUsedFallsBackToNameOnTie();
+    void mostUsedRerankAfterSingleLaunch();
     void byCategorySortsByCategoryThenName();
     void favoritesOnlyPreservesOrder();
     void favoritesOnlySortsAlphabeticallyWhenEnabled();
@@ -95,6 +96,26 @@ void TestSort::mostUsedFallsBackToNameOnTie()
     m_filter.setSortMode(AppFilterModel::MostUsed);
     QCOMPARE(nameOrder(), (QStringList{
         QStringLiteral("Alpha"), QStringLiteral("Bravo"), QStringLiteral("Charlie")}));
+}
+
+void TestSort::mostUsedRerankAfterSingleLaunch()
+{
+    // Regression: launching an app must re-rank it on the FIRST launch, not the
+    // second. The bug was recordRecentLaunch() re-sorting before bumping the
+    // count, so the sort read the pre-launch value.
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+        {QStringLiteral("C"), {}, {}, {}, {}, QStringLiteral("c"), {}, {}, {}},
+    });
+    m_filter.setLaunchCountsMap({}); // all zero → alphabetical: A, B, C
+    m_filter.setSortMode(AppFilterModel::MostUsed);
+    QCOMPARE(nameOrder(), (QStringList{
+        QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("C")}));
+
+    m_filter.recordRecentLaunch(QStringLiteral("c")); // one launch
+    QCOMPARE(nameOrder(), (QStringList{
+        QStringLiteral("C"), QStringLiteral("A"), QStringLiteral("B")}));
 }
 
 void TestSort::byCategorySortsByCategoryThenName()
