@@ -31,6 +31,12 @@ TestCase {
         compare(Scale.iconScale(5), 1.00)
     }
 
+    // A non-integer preset rounds to the nearest row before lookup.
+    function test_iconScaleRoundsNonInteger() {
+        compare(Scale.iconScale(0.6), 0.90)   // rounds to 1 (Medium)
+        compare(Scale.iconScale(1.4), 0.90)   // rounds to 1 (Medium)
+    }
+
     // --- textScale: curve unless pinned independently (#167) ---
 
     function test_textScaleFollowsPresetWhenNotIndependent() {

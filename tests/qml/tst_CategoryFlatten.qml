@@ -43,6 +43,18 @@ TestCase {
         compare(r.sectionStartIndices.length, 0)
     }
 
+    function test_flattenTreatsAbsentAppsKeyAsEmpty() {
+        // A group object with no `apps` key at all → treated as an empty
+        // section (apps || []), not a crash.
+        const r = CategoryFlatten.flatten([
+            { category: "A", apps: [1] },
+            { category: "B" },
+            { category: "C", apps: [2] },
+        ])
+        compare(r.flatApps.join(","), "1,2")
+        compare(r.sectionStartIndices.join(","), "0,1,1")
+    }
+
     function test_flattenEmptySectionInMiddle() {
         // An empty middle section repeats the running offset as its start.
         const r = CategoryFlatten.flatten([

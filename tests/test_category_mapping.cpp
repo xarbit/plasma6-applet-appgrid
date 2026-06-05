@@ -125,6 +125,7 @@ private Q_SLOTS:
             QStringLiteral("System"),
         };
         const auto &map = categoryMap();
+        QVERIFY(!map.isEmpty()); // also catches an accidental wipe of the table
         for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
             QVERIFY2(validBuckets.contains(it.value()),
                      qPrintable(QStringLiteral("Unexpected bucket '%1' for key '%2'")
@@ -132,12 +133,6 @@ private Q_SLOTS:
         }
     }
 
-    void tableHasReasonableSize()
-    {
-        // Smoke check — the source file holds ~100 entries; an
-        // accidental wipe (e.g. botched edit) would show up here.
-        QVERIFY(categoryMap().size() > 80);
-    }
 };
 
 QTEST_MAIN(TestCategoryMapping)

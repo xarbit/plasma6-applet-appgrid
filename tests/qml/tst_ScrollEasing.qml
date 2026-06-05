@@ -75,6 +75,16 @@ TestCase {
                "midpoint should be " + expected + ", was " + result)
     }
 
+    function test_quadraticMidpointMatchesFormulaDown() {
+        // The down arm is asymmetric: inside = dragY - (viewH - edge).
+        // dragY = viewH - edge/2 → inside = edge/2 → t = 0.5 → t² = 0.25.
+        const result = ScrollEasing.deltaPerTick(false, viewH - edge / 2, edge, viewH,
+                                                 minPx, maxPx)
+        const expected = minPx + (maxPx - minPx) * 0.25
+        verify(Math.abs(result - expected) < 1e-9,
+               "down midpoint should be " + expected + ", was " + result)
+    }
+
     // --- monotonic: deeper-into-zone is always faster ---
 
     function test_curveIsMonotonicAcrossZone() {

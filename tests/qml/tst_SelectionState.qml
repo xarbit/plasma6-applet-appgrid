@@ -58,6 +58,29 @@ TestCase {
         compare(list, ["app1.desktop", "app3.desktop"])
     }
 
+    // Direct sid toggle with anchorIdx -1 adds the sid but leaves the anchor
+    // where the last indexed toggle put it (the right-click "add to selection"
+    // path, which has no grid index).
+    function test_toggleSidKeepsAnchorWhenNoIndex() {
+        var s = makeSelection(5)
+        s.toggleAt(2)               // anchor = 2
+        s.toggleSid("extra.desktop", -1)
+        verify(s.contains("extra.desktop"))
+        compare(s.selectionCount, 2)
+        compare(s.anchor, 2)        // unchanged
+    }
+
+    // A range that overlaps already-selected items counts each app once.
+    function test_rangeToWithOverlapDoesNotDoubleCount() {
+        var s = makeSelection(5)
+        s.toggleAt(0)               // app0 selected, anchor 0
+        s.rangeTo(2)                // 0..2; app0 already in
+        compare(s.selectionCount, 3)
+        verify(s.contains("app0.desktop"))
+        verify(s.contains("app1.desktop"))
+        verify(s.contains("app2.desktop"))
+    }
+
     // --- rangeTo ---
 
     function test_rangeToExtendsForward() {

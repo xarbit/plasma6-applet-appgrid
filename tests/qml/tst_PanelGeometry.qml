@@ -57,6 +57,12 @@ TestCase {
         compare(r.y, 270)   // 250 + 20
     }
 
+    function test_rectSumsOffsetAndCompactShift() {
+        // Both apply additively, neither overrides the other.
+        const r = PanelGeometry.panelRect(1000, 800, 400, 300, 50, 20)
+        compare(r.y, 320)   // 250 + 50 + 20
+    }
+
     function test_rectRoundsFractionalSizesAndShift() {
         const r = PanelGeometry.panelRect(1001, 800, 401, 300, 0, 15.4)
         compare(r.w, 401)

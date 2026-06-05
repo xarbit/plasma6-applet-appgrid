@@ -74,7 +74,7 @@ TestCase {
     function test_migrationLeavesAlreadyPrefixedLegacyIdsAlone() {
         // toPrefixed is idempotent on already-scheme'd ids.
         const actions = FavoritesMigration.decideMigrationActions(
-            makeModel([], favRole, []),
+            makeModel([]),
             favRole,
             ["applications:foo.desktop", "bar.desktop"])
         compare(actions.prefixedToPort, [

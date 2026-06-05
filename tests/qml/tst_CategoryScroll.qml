@@ -147,6 +147,12 @@ TestCase {
         compare(CategoryScroll.pageRightTarget([], 0, 150, 500, 5), 500)
     }
 
+    function test_pageRightSkipsNullDelegates() {
+        // Unrealised delegates arrive as null; they're skipped, so an all-null
+        // array behaves like an empty one → snap to the end.
+        compare(CategoryScroll.pageRightTarget([null, null], 0, 150, 500, 5), 500)
+    }
+
     // --- pageLeftTarget ---
 
     function test_pageLeftAnchorsFirstVisibleItem() {

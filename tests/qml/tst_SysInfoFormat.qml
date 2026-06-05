@@ -30,9 +30,15 @@ TestCase {
         const t = SysInfoFormat.clipboardText(fullInfo, true, 12, 5)
         const lines = t.split("\n")
         compare(lines.length, 10)
+        // Every line pinned by index so a reorder of the block is caught.
         compare(lines[0], "AppGrid: 1.10.0")
         compare(lines[1], "Install: AUR")
+        compare(lines[2], "Variant: center")
+        compare(lines[3], "Session: wayland")
         compare(lines[4], "Plasma: 6.2.0")
+        compare(lines[5], "KF: 6.10.0")
+        compare(lines[6], "Qt: 6.8.1")
+        compare(lines[7], "OS: CachyOS")
         compare(lines[8], "Screens: 1x 2256x1504")
         compare(lines[9], "Favorites: KAStats (12; backup 5)")
     }

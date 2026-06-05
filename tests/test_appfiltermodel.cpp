@@ -240,15 +240,18 @@ void TestAppFilterModel::hideAppByProxyIndexAddsToList()
         {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
     });
     QSignalSpy spy(&m_filter, &AppFilterModel::hiddenAppsChanged);
+    // Alphabetical sort → proxy row 0 is "A" (storageId "a").
     m_filter.hideApp(0);
     QCOMPARE(spy.count(), 1);
-    QVERIFY(m_filter.hiddenApps().contains(QStringLiteral("a"))
-            || m_filter.hiddenApps().contains(QStringLiteral("b")));
-    // Re-hiding same row should be a no-op (storageId already hidden,
-    // but the row may now be filtered out, making index invalid).
-    const auto before = m_filter.hiddenApps();
+    QCOMPARE(m_filter.hiddenApps(), QStringList{QStringLiteral("a")});
+    // "a" is now filtered out of the normal view, so row 0 becomes "B".
+    // Hiding row 0 again hides "b" — the row shifted; it is not a re-hide.
+    QCOMPARE(m_filter.count(), 1);
     m_filter.hideApp(0);
-    QVERIFY(m_filter.hiddenApps().size() <= before.size() + 1);
+    QCOMPARE(spy.count(), 2);
+    const auto hidden = m_filter.hiddenApps();
+    QVERIFY(hidden.contains(QStringLiteral("a")));
+    QVERIFY(hidden.contains(QStringLiteral("b")));
 }
 
 void TestAppFilterModel::hideAppDoesNothingForInvalidIndex()
