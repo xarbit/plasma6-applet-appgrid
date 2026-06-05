@@ -178,4 +178,32 @@ TestCase {
                 "launchByStorageId fired per sid in order")
         p.destroy()
     }
+
+    // The confirm gate: at/above the threshold (4) _requestBulkLaunch must
+    // prompt and launch NOTHING — the guard against opening dozens of apps by
+    // accident. This is the riskiest path; without the gate it would fire all.
+    function test_bulkLaunchAboveThresholdDoesNotLaunch() {
+        testCase.launchedSids = []
+        appsModelStub.launchedSids = []
+        var p = make()
+
+        p._requestBulkLaunch(["a", "b", "c", "d"]) // 4 == threshold
+
+        compare(testCase.launchedSids.length, 0, "no notifyAppLaunched above threshold")
+        compare(appsModelStub.launchedSids.length, 0, "no launchByStorageId above threshold")
+        p.destroy()
+    }
+
+    // Below the threshold the same gate fires immediately, no prompt.
+    function test_bulkLaunchBelowThresholdFiresImmediately() {
+        testCase.launchedSids = []
+        appsModelStub.launchedSids = []
+        var p = make()
+
+        p._requestBulkLaunch(["a", "b", "c"]) // 3 < threshold
+
+        compare(appsModelStub.launchedSids.join(","), "a,b,c",
+                "launchByStorageId fired per sid below threshold")
+        p.destroy()
+    }
 }
