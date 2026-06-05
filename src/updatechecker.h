@@ -68,6 +68,16 @@ public:
     };
     [[nodiscard]] static ManifestResult parseManifest(const QByteArray &bytes);
 
+    // The release to surface for a given installed version.
+    struct ChosenRelease {
+        QString version;
+        QString url;
+    };
+    // Channel selection: stable users (no "-" in their version) only ever see
+    // the stable release; pre-release users see the prerelease when it is newer
+    // than stable, else stable. Pure — depends only on the inputs.
+    [[nodiscard]] static ChosenRelease chooseRelease(const QString &currentVersion, const ManifestResult &manifest);
+
 Q_SIGNALS:
     void hasUpdateChanged();
     void latestVersionChanged();

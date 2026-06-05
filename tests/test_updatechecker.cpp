@@ -316,6 +316,47 @@ private Q_SLOTS:
         QCOMPARE(result.prereleaseVersion, prereleaseVersion);
     }
 
+    // --- chooseRelease (channel selection) -------------------------------
+
+    void chooseRelease_data()
+    {
+        QTest::addColumn<QString>("current");
+        QTest::addColumn<QString>("stableV");
+        QTest::addColumn<QString>("preV");
+        QTest::addColumn<QString>("expectedV");
+
+        QTest::newRow("stable user ignores prerelease")
+            << "1.8.0" << "1.8.0" << "1.9.0-rc.1" << "1.8.0";
+        QTest::newRow("prerelease user takes newer prerelease")
+            << "1.8.0-rc.5" << "1.8.0" << "1.9.0-rc.1" << "1.9.0-rc.1";
+        QTest::newRow("prerelease user keeps stable when prerelease older")
+            << "1.9.0-rc.1" << "1.9.0" << "1.8.0-rc.1" << "1.9.0";
+        QTest::newRow("prerelease user, no prerelease offered")
+            << "1.8.0-rc.1" << "1.8.0" << "" << "1.8.0";
+    }
+
+    void chooseRelease()
+    {
+        QFETCH(QString, current);
+        QFETCH(QString, stableV);
+        QFETCH(QString, preV);
+        QFETCH(QString, expectedV);
+
+        UpdateChecker::ManifestResult m;
+        m.valid = true;
+        m.stableVersion = stableV;
+        m.stableUrl = QStringLiteral("https://example.com/stable");
+        m.prereleaseVersion = preV;
+        m.prereleaseUrl = preV.isEmpty() ? QString() : QStringLiteral("https://example.com/pre");
+
+        const auto chosen = UpdateChecker::chooseRelease(current, m);
+        QCOMPARE(chosen.version, expectedV);
+        // The URL travels with the chosen version.
+        QCOMPARE(chosen.url,
+                 expectedV == preV ? QStringLiteral("https://example.com/pre")
+                                   : QStringLiteral("https://example.com/stable"));
+    }
+
     // (Removed cacheFilePermissions: saveState() is private and only reachable
     // via the async network reply path, so an offline unit test can't exercise
     // the real permission-tightening — the old test only asserted the perms it

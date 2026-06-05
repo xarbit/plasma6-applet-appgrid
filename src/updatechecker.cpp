@@ -253,6 +253,19 @@ void UpdateChecker::runCheck(bool force)
     });
 }
 
+UpdateChecker::ChosenRelease UpdateChecker::chooseRelease(const QString &currentVersion, const ManifestResult &manifest)
+{
+    ChosenRelease chosen{manifest.stableVersion, manifest.stableUrl};
+    // Stable users (no "-") never see a prerelease; pre-release users take the
+    // prerelease only when it is strictly newer than stable.
+    const bool currentIsPrerelease = currentVersion.contains(QChar(u'-'));
+    if (currentIsPrerelease && !manifest.prereleaseVersion.isEmpty() && isNewer(manifest.prereleaseVersion, manifest.stableVersion)) {
+        chosen.version = manifest.prereleaseVersion;
+        chosen.url = manifest.prereleaseUrl;
+    }
+    return chosen;
+}
+
 UpdateChecker::ManifestResult UpdateChecker::parseManifest(const QByteArray &bytes)
 {
     ManifestResult result;
@@ -340,25 +353,16 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
         return;
     }
 
-    // Pick which advertised version to surface to the user:
-    //   - stable users (no "-" in current version) only see stable
-    //   - pre-release users (e.g. "1.8.0-rc.1") see the higher of stable
-    //     or prerelease; either path is a legit upgrade for them
-    const bool currentIsPrerelease = m_currentVersion.contains(QChar(u'-'));
-    QString chosenVersion = manifest.stableVersion;
-    QString chosenUrl = manifest.stableUrl;
-    if (currentIsPrerelease && !manifest.prereleaseVersion.isEmpty() && isNewer(manifest.prereleaseVersion, manifest.stableVersion)) {
-        chosenVersion = manifest.prereleaseVersion;
-        chosenUrl = manifest.prereleaseUrl;
-    }
+    // Pick which advertised version to surface to the user (see chooseRelease).
+    const auto chosen = chooseRelease(m_currentVersion, manifest);
 
     const bool wasAvailable = m_hasUpdate;
     const QString prevVersion = m_latestVersion;
     const QString prevUrl = m_releaseUrl;
 
-    m_latestVersion = chosenVersion;
-    m_releaseUrl = chosenUrl;
-    m_hasUpdate = isNewer(chosenVersion, m_currentVersion);
+    m_latestVersion = chosen.version;
+    m_releaseUrl = chosen.url;
+    m_hasUpdate = isNewer(chosen.version, m_currentVersion);
 
     if (m_latestVersion != prevVersion) {
         Q_EMIT latestVersionChanged();
