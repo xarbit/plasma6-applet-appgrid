@@ -5,6 +5,7 @@
 
 #include "frecencyprovider.h"
 
+#include "frecencyscoring.h"
 #include "pluginhelpers.h"
 
 #include <PlasmaActivities/Stats/Query>
@@ -28,14 +29,6 @@ Q_LOGGING_CATEGORY(lcFrecency, "appgrid.frecency", QtWarningMsg)
 // Cap how many top-frecent apps we track. The ranking only needs enough rows
 // to win tiebreaks among search hits, not the full launch history.
 constexpr int kFrecencyLimit = 200;
-
-QString storageIdFromResource(const QString &resource)
-{
-    if (resource.startsWith(PluginHelpers::ApplicationsUrlPrefix)) {
-        return resource.mid(PluginHelpers::ApplicationsUrlPrefix.size());
-    }
-    return {};
-}
 }
 
 FrecencyProvider::FrecencyProvider(QObject *parent)
@@ -88,41 +81,13 @@ void FrecencyProvider::rebuildScores()
     }
 
     const int rows = m_model->rowCount();
-    QHash<QString, int> next;
-    next.reserve(static_cast<qsizetype>(rows) * 2);
-    const QLatin1String kdePrefix("org.kde.");
-    // Insert into the map keyed by `key`, but never demote an existing higher
-    // score (matters when two distinct apps collide on the normalised form).
-    const auto add = [&next](const QString &key, int score) {
-        if (key.isEmpty()) {
-            return;
-        }
-        const auto it = next.find(key);
-        if (it == next.end() || it.value() < score) {
-            next.insert(key, score);
-        }
-    };
+    QStringList resources;
+    resources.reserve(rows);
     for (int r = 0; r < rows; ++r) {
         const QModelIndex idx = m_model->index(r, 0);
-        const QString resource = idx.data(KAStats::ResultModel::ResourceRole).toString();
-        const QString sid = storageIdFromResource(resource);
-        if (sid.isEmpty()) {
-            continue;
-        }
-        // Rank-based score (top row = `rows`, last row = 1) instead of the
-        // raw KAStats score. Stable ordering even as absolute scores drift.
-        const int score = rows - r;
-        add(sid, score);
-        // Same app, two common .desktop id shapes — different launchers /
-        // KDE eras stored Konsole as both "org.kde.konsole.desktop" and
-        // "konsole.desktop". AppModel::StorageIdRole may report either,
-        // so index both spellings so the AppFilterModel lookup hits.
-        if (sid.startsWith(kdePrefix)) {
-            add(sid.mid(kdePrefix.size()), score);
-        } else {
-            add(kdePrefix + sid, score);
-        }
+        resources.push_back(idx.data(KAStats::ResultModel::ResourceRole).toString());
     }
+    const QHash<QString, int> next = FrecencyScoring::scoresFromResources(resources);
 
     if (next != m_scores) {
         m_scores = next;

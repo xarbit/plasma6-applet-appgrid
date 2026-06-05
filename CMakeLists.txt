@@ -188,6 +188,8 @@ set(APPGRID_COMMON_SOURCES
     src/unifiedsearchmodel.h
     src/frecencyprovider.cpp
     src/frecencyprovider.h
+    src/frecencyscoring.cpp
+    src/frecencyscoring.h
 )
 # Update checker is compiled in only for universal-tarball builds.
 if(APPGRID_UNIVERSAL_BUILD)

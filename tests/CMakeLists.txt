@@ -72,6 +72,16 @@ add_executable(test_launchbookkeeping
 target_link_libraries(test_launchbookkeeping PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_launchbookkeeping COMMAND test_launchbookkeeping)
 
+# FrecencyScoring — pure rank-scoring extracted from FrecencyProvider, free of
+# KActivities so it tests with QtCore only (like the helpers above).
+add_executable(test_frecency_scoring
+    test_frecency_scoring.cpp
+    ${CMAKE_SOURCE_DIR}/src/frecencyscoring.cpp
+    ${CMAKE_SOURCE_DIR}/src/frecencyscoring.h
+)
+target_link_libraries(test_frecency_scoring PRIVATE Qt6::Test Qt6::Core)
+add_test(NAME test_frecency_scoring COMMAND test_frecency_scoring)
+
 # DiscoverBackends — Plasma-free string/filesystem mapping (QtCore only).
 add_executable(test_discoverbackends
     test_discoverbackends.cpp
