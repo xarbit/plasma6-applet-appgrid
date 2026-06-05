@@ -240,11 +240,12 @@ private Q_SLOTS:
         };
         writeCacheFile(obj);
         UpdateChecker uc(QStringLiteral("1.0.0"));
-        // Either the cap kicked in (truncated → JSON parse fails → nothing
-        // loaded) or Qt accepted the head; the contract is "no crash, no
-        // invalid state". hasUpdate must be a defined bool, releaseUrl must
-        // be empty or a valid http(s) URL.
-        QVERIFY(!uc.hasUpdate() || uc.latestVersion() == QStringLiteral("1.8.0"));
+        // The 20 KiB padding pushes the file past the 16 KiB read cap, so
+        // loadState's f.read(kMaxResponseBytes) gets a truncated head that
+        // can't parse as JSON → nothing is loaded. The cache is rejected
+        // outright: no version, no update.
+        QVERIFY(!uc.hasUpdate());
+        QVERIFY(uc.latestVersion().isEmpty());
     }
 
     // --- parseManifest (pure JSON → struct) -----------------------------
@@ -315,35 +316,10 @@ private Q_SLOTS:
         QCOMPARE(result.prereleaseVersion, prereleaseVersion);
     }
 
-    void cacheFilePermissions()
-    {
-        // Force a save by writing then loading then re-saving via the
-        // checker's path. The simplest reliable way without networking is
-        // to write a valid file ourselves and then trigger a save by
-        // toggling enabled (which won't fire a network request synchronously
-        // and so we won't actually write — fall back to direct probe).
-        writeCacheFile(QJsonObject{
-            {QStringLiteral("latestVersion"), QStringLiteral("1.8.0")},
-            {QStringLiteral("releaseUrl"),    QStringLiteral("https://example.com/r")},
-            {QStringLiteral("etag"),          QString()},
-            {QStringLiteral("lastCheck"),     QStringLiteral("2026-01-01T00:00:00Z")},
-        });
-        // Strip the perms we set above so the test verifies a real save
-        // would tighten them.
-        QFile(stateFile()).setPermissions(
-            QFile::ReadOwner | QFile::WriteOwner
-            | QFile::ReadGroup | QFile::ReadOther);
-        // Force a save through the public API. checkNow() will run runCheck
-        // which posts an async network request — that's fine, what we care
-        // about is the saveState() inside its eventual reply path. But that
-        // requires the event loop and the network. To stay offline-only we
-        // probe the perms hook directly via QFile::setPermissions on the
-        // existing file and assert it doesn't get loosened by Qt itself.
-        const auto perms = QFile(stateFile()).permissions();
-        // Sanity: file exists, has owner read/write at minimum.
-        QVERIFY(perms.testFlag(QFile::ReadOwner));
-        QVERIFY(perms.testFlag(QFile::WriteOwner));
-    }
+    // (Removed cacheFilePermissions: saveState() is private and only reachable
+    // via the async network reply path, so an offline unit test can't exercise
+    // the real permission-tightening — the old test only asserted the perms it
+    // set itself. The hardening needs a networked/integration test.)
 
 private:
     static QString stateFile()
