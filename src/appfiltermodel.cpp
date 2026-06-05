@@ -877,15 +877,18 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
 void AppFilterModel::launch(int proxyIndex)
 {
     const auto idx = index(proxyIndex, 0);
-    // Record the recent + bump the launch count before delegating the actual
-    // launch. The bookkeeping reads only the proxy's own data + LaunchBookkeeping,
-    // so it must not hinge on the source being a concrete AppModel (it isn't in
-    // tests). recordRecentLaunch no-ops on an empty sid (invalid index).
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
+    // Resolve the source row BEFORE recordRecentLaunch: that call invalidate()s
+    // the proxy, freeing the internal mapping `idx` points into — using `idx`
+    // (or mapToSource on it) afterwards is a use-after-free. Capture the row
+    // now, record the bookkeeping, then launch with the captured row. The
+    // bookkeeping runs ahead of the AppModel cast so it stays testable with a
+    // non-AppModel stub source (recordRecentLaunch no-ops on an empty sid).
+    const int sourceRow = mapToSource(idx).row();
     recordRecentLaunch(sid);
 
     if (auto *model = qobject_cast<AppModel *>(sourceModel())) {
-        model->launch(mapToSource(idx).row());
+        model->launch(sourceRow);
     }
 }
 
