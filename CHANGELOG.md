@@ -66,6 +66,7 @@ All notable changes to AppGrid are documented here.
 
 - Wrap PrefixInfoView field labels
 - Silence xgettext QML warnings with --language=C
+- Update template and translate maintainer-owned languages
 
 ### Metainfo
 
