@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 cmake_minimum_required(VERSION 3.20)
-project(AppGrid VERSION 1.10.0 LANGUAGES CXX)
+project(AppGrid VERSION 1.9.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,7 +40,7 @@ option(APPGRID_STRICT_WARNINGS "Enable -Wall/-Wextra and treat warnings as error
 
 # Resolved version baked into the binary (update checker + i: view):
 #   1. APPGRID_VERSION_OVERRIDE wins (CI injects exact tag here).
-#   2. On a release tag → CMAKE_PROJECT_VERSION (clean "1.10.0").
+#   2. On a release tag → CMAKE_PROJECT_VERSION (clean "1.9.0").
 #   3. Local dev → "${BASE}-dev.<N>+self.g<sha>". The +self.g… build-metadata
 #      tail flags hand-built binaries vs CI artifacts; semver ignores build
 #      metadata for ordering so update behavior matches.

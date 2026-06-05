@@ -1,6 +1,6 @@
 # Maintainer: Jason Scurtu <code@xarbit.dev>
 pkgname=plasma6-applets-appgrid
-pkgver=1.10.0
+pkgver=1.9.0
 pkgrel=1
 pkgdesc="A modern fullscreen application launcher for KDE Plasma"
 arch=('x86_64')
