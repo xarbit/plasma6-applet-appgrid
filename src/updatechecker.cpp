@@ -129,14 +129,14 @@ UpdateChecker::UpdateChecker(const QString &currentVersion, QObject *parent)
 
 UpdateChecker::~UpdateChecker() = default;
 
-void UpdateChecker::setEnabled(bool enabled)
+void UpdateChecker::setEnabled(bool enable)
 {
-    if (m_enabled == enabled) {
+    if (m_enabled == enable) {
         return;
     }
-    m_enabled = enabled;
+    m_enabled = enable;
     Q_EMIT enabledChanged();
-    if (enabled) {
+    if (enable) {
         runCheck(/*force=*/true);
         m_periodicTimer.start(nextPeriodicInterval());
     } else {

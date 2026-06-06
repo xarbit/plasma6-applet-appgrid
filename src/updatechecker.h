@@ -46,7 +46,7 @@ public:
     {
         return m_enabled;
     }
-    void setEnabled(bool enabled);
+    void setEnabled(bool enable);
 
     Q_INVOKABLE void checkNow();
     Q_INVOKABLE void openReleasePage();
