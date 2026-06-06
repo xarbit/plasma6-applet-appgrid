@@ -20,7 +20,7 @@ SPDX-License-Identifier = "CC0-1.0"
 
 # Project documentation.
 [[annotations]]
-path = ["README.md", "CONTRIBUTING.md", "CHANGELOG.md", "docs/**", "packaging/nix/README.md", "packaging/universal/INSTALL.TXT"]
+path = ["README.md", "CONTRIBUTING.md", "CHANGELOG.md", "docs/**", "packaging/nix/README.md", "packaging/universal/INSTALL.TXT", "packaging/extras/README.md"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 AppGrid Contributors"
 SPDX-License-Identifier = "GPL-2.0-or-later"
@@ -31,6 +31,8 @@ SPDX-License-Identifier = "GPL-2.0-or-later"
 path = [
     "PKGBUILD",
     "packaging/aur/PKGBUILD*.in",
+    "packaging/aur/*.install",
+    "packaging/deb/debian/postinst",
     "packaging/deb/debian/control",
     "packaging/deb/debian/copyright",
     "packaging/deb/debian/source/format",
@@ -44,6 +46,8 @@ path = [
     ".qmllint.ini",
     ".github/workflows/*.yml",
     ".github/ISSUE_TEMPLATE/*.yml",
+    "packaging/extras/*.path",
+    "packaging/extras/*.service",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 AppGrid Contributors"

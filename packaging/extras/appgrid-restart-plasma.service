@@ -1,0 +1,9 @@
+[Unit]
+Description=Restart Plasma (plasmashell) after an AppGrid update
+Documentation=https://appgrid.xarbit.dev
+
+[Service]
+Type=oneshot
+# Let the package transaction finish writing the new .so before restarting.
+ExecStartPre=/usr/bin/sleep 2
+ExecStart=/usr/bin/systemctl --user restart plasma-plasmashell.service

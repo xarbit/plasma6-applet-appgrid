@@ -13,6 +13,7 @@ on:
       - "screenshots/**"
       - ".gitignore"
       - "dev.xarbit.appgrid.metainfo.xml"
+      - "packaging/extras/**"
   pull_request:
     branches:
       - main

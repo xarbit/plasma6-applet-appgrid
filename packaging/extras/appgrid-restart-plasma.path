@@ -1,0 +1,16 @@
+[Unit]
+Description=Restart Plasma when the AppGrid plugin is updated
+Documentation=https://appgrid.xarbit.dev
+
+[Path]
+# Watch both install locations (~/.local for the universal package, /usr for
+# distro packages) and both variants. Paths that don't exist are simply never
+# triggered, so it is safe to list all four regardless of how you installed.
+PathChanged=%h/.local/lib/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
+PathChanged=%h/.local/lib/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
+PathChanged=/usr/lib/qt6/plugins/plasma/applets/dev.xarbit.appgrid.so
+PathChanged=/usr/lib/qt6/plugins/plasma/applets/dev.xarbit.appgrid.panel.so
+Unit=appgrid-restart-plasma.service
+
+[Install]
+WantedBy=default.target
