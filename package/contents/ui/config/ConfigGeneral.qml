@@ -37,6 +37,7 @@ KCM.SimpleKCM {
     property alias cfg_showRecentApps: showRecentApps.checked
     property alias cfg_useSystemCategories: useSystemCategories.checked
     property alias cfg_hideEmptyCategories: hideEmptyCategories.checked
+    property alias cfg_openCategoryOnHover: openCategoryOnHover.checked
     property alias cfg_openOnActiveScreen: openOnActiveScreen.checked
     property alias cfg_verticalOffset: verticalOffset.value
     property alias cfg_checkForUpdates: checkForUpdates.checked
@@ -210,6 +211,11 @@ KCM.SimpleKCM {
         QQC2.CheckBox {
             id: hideEmptyCategories
             text: i18nd("dev.xarbit.appgrid", "Hide empty categories")
+            enabled: showCategoryBar.checked
+        }
+        QQC2.CheckBox {
+            id: openCategoryOnHover
+            text: i18nd("dev.xarbit.appgrid", "Open categories on hover")
             enabled: showCategoryBar.checked
         }
         QQC2.CheckBox {

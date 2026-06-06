@@ -753,6 +753,7 @@ Kirigami.ShadowedRectangle {
             fontScale: panel.densityScale
             scrollOnlyMode: panel.showCategoryGrid
             hideEmptyCategories: cfg.hideEmptyCategories
+            openOnHover: cfg.openCategoryOnHover
             onFavoritesToggled: function(active) {
                 // Update model state BEFORE UI state so bindings see the
                 // correct proxy data when showCategoryGrid re-evaluates.

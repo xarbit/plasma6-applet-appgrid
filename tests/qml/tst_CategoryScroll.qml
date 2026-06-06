@@ -34,6 +34,27 @@ TestCase {
         compare(CategoryScroll.maxContentX(150, 200), 0)
     }
 
+    // --- clampWheelDelta ---
+
+    function test_wheelDeltaPassesThroughWhenSmall() {
+        // 120 (one notch) is well under the 0.6*200 = 120... use 100 to stay under.
+        compare(CategoryScroll.clampWheelDelta(100, 200, 40), 100)
+    }
+
+    function test_wheelDeltaCappedToViewportFraction() {
+        // cap = max(0.6*200, 40) = 120; a 900px hi-res delta is capped to 120.
+        compare(CategoryScroll.clampWheelDelta(900, 200, 40), 120)
+    }
+
+    function test_wheelDeltaCapPreservesSign() {
+        compare(CategoryScroll.clampWheelDelta(-900, 200, 40), -120)
+    }
+
+    function test_wheelDeltaFloorForNarrowBar() {
+        // cap = max(0.6*50, 40) = 40; small viewport still moves by the floor.
+        compare(CategoryScroll.clampWheelDelta(900, 50, 40), 40)
+    }
+
     // --- clampContentX ---
 
     function test_clampBelowZero() {

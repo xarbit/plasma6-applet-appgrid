@@ -30,8 +30,10 @@ PlasmaComponents.ToolButton {
     icon.name: "bookmarks-bookmarked"
     icon.width: root.categoryBar.favoritesIconSize
     icon.height: root.categoryBar.favoritesIconSize
-    checked: root.categoryBar.favoritesActive
+    checked: root.categoryBar.favoritesActive && !root.categoryBar.wheelScrolling
     onClicked: root.categoryBar.selectFavorites()
+    onHoveredChanged: hovered ? root.categoryBar.hoverEnter(root.categoryBar.favoritesLabel)
+                              : root.categoryBar.hoverLeave(root.categoryBar.favoritesLabel)
 
     PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
     PlasmaComponents.ToolTip.visible: hovered
