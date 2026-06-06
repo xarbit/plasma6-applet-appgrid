@@ -113,15 +113,22 @@ RowLayout {
         return sel === "" ? allLabel : sel
     }
 
-    // Select a tab by label — single dispatch point for mnemonics,
-    // Alt+arrow navigation, and programmatic selection.
-    function selectByName(name) {
+    // Route a tab label to its action — the single dispatch shared by
+    // clicks, mnemonics, Alt+arrow nav, and open-on-hover.
+    function selectTab(name) {
         if (name === favoritesLabel)
             selectFavorites()
         else if (name === allLabel)
             selectAll()
         else
             selectCategory(name)
+    }
+
+    // selectTab plus scroll-into-view — for mnemonics, Alt+arrow
+    // navigation, and programmatic selection. Hover deliberately omits the
+    // scroll so the dwelled-on tab doesn't slide out from under the cursor.
+    function selectByName(name) {
+        selectTab(name)
         scrollToSelected()
     }
 
@@ -182,6 +189,95 @@ RowLayout {
                 categoryBar.appsModel.filterCategory = name
         }
         categorySelected(name)
+    }
+
+    // -- Open-on-hover (#176) --
+    // When enabled, dwelling on a tab for hoverActivationDelay selects it
+    // without a click. HoverActivation owns the armed-tab state (and the
+    // enter-before-leave race); this side just drives the dwell timer.
+    property bool openOnHover: false
+    readonly property int hoverActivationDelay: 5
+    // Cadence for repeated arrow paging on hover; floored at 150ms so it
+    // still pages when animations are off. First page fires immediately.
+    readonly property int hoverScrollInterval: Math.max(Kirigami.Units.shortDuration * 3, 150)
+    // One window governs the whole wheel interaction: hover-select stays
+    // suppressed and the highlight stays cleared until this long after the
+    // last wheel event, then the scroll counts as stopped and the tab under
+    // the cursor is selected once. Must exceed the gap between wheel notches
+    // so a multi-notch scroll doesn't settle (and re-select) mid-way.
+    readonly property int wheelGrace: Math.max(Kirigami.Units.longDuration, 300)
+    // True while a wheel scroll is in progress: drops the tab highlight until
+    // the scroll settles and the tab under the cursor is reselected. Purely
+    // visual — the grid filter is left untouched so it doesn't flash.
+    property bool wheelScrolling: false
+
+    HoverActivation {
+        id: hoverActivation
+        enabled: categoryBar.openOnHover
+        wheelGraceMs: categoryBar.wheelGrace
+    }
+
+    Timer {
+        id: hoverActivateTimer
+        interval: categoryBar.hoverActivationDelay
+        onTriggered: if (hoverActivation.pending !== "")
+            categoryBar.selectTab(hoverActivation.pending)
+    }
+
+    // After wheeling stops the cursor is stationary, so hovered never changes
+    // and nothing re-arms — activate whatever tab now sits under the pointer.
+    Timer {
+        id: wheelSettleTimer
+        interval: categoryBar.wheelGrace
+        onTriggered: {
+            // Restore the highlight first, then reselect the tab now under
+            // the cursor (if any) so it ends up the single highlighted one.
+            categoryBar.wheelScrolling = false
+            if (!categoryBar.openOnHover)
+                return
+            const name = categoryBar.hoveredTab()
+            if (name !== "")
+                categoryBar.selectTab(name)
+        }
+    }
+
+    function hoverEnter(name) {
+        if (hoverActivation.enter(name))
+            hoverActivateTimer.restart()
+    }
+
+    function hoverLeave(name) {
+        if (hoverActivation.leave(name))
+            hoverActivateTimer.stop()
+    }
+
+    // A wheel scroll moves categories under a stationary cursor; suppress
+    // hover-select for the grace window so the tab sliding under the pointer
+    // isn't auto-selected, drop any dwell in flight, and arm the settle timer
+    // so the final tab under the cursor activates once scrolling stops.
+    function hoverWheel() {
+        hoverActivation.markWheel()
+        hoverActivateTimer.stop()
+        if (!categoryBar.openOnHover)
+            return
+        categoryBar.wheelScrolling = true
+        wheelSettleTimer.restart()
+    }
+
+    // The selectable tab currently under the cursor, or "" if none.
+    function hoveredTab() {
+        if (favButtonLeft.visible && favButtonLeft.hovered)
+            return favoritesLabel
+        if (favButtonRight.visible && favButtonRight.hovered)
+            return favoritesLabel
+        if (allButton.visible && allButton.hovered)
+            return allLabel
+        for (var i = 0; i < catRepeater.count; i++) {
+            var it = catRepeater.itemAt(i)
+            if (it && it.hovered && i < categoryList.length)
+                return categoryList[i]
+        }
+        return ""
     }
 
     // Effective viewport width for rightward-scroll math — see
@@ -296,7 +392,8 @@ RowLayout {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
-        checked: !categoryBar.favoritesActive
+        checked: !categoryBar.wheelScrolling
+                 && !categoryBar.favoritesActive
                  && (scrollOnlyMode
                      ? scrollOnlySelected === ""
                      : (!categoryBar.appsModel || categoryBar.appsModel.filterCategory === ""))
@@ -304,6 +401,8 @@ RowLayout {
             categoryBar.selectAll()
             catFlick.contentX = 0
         }
+        onHoveredChanged: hovered ? categoryBar.hoverEnter(categoryBar.allLabel)
+                                  : categoryBar.hoverLeave(categoryBar.allLabel)
 
         Accessible.name: i18nd("dev.xarbit.appgrid", "All applications")
         Accessible.role: Accessible.Button
@@ -314,8 +413,12 @@ RowLayout {
     // Flickable in a single frame mid-scroll and snap contentX; the
     // animated width gives the layout time to settle smoothly.
     component ScrollArrow: PlasmaComponents.ToolButton {
+        id: arrowBtn
         focusPolicy: Qt.NoFocus
         property bool scrollable: false
+        // Each arrow supplies its page function; invoked on click and,
+        // with open-on-hover on, repeatedly while the arrow is hovered.
+        property var pageAction: null
         enabled: scrollable
         opacity: scrollable ? 1 : 0
         implicitWidth: scrollable ? categoryBar.scrollArrowWidth : 0
@@ -339,6 +442,19 @@ RowLayout {
         PlasmaComponents.ToolTip.visible: hovered && scrollable
         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
+        // Open-on-hover: page repeatedly while hovered. triggeredOnStart
+        // pages once immediately; the repeat keeps scrolling until the edge
+        // is reached (scrollable flips false) or the cursor leaves. Each
+        // tick spans the scroll animation so pages chain smoothly.
+        Timer {
+            running: categoryBar.openOnHover && arrowBtn.hovered
+                && arrowBtn.scrollable && arrowBtn.pageAction !== null
+            interval: categoryBar.hoverScrollInterval
+            repeat: true
+            triggeredOnStart: true
+            onTriggered: arrowBtn.pageAction()
+        }
+
         Accessible.role: Accessible.Button
     }
 
@@ -347,6 +463,7 @@ RowLayout {
         id: scrollLeftBtn
         scrollable: CategoryScroll.arrowVisibility(catFlick.contentX, catFlick.width, catFlick.contentWidth).left
         icon.name: "arrow-left"
+        pageAction: () => categoryBar.pageLeft()
         onClicked: categoryBar.pageLeft()
         Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
     }
@@ -399,9 +516,12 @@ RowLayout {
             target: catFlick
             onWheel: function(wheel) {
                 wheel.accepted = true
+                categoryBar.hoverWheel()
                 if (catFlick._wheelEdgeSettling)
                     return
-                const delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                const raw = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                const delta = CategoryScroll.clampWheelDelta(raw, catFlick.width,
+                    categoryBar.scrollArrowWidth * 4)
                 categoryBar._setContentX(catFlick.contentX - delta)
                 const maxX = CategoryScroll.maxContentX(catFlick.contentWidth, catFlick.width)
                 if (catFlick.contentX === 0 || catFlick.contentX === maxX) {
@@ -448,7 +568,8 @@ RowLayout {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    checked: !categoryBar.favoritesActive
+                    checked: !categoryBar.wheelScrolling
+                             && !categoryBar.favoritesActive
                              && (scrollOnlyMode
                                  ? scrollOnlySelected === modelData
                                  : (categoryBar.appsModel && categoryBar.appsModel.filterCategory === modelData))
@@ -456,6 +577,8 @@ RowLayout {
                         categoryBar.selectCategory(modelData)
                         categoryBar.scrollToSelected()
                     }
+                    onHoveredChanged: hovered ? categoryBar.hoverEnter(modelData)
+                                              : categoryBar.hoverLeave(modelData)
 
                     MouseArea {
                         anchors.fill: parent
@@ -480,6 +603,7 @@ RowLayout {
         id: scrollRightBtn
         scrollable: CategoryScroll.arrowVisibility(catFlick.contentX, catFlick.width, catFlick.contentWidth).right
         icon.name: "arrow-right"
+        pageAction: () => categoryBar.pageRight()
         onClicked: categoryBar.pageRight()
         Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
     }

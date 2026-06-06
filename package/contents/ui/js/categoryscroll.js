@@ -21,6 +21,15 @@ function maxContentX(contentWidth, viewportWidth) {
     return Math.max(0, contentWidth - viewportWidth)
 }
 
+// Cap a raw wheel delta so one fast / high-resolution notch can't leap across
+// many categories. angleDelta arrives as pixels and hi-res wheels report large
+// values; the cap is 60% of the viewport (a partial page) with a pixel floor so
+// a narrow bar still moves a sensible amount. Sign is preserved.
+function clampWheelDelta(raw, viewportWidth, minCap) {
+    const cap = Math.max(viewportWidth * 0.6, minCap)
+    return Math.max(-cap, Math.min(cap, raw))
+}
+
 // Clamp a desired contentX into [0, maxX] and report whether it lands exactly
 // on the right edge. anchoredRight lets the caller pin contentX to the moving
 // maxX while the left-arrow slot expands afterwards (which shrinks the viewport

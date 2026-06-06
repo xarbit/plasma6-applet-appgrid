@@ -67,6 +67,7 @@ QtObject {
     readonly property int gridRows: source.gridRows
     readonly property bool showCategoryBar: source.showCategoryBar
     readonly property bool hideEmptyCategories: source.hideEmptyCategories
+    readonly property bool openCategoryOnHover: source.openCategoryOnHover
     readonly property bool useSystemCategories: source.useSystemCategories
     readonly property int sortMode: source.sortMode
     readonly property bool showRecentApps: source.showRecentApps

@@ -161,8 +161,18 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/WheelGraceGate.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/WheelGraceGate.qml
+        COPYONLY
+    )
+    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/HoverGate.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/HoverGate.qml
+        COPYONLY
+    )
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/HoverActivation.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/HoverActivation.qml
         COPYONLY
     )
     configure_file(

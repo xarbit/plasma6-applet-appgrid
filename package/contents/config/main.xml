@@ -242,6 +242,10 @@
       <label>Whether to hide categories with no applications from the category bar.</label>
       <default>true</default>
     </entry>
+    <entry name="openCategoryOnHover" type="Bool">
+      <label>Whether dwelling on a category bar tab selects it without a click.</label>
+      <default>false</default>
+    </entry>
     <entry name="terminalShell" type="String">
       <label>Shell to use for t: terminal commands (e.g. /bin/bash, /bin/zsh). Empty uses /bin/sh.</label>
       <default></default>
