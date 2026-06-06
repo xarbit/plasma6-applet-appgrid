@@ -614,6 +614,9 @@ QVariantMap AppGridPlugin::systemInfo()
     info[QStringLiteral("qtVersion")] = QString::fromLatin1(qVersion());
     info[QStringLiteral("sessionType")] = KWindowSystem::isPlatformWayland() ? QStringLiteral("Wayland") : QStringLiteral("X11");
     info[QStringLiteral("variant")] = m_useNativeActivation ? QStringLiteral("Panel") : QStringLiteral("Center");
+    // isUniversalBuild() is a compile-time #ifdef constant, so it reads as a
+    // known condition per build — expected, not a dead branch.
+    // cppcheck-suppress knownConditionTrueFalse
     info[QStringLiteral("installType")] = isUniversalBuild() ? QStringLiteral("Universal package") : QStringLiteral("Distribution package");
 
     // OS info from /etc/os-release
