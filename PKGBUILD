@@ -10,6 +10,7 @@ provides=('appgrid')
 conflicts=('appgrid')
 replaces=('appgrid')
 options=('!debug' 'lto')
+install='packaging/aur/plasma6-applets-appgrid.install'
 depends=(
     'plasma-workspace'
     'kservice'

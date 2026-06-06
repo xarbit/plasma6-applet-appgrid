@@ -14,6 +14,7 @@ url="https://appgrid.xarbit.dev"
 license=('GPL-2.0-or-later')
 provides=('plasma6-applets-appgrid')
 conflicts=('plasma6-applets-appgrid')
+install='plasma6-applets-appgrid.install'
 depends=(
     'plasma-workspace'
     'kservice'
