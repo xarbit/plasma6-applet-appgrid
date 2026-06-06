@@ -40,10 +40,11 @@ WheelGraceGate {
         return true
     }
 
-    // Open the suppression window and drop any in-flight dwell, so a wheel
-    // can't activate the tab sliding under a stationary cursor.
-    function markWheel() {
-        lastWheelTime = now()
+    // Open the suppression window and drop any in-flight dwell. Used both for
+    // a wheel (don't activate the tab sliding under a stationary cursor) and
+    // for entering the bar from outside (don't activate a tab merely crossed).
+    function suppress() {
+        markWheel()
         pending = ""
     }
 

@@ -68,25 +68,25 @@ TestCase {
         compare(g.pending, "")
     }
 
-    // --- Wheel grace (suppress hover-select while/after scrolling) ---
+    // --- Suppression grace (wheel scroll or bar entry) ---
 
-    function test_wheelSuppressesEnter() {
+    function test_suppressBlocksEnter() {
         var g = gate(true)
-        g.markWheel()
-        verify(!g.enter("Games"), "enter within the wheel grace must be suppressed")
-        compare(g.pending, "", "nothing arms during the wheel grace")
+        g.suppress()
+        verify(!g.enter("Games"), "enter within the grace must be suppressed")
+        compare(g.pending, "", "nothing arms during the grace")
     }
 
-    function test_markWheelDisarmsPending() {
+    function test_suppressDisarmsPending() {
         var g = gate(true)
         g.enter("Games")
-        g.markWheel()
-        compare(g.pending, "", "a wheel drops the in-flight dwell")
+        g.suppress()
+        compare(g.pending, "", "suppress drops the in-flight dwell")
     }
 
     function test_enterResumesAfterGrace() {
         var g = gate(true)
-        g.markWheel()
+        g.suppress()
         tst_HoverActivation.fakeNow += g.wheelGraceMs + 1
         verify(g.enter("Games"), "after the grace window, hover-select works again")
         compare(g.pending, "Games")

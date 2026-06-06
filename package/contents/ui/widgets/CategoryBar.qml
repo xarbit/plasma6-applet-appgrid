@@ -217,6 +217,13 @@ RowLayout {
         wheelGraceMs: categoryBar.wheelGrace
     }
 
+    // Tracks the pointer crossing the bar's outer bounds, to guard against a
+    // cursor merely passing through activating a tab on the way past.
+    HoverHandler {
+        id: barHover
+        onHoveredChanged: categoryBar.hoverBar(hovered)
+    }
+
     Timer {
         id: hoverActivateTimer
         interval: categoryBar.hoverActivationDelay
@@ -224,8 +231,9 @@ RowLayout {
             categoryBar.selectTab(hoverActivation.pending)
     }
 
-    // After wheeling stops the cursor is stationary, so hovered never changes
-    // and nothing re-arms — activate whatever tab now sits under the pointer.
+    // Fires once a suppression window (wheel scroll or bar entry) elapses with
+    // the cursor stationary, so hovered never changes and nothing re-arms —
+    // activate whatever tab now sits under the pointer.
     Timer {
         id: wheelSettleTimer
         interval: categoryBar.wheelGrace
@@ -256,12 +264,29 @@ RowLayout {
     // isn't auto-selected, drop any dwell in flight, and arm the settle timer
     // so the final tab under the cursor activates once scrolling stops.
     function hoverWheel() {
-        hoverActivation.markWheel()
+        hoverActivation.suppress()
         hoverActivateTimer.stop()
         if (!categoryBar.openOnHover)
             return
         categoryBar.wheelScrolling = true
         wheelSettleTimer.restart()
+    }
+
+    // Entering the bar from outside: guard against the cursor merely crossing
+    // it. Suppress the instant dwell and arm the settle window so a tab fires
+    // only if the pointer lingers; a quick pass-through leaves before it does.
+    // Leaving the bar cancels everything in flight.
+    function hoverBar(inside) {
+        if (!categoryBar.openOnHover)
+            return
+        if (inside) {
+            hoverActivation.suppress()
+            wheelSettleTimer.restart()
+        } else {
+            hoverActivation.clear()
+            hoverActivateTimer.stop()
+            wheelSettleTimer.stop()
+        }
     }
 
     // The selectable tab currently under the cursor, or "" if none.
