@@ -1,0 +1,16 @@
+#!/bin/sh
+# On upgrade (configure with a previous version in $2) AppGrid is a compiled
+# Plasma applet replaced under a running plasmashell, which cannot hot-swap a
+# C++ plugin. Tell the user to restart Plasma so the live session does not
+# freeze on the stale plugin.
+set -e
+
+if [ "$1" = "configure" ] && [ -n "$2" ]; then
+    echo "AppGrid was updated. Restart Plasma to load the new version:"
+    echo "  Wayland:  systemctl --user restart plasma-plasmashell.service"
+    echo "  X11:      kquitapp6 plasmashell && kstart plasmashell"
+fi
+
+#DEBHELPER#
+
+exit 0

@@ -187,9 +187,13 @@ jobs:
               ;;
             *) echo "::error::unknown channel ${{ inputs.channel }}"; exit 1 ;;
           esac
+          # The post-upgrade .install hook is shared by all channels and must
+          # ship in the AUR repo (every PKGBUILD references it via install=).
+          cp packaging/aur/plasma6-applets-appgrid.install .
           # makepkg (incl. --printsrcinfo) refuses to run as root.
           useradd -m builder
           install -o builder -g builder PKGBUILD /home/builder/PKGBUILD
+          install -o builder -g builder plasma6-applets-appgrid.install /home/builder/plasma6-applets-appgrid.install
           sudo -u builder bash -c 'cd /home/builder && makepkg --printsrcinfo' > .SRCINFO
           echo "=== PKGBUILD ===" && cat PKGBUILD
           echo "=== .SRCINFO ===" && cat .SRCINFO
@@ -209,9 +213,9 @@ jobs:
           # Cloning a not-yet-existing AUR package returns an empty repo —
           # the first push then creates it under the key owner's account.
           git clone "ssh://aur@aur.archlinux.org/${aur_pkg}.git" aur-pkg
-          cp PKGBUILD .SRCINFO aur-pkg/
+          cp PKGBUILD .SRCINFO plasma6-applets-appgrid.install aur-pkg/
           cd aur-pkg
-          git add PKGBUILD .SRCINFO
+          git add PKGBUILD .SRCINFO plasma6-applets-appgrid.install
           if git diff --cached --quiet; then
             echo "${aur_pkg}: already up to date."
           else

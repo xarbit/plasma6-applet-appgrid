@@ -63,6 +63,18 @@ presentation.
 %cmake_install
 %find_lang dev.xarbit.appgrid
 
+# On upgrade ($1 >= 2) AppGrid is a compiled Plasma applet replaced under a
+# running plasmashell, which cannot hot-swap a C++ plugin. Tell the user to
+# restart Plasma so the live session doesn't freeze on the stale plugin.
+%post
+if [ $1 -ge 2 ]; then
+cat <<'MSG'
+AppGrid was updated. Restart Plasma to load the new version:
+  Wayland:  systemctl --user restart plasma-plasmashell.service
+  X11:      kquitapp6 plasmashell && kstart plasmashell
+MSG
+fi
+
 %files -f dev.xarbit.appgrid.lang
 %license LICENSE
 %doc README.md

@@ -11,6 +11,7 @@ pkgdesc="A modern application launcher for KDE Plasma"
 arch=('x86_64')
 url="https://appgrid.xarbit.dev"
 license=('GPL-2.0-or-later')
+install='plasma6-applets-appgrid.install'
 depends=(
     'plasma-workspace'
     'kservice'
