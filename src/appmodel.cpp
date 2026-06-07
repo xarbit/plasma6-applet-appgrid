@@ -224,6 +224,9 @@ void AppModel::loadApplications()
                         relPath.chop(1);
                     }
                     m_categoryMenuPaths[subCategory] = relPath;
+                    // The menu group's own .directory icon is the authoritative
+                    // KDE icon for this category; the bar uses it directly.
+                    m_categoryIcons[subCategory] = subGroup->icon();
                 }
                 walkGroup(subGroup, subCategory);
                 continue;
@@ -277,6 +280,16 @@ void AppModel::loadApplications()
     auto assembled = AppModelAssembly::assemble(occurrences, systemMode);
     m_apps = std::move(assembled.apps);
     m_categories = std::move(assembled.categories);
+
+    // Simple mode: the bar shows translated bucket names, so key the icon
+    // lookup by the same translated label. (System mode already captured each
+    // group's .directory icon during the walk above.)
+    if (!systemMode) {
+        const auto &iconMap = bucketIconMap();
+        for (auto it = iconMap.cbegin(); it != iconMap.cend(); ++it) {
+            m_categoryIcons.insert(translateCategory(it.key()), it.value());
+        }
+    }
 }
 
 void AppModel::launch(int index)
@@ -319,6 +332,7 @@ void AppModel::reload()
     m_apps.clear();
     m_categories.clear();
     m_categoryMenuPaths.clear();
+    m_categoryIcons.clear();
     loadApplications();
     endResetModel();
 }
@@ -326,6 +340,14 @@ void AppModel::reload()
 QString AppModel::categoryMenuPath(const QString &category) const
 {
     return m_categoryMenuPaths.value(category);
+}
+
+QString AppModel::categoryIcon(const QString &category) const
+{
+    // A menu group may carry no .directory icon, so guard the empty value too
+    // (QHash::value's default only covers an absent key).
+    const QString icon = m_categoryIcons.value(category);
+    return icon.isEmpty() ? QStringLiteral("applications-other-symbolic") : icon;
 }
 
 // AppFilterModel is in appfiltermodel.cpp

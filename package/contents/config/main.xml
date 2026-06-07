@@ -246,6 +246,10 @@
       <label>Whether dwelling on a category bar tab selects it without a click.</label>
       <default>false</default>
     </entry>
+    <entry name="categoryBarDisplay" type="Int">
+      <label>Category bar tab style (0=Default, 2=Icon and text, 3=Icon only; 1=legacy text-only, same as Default).</label>
+      <default>0</default>
+    </entry>
     <entry name="terminalShell" type="String">
       <label>Shell to use for t: terminal commands (e.g. /bin/bash, /bin/zsh). Empty uses /bin/sh.</label>
       <default></default>

@@ -774,6 +774,12 @@ QString AppFilterModel::categoryMenuPath(const QString &category) const
     return model ? model->categoryMenuPath(category) : QString();
 }
 
+QString AppFilterModel::categoryIcon(const QString &category) const
+{
+    auto *model = qobject_cast<AppModel *>(sourceModel());
+    return model ? model->categoryIcon(category) : QString();
+}
+
 QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
 {
     QVariantMap map;

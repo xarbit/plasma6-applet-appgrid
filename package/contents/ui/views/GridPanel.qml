@@ -751,6 +751,7 @@ Kirigami.ShadowedRectangle {
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
             fontScale: panel.densityScale
+            displayMode: cfg.categoryBarDisplay
             scrollOnlyMode: panel.showCategoryGrid
             hideEmptyCategories: cfg.hideEmptyCategories
             openOnHover: cfg.openCategoryOnHover

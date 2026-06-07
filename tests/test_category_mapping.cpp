@@ -133,6 +133,44 @@ private Q_SLOTS:
         }
     }
 
+    // --- bucket → icon table (#176) ---
+
+    void bucketIconMapsKnownBucket()
+    {
+        QCOMPARE(bucketIcon(QStringLiteral("Games")), QStringLiteral("applications-games-symbolic"));
+        QCOMPARE(bucketIcon(QStringLiteral("Internet")), QStringLiteral("applications-internet-symbolic"));
+    }
+
+    void bucketIconsAreSymbolicMonochrome()
+    {
+        // Every bucket icon must be a -symbolic variant so the bar renders
+        // monochrome, matching Kickoff.
+        const auto &map = bucketIconMap();
+        for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
+            QVERIFY2(it.value().endsWith(QStringLiteral("-symbolic")),
+                     qPrintable(QStringLiteral("Bucket '%1' icon '%2' is not -symbolic")
+                                    .arg(it.key(), it.value())));
+        }
+    }
+
+    void bucketIconUnknownFallsBackToOther()
+    {
+        QCOMPARE(bucketIcon(QStringLiteral("DoesNotExist")),
+                 QStringLiteral("applications-other-symbolic"));
+    }
+
+    void everyMappedBucketHasAnIcon()
+    {
+        // The two tables must stay in sync: every bucket categoryMap() can
+        // emit must resolve to an icon, and so must the "Other" fallback.
+        QVERIFY(bucketIconMap().contains(QStringLiteral("Other")));
+        const auto &map = categoryMap();
+        for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
+            QVERIFY2(bucketIconMap().contains(it.value()),
+                     qPrintable(QStringLiteral("Bucket '%1' has no icon").arg(it.value())));
+        }
+    }
+
 };
 
 QTEST_MAIN(TestCategoryMapping)

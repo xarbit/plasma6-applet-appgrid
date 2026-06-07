@@ -125,3 +125,10 @@ function ensureVisibleTarget(itemX, itemWidth, contentX, flickWidth, viewportAft
         return itemRight - viewportAfterRight + spacing
     return null
 }
+
+// Minimum width for a row of `count` icon-only tabs, each at `tabWidth` (its
+// icon plus breathing-room padding) with `spacing` between them — below this
+// the tabs would squish, so the row should overflow into a scroll instead (#176).
+function iconRowMinWidth(count, tabWidth, spacing) {
+    return count > 0 ? count * tabWidth + (count - 1) * spacing : 0
+}

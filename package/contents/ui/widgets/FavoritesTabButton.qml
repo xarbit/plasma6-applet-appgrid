@@ -16,24 +16,31 @@ import org.kde.plasma.components as PlasmaComponents
 PlasmaComponents.ToolButton {
     id: root
 
-    required property var categoryBar
+    required property var bar
 
     // Keep focus on the search field so Alt+arrow nav survives a click (#174).
     focusPolicy: Qt.NoFocus
 
-    // Match the bar's button height, but fill it with a larger icon: zero the
-    // vertical padding so the favorites glyph reaches favoritesIconSize without
-    // growing the button (#171).
-    Layout.preferredHeight: root.categoryBar.buttonHeight
+    Layout.preferredHeight: root.bar.buttonHeight
+
+    // Anchor tab: always icon-only, so drop the vertical padding and let the
+    // glyph fill the button height (#171) at the shared anchor icon size.
     topPadding: 0
     bottomPadding: 0
-    icon.name: "bookmarks-bookmarked"
-    icon.width: root.categoryBar.favoritesIconSize
-    icon.height: root.categoryBar.favoritesIconSize
-    checked: root.categoryBar.favoritesActive && !root.categoryBar.wheelScrolling
-    onClicked: root.categoryBar.selectFavorites()
-    onHoveredChanged: hovered ? root.categoryBar.hoverEnter(root.categoryBar.favoritesLabel)
-                              : root.categoryBar.hoverLeave(root.categoryBar.favoritesLabel)
+
+    contentItem: CategoryTabContent {
+        bar: root.bar
+        label: root.bar.favoritesLabel
+        iconSource: "bookmarks-symbolic"
+        isAnchor: true
+        mnemonic: false
+        iconSize: root.bar.anchorIconSize
+    }
+
+    checked: root.bar.favoritesActive && !root.bar.wheelScrolling
+    onClicked: root.bar.selectFavorites()
+    onHoveredChanged: hovered ? root.bar.hoverEnter(root.bar.favoritesLabel)
+                              : root.bar.hoverLeave(root.bar.favoritesLabel)
 
     PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
     PlasmaComponents.ToolTip.visible: hovered
@@ -42,5 +49,5 @@ PlasmaComponents.ToolButton {
     Accessible.name: i18nd("dev.xarbit.appgrid", "Favorites")
     Accessible.role: Accessible.Button
 
-    FavoritesTabDragHover { target: root.categoryBar }
+    FavoritesTabDragHover { target: root.bar }
 }

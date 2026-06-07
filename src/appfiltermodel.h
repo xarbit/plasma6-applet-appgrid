@@ -121,6 +121,7 @@ public:
 
     [[nodiscard]] Q_INVOKABLE QStringList categories() const;
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
+    [[nodiscard]] Q_INVOKABLE QString categoryIcon(const QString &category) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap get(int proxyRow) const;
     Q_INVOKABLE void hideApp(int proxyIndex);
     // Hide by storageId — needed for bulk hide where the proxy index of

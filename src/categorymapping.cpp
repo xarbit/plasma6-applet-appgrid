@@ -150,3 +150,29 @@ QString mapCategoryToken(const QString &token)
 {
     return categoryMap().value(token);
 }
+
+// AppGrid display buckets → freedesktop menu-category icons. The -symbolic
+// variants are the monochrome icons KDE's own menu (.directory files) ship and
+// Kickoff renders for these categories, so the simple-mode bar matches it. Keys
+// are the untranslated buckets produced by categoryMap() plus "Other".
+const QHash<QString, QString> &bucketIconMap()
+{
+    static const QHash<QString, QString> map = {
+        {QStringLiteral("Utilities"), QStringLiteral("applications-utilities-symbolic")},
+        {QStringLiteral("Development"), QStringLiteral("applications-development-symbolic")},
+        {QStringLiteral("Graphics"), QStringLiteral("applications-graphics-symbolic")},
+        {QStringLiteral("Internet"), QStringLiteral("applications-internet-symbolic")},
+        {QStringLiteral("Multimedia"), QStringLiteral("applications-multimedia-symbolic")},
+        {QStringLiteral("Office"), QStringLiteral("applications-office-symbolic")},
+        {QStringLiteral("Games"), QStringLiteral("applications-games-symbolic")},
+        {QStringLiteral("Education"), QStringLiteral("applications-education-symbolic")},
+        {QStringLiteral("System"), QStringLiteral("applications-system-symbolic")},
+        {QStringLiteral("Other"), QStringLiteral("applications-other-symbolic")},
+    };
+    return map;
+}
+
+QString bucketIcon(const QString &bucket)
+{
+    return bucketIconMap().value(bucket, QStringLiteral("applications-other-symbolic"));
+}

@@ -38,6 +38,7 @@ KCM.SimpleKCM {
     property alias cfg_useSystemCategories: useSystemCategories.checked
     property alias cfg_hideEmptyCategories: hideEmptyCategories.checked
     property alias cfg_openCategoryOnHover: openCategoryOnHover.checked
+    property int cfg_categoryBarDisplay
     property alias cfg_openOnActiveScreen: openOnActiveScreen.checked
     property alias cfg_verticalOffset: verticalOffset.value
     property alias cfg_checkForUpdates: checkForUpdates.checked
@@ -217,6 +218,30 @@ KCM.SimpleKCM {
             id: openCategoryOnHover
             text: i18nd("dev.xarbit.appgrid", "Open categories on hover")
             enabled: showCategoryBar.checked
+        }
+        QQC2.ComboBox {
+            id: categoryBarDisplay
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Category tab style:")
+            enabled: showCategoryBar.checked
+            textRole: "text"
+            valueRole: "value"
+            // Values are stable enum ids (1 = legacy "Text only", folded into
+            // Default now that the anchor tabs are always icon-only), so the
+            // box maps by value rather than row index.
+            model: [
+                { value: 0, text: i18nd("dev.xarbit.appgrid", "Default") },
+                { value: 2, text: i18nd("dev.xarbit.appgrid", "Icon and text") },
+                { value: 3, text: i18nd("dev.xarbit.appgrid", "Icon only") },
+            ]
+            onActivated: page.cfg_categoryBarDisplay = currentValue
+            // Install the currentIndex binding once the model is ready, so the
+            // first evaluation can actually find the stored value (an inline
+            // binding evaluates during creation before the model is assigned and
+            // sticks at the fallback). Falls back to Default (0) for a value not
+            // in the model — e.g. the dropped legacy "Text only" (1).
+            Component.onCompleted: currentIndex = Qt.binding(function() {
+                return Math.max(0, indexOfValue(page.cfg_categoryBarDisplay))
+            })
         }
         QQC2.CheckBox {
             id: openOnActiveScreen
