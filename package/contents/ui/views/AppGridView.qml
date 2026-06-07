@@ -23,11 +23,16 @@ GridView {
     property bool adaptiveColumns: false
     readonly property int effectiveColumns: adaptiveColumns
         ? GridMetrics.columnsForWidth(width, GridMetrics.labelledCellWidth(
-            iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing), 3)
+            iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, fontScale), 3)
         : columns
 
     // Icon size from configuration (Kirigami pixel size).
     property real iconSize: Kirigami.Units.iconSizes.huge
+
+    // Label font/spacing scale, following the size preset (Scale.textScale).
+    // Drives both the delegate label and the cell-overhead budget so cells
+    // stay proportional across presets; 1.0 when text size is decoupled (#167).
+    property real fontScale: 1.0
 
     // Icon delegate config, injected from the boundary's ConfigCache.
     required property int hoverAnimation
@@ -152,7 +157,7 @@ GridView {
     cellWidth: Math.floor(width / effectiveColumns)
     cellHeight: labelsHidden
                ? cellWidth
-               : GridMetrics.labelledCellHeight(iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
+               : GridMetrics.labelledCellHeight(iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, fontScale)
     boundsBehavior: Flickable.StopAtBounds
     keyNavigationEnabled: true
     currentIndex: -1
@@ -508,6 +513,7 @@ GridView {
         cellWidth: gridView.cellWidth
         cellHeight: gridView.cellHeight
         iconSize: gridView.iconSize
+        fontScale: gridView.fontScale
         hoverAnimation: gridView.hoverAnimation
         shadowEnabled: gridView.shadowEnabled
         hoverHighlight: gridView.hoverHighlight
@@ -590,6 +596,7 @@ GridView {
             hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
             isCurrentItem: gridView.currentIndex === model.index && gridView.activeFocus
             iconSize: gridView.iconSize
+            fontScale: gridView.fontScale
             hoverAnimation: gridView.hoverAnimation
             shadowEnabled: gridView.shadowEnabled
             hoverHighlight: gridView.hoverHighlight

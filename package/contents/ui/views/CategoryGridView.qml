@@ -29,6 +29,8 @@ Flickable {
     property real cellWidth: 100
     property real cellHeight: 100
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Label font scale, following the size preset (Scale.textScale).
+    property real fontScale: 1.0
     // Icon delegate config, injected from the boundary's ConfigCache.
     required property int hoverAnimation
     required property bool shadowEnabled
@@ -439,6 +441,7 @@ Flickable {
                                 installSource: modelData.installSource || ""
                                 showTooltip: categoryGrid.showTooltips
                                 iconSize: categoryGrid.iconSize
+                                fontScale: categoryGrid.fontScale
                                 hoverAnimation: categoryGrid.hoverAnimation
                                 shadowEnabled: categoryGrid.shadowEnabled
                                 hoverHighlight: categoryGrid.hoverHighlight

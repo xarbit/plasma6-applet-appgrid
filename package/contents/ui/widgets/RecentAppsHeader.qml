@@ -19,6 +19,8 @@ Column {
     property real cellWidth: 100
     property real cellHeight: 100
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Label font scale, following the size preset (Scale.textScale).
+    property real fontScale: 1.0
     // Icon delegate config, injected from the boundary's ConfigCache.
     required property int hoverAnimation
     required property bool shadowEnabled
@@ -90,6 +92,7 @@ Column {
                 AppIconDelegate {
                     id: recentIcon
                     anchors.fill: parent
+                    fontScale: recentHeader.fontScale
                     appName: recentDelegate.appData.name || ""
                     appIcon: recentDelegate.appData.iconName || Const.DEFAULT_ICON
                     appGenericName: recentDelegate.appData.genericName || ""

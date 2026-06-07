@@ -28,6 +28,9 @@ Item {
     property bool isNew: false
     property bool hideLabel: false
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Multiplier on the label font, following the size preset (Scale.textScale).
+    // Pinned to 1.0 when text size is decoupled from the preset (#167).
+    property real fontScale: 1.0
     // Identity used by the favorites drag controller. Set externally;
     // empty disables dragging when desktopFile is also empty.
     property string storageId: ""
@@ -188,7 +191,7 @@ Item {
             visible: !root.hideLabel
             verticalAlignment: Text.AlignTop
             text: root.appName
-            font: Kirigami.Theme.defaultFont
+            font.pointSize: Kirigami.Theme.defaultFont.pointSize * root.fontScale
             elide: Text.ElideRight
             maximumLineCount: 2
             wrapMode: Text.Wrap

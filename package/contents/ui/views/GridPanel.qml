@@ -190,9 +190,9 @@ Kirigami.ShadowedRectangle {
     // AppGridView.cellHeight with labels visible (gridUnit too small per
     // row would accumulate and clip the bottom row).
     readonly property real estCellWidth: GridMetrics.labelledCellWidth(gridIconSize,
-                                         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
+                                         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
     readonly property real estCellHeight: GridMetrics.labelledCellHeight(gridIconSize,
-                                          Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
+                                          Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
     readonly property real panelMargin: nativePopup ? Kirigami.Units.largeSpacing : Kirigami.Units.largeSpacing * 2
     readonly property real headerHeight: Kirigami.Units.gridUnit * 5
@@ -901,8 +901,9 @@ Kirigami.ShadowedRectangle {
                 ? panel.appsModel.groupedByCategory : []
             cellWidth: Math.floor(categoryGridView.width / panel.columns)
             cellHeight: GridMetrics.labelledCellHeight(panel.gridIconSize,
-                        Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
+                        Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, panel.densityScale)
             iconSize: panel.gridIconSize
+            fontScale: panel.densityScale
             hoverAnimation: cfg.hoverAnimation
             shadowEnabled: cfg.iconShadow
             hoverHighlight: cfg.hoverHighlight
@@ -953,6 +954,7 @@ Kirigami.ShadowedRectangle {
                 columns: panel.columns
                 adaptiveColumns: panel.nativePopup
                 iconSize: panel.gridIconSize
+                fontScale: panel.densityScale
                 hoverAnimation: cfg.hoverAnimation
                 shadowEnabled: cfg.iconShadow
                 hoverHighlight: cfg.hoverHighlight

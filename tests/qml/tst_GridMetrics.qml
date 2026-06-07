@@ -22,6 +22,23 @@ TestCase {
         compare(GridMetrics.labelledCellHeight(32, 10, 4), 70)
     }
 
+    // --- textScale: only the overhead scales, the icon is untouched ---
+
+    function test_textScaleScalesOverheadOnly() {
+        // 32 + (10*3 + 4*2) * 0.5 = 32 + 19 = 51
+        compare(GridMetrics.labelledCellHeight(32, 10, 4, 0.5), 51)
+    }
+
+    function test_textScaleDefaultsToOne() {
+        compare(GridMetrics.labelledCellHeight(32, 10, 4),
+                GridMetrics.labelledCellHeight(32, 10, 4, 1))
+    }
+
+    function test_widthTracksScaledHeight() {
+        compare(GridMetrics.labelledCellWidth(48, 18, 4, 0.8),
+                GridMetrics.labelledCellHeight(48, 18, 4, 0.8))
+    }
+
     // --- coefficient locks: each input weighted exactly as documented ---
 
     function test_iconWeightedByOne() {

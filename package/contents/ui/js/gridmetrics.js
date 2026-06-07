@@ -10,18 +10,23 @@
 .pragma library
 
 // Height of a grid cell showing an icon plus its (up to two-line) label.
-// Kirigami.Units values are passed in so this stays a pure, testable
-// function with no QML context dependency.
-function labelledCellHeight(iconSize, gridUnit, smallSpacing) {
-    return iconSize + gridUnit * 3 + smallSpacing * 2
+// The icon keeps its discrete preset size; only the label/spacing overhead
+// scales by textScale so smaller presets get proportionally tighter cells
+// instead of a tiny icon floating in a fixed-overhead square. textScale
+// follows the size preset (Scale.textScale) and is pinned to 1.0 when the
+// user decoupled text size (#167). Kirigami.Units values are passed in so
+// this stays a pure, testable function with no QML context dependency.
+function labelledCellHeight(iconSize, gridUnit, smallSpacing, textScale) {
+    var s = textScale === undefined ? 1 : textScale
+    return iconSize + (gridUnit * 3 + smallSpacing * 2) * s
 }
 
 // Width of a labelled grid cell. Cells are square — width tracks height so
 // the label gets the full cell width (Kickoff: cellWidth == cellHeight ==
 // gridCellSize). A width narrower than the two-line height budget orphans
 // long single-word names like "KwalletManager" onto a second line (#177).
-function labelledCellWidth(iconSize, gridUnit, smallSpacing) {
-    return labelledCellHeight(iconSize, gridUnit, smallSpacing)
+function labelledCellWidth(iconSize, gridUnit, smallSpacing, textScale) {
+    return labelledCellHeight(iconSize, gridUnit, smallSpacing, textScale)
 }
 
 // Columns that fit across width at the given cell width, never fewer than
