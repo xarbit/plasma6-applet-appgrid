@@ -38,4 +38,37 @@ TestCase {
         const base = GridMetrics.labelledCellHeight(32, 10, 4)
         compare(GridMetrics.labelledCellHeight(32, 10, 5) - base, 2)
     }
+
+    // --- square cells: width tracks height so labels get the full width (#177) ---
+
+    function test_labelledCellIsSquare() {
+        compare(GridMetrics.labelledCellWidth(64, 18, 4),
+                GridMetrics.labelledCellHeight(64, 18, 4),
+                "labelled cells must be square or long names orphan")
+    }
+
+    function test_labelledCellWidthSumsParts() {
+        // 32 + 10*3 + 4*2 = 70
+        compare(GridMetrics.labelledCellWidth(32, 10, 4), 70)
+    }
+
+    // --- columnsForWidth: how many cells fit, floored at a minimum ---
+
+    function test_columnsFloorsToWholeCells() {
+        // 650 / 126 = 5.15 → 5
+        compare(GridMetrics.columnsForWidth(650, 126, 3), 5)
+    }
+
+    function test_columnsHonoursMinimum() {
+        // 200 / 126 = 1.58 → 1, raised to the floor of 3
+        compare(GridMetrics.columnsForWidth(200, 126, 3), 3)
+    }
+
+    function test_columnsZeroWidthFallsBackToMinimum() {
+        compare(GridMetrics.columnsForWidth(0, 126, 1), 1)
+    }
+
+    function test_columnsZeroCellWidthFallsBackToMinimum() {
+        compare(GridMetrics.columnsForWidth(650, 0, 3), 3)
+    }
 }

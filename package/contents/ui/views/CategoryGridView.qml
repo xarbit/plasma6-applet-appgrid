@@ -13,6 +13,7 @@ import org.kde.kirigami as Kirigami
 import "../controllers"
 import "../widgets"
 import "../js/gridnav.js" as GridNav
+import "../js/gridmetrics.js" as GridMetrics
 import "../js/categoryflatten.js" as CategoryFlatten
 import "../js/constants.js" as Const
 
@@ -73,7 +74,7 @@ Flickable {
 
     property int currentIndex: -1
     property int recentIndex: -1
-    readonly property int itemsPerRow: Math.max(1, Math.floor(width / cellWidth))
+    readonly property int itemsPerRow: GridMetrics.columnsForWidth(width, cellWidth, 1)
     readonly property int recentCount: showRecents && appsModel ? appsModel.recentApps.length : 0
 
     // -- Multi-select --

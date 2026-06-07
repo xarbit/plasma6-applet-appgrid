@@ -189,8 +189,8 @@ Kirigami.ShadowedRectangle {
     // grid cellWidth → grid width → panel width. estCellHeight must match
     // AppGridView.cellHeight with labels visible (gridUnit too small per
     // row would accumulate and clip the bottom row).
-    readonly property real estCellWidth: gridIconSize + Kirigami.Units.gridUnit * 2
-                                         + Kirigami.Units.smallSpacing * 2
+    readonly property real estCellWidth: GridMetrics.labelledCellWidth(gridIconSize,
+                                         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
     readonly property real estCellHeight: GridMetrics.labelledCellHeight(gridIconSize,
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing)
 
