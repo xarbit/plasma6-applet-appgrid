@@ -22,7 +22,8 @@ GridView {
     property int columns: 6
     property bool adaptiveColumns: false
     readonly property int effectiveColumns: adaptiveColumns
-        ? Math.max(3, Math.floor(width / (iconSize + Kirigami.Units.gridUnit * 2 + Kirigami.Units.smallSpacing * 2)))
+        ? GridMetrics.columnsForWidth(width, GridMetrics.labelledCellWidth(
+            iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing), 3)
         : columns
 
     // Icon size from configuration (Kirigami pixel size).
