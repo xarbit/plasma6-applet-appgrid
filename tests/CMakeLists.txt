@@ -256,6 +256,11 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/categorybardisplay.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/categorybardisplay.js
+        COPYONLY
+    )
+    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/scale.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/scale.js
         COPYONLY

@@ -184,6 +184,21 @@ TestCase {
         compare(CategoryScroll.pageLeftTarget(items, 100, 150, 5), 0)
     }
 
+    // --- iconRowMinWidth (#176) ---
+
+    function test_iconRowMinWidthSumsIconsAndGaps() {
+        // 5 icons * 22 + 4 gaps * 6 = 110 + 24 = 134
+        compare(CategoryScroll.iconRowMinWidth(5, 22, 6), 134)
+    }
+
+    function test_iconRowMinWidthSingleHasNoGap() {
+        compare(CategoryScroll.iconRowMinWidth(1, 22, 6), 22)
+    }
+
+    function test_iconRowMinWidthEmptyIsZero() {
+        compare(CategoryScroll.iconRowMinWidth(0, 22, 6), 0)
+    }
+
     // --- ensureVisibleTarget ---
 
     function test_ensureVisibleScrollsRightForOffscreenRight() {

@@ -56,6 +56,7 @@ public:
     Q_INVOKABLE void launch(int index);
     [[nodiscard]] Q_INVOKABLE QStringList categories() const;
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
+    [[nodiscard]] Q_INVOKABLE QString categoryIcon(const QString &category) const;
 
     // Pure helpers — testable without constructing the model.
     [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
@@ -76,5 +77,6 @@ private:
     QVector<AppEntry> m_apps;
     QStringList m_categories;
     QHash<QString, QString> m_categoryMenuPaths;
+    QHash<QString, QString> m_categoryIcons;
     bool m_useSystemCategories = false;
 };

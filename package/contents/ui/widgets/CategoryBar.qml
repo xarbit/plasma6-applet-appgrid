@@ -13,6 +13,7 @@ import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../js/categoryscroll.js" as CategoryScroll
+import "../js/categorybardisplay.js" as Display
 
 RowLayout {
     id: categoryBar
@@ -31,6 +32,31 @@ RowLayout {
     // densityScale derived from cfg.iconSize.
     property real fontScale: 1.0
 
+    // Tab style for the dynamic category tabs: 0=Default (text), 2=Icon+text,
+    // 3=Icon (#176). Anchor tabs are always icon-only. Resolved per tab in
+    // categorybardisplay.js.
+    property int displayMode: 0
+
+    // Icon for the "All" tab — the monochrome freedesktop all-applications glyph.
+    readonly property string allIcon: "applications-all-symbolic"
+
+    // True when the non-favorite tabs show only their icon. Such buttons drop
+    // to compact padding so the categories fit (and fill) the bar instead of
+    // overflowing into a scroll. Favorites is excluded — it is icon-only in
+    // more modes but sits outside the scrollable category row.
+    readonly property bool tabsIconOnly: !Display.showsText(displayMode, false)
+    readonly property real tabHPadding: tabsIconOnly ? Kirigami.Units.smallSpacing
+                                                     : Kirigami.Units.largeSpacing
+
+    // Icon-only: a tab never shrinks below its icon plus a little padding, so
+    // the glyphs keep breathing room like the Favorites/All anchors instead of
+    // squishing. The category row fills the viewport down to the point where
+    // every tab is at this minimum, then overflows into a scroll so crowded
+    // icons stay reachable. Row geometry lives in CategoryScroll (tested).
+    readonly property real tabMinWidth: buttonIconSize + Kirigami.Units.smallSpacing * 2
+    readonly property real iconRowMinWidth: CategoryScroll.iconRowMinWidth(
+        catRepeater.count, tabMinWidth, Kirigami.Units.smallSpacing)
+
     // -- Shared button geometry (#171) --
     // Every button in the bar — favorites, "All", the scroll arrows and the
     // category tabs — takes its font, height and icon size from these values,
@@ -38,14 +64,22 @@ RowLayout {
     // standing taller at the Small/Medium presets. All follow fontScale; the
     // 1.1 nudges the bar font just above the body text.
     readonly property real buttonFontPointSize: Kirigami.Theme.defaultFont.pointSize * 1.1 * fontScale
-    readonly property real buttonIconSize: Math.round(Kirigami.Units.iconSizes.smallMedium * fontScale)
-    readonly property real buttonHeight: Math.ceil(_barFontMetrics.height) + Kirigami.Units.smallSpacing * 2
+    // Icons follow the size preset in text/icon+text modes, but hold at full
+    // smallMedium in icon-only — there the glyph is the only content, so
+    // shrinking it at Small/Medium would hurt the legibility icon-only relies on.
+    readonly property real buttonIconSize: Math.round(Kirigami.Units.iconSizes.smallMedium
+                                                      * (tabsIconOnly ? 1.0 : fontScale))
+    // Row height tracks the font, but in icon-only it floors to the (unscaled)
+    // icon so the glyph never clips a font-shrunk row.
+    readonly property real buttonHeight: Math.max(Math.ceil(_barFontMetrics.height),
+                                                  tabsIconOnly ? buttonIconSize : 0)
+                                         + Kirigami.Units.smallSpacing * 2
 
-    // Favorites is the primary tab marker, so its icon fills the full button
-    // height instead of sitting at the shared (smaller) buttonIconSize — it
-    // reads clearly without making the button or the bar any taller. The
-    // FavoritesTabButton drops its vertical padding so the icon can reach this.
-    readonly property real favoritesIconSize: buttonHeight
+    // The anchor tabs (Favorites, All) are tab markers, so their icon fills the
+    // full button height instead of sitting at the smaller buttonIconSize — it
+    // reads clearly without making the button or the bar any taller. The anchor
+    // buttons drop their vertical padding so the icon can reach this.
+    readonly property real anchorIconSize: buttonHeight
 
     FontMetrics {
         id: _barFontMetrics
@@ -393,7 +427,7 @@ RowLayout {
     FavoritesTabButton {
         id: favButtonLeft
         visible: categoryBar.favoritesFirst
-        categoryBar: categoryBar
+        bar: categoryBar
     }
 
     // -- "All" button (hidden in scrollOnly/ByCategory mode) --
@@ -405,17 +439,18 @@ RowLayout {
         Kirigami.MnemonicData.enabled: false
         text: ""
         Layout.preferredHeight: categoryBar.buttonHeight
-        font.pointSize: categoryBar.buttonFontPointSize
-        leftPadding: Kirigami.Units.largeSpacing
-        rightPadding: Kirigami.Units.largeSpacing
-        contentItem: PlasmaComponents.Label {
-            text: categoryBar.altHeld
-                ? categoryBar.mnemonicRichText(i18nd("dev.xarbit.appgrid", "All"))
-                : i18nd("dev.xarbit.appgrid", "All")
-            textFormat: categoryBar.altHeld ? Text.RichText : Text.PlainText
-            font: parent.font
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+        // Anchor tab like Favorites: always icon-only, the glyph fills the
+        // button height (zero vertical padding); horizontal padding stays at
+        // the ToolButton default so both anchors match.
+        topPadding: 0
+        bottomPadding: 0
+        contentItem: CategoryTabContent {
+            bar: categoryBar
+            label: categoryBar.allLabel
+            iconSource: categoryBar.allIcon
+            isAnchor: true
+            mnemonic: false
+            iconSize: categoryBar.anchorIconSize
         }
         checked: !categoryBar.wheelScrolling
                  && !categoryBar.favoritesActive
@@ -428,6 +463,11 @@ RowLayout {
         }
         onHoveredChanged: hovered ? categoryBar.hoverEnter(categoryBar.allLabel)
                                   : categoryBar.hoverLeave(categoryBar.allLabel)
+
+        // Always icon-only, so it needs a tooltip like Favorites.
+        PlasmaComponents.ToolTip.text: categoryBar.allLabel
+        PlasmaComponents.ToolTip.visible: hovered
+        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
         Accessible.name: i18nd("dev.xarbit.appgrid", "All applications")
         Accessible.role: Accessible.Button
@@ -566,7 +606,14 @@ RowLayout {
 
         RowLayout {
             id: catRow
-            width: Math.max(implicitWidth, catFlick.width)
+            // Icon-only: fill the viewport (the fillWidth buttons trim their
+            // padding to absorb a slightly-wider icon instead of flipping to a
+            // scroll), but never below iconRowMinWidth — past that the row
+            // overflows so the icons scroll instead of overlapping. Other modes
+            // grow with their content and scroll as before.
+            width: categoryBar.tabsIconOnly
+                   ? Math.max(catFlick.width, categoryBar.iconRowMinWidth)
+                   : Math.max(implicitWidth, catFlick.width)
             height: parent.height
             spacing: Kirigami.Units.smallSpacing
 
@@ -577,21 +624,20 @@ RowLayout {
                     focusPolicy: Qt.NoFocus
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    // Icon-only: never squish below the icon + padding; past
+                    // that the row overflows and scrolls.
+                    Layout.minimumWidth: categoryBar.tabsIconOnly ? categoryBar.tabMinWidth : 0
                     required property int index
                     required property string modelData
                     Kirigami.MnemonicData.enabled: false
-                    leftPadding: Kirigami.Units.largeSpacing
-                    rightPadding: Kirigami.Units.largeSpacing
+                    leftPadding: categoryBar.tabHPadding
+                    rightPadding: categoryBar.tabHPadding
                     text: ""
-                    font.pointSize: categoryBar.buttonFontPointSize
-                    contentItem: PlasmaComponents.Label {
-                        text: categoryBar.altHeld
-                            ? categoryBar.mnemonicRichText(modelData)
-                            : modelData
-                        textFormat: categoryBar.altHeld ? Text.RichText : Text.PlainText
-                        font: parent.font
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                    contentItem: CategoryTabContent {
+                        bar: categoryBar
+                        label: modelData
+                        iconSource: categoryBar.appsModel
+                            ? categoryBar.appsModel.categoryIcon(modelData) : ""
                     }
                     checked: !categoryBar.wheelScrolling
                              && !categoryBar.favoritesActive
@@ -604,6 +650,12 @@ RowLayout {
                     }
                     onHoveredChanged: hovered ? categoryBar.hoverEnter(modelData)
                                               : categoryBar.hoverLeave(modelData)
+
+                    // Icon-only hides the label, so surface the category name
+                    // on hover; redundant when the label is already shown.
+                    PlasmaComponents.ToolTip.text: modelData
+                    PlasmaComponents.ToolTip.visible: hovered && categoryBar.tabsIconOnly
+                    PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
                     MouseArea {
                         anchors.fill: parent
@@ -637,7 +689,7 @@ RowLayout {
     FavoritesTabButton {
         id: favButtonRight
         visible: !categoryBar.favoritesFirst
-        categoryBar: categoryBar
+        bar: categoryBar
     }
 
     // -- Category context menu (system categories mode only) --
