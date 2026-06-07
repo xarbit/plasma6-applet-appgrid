@@ -147,14 +147,21 @@ Item {
         visible: root.selected && !(pointerDrag.active || touchDrag.active)
     }
 
+    // Icon + label, sized to its content and centred vertically in the cell.
+    // The cell height budget (gridmetrics) is slightly taller than two text
+    // lines; centring splits that slack evenly top/bottom instead of pooling
+    // it under the label, which tightens the visual row spacing (Kickoff).
     ColumnLayout {
         id: contentLayout
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.leftMargin: Kirigami.Units.smallSpacing
+        anchors.rightMargin: Kirigami.Units.smallSpacing
         spacing: Kirigami.Units.smallSpacing
 
         Item {
-            Layout.alignment: (root.hideLabel ? Qt.AlignVCenter : Qt.AlignTop) | Qt.AlignHCenter
+            Layout.alignment: Qt.AlignHCenter
             implicitWidth: root.iconSize
             implicitHeight: root.iconSize
 
@@ -187,7 +194,10 @@ Item {
 
         PlasmaComponents.Label {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            // Always reserve two lines so every delegate is the same height
+            // and icons stay row-aligned whether a name is one or two lines
+            // (Kickoff KickoffGridDelegate).
+            Layout.preferredHeight: lineCount === 1 ? implicitHeight * 2 : implicitHeight
             visible: !root.hideLabel
             verticalAlignment: Text.AlignTop
             text: root.appName
