@@ -6,15 +6,16 @@
 
 A grid-style application launcher for KDE Plasma 6. Ships as two plasmoids — a standalone centered popup (**AppGrid**) and a native Plasma panel popup (**AppGrid Panel**) — both sharing the same grid, search, categories, and config.
 
-![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
-![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
+![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue) ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
 
 ![AppGrid](images/launcher-main.png)
 
 ![AppGrid Dark](images/launcher-main-dark.png)
 
+- **[appgrid.xarbit.dev](https://appgrid.xarbit.dev)** for screenshots, features, FAQ, install instructions, etc.
+- **[appgrid.xarbit.dev/docs/](https://appgrid.xarbit.dev/docs/)** for build instructions, configuration reference, internals, etc.
 
-Website with screenshots, features, FAQ, and install instructions: **[appgrid.xarbit.dev](https://appgrid.xarbit.dev)**. Build instructions, configuration reference, internals, and contributor notes: **[appgrid.xarbit.dev/docs](https://appgrid.xarbit.dev/docs)**.
+---
 
 ## Install
 
@@ -47,7 +48,7 @@ If you maintain an AppGrid package for a distro not listed here, open an issue a
 > [!CAUTION]
 > **Impersonation caution.** A repository at `github.com/RishiT07-op/plasma6-applet-appgrid` is impersonating this project (not a fork, ships an unknown `.zip`, issues disabled). Only install from the official sources. Details + status: [#115](https://github.com/xarbit/plasma6-applet-appgrid/issues/115).
 
-## Build from source
+### Build from source
 
 Requires Plasma 6.0+ (6.4+ recommended) and the KDE Frameworks 6 development headers — see [`PKGBUILD`](PKGBUILD) for the Arch list, or [`packaging/`](packaging/) for the Fedora spec and Ubuntu `debian/` packaging.
 
@@ -60,15 +61,19 @@ kquitapp6 plasmashell && kstart plasmashell
 
 Arch users can build a proper pacman package with `makepkg -sf` and install via `sudo pacman -U plasma6-applets-appgrid-*.pkg.tar.zst`.
 
+---
+
 ## Documentation
 
-Full docs live on the website: **[appgrid.xarbit.dev/docs](https://appgrid.xarbit.dev/docs)**.
+Full docs live on the website: **[appgrid.xarbit.dev/docs](https://appgrid.xarbit.dev/docs/)**.
 
-- **[Build from source](https://appgrid.xarbit.dev/docs#build-from-source)** + **[Dependencies (per distro)](https://appgrid.xarbit.dev/docs#dependencies)** + **[CMake build options](https://appgrid.xarbit.dev/docs#cmake-options)**
-- **[Configuration reference](https://appgrid.xarbit.dev/docs#configuration)** — every setting with default + effect
-- **[Plasmoid variants & IDs](https://appgrid.xarbit.dev/docs#plasmoid-variants)** · **[Favorites storage](https://appgrid.xarbit.dev/docs#favorites-storage)** · **[Universal package internals](https://appgrid.xarbit.dev/docs#universal-internals)** · **[Update checker internals](https://appgrid.xarbit.dev/docs#update-checker)** · **[Versioning scheme](https://appgrid.xarbit.dev/docs#versioning)**
-- **[State file locations](https://appgrid.xarbit.dev/docs#state-files)** · **[Running the test suite](https://appgrid.xarbit.dev/docs#tests)** · **[Translations workflow](https://appgrid.xarbit.dev/docs#translations)**
-- **[Help & troubleshooting](https://appgrid.xarbit.dev/docs#help)** — 1.7.x upgrade, distro ↔ universal switching, logs / debugging, bug-reporting
+- **[Build from source](https://appgrid.xarbit.dev/docs/#build-from-source)** + **[Dependencies (per distro)](https://appgrid.xarbit.dev/docs/#dependencies-per-distro)** + **[CMake build options](https://appgrid.xarbit.dev/docs/#cmake-build-options)**
+- **[Configuration reference](https://appgrid.xarbit.dev/docs/#configuration-reference)** — every setting with default + effect
+- **[Plasmoid variants & IDs](https://appgrid.xarbit.dev/docs/#plasmoid-variants--ids)** · **[Favorites storage](https://appgrid.xarbit.dev/docs/#favorites-storage)** · **[Universal package internals](https://appgrid.xarbit.dev/docs/#universal-package-internals)** · **[Update checker internals](https://appgrid.xarbit.dev/docs/#update-checker--technical)** · **[Versioning scheme](https://appgrid.xarbit.dev/docs/#versioning-scheme)**
+- **[State file locations](https://appgrid.xarbit.dev/docs/#state-file-locations)** · **[Running the test suite](https://appgrid.xarbit.dev/docs/#running-the-test-suite)** · **[Translations workflow](https://appgrid.xarbit.dev/docs/#translations)**
+- **[Help & troubleshooting](https://appgrid.xarbit.dev/docs/#help--troubleshooting)** — 1.7.x upgrade, distro ↔ universal switching, logs / debugging, bug-reporting
+
+---
 
 ## Contributing
 
@@ -77,11 +82,15 @@ Full docs live on the website: **[appgrid.xarbit.dev/docs](https://appgrid.xarbi
 - **Code** — fork, branch, PR. Keep changes focused; test against both AppGrid Center and AppGrid Panel
 - **Packaging** — if you maintain AppGrid for a distro not listed above, open an issue and I'll add it
 
+---
+
 ## Credits
 
 - **Jason Scurtu** — author
 
-This project is developed with [Claude Code](https://claude.ai/claude-code) as an AI pair programmer. Context-engineered and reviewed, not vibe-coded — but if AI-assisted code gives you the ick, this might not be the launcher for you.
+This project is developed with [Claude Code](https://claude.com/product/claude-code) as an AI pair programmer. Context-engineered and reviewed, not vibe-coded — but if AI-assisted code gives you the ick, this might not be the launcher for you.
+
+---
 
 ## Acknowledgments
 
@@ -93,6 +102,8 @@ AppGrid stands on the work of the KDE community.
 
 Thanks to the Plasma team, the Frameworks maintainers, and every contributor whose work AppGrid builds on.
 
+---
+
 ## License
 
-GPL-2.0-or-later
+[GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html).
