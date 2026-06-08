@@ -335,8 +335,15 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
         return;
     }
 
+    // A degenerate rect would leave the region empty, and KWindowEffects treats
+    // an empty region with enable=true as "the whole window" — on our
+    // full-screen layer surface that frosts the entire screen (the window-leak
+    // seen when the panel rect is still 0-sized during a surface reconfig). So
+    // only enable the effects when we actually have a panel rect to clip to.
+    const bool validRect = w > 0 && h > 0;
+
     QRegion region;
-    if ((enableBlur || enableContrast) && w > 0 && h > 0) {
+    if ((enableBlur || enableContrast) && validRect) {
         // Build a rounded-rect region by subtracting square corners
         // and adding elliptical arcs.
         const int diameter = radius * 2;
@@ -357,7 +364,7 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
         region = rect;
     }
 
-    KWindowEffects::enableBlurBehind(window, enableBlur, region);
+    KWindowEffects::enableBlurBehind(window, enableBlur && validRect, region);
 
     // Background-contrast triple from the active Plasma theme. Each theme
     // tunes its own contrast/intensity/saturation values to keep panel text
@@ -367,7 +374,7 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
     // out via backgroundContrastEnabled() get a clean disable even when the
     // caller requested it.
     Plasma::Theme theme;
-    const bool contrastEnabled = enableContrast && theme.backgroundContrastEnabled();
+    const bool contrastEnabled = enableContrast && validRect && theme.backgroundContrastEnabled();
     KWindowEffects::enableBackgroundContrast(window,
                                              contrastEnabled,
                                              theme.backgroundContrast(),
