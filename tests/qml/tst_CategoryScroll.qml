@@ -152,36 +152,82 @@ TestCase {
         verify(CategoryScroll.arrowVisibility(stuck, narrowed, contentWidth).right)
     }
 
-    // --- pageRightTarget ---
+    // --- pageTarget (one rule, both directions) ---
 
-    function test_pageRightAnchorsBoundaryItem() {
-        // W=150 from contentX 0: items 0..2 fit, target aligns item[2]'s right.
-        compare(CategoryScroll.pageRightTarget(items, 0, 150, 500, 5), 155)
+    function test_pageRightLandsLastTabFlush() {
+        // vp150 from 0: item[2] (right 300) is the furthest whole tab a viewport
+        // ahead → flush with the viewport's right edge (300 - 150 = 150).
+        compare(CategoryScroll.pageTarget(items, 0, 150, 500, 1), 150)
     }
 
-    function test_pageRightSnapsToEndWhenTouchingLast() {
-        // Large viewport reaches the last item → snap to contentWidth.
-        compare(CategoryScroll.pageRightTarget(items, 0, 250, 500, 5), 500)
+    function test_pageLeftLandsFirstTabFlush() {
+        // vp150 from 350: item[2] (x 200) is the furthest whole tab a viewport
+        // back → flush with the viewport's left edge.
+        compare(CategoryScroll.pageTarget(items, 350, 150, 500, -1), 200)
     }
 
-    function test_pageRightEmptySnapsToEnd() {
-        compare(CategoryScroll.pageRightTarget([], 0, 150, 500, 5), 500)
+    function test_pageRightSnapsToEndOnLastPage() {
+        compare(CategoryScroll.pageTarget(items, 250, 150, 500, 1), 350)   // maxX
     }
 
-    function test_pageRightSkipsNullDelegates() {
-        // Unrealised delegates arrive as null; they're skipped, so an all-null
-        // array behaves like an empty one → snap to the end.
-        compare(CategoryScroll.pageRightTarget([null, null], 0, 150, 500, 5), 500)
+    function test_pageLeftSnapsToStartOnFirstPage() {
+        compare(CategoryScroll.pageTarget(items, 100, 150, 500, -1), 0)
     }
 
-    // --- pageLeftTarget ---
-
-    function test_pageLeftAnchorsFirstVisibleItem() {
-        compare(CategoryScroll.pageLeftTarget(items, 300, 150, 5), 195)
+    function test_pageEmptyAndNullSnapToBounds() {
+        compare(CategoryScroll.pageTarget([], 0, 150, 500, 1), 350)
+        compare(CategoryScroll.pageTarget([null, null], 0, 150, 500, 1), 350)
+        compare(CategoryScroll.pageTarget([], 350, 150, 500, -1), 0)
+        compare(CategoryScroll.pageTarget([null, null], 350, 150, 500, -1), 0)
     }
 
-    function test_pageLeftSnapsToStartNearBeginning() {
-        compare(CategoryScroll.pageLeftTarget(items, 100, 150, 5), 0)
+    // --- generic: right=full last, left=full first, symmetric, every width ---
+
+    function _uniform(n, w, gap) {
+        var a = [], x = 0
+        for (var i = 0; i < n; i++) { a.push({ x: x, width: w }); x += w + gap }
+        return a
+    }
+    function _contentWidth(a) { var l = a[a.length - 1]; return l.x + l.width }
+    function _isTabRight(a, edge) {
+        for (var i = 0; i < a.length; i++)
+            if (Math.abs(a[i].x + a[i].width - edge) < 2) return true
+        return false
+    }
+    function _isTabLeft(a, x) {
+        for (var i = 0; i < a.length; i++)
+            if (Math.abs(a[i].x - x) < 2) return true
+        return false
+    }
+
+    function _walk(a, vp) {
+        const cw = _contentWidth(a)
+        const maxX = Math.max(0, cw - vp)
+        var cx = 0, fwd = 0
+        while (cx < maxX && fwd < 200) {
+            var n = CategoryScroll.pageTarget(a, cx, vp, cw, 1)
+            verify(n > cx, "right no progress at " + cx)
+            verify(_isTabRight(a, n + vp), "right last tab not flush at " + n + " vp " + vp)
+            cx = n; ++fwd
+        }
+        compare(cx, maxX, "right did not reach the end (vp " + vp + ")")
+        var bwd = 0
+        while (cx > 0 && bwd < 200) {
+            var p = CategoryScroll.pageTarget(a, cx, vp, cw, -1)
+            verify(p < cx, "left no progress at " + cx)
+            verify(_isTabLeft(a, p), "left first tab not flush at " + p + " vp " + vp)
+            cx = p; ++bwd
+        }
+        compare(cx, 0, "left did not reach the start (vp " + vp + ")")
+        compare(bwd, fwd, "left/right page counts differ (vp " + vp + ")")
+    }
+
+    function test_pagingGenericAcrossWidthsAndModes() {
+        _walk(_uniform(20, 30, 4), 200)    // many tiny icons (icon-only), small bar
+        _walk(_uniform(20, 30, 4), 520)    // many tiny icons, wide bar
+        _walk(_uniform(12, 80, 4), 400)    // icon+text
+        _walk(_uniform(8, 140, 6), 300)    // wide text tabs
+        _walk(_uniform(6, 100, 0), 250)    // few tabs, viewport > 2 tabs
     }
 
     // --- iconRowMinWidth (#176) ---

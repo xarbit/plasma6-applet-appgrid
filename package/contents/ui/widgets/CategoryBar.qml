@@ -231,9 +231,14 @@ RowLayout {
     // enter-before-leave race); this side just drives the dwell timer.
     property bool openOnHover: false
     readonly property int hoverActivationDelay: 5
-    // Cadence for repeated arrow paging on hover; floored at 150ms so it
-    // still pages when animations are off. First page fires immediately.
-    readonly property int hoverScrollInterval: Math.max(Kirigami.Units.shortDuration * 3, 150)
+    // Dwell before a hovered scroll arrow pages, so merely sweeping the cursor
+    // across it doesn't page; floored at 150ms so it still works with animations
+    // off.
+    readonly property int hoverPageDwell: Math.max(Kirigami.Units.shortDuration * 3, 150)
+    // While the cursor rests on a scroll arrow it keeps paging hands-free, but
+    // only this often — slow enough that a resting cursor doesn't race to the
+    // end. A deliberate UX cadence, not a theme duration.
+    readonly property int hoverRetriggerInterval: 1500
     // One window governs the whole wheel interaction: hover-select stays
     // suppressed and the highlight stays cleared until this long after the
     // last wheel event, then the scroll counts as stopped and the tab under
@@ -369,16 +374,17 @@ RowLayout {
         catFlick._suppressContentXAnim = false
     }
 
-    // Page by ~one viewport per click; CategoryScroll picks the boundary-item
-    // target (or the matching bound when the page would touch the last/first
-    // item, so that arrow can collapse on the same click).
+    // Page by ~one viewport per click. One tab-boundary-aligned rule for both
+    // directions (CategoryScroll.pageTarget): right lands with the last tab
+    // fully visible, left with the first. Right uses the post-scroll viewport so
+    // the appearing left arrow doesn't re-clip the aligned last tab (#172).
     function pageRight() {
-        _setContentX(CategoryScroll.pageRightTarget(_itemRects(), catFlick.contentX,
-            _viewportWidthAfterRightScroll(), catFlick.contentWidth, Kirigami.Units.smallSpacing))
+        _setContentX(CategoryScroll.pageTarget(_itemRects(), catFlick.contentX,
+            _viewportWidthAfterRightScroll(), catFlick.contentWidth, 1))
     }
     function pageLeft() {
-        _setContentX(CategoryScroll.pageLeftTarget(_itemRects(), catFlick.contentX,
-            catFlick.width, Kirigami.Units.smallSpacing))
+        _setContentX(CategoryScroll.pageTarget(_itemRects(), catFlick.contentX,
+            catFlick.width, catFlick.contentWidth, -1))
     }
 
     // Scroll the flickable so the currently selected category button is visible
@@ -481,9 +487,30 @@ RowLayout {
         id: arrowBtn
         focusPolicy: Qt.NoFocus
         property bool scrollable: false
-        // Each arrow supplies its page function; invoked on click and,
-        // with open-on-hover on, repeatedly while the arrow is hovered.
+        // Each arrow supplies its page function; invoked on click and, with
+        // open-on-hover on, after a dwell and then on a slow repeat while hovered.
         property var pageAction: null
+        // Open-on-hover arming. Set when the cursor enters and cleared on each
+        // fire, so the dwell timer pages exactly once per arming; the retrigger
+        // timer re-arms it every few seconds while the cursor rests on the arrow.
+        property bool _hoverArmed: false
+
+        // Page, then (open-on-hover) schedule a slow re-arm so a resting cursor
+        // keeps paging every hoverRetriggerInterval rather than racing to the end.
+        function _page() {
+            if (pageAction)
+                pageAction()
+            _hoverArmed = false
+            if (categoryBar.openOnHover)
+                retriggerTimer.restart()
+        }
+
+        onHoveredChanged: {
+            _hoverArmed = hovered
+            if (!hovered)
+                retriggerTimer.stop()
+        }
+        onClicked: _page()
         enabled: scrollable
         opacity: scrollable ? 1 : 0
         implicitWidth: scrollable ? categoryBar.scrollArrowWidth : 0
@@ -507,17 +534,27 @@ RowLayout {
         PlasmaComponents.ToolTip.visible: hovered && scrollable
         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
-        // Open-on-hover: page repeatedly while hovered. triggeredOnStart
-        // pages once immediately; the repeat keeps scrolling until the edge
-        // is reached (scrollable flips false) or the cursor leaves. Each
-        // tick spans the scroll animation so pages chain smoothly.
+        // Dwell: while armed, page once after a short delay so merely sweeping
+        // the cursor across the arrow doesn't page. repeat:false alone wouldn't
+        // stop it — the running binding stays true while hovered and would
+        // restart it — so _hoverArmed gates the binding and the fire clears it.
         Timer {
-            running: categoryBar.openOnHover && arrowBtn.hovered
+            running: categoryBar.openOnHover && arrowBtn.hovered && arrowBtn._hoverArmed
                 && arrowBtn.scrollable && arrowBtn.pageAction !== null
-            interval: categoryBar.hoverScrollInterval
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: arrowBtn.pageAction()
+            interval: categoryBar.hoverPageDwell
+            repeat: false
+            onTriggered: arrowBtn._page()
+        }
+
+        // Slow re-arm: hoverRetriggerInterval after a page, re-arm the dwell if
+        // the cursor still rests on the (still-scrollable) arrow, so paging
+        // continues hands-free without racing to the end.
+        Timer {
+            id: retriggerTimer
+            interval: categoryBar.hoverRetriggerInterval
+            repeat: false
+            onTriggered: if (categoryBar.openOnHover && arrowBtn.hovered && arrowBtn.scrollable)
+                arrowBtn._hoverArmed = true
         }
 
         Accessible.role: Accessible.Button
@@ -529,7 +566,6 @@ RowLayout {
         scrollable: CategoryScroll.arrowVisibility(catFlick.contentX, catFlick.width, catFlick.contentWidth).left
         icon.name: "arrow-left"
         pageAction: () => categoryBar.pageLeft()
-        onClicked: categoryBar.pageLeft()
         Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
     }
 
@@ -681,7 +717,6 @@ RowLayout {
         scrollable: CategoryScroll.arrowVisibility(catFlick.contentX, catFlick.width, catFlick.contentWidth).right
         icon.name: "arrow-right"
         pageAction: () => categoryBar.pageRight()
-        onClicked: categoryBar.pageRight()
         Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
     }
 

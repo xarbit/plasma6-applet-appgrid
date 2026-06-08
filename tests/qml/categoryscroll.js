@@ -70,45 +70,53 @@ function trailingGap(contentX, contentWidth, viewportWidth) {
 // last fully-fitting item so it isn't half-clipped; if the page would touch the
 // last item at all, return contentWidth so the caller clamps to the end and the
 // right arrow can collapse on the same click.
-function pageRightTarget(items, contentX, viewportWidth, contentWidth, spacing) {
-    const tentativeRight = contentX + 2 * viewportWidth
-    var lastFit = -1
-    for (var i = 0; i < items.length; i++) {
-        var it = items[i]
-        if (!it) continue
-        if (it.x + it.width <= tentativeRight + 1) lastFit = i
+// Page forward by ~one viewport. The first tab that isn't fully visible (the
+// one straddling the right fold) leads the next page, aligned just inside the
+// left edge — so no page is skipped and no tab is cut, whatever the tab width
+// (text / icon+text / icon). Snaps to the end only once the last tab would
+// itself come fully into view, so the right arrow can collapse on that page.
+// Page the category strip one viewport in `dir` (+1 = right, -1 = left). One
+// rule for both directions: advance ~a viewport and align to a tab boundary so
+// the leading edge always shows a whole tab — paging right lands with the last
+// (rightmost) tab fully visible, paging left with the first (leftmost) tab fully
+// visible. Independent of tab width, bar width and display mode (text /
+// icon+text / icon), because it works only from the live tab rects. `items` is
+// the tab geometry ({x, width}; nulls for unrealised delegates are skipped).
+// Returns the target contentX, clamped to [0, contentWidth - viewportWidth].
+function pageTarget(items, contentX, viewportWidth, contentWidth, dir) {
+    const maxX = Math.max(0, contentWidth - viewportWidth)
+    if (dir > 0) {
+        const viewRight = contentX + viewportWidth
+        const reach = viewRight + viewportWidth          // one viewport ahead
+        var edge = -1
+        for (var i = 0; i < items.length; i++) {
+            var ri = items[i]
+            if (!ri) continue
+            var r = ri.x + ri.width
+            if (r <= viewRight + 1) continue             // already fully visible
+            if (edge < 0) edge = r                       // first new tab (covers a tab wider than a page)
+            if (r <= reach + 1) edge = r                 // furthest whole tab a viewport ahead
+            else break
+        }
+        if (edge < 0) return maxX                        // nothing more to the right → end
+        // edge is a tab's right edge; put it flush with the viewport's right so
+        // that tab shows fully. Always make progress, never overscroll.
+        return Math.min(maxX, Math.max(contentX + 1, edge - viewportWidth))
+    }
+    const reach = contentX - viewportWidth               // one viewport back
+    var left = -1
+    for (var j = items.length - 1; j >= 0; j--) {
+        var lj = items[j]
+        if (!lj) continue
+        if (lj.x >= contentX - 1) continue               // not before the current left edge
+        if (left < 0) left = lj.x                        // first new tab (covers a tab wider than a page)
+        if (lj.x >= reach - 1) left = lj.x               // furthest whole tab a viewport back
         else break
     }
-    if (lastFit < 0 || lastFit === items.length - 1)
-        return contentWidth
-
-    var fitItem = items[lastFit]
-    const target = (fitItem.x + fitItem.width) - viewportWidth + spacing
-    var lastItem = items[items.length - 1]
-    if (lastItem && lastItem.x < target + viewportWidth + 1)
-        return contentWidth
-    return target
-}
-
-// Target contentX for a leftward page. Retreat one viewport, anchoring the
-// first item that becomes fully visible; if that reaches the first item, return
-// 0 so the caller clamps to the start and the left arrow collapses.
-function pageLeftTarget(items, contentX, viewportWidth, spacing) {
-    const tentativeLeft = contentX - viewportWidth
-    var firstFit = -1
-    for (var i = 0; i < items.length; i++) {
-        var it = items[i]
-        if (!it) continue
-        if (it.x >= tentativeLeft - 1) { firstFit = i; break }
-    }
-    if (firstFit <= 0)
-        return 0
-
-    const target = items[firstFit].x - spacing
-    var firstItem = items[0]
-    if (firstItem && firstItem.x + firstItem.width > target - 1)
-        return 0
-    return target
+    if (left < 0) return 0                               // nothing more to the left → start
+    // left is a tab's left edge; align it to the viewport's left so that tab
+    // shows fully. Always make progress.
+    return Math.max(0, Math.min(contentX - 1, left))
 }
 
 // Target contentX to bring a selected item fully into view, or null if it is
