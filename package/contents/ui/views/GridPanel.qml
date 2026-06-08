@@ -89,6 +89,15 @@ Kirigami.ShadowedRectangle {
     property bool forceCompact: false
     readonly property bool effectiveHideGridWhenEmpty: cfgHideGridWhenEmpty || forceCompact
 
+    // Usable size of the host (the centred window's surface), the cap the panel
+    // must not exceed. The owning GridWindow injects its own width/height — the
+    // compositor-validated LayerShell surface — which stays correct across a
+    // resume; Qt's Screen attached property can transiently report a bogus
+    // placeholder when outputs drop on wake, shrinking/mis-sizing the panel.
+    // Defaults to Screen for standalone/test use.
+    property real availableWidth: Screen.width
+    property real availableHeight: Screen.height
+
     // -- Sort helpers --
     readonly property bool isSortByCategory: sortMode === 2
 
@@ -225,11 +234,11 @@ Kirigami.ShadowedRectangle {
 
     Binding on width {
         when: !panel.nativePopup
-        value: Math.min(panel.panelWidth, Screen.width * 0.9)
+        value: Math.min(panel.panelWidth, panel.availableWidth * 0.9)
     }
     Binding on height {
         when: !panel.nativePopup
-        value: Math.min(panel.effectiveHeight, Screen.height * 0.9)
+        value: Math.min(panel.effectiveHeight, panel.availableHeight * 0.9)
     }
 
     // Set by on_EmptyHiddenStateChanged to skip the next height Behavior

@@ -356,6 +356,10 @@ Window {
         favoritesClientInstance: root.favoritesClientInstance
         sysInfo: root.sysInfo
         forceCompact: root.forceCompact
+        // Cap the panel to the actual window surface, not Qt's Screen (which can
+        // report a placeholder when outputs drop on resume from sleep).
+        availableWidth: root.width
+        availableHeight: root.height
         // Static user offset + compact-mode downward shift, kept out of
         // the anchor system so the open/close animations (which drive
         // anchors.verticalCenterOffset) are unaffected.
