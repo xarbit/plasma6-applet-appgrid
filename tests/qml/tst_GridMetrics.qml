@@ -69,6 +69,20 @@ TestCase {
         compare(GridMetrics.labelledCellWidth(32, 10, 4), 70)
     }
 
+    // --- reduceGridSpacing: narrower width (one gridUnit less), height unchanged ---
+
+    function test_reduceGridSpacingTrimsOneGridUnit() {
+        // square 64 + (18*3 + 4*2) = 126; reduced 64 + (18*2 + 4*2) = 108.
+        compare(GridMetrics.labelledCellWidth(64, 18, 4, 1, true), 108)
+        compare(GridMetrics.labelledCellWidth(64, 18, 4, 1, false)
+                - GridMetrics.labelledCellWidth(64, 18, 4, 1, true), 18)
+    }
+
+    function test_reduceGridSpacingLeavesHeightUntouched() {
+        // Only width is affected; the row height keeps its two-line budget.
+        compare(GridMetrics.labelledCellHeight(64, 18, 4, 1), 126)
+    }
+
     // --- columnsForWidth: how many cells fit, floored at a minimum ---
 
     function test_columnsFloorsToWholeCells() {

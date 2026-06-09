@@ -21,12 +21,16 @@ function labelledCellHeight(iconSize, gridUnit, smallSpacing, textScale) {
     return iconSize + (gridUnit * 3 + smallSpacing * 2) * s
 }
 
-// Width of a labelled grid cell. Cells are square — width tracks height so
-// the label gets the full cell width (Kickoff: cellWidth == cellHeight ==
-// gridCellSize). A width narrower than the two-line height budget orphans
-// long single-word names like "KwalletManager" onto a second line (#177).
-function labelledCellWidth(iconSize, gridUnit, smallSpacing, textScale) {
-    return labelledCellHeight(iconSize, gridUnit, smallSpacing, textScale)
+// Width of a labelled grid cell. By default cells are square — width tracks
+// height so the label gets the full cell width (Kickoff: cellWidth ==
+// cellHeight == gridCellSize), which keeps long single-word names like
+// "KwalletManager" on one line (#177). reduceSpacing trims one gridUnit of the
+// width overhead for a tighter horizontal grid (the pre-#177 width); the row
+// height is unchanged, so labels still fit but may wrap a touch sooner.
+function labelledCellWidth(iconSize, gridUnit, smallSpacing, textScale, reduceSpacing) {
+    var s = textScale === undefined ? 1 : textScale
+    var units = reduceSpacing ? 2 : 3
+    return iconSize + (gridUnit * units + smallSpacing * 2) * s
 }
 
 // Columns that fit across width at the given cell width, never fewer than

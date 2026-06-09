@@ -36,6 +36,7 @@ KCM.SimpleKCM {
     property alias cfg_hoverAnimation: hoverAnimation.currentIndex
     property alias cfg_shakeOnOpen: shakeOnOpen.checked
     property alias cfg_independentTextSize: independentTextSize.checked
+    property alias cfg_reduceGridSpacing: reduceGridSpacing.checked
     property alias cfg_hideLabelsOnFavorites: hideLabelsOnFavorites.checked
 
     Kirigami.FormLayout {
@@ -73,6 +74,14 @@ KCM.SimpleKCM {
             text: i18nd("dev.xarbit.appgrid", "Apply Size to app icons only")
             QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
                 "By default the Size setting scales the whole panel. Check this to make Size change only the app icons, leaving labels, secondary icons, and spacing at the default — e.g. Medium icons with the default font.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        }
+        QQC2.CheckBox {
+            id: reduceGridSpacing
+            text: i18nd("dev.xarbit.appgrid", "Reduce grid spacing")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "Pack the app grid more tightly by using a narrower cell width. Long single-word names may wrap to a second line sooner.")
             QQC2.ToolTip.visible: hovered
             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }

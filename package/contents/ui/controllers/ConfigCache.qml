@@ -58,6 +58,7 @@ QtObject {
     readonly property bool useThemeBackground: source.useThemeBackground
     readonly property int iconSize: source.iconSize
     readonly property bool independentTextSize: source.independentTextSize
+    readonly property bool reduceGridSpacing: source.reduceGridSpacing
     readonly property int hoverAnimation: source.hoverAnimation
     readonly property bool shakeOnOpen: source.shakeOnOpen
 
