@@ -68,6 +68,7 @@ void UnifiedSearchModel::doReset()
     m_resetPending = false;
     beginResetModel();
     endResetModel();
+    Q_EMIT resultCountsChanged();
 }
 
 int UnifiedSearchModel::appResultCount() const

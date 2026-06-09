@@ -85,7 +85,10 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
         if (!m_useNativeActivation) {
             auto *quickItem = PlasmaQuick::AppletQuickItem::itemForApplet(this);
             if (quickItem) {
-                connect(this, &Plasma::Applet::activated, this, [quickItem]() {
+                // Context object is quickItem (not this): the lambda captures it
+                // raw, so the connection must die with it — the applet outlives
+                // the QML representation when Plasma recreates it.
+                connect(this, &Plasma::Applet::activated, quickItem, [quickItem]() {
                     quickItem->setProperty("expanded", false);
                 });
             }
