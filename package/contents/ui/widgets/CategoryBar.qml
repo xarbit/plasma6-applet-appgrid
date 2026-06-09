@@ -238,7 +238,7 @@ RowLayout {
     // While the cursor rests on a scroll arrow it keeps paging hands-free, but
     // only this often — slow enough that a resting cursor doesn't race to the
     // end. A deliberate UX cadence, not a theme duration.
-    readonly property int hoverRetriggerInterval: 1500
+    readonly property int hoverRetriggerInterval: 800
     // One window governs the whole wheel interaction: hover-select stays
     // suppressed and the highlight stays cleared until this long after the
     // last wheel event, then the scroll counts as stopped and the tab under
