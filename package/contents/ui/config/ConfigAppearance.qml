@@ -234,5 +234,16 @@ KCM.SimpleKCM {
             text: i18nd("dev.xarbit.appgrid", "Animate icons when the launcher opens")
             enabled: hoverAnimation.currentIndex > 0
         }
+
+        QQC2.Button {
+            Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "System:")
+            text: i18nd("dev.xarbit.appgrid", "Configure Animation Speed…")
+            icon.name: "settings-configure"
+            onClicked: KCM.KCMLauncher.openSystemSettings("kcm_animations")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
+                "Open KDE's animation settings to change the system-wide animation speed (the slider that drives every Plasma animation, this launcher included).")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        }
     }
 }
