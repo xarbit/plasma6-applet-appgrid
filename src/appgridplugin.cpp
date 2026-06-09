@@ -10,6 +10,7 @@
 #include "discoverbackends.h"
 #include "pluginhelpers.h"
 
+#include <KConfigGroup>
 #include <KDesktopFile>
 #include <KGlobalAccel>
 #include <KIO/ApplicationLauncherJob>
@@ -64,6 +65,17 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
     m_runnerFilterModel.setAppModel(&m_filterModel);
     m_searchModel.setAppModel(&m_filterModel);
     m_searchModel.setRunnerModel(&m_runnerFilterModel);
+
+    // Order runner results by the user's configured plugin arrangement
+    // (krunnerrc [Plugins][Favorites]), the same way KRunner/Kickoff do, and
+    // keep it in sync when that config changes (#180). The watcher reparses the
+    // shared config before emitting, so re-reading it picks up the change.
+    m_krunnerConfig = KSharedConfig::openConfig(QStringLiteral("krunnerrc"));
+    applyRunnerFavorites();
+    m_krunnerWatcher = KConfigWatcher::create(m_krunnerConfig);
+    connect(m_krunnerWatcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &, const QByteArrayList &) {
+        applyRunnerFavorites();
+    });
 
     // The FrecencyProvider stays dormant until QML opts in (the search-bias
     // toggle). When active, every refresh of the KAStats ranking forwards
@@ -152,6 +164,13 @@ QAbstractItemModel *AppGridPlugin::runnerModel() const
 QObject *AppGridPlugin::runnerSourceModel() const
 {
     return m_runnerModel;
+}
+
+void AppGridPlugin::applyRunnerFavorites()
+{
+    if (m_runnerModel) {
+        m_runnerModel->setFavoriteIds(PluginHelpers::readRunnerFavorites(m_krunnerConfig));
+    }
 }
 
 UnifiedSearchModel *AppGridPlugin::searchModel() const
