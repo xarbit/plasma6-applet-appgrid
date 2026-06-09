@@ -32,6 +32,7 @@ BuildRequires:  kf6-kpackage-devel
 BuildRequires:  kf6-kio-devel
 BuildRequires:  kf6-kservice-devel
 BuildRequires:  kf6-ki18n-devel
+BuildRequires:  kf6-kconfig-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kiconthemes-devel
 BuildRequires:  kf6-kwindowsystem-devel
