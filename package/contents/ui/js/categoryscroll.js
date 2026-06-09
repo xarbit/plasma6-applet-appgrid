@@ -2,12 +2,9 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Pure category-bar scroll geometry. The clamp / max-offset / viewport /
-    arrow-visibility / page-target / ensure-visible math used to live inline in
-    CategoryBar.qml over a live Flickable, where the #172 case (content just
-    over the viewport while the expanding left-arrow narrows it) could not be
-    asserted. Extracted here as Flickable-free functions so it is testable; the
-    in-frame _anchoredRight glue stays in the QML (it is animation-frame state).
+    Pure category-bar scroll geometry — clamp, max-offset, reserve/viewport,
+    page-target, ensure-visible. Extracted from CategoryBar.qml so the
+    Flickable-free math is unit-testable.
 
     All widths are in pixels. Item lists are arrays of { x, width } (or null for
     a not-yet-realised delegate, which is skipped) in left-to-right order.
@@ -30,15 +27,21 @@ function clampWheelDelta(raw, viewportWidth, minCap) {
     return Math.max(-cap, Math.min(cap, raw))
 }
 
-// Clamp a desired contentX into [0, maxX] and report whether it lands exactly
-// on the right edge. anchoredRight lets the caller pin contentX to the moving
-// maxX while the left-arrow slot expands afterwards (which shrinks the viewport
-// and grows maxX) — without it the right arrow lingers because contentX falls
-// short of the new bound (#172).
+// Clamp a desired contentX into [0, maxX].
 function clampContentX(target, contentWidth, viewportWidth) {
-    const maxX = maxContentX(contentWidth, viewportWidth)
-    const contentX = Math.max(0, Math.min(maxX, target))
-    return { contentX: contentX, anchoredRight: contentX === maxX && maxX > 0 }
+    return Math.max(0, Math.min(maxContentX(contentWidth, viewportWidth), target))
+}
+
+// Clamp a scroll/paging target to the furthest valid offset for the reserves it
+// will LAND in, not the ones in effect now. reserveGeometry gives the viewport at
+// the target (e.g. the right arrow collapsed once the last tab is flush, widening
+// it); clamping against that stops an animated move from overshooting when a
+// reserve collapses mid-glide and the contentX animation drives past the new bound
+// faster than it can be re-clamped (#172). containerWidth is the strip's full
+// width; contentWidth is the natural (unscrolled) content width.
+function clampToReserve(target, containerWidth, contentWidth, arrowWidth) {
+    const viewport = reserveGeometry(target, containerWidth, contentWidth, arrowWidth).viewport
+    return clampContentX(target, contentWidth, viewport)
 }
 
 // Effective viewport width for rightward scrolls. At the left edge
@@ -49,39 +52,32 @@ function viewportAfterRightScroll(flickWidth, contentX, arrowWidth) {
     return flickWidth - (contentX <= 0 ? arrowWidth : 0)
 }
 
-// Which scroll arrows should show at a given offset. left: scrolled off the
-// start. right: content still extends past the viewport (1px slack avoids
-// sub-pixel flicker at the exact bound).
-function arrowVisibility(contentX, viewportWidth, contentWidth) {
+// Viewport geometry for the category strip at a scroll offset. Each scroll arrow
+// reserves its width by insetting the strip: leftReserve once scrolled off the
+// start; the right arrow shows (reserving on the right) until the last tab is
+// flush — judged against the viewport WITHOUT the right reserve (container minus
+// the left reserve) and the natural content width, so it never depends on the
+// width it controls. Both edges use the one rule "is there content past this
+// side". Returns { leftReserve, rightShown, viewport }; viewport is the container
+// minus both reserves. Computed together so a binding reading the viewport never
+// lands on a half-updated reserve — a transient full-width frame that, on a jump,
+// strands the strip short of the edge (#172). 1px slack avoids sub-pixel flicker.
+function reserveGeometry(contentX, containerWidth, naturalContentWidth, arrowWidth) {
+    const leftReserve = contentX > 0 ? arrowWidth : 0
+    const rightShown = contentX + (containerWidth - leftReserve) < naturalContentWidth - 1
     return {
-        left: contentX > 0,
-        right: contentX + viewportWidth < contentWidth - 1,
+        leftReserve: leftReserve,
+        rightShown: rightShown,
+        viewport: containerWidth - leftReserve - (rightShown ? arrowWidth : 0),
     }
 }
 
-// Dead space between the right edge of the content and the right edge of the
-// viewport at a given offset. The #172 assertion hook: after a full right
-// scroll this must be 0 — no gap past the last category.
-function trailingGap(contentX, contentWidth, viewportWidth) {
-    return Math.max(0, viewportWidth - (contentWidth - contentX))
-}
-
-// Target contentX for a rightward page. Advance ~one viewport, anchoring the
-// last fully-fitting item so it isn't half-clipped; if the page would touch the
-// last item at all, return contentWidth so the caller clamps to the end and the
-// right arrow can collapse on the same click.
-// Page forward by ~one viewport. The first tab that isn't fully visible (the
-// one straddling the right fold) leads the next page, aligned just inside the
-// left edge — so no page is skipped and no tab is cut, whatever the tab width
-// (text / icon+text / icon). Snaps to the end only once the last tab would
-// itself come fully into view, so the right arrow can collapse on that page.
 // Page the category strip one viewport in `dir` (+1 = right, -1 = left). One
 // rule for both directions: advance ~a viewport and align to a tab boundary so
-// the leading edge always shows a whole tab — paging right lands with the last
-// (rightmost) tab fully visible, paging left with the first (leftmost) tab fully
-// visible. Independent of tab width, bar width and display mode (text /
-// icon+text / icon), because it works only from the live tab rects. `items` is
-// the tab geometry ({x, width}; nulls for unrealised delegates are skipped).
+// the leading edge always shows a whole tab — paging right lands the last
+// (rightmost) tab fully visible, left the first. Independent of tab width, bar
+// width and display mode, because it works only from the live tab rects. `items`
+// is the tab geometry ({x, width}; nulls for unrealised delegates are skipped).
 // Returns the target contentX, clamped to [0, contentWidth - viewportWidth].
 function pageTarget(items, contentX, viewportWidth, contentWidth, dir) {
     const maxX = Math.max(0, contentWidth - viewportWidth)

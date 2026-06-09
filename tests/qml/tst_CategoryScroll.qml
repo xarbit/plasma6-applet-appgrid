@@ -58,28 +58,40 @@ TestCase {
     // --- clampContentX ---
 
     function test_clampBelowZero() {
-        const r = CategoryScroll.clampContentX(-50, 500, 200)
-        compare(r.contentX, 0)
-        verify(!r.anchoredRight)
+        compare(CategoryScroll.clampContentX(-50, 500, 200), 0)
     }
 
     function test_clampWithinRange() {
-        const r = CategoryScroll.clampContentX(120, 500, 200)
-        compare(r.contentX, 120)
-        verify(!r.anchoredRight)
+        compare(CategoryScroll.clampContentX(120, 500, 200), 120)
     }
 
-    function test_clampAtMaxArmsAnchor() {
-        const r = CategoryScroll.clampContentX(9999, 500, 200)
-        compare(r.contentX, 300)
-        verify(r.anchoredRight)
+    function test_clampAtMax() {
+        compare(CategoryScroll.clampContentX(9999, 500, 200), 300)
     }
 
-    function test_clampNoOverflowNeverAnchors() {
-        // maxX === 0 → even an over-target lands at 0 without arming the anchor.
-        const r = CategoryScroll.clampContentX(9999, 150, 200)
-        compare(r.contentX, 0)
-        verify(!r.anchoredRight)
+    function test_clampNoOverflow() {
+        // maxX === 0 → even an over-target lands at 0.
+        compare(CategoryScroll.clampContentX(9999, 150, 200), 0)
+    }
+
+    // --- clampToReserve (clamp against the target's own reserve, #172) ---
+
+    function test_clampToReserveStopsAtFlushNotCurrentViewport() {
+        // container 544, content 1060, arrow 30. A page computed against the
+        // narrower mid-scroll viewport overshoots to 576; the real end (right arrow
+        // gone) is 1060 - (544 - 30) = 546. clampToReserve uses the target's own
+        // (wider) viewport and stops at 546 — no overshoot for the glide to leave.
+        compare(CategoryScroll.clampToReserve(576, 544, 1060, 30), 546)
+    }
+
+    function test_clampToReserveLeavesMidTargetUntouched() {
+        // A mid target still has both reserves, viewport 544-60=484, maxX 576 — well
+        // above 300, so it is not clamped.
+        compare(CategoryScroll.clampToReserve(300, 544, 1060, 30), 300)
+    }
+
+    function test_clampToReserveFloorsAtZero() {
+        compare(CategoryScroll.clampToReserve(-20, 544, 1060, 30), 0)
     }
 
     // --- viewportAfterRightScroll ---
@@ -92,64 +104,41 @@ TestCase {
         compare(CategoryScroll.viewportAfterRightScroll(200, 10, 40), 200)
     }
 
-    // --- arrowVisibility ---
+    // --- reserveGeometry (arrow reserves + viewport, #172) ---
 
-    function test_arrowsAtStart() {
-        const v = CategoryScroll.arrowVisibility(0, 200, 500)
-        verify(!v.left)
-        verify(v.right)
+    function test_reserveAtStartRightShowsNoLeft() {
+        // contentX 0, container 200, content 500, arrow 40 → no left reserve,
+        // right shows (overflow), viewport = container - right reserve.
+        const g = CategoryScroll.reserveGeometry(0, 200, 500, 40)
+        compare(g.leftReserve, 0)
+        verify(g.rightShown)
+        compare(g.viewport, 160)
     }
 
-    function test_arrowsScrolledMid() {
-        const v = CategoryScroll.arrowVisibility(150, 200, 500)
-        verify(v.left)
-        verify(v.right)
+    function test_reserveScrolledMidBothReserve() {
+        const g = CategoryScroll.reserveGeometry(150, 200, 500, 40)
+        compare(g.leftReserve, 40)
+        verify(g.rightShown)
+        compare(g.viewport, 120)   // 200 - 40 - 40
     }
 
-    function test_arrowsAtEnd() {
-        const v = CategoryScroll.arrowVisibility(300, 200, 500)
-        verify(v.left)
-        verify(!v.right)
+    function test_reserveAtEndRightHidesWhenLastTabFlush() {
+        // #172 lock: the right arrow hides exactly when the last tab is flush,
+        // judged against the viewport WITHOUT the right reserve (container minus
+        // the left reserve) — flush at contentX = 500 - (200 - 40) = 340.
+        const g = CategoryScroll.reserveGeometry(340, 200, 500, 40)
+        compare(g.leftReserve, 40)
+        verify(!g.rightShown)
+        compare(g.viewport, 160)   // right reserve reclaimed
+        // Short of flush → arrow still shows (no premature collapse).
+        verify(CategoryScroll.reserveGeometry(300, 200, 500, 40).rightShown)
     }
 
-    // --- trailingGap ---
-
-    function test_trailingGapZeroAtMax() {
-        compare(CategoryScroll.trailingGap(300, 500, 200), 0)
-    }
-
-    function test_trailingGapPositiveWhenOverscrolled() {
-        // Synthetic overscroll (clamp prevents this in practice) → exposes gap.
-        compare(CategoryScroll.trailingGap(350, 500, 200), 50)
-    }
-
-    // --- #172 regression lock ---
-
-    function test_172RightAnchorCollapsesArrowAfterLeftArrowExpands() {
-        const contentWidth = 210
-        const rawViewport = 200
-        const arrowWidth = 40
-
-        // 1. Full right scroll while the left arrow is still collapsed.
-        const first = CategoryScroll.clampContentX(contentWidth, contentWidth, rawViewport)
-        compare(first.contentX, 10)   // maxX = 210 - 200
-        verify(first.anchoredRight)   // armed to track the shrinking viewport
-
-        // 2. Left arrow expands → viewport narrows by arrowWidth → re-anchor.
-        const narrowed = rawViewport - arrowWidth        // 160
-        const newMax = CategoryScroll.maxContentX(contentWidth, narrowed)  // 50
-        compare(newMax, 50)
-        compare(CategoryScroll.trailingGap(newMax, contentWidth, narrowed), 0)
-        verify(!CategoryScroll.arrowVisibility(newMax, narrowed, contentWidth).right)
-    }
-
-    function test_172WithoutAnchorRightArrowWouldLinger() {
-        // Documents the bug the anchor fixes: staying at the old (raw-viewport)
-        // maxX leaves the right arrow visible once the viewport narrows.
-        const contentWidth = 210, rawViewport = 200, arrowWidth = 40
-        const stuck = CategoryScroll.maxContentX(contentWidth, rawViewport)  // 10
-        const narrowed = rawViewport - arrowWidth                           // 160
-        verify(CategoryScroll.arrowVisibility(stuck, narrowed, contentWidth).right)
+    function test_reserveNoOverflowNeitherReserves() {
+        const g = CategoryScroll.reserveGeometry(0, 200, 150, 40)
+        compare(g.leftReserve, 0)
+        verify(!g.rightShown)
+        compare(g.viewport, 200)
     }
 
     // --- pageTarget (one rule, both directions) ---
