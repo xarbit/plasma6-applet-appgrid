@@ -25,6 +25,12 @@ All notable changes to AppGrid are documented here.
 - *(search)* Option to hide the Alt+N shortcut badge in results (#165)
 - *(search)* Accept the ghost completion with Right arrow
 - *(theme)* Optional decoupling of text size from icon size (#167)
+- *(categories)* Open-on-hover for the category bar (#176)
+- *(grid)* Default to a 5x4 grid (#177)
+- *(grid)* Scale grid labels with the size preset (Medium/Small) (#177)
+- *(categories)* Optional category-bar icons (#176)
+- *(category)* Slow hands-free re-trigger on hover-paging arrows (#176)
+- *(grid)* Add "Reduce grid spacing" option for a tighter layout
 
 ### Fixed
 
@@ -45,6 +51,14 @@ All notable changes to AppGrid are documented here.
 - *(sort)* Rerank Most Used on the first launch, not the second
 - *(ranking)* Refresh default-app boost live; honor *Service keys
 - *(ranking)* Resolve role defaults the way KDE does (KApplicationTrader)
+- *(categories)* Guard open-on-hover against cursor crossing the bar
+- *(grid)* Square labelled cells so long app names stop orphaning (#177)
+- *(grid)* Centre the icon+label block in its cell (Kickoff-style)
+- *(window)* Stop full-screen blur leak from an empty effect region
+- *(config)* Move Category tab style below Sort order
+- *(window)* Size the centred panel off the window, not QScreen (#)
+- Stale search counts + dangling activated lambda
+- *(search)* Respect KRunner plugin arrangement in results (#180)
 
 ### Performance
 
@@ -66,6 +80,7 @@ All notable changes to AppGrid are documented here.
 
 - Wrap PrefixInfoView field labels
 - Silence xgettext QML warnings with --language=C
+- Update template and translate maintainer-owned languages
 
 ### Metainfo
 
@@ -73,6 +88,10 @@ All notable changes to AppGrid are documented here.
 - Add screenshots
 - Refresh <releases> to real stable releases
 - Document that the panel variant shares one component
+
+### Packaging
+
+- Post-upgrade notice to restart Plasma after binary swap
 
 ### Reuse
 
