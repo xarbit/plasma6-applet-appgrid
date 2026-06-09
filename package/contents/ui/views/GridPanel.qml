@@ -199,7 +199,8 @@ Kirigami.ShadowedRectangle {
     // AppGridView.cellHeight with labels visible (gridUnit too small per
     // row would accumulate and clip the bottom row).
     readonly property real estCellWidth: GridMetrics.labelledCellWidth(gridIconSize,
-                                         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
+                                         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing,
+                                         densityScale, cfg.reduceGridSpacing)
     readonly property real estCellHeight: GridMetrics.labelledCellHeight(gridIconSize,
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
@@ -965,6 +966,7 @@ Kirigami.ShadowedRectangle {
                 adaptiveColumns: panel.nativePopup
                 iconSize: panel.gridIconSize
                 fontScale: panel.densityScale
+                reduceGridSpacing: cfg.reduceGridSpacing
                 hoverAnimation: cfg.hoverAnimation
                 shadowEnabled: cfg.iconShadow
                 hoverHighlight: cfg.hoverHighlight

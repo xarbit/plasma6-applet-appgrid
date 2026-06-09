@@ -23,7 +23,7 @@ GridView {
     property bool adaptiveColumns: false
     readonly property int effectiveColumns: adaptiveColumns
         ? GridMetrics.columnsForWidth(width, GridMetrics.labelledCellWidth(
-            iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, fontScale), 3)
+            iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, fontScale, reduceGridSpacing), 3)
         : columns
 
     // Icon size from configuration (Kirigami pixel size).
@@ -33,6 +33,9 @@ GridView {
     // Drives both the delegate label and the cell-overhead budget so cells
     // stay proportional across presets; 1.0 when text size is decoupled (#167).
     property real fontScale: 1.0
+
+    // Use the narrower (pre-#177) cell width for a tighter horizontal grid.
+    property bool reduceGridSpacing: false
 
     // Icon delegate config, injected from the boundary's ConfigCache.
     required property int hoverAnimation

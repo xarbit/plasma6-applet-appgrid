@@ -218,6 +218,10 @@
       <label>Decouple text/spacing from the icon-size preset: when on, Size changes only the app icons while labels, secondary icons, and spacing stay at the default size.</label>
       <default>false</default>
     </entry>
+    <entry name="reduceGridSpacing" type="Bool">
+      <label>Use a narrower app-grid cell width for a tighter horizontal layout (the pre-1.9 width) instead of the square cells.</label>
+      <default>false</default>
+    </entry>
     <entry name="sortMode" type="Int">
       <label>Sort mode (0=Alphabetical, 1=Most Used).</label>
       <default>1</default>
