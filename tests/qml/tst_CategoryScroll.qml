@@ -112,6 +112,10 @@ TestCase {
         verify(!v.right)
     }
 
+    // arrowVisibility fed cycle-free args (container minus left reserve, natural
+    // content width) is the live right-arrow rule — see the reserve wiring in
+    // CategoryBar. Equivalent to the mid/end cases above; covered there.
+
     // --- trailingGap ---
 
     function test_trailingGapZeroAtMax() {

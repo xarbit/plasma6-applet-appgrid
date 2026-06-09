@@ -512,19 +512,16 @@ RowLayout {
         }
         onClicked: _page()
         enabled: scrollable
+        // Fixed-size button sitting in the reserved margin at a catFlick edge (not
+        // a layout slot). Fades out when its side has nothing to scroll; hidden at
+        // opacity 0 so it never eats clicks. Each instance anchors itself.
         opacity: scrollable ? 1 : 0
-        implicitWidth: scrollable ? categoryBar.scrollArrowWidth : 0
-        Layout.preferredHeight: categoryBar.buttonHeight
+        visible: opacity > 0
+        z: 1
+        width: categoryBar.scrollArrowWidth
         icon.width: categoryBar.buttonIconSize
         icon.height: categoryBar.buttonIconSize
-        Layout.rightMargin: scrollable ? 0 : -categoryBar.spacing
 
-        Behavior on implicitWidth {
-            NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
-        }
-        Behavior on Layout.rightMargin {
-            NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
-        }
         Behavior on opacity {
             NumberAnimation { duration: Kirigami.Units.shortDuration }
         }
@@ -560,164 +557,198 @@ RowLayout {
         Accessible.role: Accessible.Button
     }
 
-    // -- Scroll left arrow --
-    ScrollArrow {
-        id: scrollLeftBtn
-        scrollable: CategoryScroll.arrowVisibility(catFlick.contentX, catFlick.width, catFlick.contentWidth).left
-        icon.name: "arrow-left"
-        pageAction: () => categoryBar.pageLeft()
-        Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
-    }
-
-    // -- Scrollable category buttons --
-    Flickable {
-        id: catFlick
+    // -- Scrollable category buttons, with a scroll arrow reserved at each edge.
+    // catArea is the single fillWidth slot in the RowLayout; the Flickable and
+    // the two arrows live inside it, so catArea's width tracks only the bar / All
+    // / favorites geometry (the arrows reserve their space inside it — see below).
+    Item {
+        id: catArea
         Layout.fillWidth: true
         implicitHeight: categoryBar.buttonHeight
-        contentWidth: catRow.width
-        contentHeight: categoryBar.buttonHeight
-        clip: true
-        flickableDirection: Flickable.HorizontalFlick
-        boundsBehavior: Flickable.StopAtBounds
 
-        // Arrow slots animate width when they collapse / expand, which
-        // changes this Flickable's available width mid-scroll. When
-        // _setContentX armed _anchoredRight, glue contentX to the
-        // moving maxX in-frame (suppressing the contentX Behavior)
-        // so the categories appear stationary while the viewport
-        // stretches around them. Otherwise just clamp normally.
-        property bool _anchoredRight: false
-        property bool _suppressContentXAnim: false
-        onWidthChanged: {
-            if (_anchoredRight) {
-                const maxX = CategoryScroll.maxContentX(contentWidth, width)
-                _suppressContentXAnim = true
-                contentX = maxX
-                _suppressContentXAnim = false
-                if (maxX === 0)
-                    _anchoredRight = false
-            } else {
-                returnToBounds()
+        Flickable {
+            id: catFlick
+
+            // Single source of truth for the scroll arrows: which to show, and the
+            // width each reserves. Fed to arrowVisibility cycle-free — the right
+            // arrow is judged against the container minus the left reserve and the
+            // natural content width, never catFlick's own (reserve-dependent)
+            // width, so the binding can't feed back on itself (#172).
+            readonly property real leftReserve: contentX > 0 ? categoryBar.scrollArrowWidth : 0
+            readonly property var arrows: CategoryScroll.arrowVisibility(
+                contentX, catArea.width - leftReserve, catRow.implicitWidth)
+
+            // Reserve an arrow's width on its side only while that arrow shows, so
+            // the categories sit beside the arrows (never under them) and reclaim
+            // the space when an arrow hides. The reserve is an anchor margin, NOT a
+            // RowLayout fillWidth slot: anchor geometry re-evaluates per frame, so a
+            // collapsing reserve can't strand width the layout fails to re-absorb —
+            // the frozen right-side gap at fast / Instant animation speeds (#172).
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: leftReserve
+            anchors.rightMargin: arrows.right ? categoryBar.scrollArrowWidth : 0
+            Behavior on anchors.leftMargin {
+                NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
             }
-        }
-        onFlickStarted: _anchoredRight = false
-        onMovementStarted: _anchoredRight = false
+            Behavior on anchors.rightMargin {
+                NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+            }
+            contentWidth: catRow.width
+            contentHeight: categoryBar.buttonHeight
+            clip: true
+            flickableDirection: Flickable.HorizontalFlick
+            boundsBehavior: Flickable.StopAtBounds
 
-        // Edge-settling guard for #113: once a wheel lands on either edge,
-        // swallow follow-up wheels for a short window so rapid scrolling
-        // can't re-target the contentX animation and overshoot past max.
-        property bool _wheelEdgeSettling: false
-        Timer {
-            id: wheelEdgeSettlingTimer
-            interval: Math.max(Kirigami.Units.shortDuration, 120)
-            onTriggered: catFlick._wheelEdgeSettling = false
-        }
-
-        Kirigami.WheelHandler {
-            target: catFlick
-            onWheel: function(wheel) {
-                wheel.accepted = true
-                categoryBar.hoverWheel()
-                if (catFlick._wheelEdgeSettling)
-                    return
-                const raw = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                const delta = CategoryScroll.clampWheelDelta(raw, catFlick.width,
-                    categoryBar.scrollArrowWidth * 4)
-                categoryBar._setContentX(catFlick.contentX - delta)
-                const maxX = CategoryScroll.maxContentX(catFlick.contentWidth, catFlick.width)
-                if (catFlick.contentX === 0 || catFlick.contentX === maxX) {
-                    catFlick._wheelEdgeSettling = true
-                    wheelEdgeSettlingTimer.restart()
+            // The arrow reserves change this Flickable's width mid-scroll (an
+            // appearing arrow grows its margin). When _setContentX armed
+            // _anchoredRight, glue contentX to the moving maxX in-frame
+            // (suppressing the contentX Behavior) so the categories appear
+            // stationary while the viewport narrows around them. Otherwise clamp.
+            property bool _anchoredRight: false
+            property bool _suppressContentXAnim: false
+            onWidthChanged: {
+                if (_anchoredRight) {
+                    const maxX = CategoryScroll.maxContentX(contentWidth, width)
+                    _suppressContentXAnim = true
+                    contentX = maxX
+                    _suppressContentXAnim = false
+                    if (maxX === 0)
+                        _anchoredRight = false
+                } else {
+                    returnToBounds()
                 }
             }
-        }
+            onFlickStarted: _anchoredRight = false
+            onMovementStarted: _anchoredRight = false
 
-        Behavior on contentX {
-            enabled: !catFlick._suppressContentXAnim && Kirigami.Units.longDuration > 0
-            NumberAnimation {
-                duration: Kirigami.Units.longDuration
-                easing.type: Easing.OutCubic
+            // Edge-settling guard for #113: once a wheel lands on either edge,
+            // swallow follow-up wheels for a short window so rapid scrolling
+            // can't re-target the contentX animation and overshoot past max.
+            property bool _wheelEdgeSettling: false
+            Timer {
+                id: wheelEdgeSettlingTimer
+                interval: Math.max(Kirigami.Units.shortDuration, 120)
+                onTriggered: catFlick._wheelEdgeSettling = false
             }
-        }
 
-        RowLayout {
-            id: catRow
-            // Icon-only: fill the viewport (the fillWidth buttons trim their
-            // padding to absorb a slightly-wider icon instead of flipping to a
-            // scroll), but never below iconRowMinWidth — past that the row
-            // overflows so the icons scroll instead of overlapping. Other modes
-            // grow with their content and scroll as before.
-            width: categoryBar.tabsIconOnly
-                   ? Math.max(catFlick.width, categoryBar.iconRowMinWidth)
-                   : Math.max(implicitWidth, catFlick.width)
-            height: parent.height
-            spacing: Kirigami.Units.smallSpacing
-
-            Repeater {
-                id: catRepeater
-                model: categoryBar.categoryList
-                delegate: PlasmaComponents.ToolButton {
-                    focusPolicy: Qt.NoFocus
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    // Icon-only: never squish below the icon + padding; past
-                    // that the row overflows and scrolls.
-                    Layout.minimumWidth: categoryBar.tabsIconOnly ? categoryBar.tabMinWidth : 0
-                    required property int index
-                    required property string modelData
-                    Kirigami.MnemonicData.enabled: false
-                    leftPadding: categoryBar.tabHPadding
-                    rightPadding: categoryBar.tabHPadding
-                    text: ""
-                    contentItem: CategoryTabContent {
-                        bar: categoryBar
-                        label: modelData
-                        iconSource: categoryBar.appsModel
-                            ? categoryBar.appsModel.categoryIcon(modelData) : ""
+            Kirigami.WheelHandler {
+                target: catFlick
+                onWheel: function(wheel) {
+                    wheel.accepted = true
+                    categoryBar.hoverWheel()
+                    if (catFlick._wheelEdgeSettling)
+                        return
+                    const raw = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                    const delta = CategoryScroll.clampWheelDelta(raw, catFlick.width,
+                        categoryBar.scrollArrowWidth * 4)
+                    categoryBar._setContentX(catFlick.contentX - delta)
+                    const maxX = CategoryScroll.maxContentX(catFlick.contentWidth, catFlick.width)
+                    if (catFlick.contentX === 0 || catFlick.contentX === maxX) {
+                        catFlick._wheelEdgeSettling = true
+                        wheelEdgeSettlingTimer.restart()
                     }
-                    checked: !categoryBar.wheelScrolling
-                             && !categoryBar.favoritesActive
-                             && (scrollOnlyMode
-                                 ? scrollOnlySelected === modelData
-                                 : (categoryBar.appsModel && categoryBar.appsModel.filterCategory === modelData))
-                    onClicked: {
-                        categoryBar.selectCategory(modelData)
-                        categoryBar.scrollToSelected()
-                    }
-                    onHoveredChanged: hovered ? categoryBar.hoverEnter(modelData)
-                                              : categoryBar.hoverLeave(modelData)
+                }
+            }
 
-                    // Icon-only hides the label, so surface the category name
-                    // on hover; redundant when the label is already shown.
-                    PlasmaComponents.ToolTip.text: modelData
-                    PlasmaComponents.ToolTip.visible: hovered && categoryBar.tabsIconOnly
-                    PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+            Behavior on contentX {
+                enabled: !catFlick._suppressContentXAnim && Kirigami.Units.longDuration > 0
+                NumberAnimation {
+                    duration: Kirigami.Units.longDuration
+                    easing.type: Easing.OutCubic
+                }
+            }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        acceptedButtons: Qt.RightButton
-                        onClicked: function(mouse) {
-                            if (categoryBar.appsModel && categoryBar.appsModel.useSystemCategories) {
-                                catContextMenu.categoryName = modelData
-                                catContextMenu.popup()
+            RowLayout {
+                id: catRow
+                // Icon-only: fill the viewport (the fillWidth buttons trim their
+                // padding to absorb a slightly-wider icon instead of flipping to a
+                // scroll), but never below iconRowMinWidth — past that the row
+                // overflows so the icons scroll instead of overlapping. Other modes
+                // grow with their content and scroll as before.
+                width: categoryBar.tabsIconOnly
+                       ? Math.max(catFlick.width, categoryBar.iconRowMinWidth)
+                       : Math.max(implicitWidth, catFlick.width)
+                height: parent.height
+                spacing: Kirigami.Units.smallSpacing
+
+                Repeater {
+                    id: catRepeater
+                    model: categoryBar.categoryList
+                    delegate: PlasmaComponents.ToolButton {
+                        focusPolicy: Qt.NoFocus
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        // Icon-only: never squish below the icon + padding; past
+                        // that the row overflows and scrolls.
+                        Layout.minimumWidth: categoryBar.tabsIconOnly ? categoryBar.tabMinWidth : 0
+                        required property int index
+                        required property string modelData
+                        Kirigami.MnemonicData.enabled: false
+                        leftPadding: categoryBar.tabHPadding
+                        rightPadding: categoryBar.tabHPadding
+                        text: ""
+                        contentItem: CategoryTabContent {
+                            bar: categoryBar
+                            label: modelData
+                            iconSource: categoryBar.appsModel
+                                ? categoryBar.appsModel.categoryIcon(modelData) : ""
+                        }
+                        checked: !categoryBar.wheelScrolling
+                                 && !categoryBar.favoritesActive
+                                 && (scrollOnlyMode
+                                     ? scrollOnlySelected === modelData
+                                     : (categoryBar.appsModel && categoryBar.appsModel.filterCategory === modelData))
+                        onClicked: {
+                            categoryBar.selectCategory(modelData)
+                            categoryBar.scrollToSelected()
+                        }
+                        onHoveredChanged: hovered ? categoryBar.hoverEnter(modelData)
+                                                  : categoryBar.hoverLeave(modelData)
+
+                        // Icon-only hides the label, so surface the category name
+                        // on hover; redundant when the label is already shown.
+                        PlasmaComponents.ToolTip.text: modelData
+                        PlasmaComponents.ToolTip.visible: hovered && categoryBar.tabsIconOnly
+                        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.RightButton
+                            onClicked: function(mouse) {
+                                if (categoryBar.appsModel && categoryBar.appsModel.useSystemCategories) {
+                                    catContextMenu.categoryName = modelData
+                                    catContextMenu.popup()
+                                }
                             }
                         }
-                    }
 
-                    Accessible.name: modelData
-                    Accessible.role: Accessible.Button
+                        Accessible.name: modelData
+                        Accessible.role: Accessible.Button
+                    }
                 }
             }
         }
-    }
 
-    // -- Scroll right arrow --
-    ScrollArrow {
-        id: scrollRightBtn
-        scrollable: CategoryScroll.arrowVisibility(catFlick.contentX, catFlick.width, catFlick.contentWidth).right
-        icon.name: "arrow-right"
-        pageAction: () => categoryBar.pageRight()
-        Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
+        // -- Scroll arrows, in the reserved margin at each catFlick edge --
+        ScrollArrow {
+            id: scrollLeftBtn
+            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+            scrollable: catFlick.arrows.left
+            icon.name: "arrow-left"
+            pageAction: () => categoryBar.pageLeft()
+            Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
+        }
+        ScrollArrow {
+            id: scrollRightBtn
+            anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
+            scrollable: catFlick.arrows.right
+            icon.name: "arrow-right"
+            pageAction: () => categoryBar.pageRight()
+            Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
+        }
     }
 
     // -- Favorites (right) --

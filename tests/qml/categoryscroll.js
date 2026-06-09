@@ -51,7 +51,10 @@ function viewportAfterRightScroll(flickWidth, contentX, arrowWidth) {
 
 // Which scroll arrows should show at a given offset. left: scrolled off the
 // start. right: content still extends past the viewport (1px slack avoids
-// sub-pixel flicker at the exact bound).
+// sub-pixel flicker at the exact bound). When the arrows reserve their space by
+// shrinking the viewport, pass a viewportWidth and contentWidth that DON'T
+// depend on the right reserve (container width minus the left reserve, and the
+// natural content width) or the binding feeds back on itself (#172).
 function arrowVisibility(contentX, viewportWidth, contentWidth) {
     return {
         left: contentX > 0,
