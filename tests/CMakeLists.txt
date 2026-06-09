@@ -61,7 +61,7 @@ add_executable(test_pluginhelpers
     ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
     ${CMAKE_SOURCE_DIR}/src/pluginhelpers.h
 )
-target_link_libraries(test_pluginhelpers PRIVATE Qt6::Test Qt6::Core)
+target_link_libraries(test_pluginhelpers PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
 add_test(NAME test_pluginhelpers COMMAND test_pluginhelpers)
 
 # LaunchBookkeeping is a plain value type (QtCore only) — light standalone

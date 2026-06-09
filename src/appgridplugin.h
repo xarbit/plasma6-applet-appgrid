@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <KConfigWatcher>
 #include <Plasma/Applet>
 #include <QRect>
 
@@ -206,6 +207,11 @@ private:
 #endif
     void updateScreenWayland(QWindow *window, QScreen *target, bool useActiveScreen);
 
+    // Push the user's configured runner plugin arrangement
+    // (krunnerrc [Plugins][Favorites]) onto the ResultsModel so search results
+    // follow the same plugin order KRunner/Kickoff use (#180).
+    void applyRunnerFavorites();
+
     // Maps a UnifiedSearchModel runner-row index (proxy) to a ResultsModel
     // source QModelIndex. Returns an invalid QModelIndex on out-of-range so
     // callers can early-out without repeating the bounds check.
@@ -217,6 +223,11 @@ private:
     RunnerFilterModel m_runnerFilterModel;
     UnifiedSearchModel m_searchModel;
     FrecencyProvider m_frecencyProvider;
+    // krunnerrc (the runner plugin arrangement source) and a watcher that
+    // re-applies the favorites live when it changes. Held as members so the
+    // shared config and the connection outlive the constructor.
+    KSharedConfig::Ptr m_krunnerConfig;
+    KConfigWatcher::Ptr m_krunnerWatcher;
     QAction *m_compactAction = nullptr;
 #ifdef APPGRID_UNIVERSAL_BUILD
     mutable UpdateChecker *m_updateChecker = nullptr;

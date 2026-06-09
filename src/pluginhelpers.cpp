@@ -5,6 +5,9 @@
 
 #include "pluginhelpers.h"
 
+#include <KConfigGroup>
+#include <KSharedConfig>
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -236,5 +239,14 @@ QString execBinaryName(const QString &execLine)
         token = token.mid(slash + 1);
     }
     return token;
+}
+
+QStringList readRunnerFavorites(const QExplicitlySharedDataPointer<KSharedConfig> &config)
+{
+    if (!config) {
+        return {};
+    }
+    // krunnerrc shape: [Plugins][Favorites] plugins=id1,id2,…
+    return config->group(QStringLiteral("Plugins")).group(QStringLiteral("Favorites")).readEntry("plugins", QStringList());
 }
 }

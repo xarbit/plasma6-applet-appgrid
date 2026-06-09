@@ -5,9 +5,12 @@
 
 #pragma once
 
+#include <QSharedData> // QExplicitlySharedDataPointer (KSharedConfig::Ptr)
 #include <QString>
 #include <QStringList>
 #include <QVariantList>
+
+class KSharedConfig;
 
 /**
  * Pure, Plasma-free helpers extracted from AppGridPlugin so the parsing and
@@ -66,4 +69,12 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  "firefox.desktop" → "firefox.desktop" (no path/args). Used to match a KDE
  *  default-terminal exec back to its application. */
 [[nodiscard]] QString execBinaryName(const QString &execLine);
+
+/** Ordered favorite runner plugin IDs from a krunnerrc-shaped @p config: the
+ *  [Plugins][Favorites] "plugins" entry. These are the runners KRunner pins
+ *  first, in this order; AppGrid feeds them to ResultsModel::setFavoriteIds so
+ *  its search results follow the same plugin arrangement the user configured
+ *  (#180). Empty when unset or @p config is null. The config is passed in
+ *  (rather than opened here) so this stays unit-testable against a temp file. */
+[[nodiscard]] QStringList readRunnerFavorites(const QExplicitlySharedDataPointer<KSharedConfig> &config);
 }

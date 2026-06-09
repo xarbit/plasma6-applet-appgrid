@@ -7,6 +7,9 @@
     directory listing (exercised against a QTemporaryDir).
 */
 
+#include <KConfigGroup>
+#include <KSharedConfig>
+
 #include <QList>
 #include <QTemporaryDir>
 #include <QTest>
@@ -257,6 +260,27 @@ private Q_SLOTS:
         QCOMPARE(execBinaryName(QStringLiteral("  /opt/x/bin/foo -e ")), QStringLiteral("foo"));
         QCOMPARE(execBinaryName(QStringLiteral("\"/usr/bin/ghostty\"")), QStringLiteral("ghostty"));
         QVERIFY(execBinaryName(QString()).isEmpty());
+    }
+
+    void readRunnerFavorites_readsOrderedPluginList()
+    {
+        QTemporaryDir dir;
+        auto cfg = KSharedConfig::openConfig(dir.filePath(QStringLiteral("krunnerrc")), KConfig::SimpleConfig);
+        const QStringList arrangement{QStringLiteral("windows"),
+                                      QStringLiteral("krunner_services"),
+                                      QStringLiteral("krunner_systemsettings")};
+        cfg->group(QStringLiteral("Plugins")).group(QStringLiteral("Favorites")).writeEntry("plugins", arrangement);
+
+        // Order must be preserved exactly — it is the plugin arrangement.
+        QCOMPARE(readRunnerFavorites(cfg), arrangement);
+    }
+
+    void readRunnerFavorites_emptyWhenUnsetOrNull()
+    {
+        QTemporaryDir dir;
+        auto cfg = KSharedConfig::openConfig(dir.filePath(QStringLiteral("empty")), KConfig::SimpleConfig);
+        QVERIFY(readRunnerFavorites(cfg).isEmpty()); // group/key absent
+        QVERIFY(readRunnerFavorites(KSharedConfig::Ptr()).isEmpty()); // null config
     }
 };
 
