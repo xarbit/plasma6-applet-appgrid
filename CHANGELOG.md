@@ -10,21 +10,6 @@ All notable changes to AppGrid are documented here.
 
 ### Added
 
-- *(launcher)* Secondary global shortcut to open in compact mode
-- *(theme)* Optional Plasma theme chrome for the center variant
-- *(theme)* Split blur and background-contrast into independent toggles
-- *(theme)* Render dividers via Plasma theme's widgets/line SVG
-- *(search)* Scale search field font with icon-size preference (#163)
-- *(theme)* Scale panel content density with icon-size preference(#163)
-- *(config)* Show action icons in the header-actions editor
-- *(header)* Icon-only menu button option; center the settings page
-- *(search)* Inline autocompletion in the search field
-- *(search)* Rank KDE default apps above mimeapps defaults
-- *(search)* Bonus result for a well-known number
-- *(search)* Dim hidden apps in results with a hidden indicator
-- *(search)* Option to hide the Alt+N shortcut badge in results (#165)
-- *(search)* Accept the ghost completion with Right arrow
-- *(theme)* Optional decoupling of text size from icon size (#167)
 - *(categories)* Open-on-hover for the category bar (#176)
 - *(grid)* Default to a 5x4 grid (#177)
 - *(grid)* Scale grid labels with the size preset (Medium/Small) (#177)
@@ -34,23 +19,6 @@ All notable changes to AppGrid are documented here.
 
 ### Fixed
 
-- *(panel)* Popup size survives alternatives-switch from Kicker/Kickoff
-- *(panel)* Kill extra ~4px gap at category bar edges (#164)
-- *(settings)* Hidden apps page polish (#162)
-- *(updatechecker)* Make cache save truly atomic on POSIX
-- *(center)* Detach GridWindow from the panel to stop popup-attach warning
-- *(icon)* Correct tile long-shadow
-- *(category)* Clear stale Alt-held underline state on open (#168)
-- *(category)* Favorites button selects instead of toggling (#169)
-- *(appearance)* Relabel dim option to match what it dims (#170)
-- *(category)* Uniform button height across the category bar (#171)
-- *(category)* Enlarge the favorites icon to fill the button (#171)
-- *(center)* Re-assert layer-shell config on every show (Wayland)
-- *(metadata)* Drop redundant KPlugin Id from applet metadata (#173)
-- *(category)* Keep keyboard focus off the bar buttons (#174)
-- *(sort)* Rerank Most Used on the first launch, not the second
-- *(ranking)* Refresh default-app boost live; honor *Service keys
-- *(ranking)* Resolve role defaults the way KDE does (KApplicationTrader)
 - *(categories)* Guard open-on-hover against cursor crossing the bar
 - *(grid)* Square labelled cells so long app names stop orphaning (#177)
 - *(grid)* Centre the icon+label block in its cell (Kickoff-style)
@@ -60,42 +28,9 @@ All notable changes to AppGrid are documented here.
 - Stale search counts + dangling activated lambda
 - *(search)* Respect KRunner plugin arrangement in results (#180)
 
-### Performance
-
-- *(search)* Cache per-row sort inputs in AppFilterModel
-- *(runner)* Rebuild the app-name dedup cache lazily
-- *(category-grid)* Cache flat app list + prefix-sum section offsets
-- *(search)* Read result icon via a single role, not get()
-- *(startup)* Drop redundant per-app QStandardPaths::locate
-- *(open)* Skip launchCounts re-sync when unchanged
-- *(delegate)* Build the icon tooltip lazily on hover
-- *(grid)* Drive the new-app badge from one revision counter
-
-### Config
-
-- Default grid to 6x4
-- Move "Hide labels on favorites" to Appearance
-
-### I18n
-
-- Wrap PrefixInfoView field labels
-- Silence xgettext QML warnings with --language=C
-- Update template and translate maintainer-owned languages
-
-### Metainfo
-
-- Drop bogus <binary> provides
-- Add screenshots
-- Refresh <releases> to real stable releases
-- Document that the panel variant shares one component
-
 ### Packaging
 
 - Post-upgrade notice to restart Plasma after binary swap
-
-### Reuse
-
-- Fix package download location to the canonical repo
 
 
 ## [1.8.5] - 2026-05-29
