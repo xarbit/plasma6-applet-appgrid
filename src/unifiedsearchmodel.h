@@ -20,8 +20,8 @@
 class UnifiedSearchModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_PROPERTY(int appResultCount READ appResultCount NOTIFY layoutChanged)
-    Q_PROPERTY(int runnerResultCount READ runnerResultCount NOTIFY layoutChanged)
+    Q_PROPERTY(int appResultCount READ appResultCount NOTIFY resultCountsChanged)
+    Q_PROPERTY(int runnerResultCount READ runnerResultCount NOTIFY resultCountsChanged)
 
 public:
     enum Roles {
@@ -64,6 +64,12 @@ public:
     // Empty list for app rows or when the runner provides no actions.
     // Each entry is {id, icon, text} so QML can populate a menu directly.
     [[nodiscard]] Q_INVOKABLE QVariantList runnerActions(int row) const;
+
+Q_SIGNALS:
+    // Emitted after a reset so the appResultCount/runnerResultCount bindings
+    // re-evaluate; the model resets (modelReset) rather than emitting
+    // layoutChanged, so the count properties need their own notify.
+    void resultCountsChanged();
 
 private Q_SLOTS:
     void onSourceChanged();
