@@ -30,6 +30,7 @@ depends=(
     'libstdc++'
     'libgcc'
     'kcoreaddons'
+    'kconfig'
     'kwindowsystem'
     'kglobalaccel'
     'kcmutils'

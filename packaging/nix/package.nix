@@ -51,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     kio
     kservice
     ki18n
+    kconfig
     kcoreaddons
     kwindowsystem
     kglobalaccel
