@@ -5,8 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/issues\n"
-"POT-Creation-Date: 2026-06-05 14:35+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
+"issues\n"
+"POT-Creation-Date: 2026-06-10 12:38+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
@@ -16,24 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: package/contents/ui/config/ConfigAppearance.qml:44
+#: package/contents/ui/config/ConfigAppearance.qml:45
 msgid "Grid:"
 msgstr "Gitter:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:45
+#: package/contents/ui/config/ConfigAppearance.qml:46
 msgid "Show divider lines"
 msgstr "Vis adskillelseslinjer"
 
-#: package/contents/ui/config/ConfigAppearance.qml:49
+#: package/contents/ui/config/ConfigAppearance.qml:50
 msgid "Show scrollbars"
 msgstr "Vis rullebjælker"
 
-#: package/contents/ui/config/ConfigAppearance.qml:53
-#| msgid "Show tooltips on hover"
+#: package/contents/ui/config/ConfigAppearance.qml:54
 msgid "Show tooltips on app icons"
 msgstr "Vis værktøjstip på app-ikoner"
 
-#: package/contents/ui/config/ConfigAppearance.qml:55
+#: package/contents/ui/config/ConfigAppearance.qml:56
 msgid ""
 "Hover-tooltips on grid + recents + by-category app icons. Other tooltips "
 "(header actions, More options, settings) are always shown — Qt/KDE has no "
@@ -44,48 +44,58 @@ msgstr ""
 "indstillinger, indstillinger) vises altid — Qt/KDE har ingen systemdækkende "
 "kontakt for værktøjstip at følge."
 
-#: package/contents/ui/config/ConfigAppearance.qml:61
+#: package/contents/ui/config/ConfigAppearance.qml:62
 msgid "Show new app badge"
 msgstr "Vis mærke for nye apps"
 
-#: package/contents/ui/config/ConfigAppearance.qml:65
-#| msgid "No hidden applications"
+#: package/contents/ui/config/ConfigAppearance.qml:66
 msgid "Drop shadow behind app icons"
 msgstr "Skygge bag app-ikoner"
 
-#: package/contents/ui/config/ConfigAppearance.qml:69
-#| msgid "Animate icons on open"
+#: package/contents/ui/config/ConfigAppearance.qml:70
 msgid "Highlight icons on hover"
 msgstr "Fremhæv ikoner ved hover"
 
-#: package/contents/ui/config/ConfigAppearance.qml:73
+#: package/contents/ui/config/ConfigAppearance.qml:74
 msgid "Apply Size to app icons only"
 msgstr "Anvend Størrelse kun på app-ikoner"
 
-#: package/contents/ui/config/ConfigAppearance.qml:75
+#: package/contents/ui/config/ConfigAppearance.qml:76
 msgid ""
 "By default the Size setting scales the whole panel. Check this to make Size "
 "change only the app icons, leaving labels, secondary icons, and spacing at "
 "the default — e.g. Medium icons with the default font."
 msgstr ""
-"Som standard skalerer indstillingen Størrelse hele panelet. Markér dette, så"
-" Størrelse kun ændrer app-ikonerne og lader etiketter, sekundære ikoner og "
+"Som standard skalerer indstillingen Størrelse hele panelet. Markér dette, så "
+"Størrelse kun ændrer app-ikonerne og lader etiketter, sekundære ikoner og "
 "afstand forblive på standardværdien — f.eks. mellemstore ikoner med "
 "standardskrifttypen."
 
-#: package/contents/ui/config/ConfigAppearance.qml:81
+#: package/contents/ui/config/ConfigAppearance.qml:82
+msgid "Reduce grid spacing"
+msgstr "Reducér gitterafstand"
+
+#: package/contents/ui/config/ConfigAppearance.qml:84
+msgid ""
+"Pack the app grid more tightly by using a narrower cell width. Long single-"
+"word names may wrap to a second line sooner."
+msgstr ""
+"Pakker app-gitteret tættere ved at bruge en smallere cellebredde. Lange "
+"navne på ét ord kan ombrydes til en anden linje tidligere."
+
+#: package/contents/ui/config/ConfigAppearance.qml:90
 msgid "Hide app labels on favorites tab"
 msgstr "Skjul appetiketter på favoritfanen"
 
-#: package/contents/ui/config/ConfigAppearance.qml:93
+#: package/contents/ui/config/ConfigAppearance.qml:102
 msgid "Chrome:"
 msgstr "Udseende:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:94
+#: package/contents/ui/config/ConfigAppearance.qml:103
 msgid "Use Plasma theme background"
 msgstr "Brug Plasma-temaets baggrund"
 
-#: package/contents/ui/config/ConfigAppearance.qml:96
+#: package/contents/ui/config/ConfigAppearance.qml:105
 msgid ""
 "Draw the panel using the active Plasma theme's dialog background — matches "
 "Kickoff and the panel-popup variant exactly. The theme owns the chrome and "
@@ -97,24 +107,22 @@ msgstr ""
 "Kickoff og panel-pop op-varianten nøjagtigt. Temaet styrer udseendet, og "
 "Plasmas standardværdier overtager: fuld uigennemsigtighed, sløring og "
 "kontrast tvunget til, ingen dæmpning af baggrundsbillede, hjørneradius fra "
-"temaet. De tilhørende egne indstillinger er deaktiveret, mens dette er slået"
-" til."
+"temaet. De tilhørende egne indstillinger er deaktiveret, mens dette er slået "
+"til."
 
-#: package/contents/ui/config/ConfigAppearance.qml:110
-#| msgid "Background opacity:"
+#: package/contents/ui/config/ConfigAppearance.qml:119
 msgid "Background:"
 msgstr "Baggrund:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:114
-#| msgid "Background opacity:"
+#: package/contents/ui/config/ConfigAppearance.qml:123
 msgid "Panel opacity"
 msgstr "Panelets uigennemsigtighed"
 
-#: package/contents/ui/config/ConfigAppearance.qml:122
+#: package/contents/ui/config/ConfigAppearance.qml:131
 msgid "Enable background blur"
 msgstr "Aktivér baggrundssløring"
 
-#: package/contents/ui/config/ConfigAppearance.qml:124
+#: package/contents/ui/config/ConfigAppearance.qml:133
 msgid ""
 "Compositor blur applied behind the panel. Heavier on the GPU than the "
 "contrast filter; disable if you want a lighter touch."
@@ -122,12 +130,11 @@ msgstr ""
 "Compositor-sløring bag panelet. Tungere for GPU'en end kontrastfilteret; "
 "deaktivér, hvis du vil have en lettere effekt."
 
-#: package/contents/ui/config/ConfigAppearance.qml:132
-#| msgid "Enable background blur"
+#: package/contents/ui/config/ConfigAppearance.qml:141
 msgid "Enable background contrast"
 msgstr "Aktivér baggrundskontrast"
 
-#: package/contents/ui/config/ConfigAppearance.qml:134
+#: package/contents/ui/config/ConfigAppearance.qml:143
 msgid ""
 "Plasma theme-tuned color filter behind the panel — sharpens text legibility "
 "on busy wallpapers. Cheap on the GPU; pairs well with blur but works on its "
@@ -137,169 +144,183 @@ msgstr ""
 "læsbarhed på rodede baggrundsbilleder. Let for GPU'en; fungerer godt sammen "
 "med sløring, men også alene."
 
-#: package/contents/ui/config/ConfigAppearance.qml:142
-#| msgid "Dim background behind launcher"
+#: package/contents/ui/config/ConfigAppearance.qml:151
 msgid "Dim everything behind launcher"
 msgstr "Dæmp alt bag programstarteren"
 
-#: package/contents/ui/config/ConfigAppearance.qml:154
+#: package/contents/ui/config/ConfigAppearance.qml:163
 msgid "Corner radius:"
 msgstr "Hjørneradius:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:155
+#: package/contents/ui/config/ConfigAppearance.qml:164
 msgid "Use custom corner radius"
 msgstr "Brug brugerdefineret hjørneradius"
 
-#: package/contents/ui/config/ConfigAppearance.qml:160
+#: package/contents/ui/config/ConfigAppearance.qml:169
 msgid "Radius (px):"
 msgstr "Radius (px):"
 
-#: package/contents/ui/config/ConfigAppearance.qml:173
+#: package/contents/ui/config/ConfigAppearance.qml:182
 msgid "Compact mode:"
 msgstr "Kompakt tilstand:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:174
+#: package/contents/ui/config/ConfigAppearance.qml:183
 msgid "Hide app grid until I start typing"
 msgstr "Skjul app-gitteret, indtil jeg begynder at skrive"
 
-#: package/contents/ui/config/ConfigAppearance.qml:181
+#: package/contents/ui/config/ConfigAppearance.qml:190
 msgid "Tip: press the Down arrow key to reveal the grid without typing."
 msgstr "Tip: tryk på pil ned for at vise gitteret uden at skrive."
 
-#: package/contents/ui/config/ConfigAppearance.qml:194
-#| msgid "Open/close animation:"
+#: package/contents/ui/config/ConfigAppearance.qml:203
 msgid "Open/close:"
 msgstr "Åbn/luk:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:196
-#: package/contents/ui/config/ConfigAppearance.qml:214
+#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:223
 msgid "None"
 msgstr "Ingen"
 
-#: package/contents/ui/config/ConfigAppearance.qml:197
+#: package/contents/ui/config/ConfigAppearance.qml:206
 msgid "Fade"
 msgstr "Fade"
 
-#: package/contents/ui/config/ConfigAppearance.qml:198
+#: package/contents/ui/config/ConfigAppearance.qml:207
 msgid "Scale"
 msgstr "Skalering"
 
-#: package/contents/ui/config/ConfigAppearance.qml:199
+#: package/contents/ui/config/ConfigAppearance.qml:208
 msgid "Pop"
 msgstr "Pop"
 
-#: package/contents/ui/config/ConfigAppearance.qml:200
+#: package/contents/ui/config/ConfigAppearance.qml:209
 msgid "Slide Up"
 msgstr "Glid op"
 
-#: package/contents/ui/config/ConfigAppearance.qml:201
+#: package/contents/ui/config/ConfigAppearance.qml:210
 msgid "Slide Down"
 msgstr "Glid ned"
 
-#: package/contents/ui/config/ConfigAppearance.qml:202
+#: package/contents/ui/config/ConfigAppearance.qml:211
 msgid "Glide"
 msgstr "Glide"
 
-#: package/contents/ui/config/ConfigAppearance.qml:203
+#: package/contents/ui/config/ConfigAppearance.qml:212
 msgid "Buzz"
 msgstr "Vibrer"
 
-#: package/contents/ui/config/ConfigAppearance.qml:204
+#: package/contents/ui/config/ConfigAppearance.qml:213
 msgid "Twist"
 msgstr "Vrid"
 
-#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:214
 msgid "Slam"
 msgstr "Smæk"
 
-#: package/contents/ui/config/ConfigAppearance.qml:206
+#: package/contents/ui/config/ConfigAppearance.qml:215
 msgid "Grow Up"
 msgstr "Voks op"
 
-#: package/contents/ui/config/ConfigAppearance.qml:212
-#| msgid "Icon size:"
+#: package/contents/ui/config/ConfigAppearance.qml:221
 msgid "Icon hover:"
 msgstr "Ikon-hover:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:215
+#: package/contents/ui/config/ConfigAppearance.qml:224
 msgid "Shake"
 msgstr "Ryst"
 
-#: package/contents/ui/config/ConfigAppearance.qml:216
+#: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Grow"
 msgstr "Forstør"
 
-#: package/contents/ui/config/ConfigAppearance.qml:217
+#: package/contents/ui/config/ConfigAppearance.qml:226
 msgid "Bounce"
 msgstr "Hop"
 
-#: package/contents/ui/config/ConfigAppearance.qml:218
+#: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Spin"
 msgstr "Drej"
 
-#: package/contents/ui/config/ConfigAppearance.qml:219
+#: package/contents/ui/config/ConfigAppearance.qml:228
 msgid "Shuffle"
 msgstr "Bland"
 
-#: package/contents/ui/config/ConfigAppearance.qml:225
-#| msgid "Animate icons on open"
+#: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Animate icons when the launcher opens"
 msgstr "Animér ikoner, når programstarteren åbnes"
 
-#: package/contents/ui/config/ConfigGeneral.qml:48
+#: package/contents/ui/config/ConfigAppearance.qml:239
+#, fuzzy
+msgid "System:"
+msgstr "System"
+
+#: package/contents/ui/config/ConfigAppearance.qml:240
+msgid "Configure Animation Speed…"
+msgstr "Konfigurer animationshastighed…"
+
+#: package/contents/ui/config/ConfigAppearance.qml:244
+msgid ""
+"Open KDE's animation settings to change the system-wide animation speed (the "
+"slider that drives every Plasma animation, this launcher included)."
+msgstr ""
+"Åbner KDE's animationsindstillinger for at ændre den systemdækkende "
+"animationshastighed (skyderen der styrer alle Plasma-animationer, inklusive "
+"denne starter)."
+
+#: package/contents/ui/config/ConfigGeneral.qml:50
 msgid "Icon:"
 msgstr "Ikon:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:57
+#: package/contents/ui/config/ConfigGeneral.qml:59
 msgctxt ""
 "@info:tooltip %1 is the icon-theme name or, if an image was dropped in, the "
 "file path of the configured launcher icon"
 msgid "Icon name is \"%1\""
 msgstr "Ikonnavnet er “%1”"
 
-#: package/contents/ui/config/ConfigGeneral.qml:118
+#: package/contents/ui/config/ConfigGeneral.qml:120
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Vælg…"
 
-#: package/contents/ui/config/ConfigGeneral.qml:123
+#: package/contents/ui/config/ConfigGeneral.qml:125
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Ryd ikon"
 
-#: package/contents/ui/config/ConfigGeneral.qml:136
+#: package/contents/ui/config/ConfigGeneral.qml:138
 msgid "Text label:"
 msgstr "Tekstetiket:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:139
+#: package/contents/ui/config/ConfigGeneral.qml:141
 msgid "Type here to add a text label"
 msgstr "Skriv her for at tilføje en tekstetiket"
 
-#: package/contents/ui/config/ConfigGeneral.qml:155
+#: package/contents/ui/config/ConfigGeneral.qml:157
 msgid "Icons per row:"
 msgstr "Ikoner per række:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:161
+#: package/contents/ui/config/ConfigGeneral.qml:163
 msgid "Visible rows:"
 msgstr "Synlige rækker:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:166
+#: package/contents/ui/config/ConfigGeneral.qml:168
 msgid "Size:"
 msgstr "Størrelse:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Small"
 msgstr "Lille"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Medium"
 msgstr "Mellem"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Large"
 msgstr "Stor"
 
-#: package/contents/ui/config/ConfigGeneral.qml:176
+#: package/contents/ui/config/ConfigGeneral.qml:178
 msgid ""
 "Drives icon size plus the surrounding content density: search field, "
 "category buttons, and search results scale together. Control buttons stay "
@@ -309,75 +330,96 @@ msgstr ""
 "kategoriknapperne og søgeresultaterne skaleres sammen. Kontrolknapperne "
 "forbliver faste."
 
-#: package/contents/ui/config/ConfigGeneral.qml:180
+#: package/contents/ui/config/ConfigGeneral.qml:182
 msgid "Sort order:"
 msgstr "Sorteringsrækkefølge:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "Alphabetical"
 msgstr "Alfabetisk"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "Most Used"
 msgstr "Mest brugte"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "By Category"
 msgstr "Efter kategori"
 
-#: package/contents/ui/config/ConfigGeneral.qml:188
+#: package/contents/ui/config/ConfigGeneral.qml:187
+msgid "Category tab style:"
+msgstr "Stil for kategorifaner:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:195
+msgid "Default"
+msgstr "Standard"
+
+#: package/contents/ui/config/ConfigGeneral.qml:196
+msgid "Icon and text"
+msgstr "Ikon og tekst"
+
+#: package/contents/ui/config/ConfigGeneral.qml:197
+#, fuzzy
+msgid "Icon only"
+msgstr "Ikon-hover:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:214
 msgid "Behavior:"
 msgstr "Adfærd:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:189
+#: package/contents/ui/config/ConfigGeneral.qml:215
 msgid "Show category bar"
 msgstr "Vis kategoribjælke"
 
-#: package/contents/ui/config/ConfigGeneral.qml:193
+#: package/contents/ui/config/ConfigGeneral.qml:219
 msgid "Start with favorites tab"
 msgstr "Start med favoritfane"
 
-#: package/contents/ui/config/ConfigGeneral.qml:198
+#: package/contents/ui/config/ConfigGeneral.qml:224
 msgid "Sort favorites alphabetically"
 msgstr "Sortér favoritter alfabetisk"
 
-#: package/contents/ui/config/ConfigGeneral.qml:202
+#: package/contents/ui/config/ConfigGeneral.qml:228
 msgid "Show recently used applications"
 msgstr "Vis senest brugte programmer"
 
-#: package/contents/ui/config/ConfigGeneral.qml:207
+#: package/contents/ui/config/ConfigGeneral.qml:233
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Systemkategorier (KDE Menueditor)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:212
+#: package/contents/ui/config/ConfigGeneral.qml:238
 msgid "Hide empty categories"
 msgstr "Skjul tomme kategorier"
 
-#: package/contents/ui/config/ConfigGeneral.qml:218
+#: package/contents/ui/config/ConfigGeneral.qml:243
+msgid "Open categories on hover"
+msgstr "Åbn kategorier ved hover"
+
+#: package/contents/ui/config/ConfigGeneral.qml:249
 msgid "Open on screen with mouse focus (otherwise on panel screen)"
 msgstr "Åbn på skærm med musefokus (ellers på panelskærm)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:229
+#: package/contents/ui/config/ConfigGeneral.qml:260
 msgid "Vertical position:"
 msgstr "Lodret position:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:240
+#: package/contents/ui/config/ConfigGeneral.qml:271
 msgid "Terminal shell:"
 msgstr "Terminal-shell:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:245
+#: package/contents/ui/config/ConfigGeneral.qml:276
 msgid "Default (/bin/sh)"
 msgstr "Standard (/bin/sh)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:271
+#: package/contents/ui/config/ConfigGeneral.qml:302
 msgid "Updates:"
 msgstr "Opdateringer:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:272
+#: package/contents/ui/config/ConfigGeneral.qml:303
 msgid "Check the AppGrid website for new releases"
 msgstr "Tjek AppGrid-webstedet for nye udgivelser"
 
-#: package/contents/ui/config/ConfigGeneral.qml:273
+#: package/contents/ui/config/ConfigGeneral.qml:304
 msgid ""
 "Anonymous request once per day to %1. Shows an indicator near the session "
 "buttons when a new version is available; no automatic install."
@@ -388,19 +430,17 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:41
 msgid ""
-"Bar actions appear directly in the launcher header; Menu actions go behind a"
-" single ⋮ button (hidden when empty); Off hides the action."
+"Bar actions appear directly in the launcher header; Menu actions go behind a "
+"single ⋮ button (hidden when empty); Off hides the action."
 msgstr ""
 "Bjælkehandlinger vises direkte i programstarterens header; menuhandlinger "
 "placeres bag en enkelt ⋮-knap (skjult når tom); Fra skjuler handlingen."
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:46
-#| msgid "Show labels on power/session buttons"
 msgid "Show labels on header buttons"
 msgstr "Vis etiketter på header-knapper"
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:52
-#| msgid "Show labels on power/session buttons"
 msgid "Hide label on the menu button"
 msgstr "Skjul etiketten på menuknappen"
 
@@ -417,7 +457,6 @@ msgstr ""
 "søgefeltet."
 
 #: package/contents/ui/config/ConfigHiddenApps.qml:82
-#| msgid "Hidden apps:"
 msgid "Filter hidden apps…"
 msgstr "Filtrér skjulte apps…"
 
@@ -436,7 +475,6 @@ msgid "Unhide"
 msgstr "Vis igen"
 
 #: package/contents/ui/config/ConfigSearch.qml:25
-#| msgid "Search"
 msgid "Search:"
 msgstr "Søgning:"
 
@@ -458,9 +496,9 @@ msgid ""
 "shortcuts and other KRunner plugins. Use \"Configure Search Plugins\" to "
 "choose which are active."
 msgstr ""
-"Inkluderer lommeregneren, enhedsomregning, filsøgning, bogmærker, webgenveje"
-" og andre KRunner-plugins. Brug “Konfigurér søgeplugins” for at vælge, "
-"hvilke der er aktive."
+"Inkluderer lommeregneren, enhedsomregning, filsøgning, bogmærker, webgenveje "
+"og andre KRunner-plugins. Brug “Konfigurér søgeplugins” for at vælge, hvilke "
+"der er aktive."
 
 #: package/contents/ui/config/ConfigSearch.qml:41
 msgid "Configure Search Plugins…"
@@ -491,7 +529,6 @@ msgid "Hidden apps:"
 msgstr "Skjulte apps:"
 
 #: package/contents/ui/config/ConfigSearch.qml:64
-#| msgid "No hidden applications"
 msgid "Show hidden applications in search results"
 msgstr "Vis skjulte programmer i søgeresultater"
 
@@ -531,11 +568,11 @@ msgstr "Vis Alt+tal-mærket på søgeresultater"
 
 #: package/contents/ui/config/ConfigSearch.qml:90
 msgid ""
-"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to"
-" hide the badges; the shortcuts still work."
+"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to "
+"hide the badges; the shortcuts still work."
 msgstr ""
-"Hvert af de første resultater får en Alt+1..9-startgenvej. Slå dette fra for"
-" at skjule mærkerne; genvejene virker stadig."
+"Hvert af de første resultater får en Alt+1..9-startgenvej. Slå dette fra for "
+"at skjule mærkerne; genvejene virker stadig."
 
 #: package/contents/ui/config/HeaderActionsConfig.qml:29
 msgid "Update"
@@ -580,7 +617,6 @@ msgid "Menu"
 msgstr "Menu"
 
 #: package/contents/ui/config/HeaderActionsConfig.qml:41
-#| msgid "Office"
 msgid "Off"
 msgstr "Fra"
 
@@ -705,14 +741,13 @@ msgid ""
 "Force an immediate check against the AppGrid website (bypasses the 24h "
 "schedule)."
 msgstr ""
-"Tving en øjeblikkelig kontrol mod AppGrid-webstedet (omgår 24-timers "
-"planen)."
+"Tving en øjeblikkelig kontrol mod AppGrid-webstedet (omgår 24-timers planen)."
 
 #: package/contents/ui/prefix/PrefixInfoView.qml:125
-#: package/contents/ui/widgets/CategoryBar.qml:87
-#: package/contents/ui/widgets/FavoritesTabButton.qml:36
-#: package/contents/ui/widgets/FavoritesTabButton.qml:40
-#: package/contents/ui/widgets/RecentAppsHeader.qml:144
+#: package/contents/ui/widgets/CategoryBar.qml:121
+#: package/contents/ui/widgets/FavoritesTabButton.qml:45
+#: package/contents/ui/widgets/FavoritesTabButton.qml:49
+#: package/contents/ui/widgets/RecentAppsHeader.qml:147
 msgid "Favorites"
 msgstr "Favoritter"
 
@@ -751,21 +786,21 @@ msgstr "Kopiér til udklipsholder"
 msgid "Include this info when reporting issues on GitHub"
 msgstr "Inkludér disse oplysninger, når du rapporterer problemer på GitHub"
 
-#: package/contents/ui/views/GridPanel.qml:1093
+#: package/contents/ui/views/GridPanel.qml:1108
 msgid "Launch all selected?"
 msgstr "Start alle valgte?"
 
-#: package/contents/ui/views/GridPanel.qml:1095
+#: package/contents/ui/views/GridPanel.qml:1110
 msgid "Open %1 application at once?"
 msgid_plural "Open %1 applications at once?"
 msgstr[0] "Åbn %1 program samtidigt?"
 msgstr[1] "Åbn %1 programmer samtidigt?"
 
-#: package/contents/ui/views/GridPanel.qml:1105
+#: package/contents/ui/views/GridPanel.qml:1120
 msgid "Hide selected applications?"
 msgstr "Skjul valgte apps?"
 
-#: package/contents/ui/views/GridPanel.qml:1107
+#: package/contents/ui/views/GridPanel.qml:1122
 msgid ""
 "Hide %1 application from AppGrid? You can unhide it later in Settings → "
 "Hidden Applications."
@@ -776,16 +811,14 @@ msgstr[0] ""
 "Skjul %1 program fra AppGrid? Du kan vise det igen senere i Indstillinger → "
 "Skjulte apps."
 msgstr[1] ""
-"Skjul %1 programmer fra AppGrid? Du kan vise dem igen senere i Indstillinger"
-" → Skjulte apps."
+"Skjul %1 programmer fra AppGrid? Du kan vise dem igen senere i Indstillinger "
+"→ Skjulte apps."
 
 #: package/contents/ui/views/SearchResultsList.qml:153
-#| msgid "Application"
 msgid "Applications"
 msgstr "Programmer"
 
 #: package/contents/ui/views/SearchResultsList.qml:156
-#| msgid "Configure Search Plugins…"
 msgid "Search Plugins"
 msgstr "Søgeplugins"
 
@@ -839,7 +872,6 @@ msgid "Manage in Discover…"
 msgstr "Håndtér i Discover…"
 
 #: package/contents/ui/widgets/AppContextMenu.qml:295
-#| msgid "Hide Application"
 msgid "Unhide Application"
 msgstr "Vis program"
 
@@ -889,41 +921,39 @@ msgid_plural "Hide %1 applications"
 msgstr[0] "Skjul %1 program"
 msgstr[1] "Skjul %1 programmer"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:210
+#: package/contents/ui/widgets/AppIconDelegate.qml:223
 msgid "Source: %1"
 msgstr "Kilde: %1"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:237
+#: package/contents/ui/widgets/AppIconDelegate.qml:250
 msgid "new"
 msgstr "ny"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:238
+#: package/contents/ui/widgets/AppIconDelegate.qml:251
 msgid "selected"
 msgstr "valgt"
 
-#: package/contents/ui/widgets/CategoryBar.qml:86
-#: package/contents/ui/widgets/CategoryBar.qml:292
-#: package/contents/ui/widgets/CategoryBar.qml:293
+#: package/contents/ui/widgets/CategoryBar.qml:120
 msgid "All"
 msgstr "Alle"
 
-#: package/contents/ui/widgets/CategoryBar.qml:308
+#: package/contents/ui/widgets/CategoryBar.qml:484
 msgid "All applications"
 msgstr "Alle programmer"
 
-#: package/contents/ui/widgets/CategoryBar.qml:351
+#: package/contents/ui/widgets/CategoryBar.qml:742
 msgid "Scroll categories left"
 msgstr "Rul til venstre"
 
-#: package/contents/ui/widgets/CategoryBar.qml:484
+#: package/contents/ui/widgets/CategoryBar.qml:750
 msgid "Scroll categories right"
 msgstr "Rul til højre"
 
-#: package/contents/ui/widgets/CategoryBar.qml:501
+#: package/contents/ui/widgets/CategoryBar.qml:768
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr "Redigér \"%1\" i menueditor…"
 
-#: package/contents/ui/widgets/CategoryBar.qml:507
+#: package/contents/ui/widgets/CategoryBar.qml:774
 msgid "Open Menu Editor…"
 msgstr "Åbn menueditor…"
 
@@ -944,11 +974,11 @@ msgstr "Mere"
 msgid "More actions"
 msgstr "Flere handlinger"
 
-#: package/contents/ui/widgets/RecentAppsHeader.qml:62
+#: package/contents/ui/widgets/RecentAppsHeader.qml:64
 msgid "Recently Used"
 msgstr "Senest brugte"
 
-#: package/contents/ui/widgets/RecentAppsHeader.qml:145
+#: package/contents/ui/widgets/RecentAppsHeader.qml:148
 msgid "All Apps"
 msgstr "Alle programmer"
 
@@ -965,7 +995,7 @@ msgstr "Søg i programmer"
 msgid "Clear search"
 msgstr "Ryd søgning"
 
-#: src/appgridplugin.cpp:116
+#: src/appgridplugin.cpp:131
 msgid "Open in Compact Mode"
 msgstr "Åbn i kompakt tilstand"
 
@@ -1034,11 +1064,11 @@ msgstr "Andre"
 #~ msgstr "AppGrid-opdatering tilgængelig"
 
 #~ msgid ""
-#~ "Anonymous request once per day to "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 #~ msgstr ""
-#~ "Anonym forespørgsel én gang dagligt til "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonym forespørgsel én gang dagligt til https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 
 #~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
 #~ msgstr "Rydder migrationsflaget. Ved næste åbning genberegner AppGrid "
@@ -1047,7 +1077,8 @@ msgstr "Andre"
 #~ msgstr "Flere resultater"
 
 #~ msgid "Click an icon to select it, then click another to swap positions"
-#~ msgstr "Klik på et ikon for at vælge, klik derefter på et andet for at bytte"
+#~ msgstr ""
+#~ "Klik på et ikon for at vælge, klik derefter på et andet for at bytte"
 
 #~ msgid "Now click another icon to swap, or click again to deselect"
 #~ msgstr "Klik på et andet ikon for at bytte eller igen for at fravælge"

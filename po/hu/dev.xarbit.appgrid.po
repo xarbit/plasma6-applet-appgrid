@@ -5,8 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/issues\n"
-"POT-Creation-Date: 2026-06-05 14:35+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
+"issues\n"
+"POT-Creation-Date: 2026-06-10 12:38+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
@@ -16,24 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: package/contents/ui/config/ConfigAppearance.qml:44
+#: package/contents/ui/config/ConfigAppearance.qml:45
 msgid "Grid:"
 msgstr "Rács:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:45
+#: package/contents/ui/config/ConfigAppearance.qml:46
 msgid "Show divider lines"
 msgstr "Elválasztó vonalak megjelenítése"
 
-#: package/contents/ui/config/ConfigAppearance.qml:49
+#: package/contents/ui/config/ConfigAppearance.qml:50
 msgid "Show scrollbars"
 msgstr "Görgetősávok megjelenítése"
 
-#: package/contents/ui/config/ConfigAppearance.qml:53
-#| msgid "Show tooltips on hover"
+#: package/contents/ui/config/ConfigAppearance.qml:54
 msgid "Show tooltips on app icons"
 msgstr "Buboréksúgók megjelenítése az alkalmazásikonokon"
 
-#: package/contents/ui/config/ConfigAppearance.qml:55
+#: package/contents/ui/config/ConfigAppearance.qml:56
 msgid ""
 "Hover-tooltips on grid + recents + by-category app icons. Other tooltips "
 "(header actions, More options, settings) are always shown — Qt/KDE has no "
@@ -44,25 +44,23 @@ msgstr ""
 "beállítások, beállítások) mindig megjelenik — a Qt/KDE nem rendelkezik "
 "rendszerszintű buboréksúgó-kapcsolóval, amelyet követni lehetne."
 
-#: package/contents/ui/config/ConfigAppearance.qml:61
+#: package/contents/ui/config/ConfigAppearance.qml:62
 msgid "Show new app badge"
 msgstr "Új alkalmazás jelvény mutatása"
 
-#: package/contents/ui/config/ConfigAppearance.qml:65
-#| msgid "No hidden applications"
+#: package/contents/ui/config/ConfigAppearance.qml:66
 msgid "Drop shadow behind app icons"
 msgstr "Vetett árnyék az alkalmazásikonok mögött"
 
-#: package/contents/ui/config/ConfigAppearance.qml:69
-#| msgid "Animate icons on open"
+#: package/contents/ui/config/ConfigAppearance.qml:70
 msgid "Highlight icons on hover"
 msgstr "Ikonok kiemelése rámutatáskor"
 
-#: package/contents/ui/config/ConfigAppearance.qml:73
+#: package/contents/ui/config/ConfigAppearance.qml:74
 msgid "Apply Size to app icons only"
 msgstr "A Méret alkalmazása csak az alkalmazásikonokra"
 
-#: package/contents/ui/config/ConfigAppearance.qml:75
+#: package/contents/ui/config/ConfigAppearance.qml:76
 msgid ""
 "By default the Size setting scales the whole panel. Check this to make Size "
 "change only the app icons, leaving labels, secondary icons, and spacing at "
@@ -73,19 +71,32 @@ msgstr ""
 "másodlagos ikonokat és térközöket pedig az alapértelmezetten hagyja — pl. "
 "Közepes ikonok az alapértelmezett betűtípussal."
 
-#: package/contents/ui/config/ConfigAppearance.qml:81
+#: package/contents/ui/config/ConfigAppearance.qml:82
+msgid "Reduce grid spacing"
+msgstr "Rács térközének csökkentése"
+
+#: package/contents/ui/config/ConfigAppearance.qml:84
+msgid ""
+"Pack the app grid more tightly by using a narrower cell width. Long single-"
+"word names may wrap to a second line sooner."
+msgstr ""
+"Szorosabbra tömöríti az alkalmazásrácsot keskenyebb cellaszélesség "
+"használatával. A hosszú, egyszavas nevek hamarabb törhetnek át a második "
+"sorba."
+
+#: package/contents/ui/config/ConfigAppearance.qml:90
 msgid "Hide app labels on favorites tab"
 msgstr "Alkalmazáscímkék elrejtése a kedvencek lapon"
 
-#: package/contents/ui/config/ConfigAppearance.qml:93
+#: package/contents/ui/config/ConfigAppearance.qml:102
 msgid "Chrome:"
 msgstr "Megjelenés:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:94
+#: package/contents/ui/config/ConfigAppearance.qml:103
 msgid "Use Plasma theme background"
 msgstr "A Plasma téma hátterének használata"
 
-#: package/contents/ui/config/ConfigAppearance.qml:96
+#: package/contents/ui/config/ConfigAppearance.qml:105
 msgid ""
 "Draw the panel using the active Plasma theme's dialog background — matches "
 "Kickoff and the panel-popup variant exactly. The theme owns the chrome and "
@@ -100,21 +111,19 @@ msgstr ""
 "a témából. Az ezekhez tartozó egyéni vezérlők le vannak tiltva, amíg ez be "
 "van kapcsolva."
 
-#: package/contents/ui/config/ConfigAppearance.qml:110
-#| msgid "Background opacity:"
+#: package/contents/ui/config/ConfigAppearance.qml:119
 msgid "Background:"
 msgstr "Háttér:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:114
-#| msgid "Background opacity:"
+#: package/contents/ui/config/ConfigAppearance.qml:123
 msgid "Panel opacity"
 msgstr "Panel átlátszatlansága"
 
-#: package/contents/ui/config/ConfigAppearance.qml:122
+#: package/contents/ui/config/ConfigAppearance.qml:131
 msgid "Enable background blur"
 msgstr "Háttér elmosásának engedélyezése"
 
-#: package/contents/ui/config/ConfigAppearance.qml:124
+#: package/contents/ui/config/ConfigAppearance.qml:133
 msgid ""
 "Compositor blur applied behind the panel. Heavier on the GPU than the "
 "contrast filter; disable if you want a lighter touch."
@@ -122,12 +131,11 @@ msgstr ""
 "A panel mögött alkalmazott kompozitor-elmosás. Jobban terheli a GPU-t, mint "
 "a kontrasztszűrő; tiltsa le, ha könnyedebb hatást szeretne."
 
-#: package/contents/ui/config/ConfigAppearance.qml:132
-#| msgid "Enable background blur"
+#: package/contents/ui/config/ConfigAppearance.qml:141
 msgid "Enable background contrast"
 msgstr "Háttérkontraszt engedélyezése"
 
-#: package/contents/ui/config/ConfigAppearance.qml:134
+#: package/contents/ui/config/ConfigAppearance.qml:143
 msgid ""
 "Plasma theme-tuned color filter behind the panel — sharpens text legibility "
 "on busy wallpapers. Cheap on the GPU; pairs well with blur but works on its "
@@ -137,250 +145,285 @@ msgstr ""
 "olvashatóságát zsúfolt háttérképeken. Kíméli a GPU-t; jól illik az "
 "elmosáshoz, de önmagában is működik."
 
-#: package/contents/ui/config/ConfigAppearance.qml:142
-#| msgid "Dim background behind launcher"
+#: package/contents/ui/config/ConfigAppearance.qml:151
 msgid "Dim everything behind launcher"
 msgstr "Minden elsötétítése az indító mögött"
 
-#: package/contents/ui/config/ConfigAppearance.qml:154
+#: package/contents/ui/config/ConfigAppearance.qml:163
 msgid "Corner radius:"
 msgstr "Sarokrádiusz:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:155
+#: package/contents/ui/config/ConfigAppearance.qml:164
 msgid "Use custom corner radius"
 msgstr "Egyéni sarokrádiusz használata"
 
-#: package/contents/ui/config/ConfigAppearance.qml:160
+#: package/contents/ui/config/ConfigAppearance.qml:169
 msgid "Radius (px):"
 msgstr "Sugár (px):"
 
-#: package/contents/ui/config/ConfigAppearance.qml:173
+#: package/contents/ui/config/ConfigAppearance.qml:182
 msgid "Compact mode:"
 msgstr "Kcompakt mód:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:174
+#: package/contents/ui/config/ConfigAppearance.qml:183
 msgid "Hide app grid until I start typing"
 msgstr "Az alkalmazásrács elrejtése, amíg el nem kezdek gépelni"
 
-#: package/contents/ui/config/ConfigAppearance.qml:181
+#: package/contents/ui/config/ConfigAppearance.qml:190
 msgid "Tip: press the Down arrow key to reveal the grid without typing."
 msgstr ""
 "Tipp: nyomja meg a Le nyíl billentyűt a rács gépelés nélküli "
 "megjelenítéséhez."
 
-#: package/contents/ui/config/ConfigAppearance.qml:194
-#| msgid "Open/close animation:"
+#: package/contents/ui/config/ConfigAppearance.qml:203
 msgid "Open/close:"
 msgstr "Megnyitás/bezárás:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:196
-#: package/contents/ui/config/ConfigAppearance.qml:214
+#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:223
 msgid "None"
 msgstr "Nincs"
 
-#: package/contents/ui/config/ConfigAppearance.qml:197
+#: package/contents/ui/config/ConfigAppearance.qml:206
 msgid "Fade"
 msgstr "Áttűnés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:198
+#: package/contents/ui/config/ConfigAppearance.qml:207
 msgid "Scale"
 msgstr "Méretezés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:199
+#: package/contents/ui/config/ConfigAppearance.qml:208
 msgid "Pop"
 msgstr "Pukkanás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:200
+#: package/contents/ui/config/ConfigAppearance.qml:209
 msgid "Slide Up"
 msgstr "Felcsúsztatás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:201
+#: package/contents/ui/config/ConfigAppearance.qml:210
 msgid "Slide Down"
 msgstr "Lecsúsztatás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:202
+#: package/contents/ui/config/ConfigAppearance.qml:211
 msgid "Glide"
 msgstr "Siklás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:203
+#: package/contents/ui/config/ConfigAppearance.qml:212
 msgid "Buzz"
 msgstr "Rezgés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:204
+#: package/contents/ui/config/ConfigAppearance.qml:213
 msgid "Twist"
 msgstr "Csavar"
 
-#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:214
 msgid "Slam"
 msgstr "Csattanás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:206
+#: package/contents/ui/config/ConfigAppearance.qml:215
 msgid "Grow Up"
 msgstr "Felnövés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:212
-#| msgid "Icon size:"
+#: package/contents/ui/config/ConfigAppearance.qml:221
 msgid "Icon hover:"
 msgstr "Ikonra mutatás:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:215
+#: package/contents/ui/config/ConfigAppearance.qml:224
 msgid "Shake"
 msgstr "Rázás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:216
+#: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Grow"
 msgstr "Növekedés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:217
+#: package/contents/ui/config/ConfigAppearance.qml:226
 msgid "Bounce"
 msgstr "Pattogás"
 
-#: package/contents/ui/config/ConfigAppearance.qml:218
+#: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Spin"
 msgstr "Pörgés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:219
+#: package/contents/ui/config/ConfigAppearance.qml:228
 msgid "Shuffle"
 msgstr "Keverés"
 
-#: package/contents/ui/config/ConfigAppearance.qml:225
-#| msgid "Animate icons on open"
+#: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Animate icons when the launcher opens"
 msgstr "Ikonok animálása az indító megnyitásakor"
 
-#: package/contents/ui/config/ConfigGeneral.qml:48
+#: package/contents/ui/config/ConfigAppearance.qml:239
+#, fuzzy
+msgid "System:"
+msgstr "Rendszer"
+
+#: package/contents/ui/config/ConfigAppearance.qml:240
+msgid "Configure Animation Speed…"
+msgstr "Animációsebesség beállítása…"
+
+#: package/contents/ui/config/ConfigAppearance.qml:244
+msgid ""
+"Open KDE's animation settings to change the system-wide animation speed (the "
+"slider that drives every Plasma animation, this launcher included)."
+msgstr ""
+"Megnyitja a KDE animációs beállításait a rendszerszintű animációsebesség "
+"módosításához (a csúszka, amely minden Plasma-animációt vezérel, beleértve "
+"ezt az indítót is)."
+
+#: package/contents/ui/config/ConfigGeneral.qml:50
 msgid "Icon:"
 msgstr "Ikon:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:57
+#: package/contents/ui/config/ConfigGeneral.qml:59
 msgctxt ""
 "@info:tooltip %1 is the icon-theme name or, if an image was dropped in, the "
 "file path of the configured launcher icon"
 msgid "Icon name is \"%1\""
 msgstr "Az ikon neve: „%1”"
 
-#: package/contents/ui/config/ConfigGeneral.qml:118
+#: package/contents/ui/config/ConfigGeneral.qml:120
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Választás…"
 
-#: package/contents/ui/config/ConfigGeneral.qml:123
+#: package/contents/ui/config/ConfigGeneral.qml:125
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Ikon törlése"
 
-#: package/contents/ui/config/ConfigGeneral.qml:136
+#: package/contents/ui/config/ConfigGeneral.qml:138
 msgid "Text label:"
 msgstr "Szöveges címke:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:139
+#: package/contents/ui/config/ConfigGeneral.qml:141
 msgid "Type here to add a text label"
 msgstr "Írjon ide szöveges címke hozzáadásához"
 
-#: package/contents/ui/config/ConfigGeneral.qml:155
+#: package/contents/ui/config/ConfigGeneral.qml:157
 msgid "Icons per row:"
 msgstr "Ikonok soronként:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:161
+#: package/contents/ui/config/ConfigGeneral.qml:163
 msgid "Visible rows:"
 msgstr "Látható sorok:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:166
+#: package/contents/ui/config/ConfigGeneral.qml:168
 msgid "Size:"
 msgstr "Méret:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Small"
 msgstr "Kicsi"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Medium"
 msgstr "Közepes"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Large"
 msgstr "Nagy"
 
-#: package/contents/ui/config/ConfigGeneral.qml:176
+#: package/contents/ui/config/ConfigGeneral.qml:178
 msgid ""
 "Drives icon size plus the surrounding content density: search field, "
 "category buttons, and search results scale together. Control buttons stay "
 "fixed."
 msgstr ""
-"Meghatározza az ikonméretet és a körülvevő tartalom sűrűségét: a keresőmező,"
-" a kategóriagombok és a keresési eredmények együtt méreteződnek. A "
+"Meghatározza az ikonméretet és a körülvevő tartalom sűrűségét: a keresőmező, "
+"a kategóriagombok és a keresési eredmények együtt méreteződnek. A "
 "vezérlőgombok rögzítve maradnak."
 
-#: package/contents/ui/config/ConfigGeneral.qml:180
+#: package/contents/ui/config/ConfigGeneral.qml:182
 msgid "Sort order:"
 msgstr "Rendezés:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "Alphabetical"
 msgstr "Betűrendes"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "Most Used"
 msgstr "Leggyakrabban használt"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "By Category"
 msgstr "Kategória szerint"
 
-#: package/contents/ui/config/ConfigGeneral.qml:188
+#: package/contents/ui/config/ConfigGeneral.qml:187
+msgid "Category tab style:"
+msgstr "Kategórialapok stílusa:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:195
+msgid "Default"
+msgstr "Alapértelmezett"
+
+#: package/contents/ui/config/ConfigGeneral.qml:196
+msgid "Icon and text"
+msgstr "Ikon és szöveg"
+
+#: package/contents/ui/config/ConfigGeneral.qml:197
+#, fuzzy
+msgid "Icon only"
+msgstr "Ikonra mutatás:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:214
 msgid "Behavior:"
 msgstr "Viselkedés:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:189
+#: package/contents/ui/config/ConfigGeneral.qml:215
 msgid "Show category bar"
 msgstr "Kategóriasáv megjelenítése"
 
-#: package/contents/ui/config/ConfigGeneral.qml:193
+#: package/contents/ui/config/ConfigGeneral.qml:219
 msgid "Start with favorites tab"
 msgstr "Indítás a kedvencek füllel"
 
-#: package/contents/ui/config/ConfigGeneral.qml:198
+#: package/contents/ui/config/ConfigGeneral.qml:224
 msgid "Sort favorites alphabetically"
 msgstr "Kedvencek ABC-rendben"
 
-#: package/contents/ui/config/ConfigGeneral.qml:202
+#: package/contents/ui/config/ConfigGeneral.qml:228
 msgid "Show recently used applications"
 msgstr "Legutóbb használt alkalmazások megjelenítése"
 
-#: package/contents/ui/config/ConfigGeneral.qml:207
+#: package/contents/ui/config/ConfigGeneral.qml:233
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Rendszerkategóriák (KDE Menüszerkesztő)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:212
+#: package/contents/ui/config/ConfigGeneral.qml:238
 msgid "Hide empty categories"
 msgstr "Üres kategóriák elrejtése"
 
-#: package/contents/ui/config/ConfigGeneral.qml:218
+#: package/contents/ui/config/ConfigGeneral.qml:243
+msgid "Open categories on hover"
+msgstr "Kategóriák megnyitása rámutatáskor"
+
+#: package/contents/ui/config/ConfigGeneral.qml:249
 msgid "Open on screen with mouse focus (otherwise on panel screen)"
 msgstr ""
 "Megnyitás az egér fókuszában lévő képernyőn (különben a panel képernyőjén)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:229
+#: package/contents/ui/config/ConfigGeneral.qml:260
 msgid "Vertical position:"
 msgstr "Függőleges pozíció:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:240
+#: package/contents/ui/config/ConfigGeneral.qml:271
 msgid "Terminal shell:"
 msgstr "Terminálhéj:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:245
+#: package/contents/ui/config/ConfigGeneral.qml:276
 msgid "Default (/bin/sh)"
 msgstr "Alapértelmezett (/bin/sh)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:271
+#: package/contents/ui/config/ConfigGeneral.qml:302
 msgid "Updates:"
 msgstr "Frissítések:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:272
+#: package/contents/ui/config/ConfigGeneral.qml:303
 msgid "Check the AppGrid website for new releases"
 msgstr "Új kiadások keresése az AppGrid webhelyén"
 
-#: package/contents/ui/config/ConfigGeneral.qml:273
+#: package/contents/ui/config/ConfigGeneral.qml:304
 msgid ""
 "Anonymous request once per day to %1. Shows an indicator near the session "
 "buttons when a new version is available; no automatic install."
@@ -390,20 +433,18 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:41
 msgid ""
-"Bar actions appear directly in the launcher header; Menu actions go behind a"
-" single ⋮ button (hidden when empty); Off hides the action."
+"Bar actions appear directly in the launcher header; Menu actions go behind a "
+"single ⋮ button (hidden when empty); Off hides the action."
 msgstr ""
 "A sávműveletek közvetlenül az indító fejlécében jelennek meg; a "
 "menüműveletek egyetlen ⋮ gomb mögé kerülnek (üresen rejtett); a Kikapcsolva "
 "elrejti a műveletet."
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:46
-#| msgid "Show labels on power/session buttons"
 msgid "Show labels on header buttons"
 msgstr "Feliratok megjelenítése a fejlécgombokon"
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:52
-#| msgid "Show labels on power/session buttons"
 msgid "Hide label on the menu button"
 msgstr "Felirat elrejtése a menügombon"
 
@@ -420,7 +461,6 @@ msgstr ""
 "írjon h: a keresősávba."
 
 #: package/contents/ui/config/ConfigHiddenApps.qml:82
-#| msgid "Hidden apps:"
 msgid "Filter hidden apps…"
 msgstr "Rejtett alkalmazások szűrése…"
 
@@ -439,7 +479,6 @@ msgid "Unhide"
 msgstr "Megjelenítés"
 
 #: package/contents/ui/config/ConfigSearch.qml:25
-#| msgid "Search"
 msgid "Search:"
 msgstr "Keresés:"
 
@@ -496,7 +535,6 @@ msgid "Hidden apps:"
 msgstr "Rejtett alkalmazások:"
 
 #: package/contents/ui/config/ConfigSearch.qml:64
-#| msgid "No hidden applications"
 msgid "Show hidden applications in search results"
 msgstr "Rejtett alkalmazások megjelenítése a keresési eredményekben"
 
@@ -537,8 +575,8 @@ msgstr "Az Alt+szám jelvény megjelenítése a keresési eredményeken"
 
 #: package/contents/ui/config/ConfigSearch.qml:90
 msgid ""
-"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to"
-" hide the badges; the shortcuts still work."
+"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to "
+"hide the badges; the shortcuts still work."
 msgstr ""
 "Az első találatok mindegyike Alt+1..9 indítási gyorsbillentyűt kap. "
 "Kapcsolja ki ezt a jelvények elrejtéséhez; a gyorsbillentyűk továbbra is "
@@ -587,7 +625,6 @@ msgid "Menu"
 msgstr "Menü"
 
 #: package/contents/ui/config/HeaderActionsConfig.qml:41
-#| msgid "Office"
 msgid "Off"
 msgstr "Kikapcsolva"
 
@@ -716,10 +753,10 @@ msgstr ""
 "ütemezést)."
 
 #: package/contents/ui/prefix/PrefixInfoView.qml:125
-#: package/contents/ui/widgets/CategoryBar.qml:87
-#: package/contents/ui/widgets/FavoritesTabButton.qml:36
-#: package/contents/ui/widgets/FavoritesTabButton.qml:40
-#: package/contents/ui/widgets/RecentAppsHeader.qml:144
+#: package/contents/ui/widgets/CategoryBar.qml:121
+#: package/contents/ui/widgets/FavoritesTabButton.qml:45
+#: package/contents/ui/widgets/FavoritesTabButton.qml:49
+#: package/contents/ui/widgets/RecentAppsHeader.qml:147
 msgid "Favorites"
 msgstr "Kedvencek"
 
@@ -741,8 +778,7 @@ msgid ""
 "list as the union of the legacy backup and current KAStats entries. Nothing "
 "is lost; missing legacy items are re-added."
 msgstr ""
-"Törli a migrációs jelzőt. A következő megnyitáskor az AppGrid újraszámítja a"
-" "
+"Törli a migrációs jelzőt. A következő megnyitáskor az AppGrid újraszámítja a "
 
 #: package/contents/ui/prefix/PrefixInfoView.qml:160
 msgid "Migration flag cleared. Reopen AppGrid to re-run the port."
@@ -762,21 +798,21 @@ msgstr "Másolás a vágólapra"
 msgid "Include this info when reporting issues on GitHub"
 msgstr "Mellékelje ezt az információt, amikor problémát jelent a GitHubon"
 
-#: package/contents/ui/views/GridPanel.qml:1093
+#: package/contents/ui/views/GridPanel.qml:1108
 msgid "Launch all selected?"
 msgstr "Elindítja az összes kijelöltet?"
 
-#: package/contents/ui/views/GridPanel.qml:1095
+#: package/contents/ui/views/GridPanel.qml:1110
 msgid "Open %1 application at once?"
 msgid_plural "Open %1 applications at once?"
 msgstr[0] "Megnyit %1 alkalmazást egyszerre?"
 msgstr[1] "Megnyit %1 alkalmazást egyszerre?"
 
-#: package/contents/ui/views/GridPanel.qml:1105
+#: package/contents/ui/views/GridPanel.qml:1120
 msgid "Hide selected applications?"
 msgstr "Elrejti a kijelölt alkalmazásokat?"
 
-#: package/contents/ui/views/GridPanel.qml:1107
+#: package/contents/ui/views/GridPanel.qml:1122
 msgid ""
 "Hide %1 application from AppGrid? You can unhide it later in Settings → "
 "Hidden Applications."
@@ -791,12 +827,10 @@ msgstr[1] ""
 "Rejtett alkalmazások alatt."
 
 #: package/contents/ui/views/SearchResultsList.qml:153
-#| msgid "Application"
 msgid "Applications"
 msgstr "Alkalmazások"
 
 #: package/contents/ui/views/SearchResultsList.qml:156
-#| msgid "Configure Search Plugins…"
 msgid "Search Plugins"
 msgstr "Keresőbővítmények"
 
@@ -850,7 +884,6 @@ msgid "Manage in Discover…"
 msgstr "Kezelés a Discoverben…"
 
 #: package/contents/ui/widgets/AppContextMenu.qml:295
-#| msgid "Hide Application"
 msgid "Unhide Application"
 msgstr "Alkalmazás megjelenítése"
 
@@ -900,41 +933,39 @@ msgid_plural "Hide %1 applications"
 msgstr[0] "%1 alkalmazás elrejtése"
 msgstr[1] "%1 alkalmazás elrejtése"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:210
+#: package/contents/ui/widgets/AppIconDelegate.qml:223
 msgid "Source: %1"
 msgstr "Forrás: %1"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:237
+#: package/contents/ui/widgets/AppIconDelegate.qml:250
 msgid "new"
 msgstr "új"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:238
+#: package/contents/ui/widgets/AppIconDelegate.qml:251
 msgid "selected"
 msgstr "kijelölve"
 
-#: package/contents/ui/widgets/CategoryBar.qml:86
-#: package/contents/ui/widgets/CategoryBar.qml:292
-#: package/contents/ui/widgets/CategoryBar.qml:293
+#: package/contents/ui/widgets/CategoryBar.qml:120
 msgid "All"
 msgstr "Összes"
 
-#: package/contents/ui/widgets/CategoryBar.qml:308
+#: package/contents/ui/widgets/CategoryBar.qml:484
 msgid "All applications"
 msgstr "Minden alkalmazás"
 
-#: package/contents/ui/widgets/CategoryBar.qml:351
+#: package/contents/ui/widgets/CategoryBar.qml:742
 msgid "Scroll categories left"
 msgstr "Görgetés balra"
 
-#: package/contents/ui/widgets/CategoryBar.qml:484
+#: package/contents/ui/widgets/CategoryBar.qml:750
 msgid "Scroll categories right"
 msgstr "Görgetés jobbra"
 
-#: package/contents/ui/widgets/CategoryBar.qml:501
+#: package/contents/ui/widgets/CategoryBar.qml:768
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr "\"%1\" szerkesztése a Menüszerkesztőben…"
 
-#: package/contents/ui/widgets/CategoryBar.qml:507
+#: package/contents/ui/widgets/CategoryBar.qml:774
 msgid "Open Menu Editor…"
 msgstr "Menüszerkesztő megnyitása…"
 
@@ -955,11 +986,11 @@ msgstr "Több"
 msgid "More actions"
 msgstr "További műveletek"
 
-#: package/contents/ui/widgets/RecentAppsHeader.qml:62
+#: package/contents/ui/widgets/RecentAppsHeader.qml:64
 msgid "Recently Used"
 msgstr "Legutóbb használt"
 
-#: package/contents/ui/widgets/RecentAppsHeader.qml:145
+#: package/contents/ui/widgets/RecentAppsHeader.qml:148
 msgid "All Apps"
 msgstr "Minden alkalmazás"
 
@@ -976,7 +1007,7 @@ msgstr "Alkalmazások keresése"
 msgid "Clear search"
 msgstr "Keresés törlése"
 
-#: src/appgridplugin.cpp:116
+#: src/appgridplugin.cpp:131
 msgid "Open in Compact Mode"
 msgstr "Megnyitás kompakt módban"
 
@@ -1045,16 +1076,16 @@ msgstr "Egyéb"
 #~ msgstr "AppGrid frissítés érhető el"
 
 #~ msgid ""
-#~ "Anonymous request once per day to "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 #~ msgstr ""
-#~ "Névtelen kérés naponta egyszer a https://appgrid.xarbit.dev/api/latest.json "
-#~ "címre. "
+#~ "Névtelen kérés naponta egyszer a https://appgrid.xarbit.dev/api/"
+#~ "latest.json címre. "
 
 #~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
 #~ msgstr ""
-#~ "Törli a migrációs jelzőt. A következő megnyitáskor az AppGrid újraszámítja a"
-#~ " "
+#~ "Törli a migrációs jelzőt. A következő megnyitáskor az AppGrid "
+#~ "újraszámítja a "
 
 #~ msgid "More Results"
 #~ msgstr "További találatok"

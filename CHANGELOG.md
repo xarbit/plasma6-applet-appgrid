@@ -16,6 +16,7 @@ All notable changes to AppGrid are documented here.
 - *(categories)* Optional category-bar icons (#176)
 - *(category)* Slow hands-free re-trigger on hover-paging arrows (#176)
 - *(grid)* Add "Reduce grid spacing" option for a tighter layout
+- *(config)* Add "Configure Animation Speed…" button under Animations
 
 ### Fixed
 
@@ -27,6 +28,9 @@ All notable changes to AppGrid are documented here.
 - *(window)* Size the centred panel off the window, not QScreen (#)
 - Stale search counts + dangling activated lambda
 - *(search)* Respect KRunner plugin arrangement in results (#180)
+- *(categories)* Reserve scroll-arrow space via anchor (#172)margins, not a layout slot
+- *(categories)* Quicken open-on-hover arrow re-arm to 800ms (#176)
+- *(categories)* Rebuild scroll-arrow reserves so the strip always lands flush (#172)
 
 ### Packaging
 
