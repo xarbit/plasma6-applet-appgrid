@@ -5,8 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: dev.xarbit.appgrid 1.0\n"
-"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/issues\n"
-"POT-Creation-Date: 2026-06-05 14:35+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
+"issues\n"
+"POT-Creation-Date: 2026-06-10 12:38+0200\n"
 "PO-Revision-Date: 2026-03-14 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
@@ -14,77 +15,86 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: package/contents/ui/config/ConfigAppearance.qml:44
+#: package/contents/ui/config/ConfigAppearance.qml:45
 msgid "Grid:"
 msgstr "Mreža:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:45
+#: package/contents/ui/config/ConfigAppearance.qml:46
 msgid "Show divider lines"
 msgstr "Prikaži linije razdjelnice"
 
-#: package/contents/ui/config/ConfigAppearance.qml:49
+#: package/contents/ui/config/ConfigAppearance.qml:50
 msgid "Show scrollbars"
 msgstr "Prikaži klizače"
 
-#: package/contents/ui/config/ConfigAppearance.qml:53
-#| msgid "Show tooltips on hover"
+#: package/contents/ui/config/ConfigAppearance.qml:54
 msgid "Show tooltips on app icons"
 msgstr "Prikaži opise na ikonama aplikacija"
 
-#: package/contents/ui/config/ConfigAppearance.qml:55
+#: package/contents/ui/config/ConfigAppearance.qml:56
 msgid ""
 "Hover-tooltips on grid + recents + by-category app icons. Other tooltips "
 "(header actions, More options, settings) are always shown — Qt/KDE has no "
 "system-wide tooltip toggle to follow."
 msgstr ""
-"Opisi pri prelasku mišem preko ikona aplikacija u mreži, nedavnima i prikazu"
-" po kategorijama. Ostali opisi (radnje zaglavlja, Više mogućnosti, postavke)"
-" uvijek se prikazuju — Qt/KDE nema sustavni prekidač opisa kojeg bi "
-"slijedio."
+"Opisi pri prelasku mišem preko ikona aplikacija u mreži, nedavnima i prikazu "
+"po kategorijama. Ostali opisi (radnje zaglavlja, Više mogućnosti, postavke) "
+"uvijek se prikazuju — Qt/KDE nema sustavni prekidač opisa kojeg bi slijedio."
 
-#: package/contents/ui/config/ConfigAppearance.qml:61
+#: package/contents/ui/config/ConfigAppearance.qml:62
 msgid "Show new app badge"
 msgstr "Prikaži oznaku novih aplikacija"
 
-#: package/contents/ui/config/ConfigAppearance.qml:65
-#| msgid "No hidden applications"
+#: package/contents/ui/config/ConfigAppearance.qml:66
 msgid "Drop shadow behind app icons"
 msgstr "Bačena sjena iza ikona aplikacija"
 
-#: package/contents/ui/config/ConfigAppearance.qml:69
-#| msgid "Animate icons on open"
+#: package/contents/ui/config/ConfigAppearance.qml:70
 msgid "Highlight icons on hover"
 msgstr "Istakni ikone pri prelasku mišem"
 
-#: package/contents/ui/config/ConfigAppearance.qml:73
+#: package/contents/ui/config/ConfigAppearance.qml:74
 msgid "Apply Size to app icons only"
 msgstr "Primijeni Veličinu samo na ikone aplikacija"
 
-#: package/contents/ui/config/ConfigAppearance.qml:75
+#: package/contents/ui/config/ConfigAppearance.qml:76
 msgid ""
 "By default the Size setting scales the whole panel. Check this to make Size "
 "change only the app icons, leaving labels, secondary icons, and spacing at "
 "the default — e.g. Medium icons with the default font."
 msgstr ""
 "Zadano postavka Veličina skalira cijeli panel. Označite ovo da Veličina "
-"mijenja samo ikone aplikacija, ostavljajući oznake, sporedne ikone i razmake"
-" na zadanoj vrijednosti — npr. srednje ikone sa zadanim fontom."
+"mijenja samo ikone aplikacija, ostavljajući oznake, sporedne ikone i razmake "
+"na zadanoj vrijednosti — npr. srednje ikone sa zadanim fontom."
 
-#: package/contents/ui/config/ConfigAppearance.qml:81
+#: package/contents/ui/config/ConfigAppearance.qml:82
+msgid "Reduce grid spacing"
+msgstr "Smanji razmak mreže"
+
+#: package/contents/ui/config/ConfigAppearance.qml:84
+msgid ""
+"Pack the app grid more tightly by using a narrower cell width. Long single-"
+"word names may wrap to a second line sooner."
+msgstr ""
+"Zbija mrežu aplikacija gušće koristeći užu širinu ćelije. Dugi jednorječni "
+"nazivi mogu se ranije prelomiti u drugi redak."
+
+#: package/contents/ui/config/ConfigAppearance.qml:90
 msgid "Hide app labels on favorites tab"
 msgstr "Sakrij oznake aplikacija u kartici favorita"
 
-#: package/contents/ui/config/ConfigAppearance.qml:93
+#: package/contents/ui/config/ConfigAppearance.qml:102
 msgid "Chrome:"
 msgstr "Izgled:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:94
+#: package/contents/ui/config/ConfigAppearance.qml:103
 msgid "Use Plasma theme background"
 msgstr "Koristi pozadinu Plasma teme"
 
-#: package/contents/ui/config/ConfigAppearance.qml:96
+#: package/contents/ui/config/ConfigAppearance.qml:105
 msgid ""
 "Draw the panel using the active Plasma theme's dialog background — matches "
 "Kickoff and the panel-popup variant exactly. The theme owns the chrome and "
@@ -98,21 +108,19 @@ msgstr ""
 "kontrast, bez zatamnjenja pozadine, polumjer kutova iz teme. Pripadajuće "
 "prilagođene kontrole onemogućene su dok je ovo uključeno."
 
-#: package/contents/ui/config/ConfigAppearance.qml:110
-#| msgid "Background opacity:"
+#: package/contents/ui/config/ConfigAppearance.qml:119
 msgid "Background:"
 msgstr "Pozadina:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:114
-#| msgid "Background opacity:"
+#: package/contents/ui/config/ConfigAppearance.qml:123
 msgid "Panel opacity"
 msgstr "Neprozirnost panela"
 
-#: package/contents/ui/config/ConfigAppearance.qml:122
+#: package/contents/ui/config/ConfigAppearance.qml:131
 msgid "Enable background blur"
 msgstr "Omogući zamućenje pozadine"
 
-#: package/contents/ui/config/ConfigAppearance.qml:124
+#: package/contents/ui/config/ConfigAppearance.qml:133
 msgid ""
 "Compositor blur applied behind the panel. Heavier on the GPU than the "
 "contrast filter; disable if you want a lighter touch."
@@ -120,12 +128,11 @@ msgstr ""
 "Zamućenje kompozitora iza panela. Više opterećuje GPU od filtra kontrasta; "
 "onemogućite ako želite lakši učinak."
 
-#: package/contents/ui/config/ConfigAppearance.qml:132
-#| msgid "Enable background blur"
+#: package/contents/ui/config/ConfigAppearance.qml:141
 msgid "Enable background contrast"
 msgstr "Omogući kontrast pozadine"
 
-#: package/contents/ui/config/ConfigAppearance.qml:134
+#: package/contents/ui/config/ConfigAppearance.qml:143
 msgid ""
 "Plasma theme-tuned color filter behind the panel — sharpens text legibility "
 "on busy wallpapers. Cheap on the GPU; pairs well with blur but works on its "
@@ -135,169 +142,183 @@ msgstr ""
 "teksta na užurbanim pozadinama. Lagan za GPU; dobro se slaže sa zamućenjem, "
 "ali radi i samostalno."
 
-#: package/contents/ui/config/ConfigAppearance.qml:142
-#| msgid "Dim background behind launcher"
+#: package/contents/ui/config/ConfigAppearance.qml:151
 msgid "Dim everything behind launcher"
 msgstr "Zatamni sve iza pokretača"
 
-#: package/contents/ui/config/ConfigAppearance.qml:154
+#: package/contents/ui/config/ConfigAppearance.qml:163
 msgid "Corner radius:"
 msgstr "Radijus kutova:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:155
+#: package/contents/ui/config/ConfigAppearance.qml:164
 msgid "Use custom corner radius"
 msgstr "Koristi prilagođeni radijus kutova"
 
-#: package/contents/ui/config/ConfigAppearance.qml:160
+#: package/contents/ui/config/ConfigAppearance.qml:169
 msgid "Radius (px):"
 msgstr "Polumjer (px):"
 
-#: package/contents/ui/config/ConfigAppearance.qml:173
+#: package/contents/ui/config/ConfigAppearance.qml:182
 msgid "Compact mode:"
 msgstr "Kompaktni način:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:174
+#: package/contents/ui/config/ConfigAppearance.qml:183
 msgid "Hide app grid until I start typing"
 msgstr "Sakrij mrežu aplikacija dok ne počnem tipkati"
 
-#: package/contents/ui/config/ConfigAppearance.qml:181
+#: package/contents/ui/config/ConfigAppearance.qml:190
 msgid "Tip: press the Down arrow key to reveal the grid without typing."
 msgstr "Savjet: pritisnite strelicu dolje za prikaz mreže bez tipkanja."
 
-#: package/contents/ui/config/ConfigAppearance.qml:194
-#| msgid "Open/close animation:"
+#: package/contents/ui/config/ConfigAppearance.qml:203
 msgid "Open/close:"
 msgstr "Otvaranje/zatvaranje:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:196
-#: package/contents/ui/config/ConfigAppearance.qml:214
+#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:223
 msgid "None"
 msgstr "Bez"
 
-#: package/contents/ui/config/ConfigAppearance.qml:197
+#: package/contents/ui/config/ConfigAppearance.qml:206
 msgid "Fade"
 msgstr "Stapanje"
 
-#: package/contents/ui/config/ConfigAppearance.qml:198
+#: package/contents/ui/config/ConfigAppearance.qml:207
 msgid "Scale"
 msgstr "Skala"
 
-#: package/contents/ui/config/ConfigAppearance.qml:199
+#: package/contents/ui/config/ConfigAppearance.qml:208
 msgid "Pop"
 msgstr "Pop"
 
-#: package/contents/ui/config/ConfigAppearance.qml:200
+#: package/contents/ui/config/ConfigAppearance.qml:209
 msgid "Slide Up"
 msgstr "Klizanje gore"
 
-#: package/contents/ui/config/ConfigAppearance.qml:201
+#: package/contents/ui/config/ConfigAppearance.qml:210
 msgid "Slide Down"
 msgstr "Klizanje dolje"
 
-#: package/contents/ui/config/ConfigAppearance.qml:202
+#: package/contents/ui/config/ConfigAppearance.qml:211
 msgid "Glide"
 msgstr "Klizenje"
 
-#: package/contents/ui/config/ConfigAppearance.qml:203
+#: package/contents/ui/config/ConfigAppearance.qml:212
 msgid "Buzz"
 msgstr "Vibracija"
 
-#: package/contents/ui/config/ConfigAppearance.qml:204
+#: package/contents/ui/config/ConfigAppearance.qml:213
 msgid "Twist"
 msgstr "Zaokret"
 
-#: package/contents/ui/config/ConfigAppearance.qml:205
+#: package/contents/ui/config/ConfigAppearance.qml:214
 msgid "Slam"
 msgstr "Tresak"
 
-#: package/contents/ui/config/ConfigAppearance.qml:206
+#: package/contents/ui/config/ConfigAppearance.qml:215
 msgid "Grow Up"
 msgstr "Rasti gore"
 
-#: package/contents/ui/config/ConfigAppearance.qml:212
-#| msgid "Icon size:"
+#: package/contents/ui/config/ConfigAppearance.qml:221
 msgid "Icon hover:"
 msgstr "Prelazak preko ikone:"
 
-#: package/contents/ui/config/ConfigAppearance.qml:215
+#: package/contents/ui/config/ConfigAppearance.qml:224
 msgid "Shake"
 msgstr "Tresenje"
 
-#: package/contents/ui/config/ConfigAppearance.qml:216
+#: package/contents/ui/config/ConfigAppearance.qml:225
 msgid "Grow"
 msgstr "Rast"
 
-#: package/contents/ui/config/ConfigAppearance.qml:217
+#: package/contents/ui/config/ConfigAppearance.qml:226
 msgid "Bounce"
 msgstr "Odskakanje"
 
-#: package/contents/ui/config/ConfigAppearance.qml:218
+#: package/contents/ui/config/ConfigAppearance.qml:227
 msgid "Spin"
 msgstr "Rotacija"
 
-#: package/contents/ui/config/ConfigAppearance.qml:219
+#: package/contents/ui/config/ConfigAppearance.qml:228
 msgid "Shuffle"
 msgstr "Miješanje"
 
-#: package/contents/ui/config/ConfigAppearance.qml:225
-#| msgid "Animate icons on open"
+#: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Animate icons when the launcher opens"
 msgstr "Animiraj ikone pri otvaranju pokretača"
 
-#: package/contents/ui/config/ConfigGeneral.qml:48
+#: package/contents/ui/config/ConfigAppearance.qml:239
+#, fuzzy
+msgid "System:"
+msgstr "Sustav"
+
+#: package/contents/ui/config/ConfigAppearance.qml:240
+msgid "Configure Animation Speed…"
+msgstr "Konfiguriraj brzinu animacije…"
+
+#: package/contents/ui/config/ConfigAppearance.qml:244
+msgid ""
+"Open KDE's animation settings to change the system-wide animation speed (the "
+"slider that drives every Plasma animation, this launcher included)."
+msgstr ""
+"Otvara KDE-ove postavke animacija za promjenu brzine animacija na razini "
+"cijelog sustava (klizač koji upravlja svim animacijama Plasme, uključujući "
+"ovaj pokretač)."
+
+#: package/contents/ui/config/ConfigGeneral.qml:50
 msgid "Icon:"
 msgstr "Ikona:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:57
+#: package/contents/ui/config/ConfigGeneral.qml:59
 msgctxt ""
 "@info:tooltip %1 is the icon-theme name or, if an image was dropped in, the "
 "file path of the configured launcher icon"
 msgid "Icon name is \"%1\""
 msgstr "Naziv ikone je „%1”"
 
-#: package/contents/ui/config/ConfigGeneral.qml:118
+#: package/contents/ui/config/ConfigGeneral.qml:120
 msgctxt "@item:inmenu Open icon chooser dialog"
 msgid "Choose…"
 msgstr "Odaberi…"
 
-#: package/contents/ui/config/ConfigGeneral.qml:123
+#: package/contents/ui/config/ConfigGeneral.qml:125
 msgctxt "@item:inmenu Reset icon to default"
 msgid "Clear Icon"
 msgstr "Očisti ikonu"
 
-#: package/contents/ui/config/ConfigGeneral.qml:136
+#: package/contents/ui/config/ConfigGeneral.qml:138
 msgid "Text label:"
 msgstr "Tekstualna oznaka:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:139
+#: package/contents/ui/config/ConfigGeneral.qml:141
 msgid "Type here to add a text label"
 msgstr "Upišite ovdje za dodavanje tekstualne oznake"
 
-#: package/contents/ui/config/ConfigGeneral.qml:155
+#: package/contents/ui/config/ConfigGeneral.qml:157
 msgid "Icons per row:"
 msgstr "Ikona po retku:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:161
+#: package/contents/ui/config/ConfigGeneral.qml:163
 msgid "Visible rows:"
 msgstr "Vidljivi redci:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:166
+#: package/contents/ui/config/ConfigGeneral.qml:168
 msgid "Size:"
 msgstr "Veličina:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Small"
 msgstr "Malo"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Medium"
 msgstr "Srednje"
 
-#: package/contents/ui/config/ConfigGeneral.qml:167
+#: package/contents/ui/config/ConfigGeneral.qml:169
 msgid "Large"
 msgstr "Veliko"
 
-#: package/contents/ui/config/ConfigGeneral.qml:176
+#: package/contents/ui/config/ConfigGeneral.qml:178
 msgid ""
 "Drives icon size plus the surrounding content density: search field, "
 "category buttons, and search results scale together. Control buttons stay "
@@ -307,75 +328,96 @@ msgstr ""
 "kategorija i rezultati pretrage skaliraju se zajedno. Upravljački gumbi "
 "ostaju nepromijenjeni."
 
-#: package/contents/ui/config/ConfigGeneral.qml:180
+#: package/contents/ui/config/ConfigGeneral.qml:182
 msgid "Sort order:"
 msgstr "Redoslijed sortiranja:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "Alphabetical"
 msgstr "Abecedno"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "Most Used"
 msgstr "Najkorištenije"
 
-#: package/contents/ui/config/ConfigGeneral.qml:181
+#: package/contents/ui/config/ConfigGeneral.qml:183
 msgid "By Category"
 msgstr "Po kategoriji"
 
-#: package/contents/ui/config/ConfigGeneral.qml:188
+#: package/contents/ui/config/ConfigGeneral.qml:187
+msgid "Category tab style:"
+msgstr "Stil kartica kategorija:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:195
+msgid "Default"
+msgstr "Zadano"
+
+#: package/contents/ui/config/ConfigGeneral.qml:196
+msgid "Icon and text"
+msgstr "Ikona i tekst"
+
+#: package/contents/ui/config/ConfigGeneral.qml:197
+#, fuzzy
+msgid "Icon only"
+msgstr "Prelazak preko ikone:"
+
+#: package/contents/ui/config/ConfigGeneral.qml:214
 msgid "Behavior:"
 msgstr "Ponašanje:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:189
+#: package/contents/ui/config/ConfigGeneral.qml:215
 msgid "Show category bar"
 msgstr "Prikaži traku kategorija"
 
-#: package/contents/ui/config/ConfigGeneral.qml:193
+#: package/contents/ui/config/ConfigGeneral.qml:219
 msgid "Start with favorites tab"
 msgstr "Pokreni s karticom favorita"
 
-#: package/contents/ui/config/ConfigGeneral.qml:198
+#: package/contents/ui/config/ConfigGeneral.qml:224
 msgid "Sort favorites alphabetically"
 msgstr "Poredaj favorite abecedno"
 
-#: package/contents/ui/config/ConfigGeneral.qml:202
+#: package/contents/ui/config/ConfigGeneral.qml:228
 msgid "Show recently used applications"
 msgstr "Prikaži nedavno korištene aplikacije"
 
-#: package/contents/ui/config/ConfigGeneral.qml:207
+#: package/contents/ui/config/ConfigGeneral.qml:233
 msgid "Use system categories (supports KDE Menu Editor)"
 msgstr "Sistemske kategorije (KDE uređivač izbornika)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:212
+#: package/contents/ui/config/ConfigGeneral.qml:238
 msgid "Hide empty categories"
 msgstr "Sakrij prazne kategorije"
 
-#: package/contents/ui/config/ConfigGeneral.qml:218
+#: package/contents/ui/config/ConfigGeneral.qml:243
+msgid "Open categories on hover"
+msgstr "Otvori kategorije pri prelasku mišem"
+
+#: package/contents/ui/config/ConfigGeneral.qml:249
 msgid "Open on screen with mouse focus (otherwise on panel screen)"
 msgstr "Otvori na zaslonu s fokusom miša (inače na zaslonu ploče)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:229
+#: package/contents/ui/config/ConfigGeneral.qml:260
 msgid "Vertical position:"
 msgstr "Okomiti položaj:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:240
+#: package/contents/ui/config/ConfigGeneral.qml:271
 msgid "Terminal shell:"
 msgstr "Ljuska terminala:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:245
+#: package/contents/ui/config/ConfigGeneral.qml:276
 msgid "Default (/bin/sh)"
 msgstr "Zadano (/bin/sh)"
 
-#: package/contents/ui/config/ConfigGeneral.qml:271
+#: package/contents/ui/config/ConfigGeneral.qml:302
 msgid "Updates:"
 msgstr "Ažuriranja:"
 
-#: package/contents/ui/config/ConfigGeneral.qml:272
+#: package/contents/ui/config/ConfigGeneral.qml:303
 msgid "Check the AppGrid website for new releases"
 msgstr "Provjeri AppGrid web stranicu za nova izdanja"
 
-#: package/contents/ui/config/ConfigGeneral.qml:273
+#: package/contents/ui/config/ConfigGeneral.qml:304
 msgid ""
 "Anonymous request once per day to %1. Shows an indicator near the session "
 "buttons when a new version is available; no automatic install."
@@ -385,20 +427,18 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:41
 msgid ""
-"Bar actions appear directly in the launcher header; Menu actions go behind a"
-" single ⋮ button (hidden when empty); Off hides the action."
+"Bar actions appear directly in the launcher header; Menu actions go behind a "
+"single ⋮ button (hidden when empty); Off hides the action."
 msgstr ""
 "Radnje trake pojavljuju se izravno u zaglavlju pokretača; radnje izbornika "
 "smještaju se iza jednog gumba ⋮ (skriven kad je prazan); Isključeno skriva "
 "radnju."
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:46
-#| msgid "Show labels on power/session buttons"
 msgid "Show labels on header buttons"
 msgstr "Prikaži oznake na gumbima zaglavlja"
 
 #: package/contents/ui/config/ConfigHeaderActions.qml:52
-#| msgid "Show labels on power/session buttons"
 msgid "Hide label on the menu button"
 msgstr "Sakrij oznaku na gumbu izbornika"
 
@@ -415,7 +455,6 @@ msgstr ""
 "upišite h: u traku za pretraživanje."
 
 #: package/contents/ui/config/ConfigHiddenApps.qml:82
-#| msgid "Hidden apps:"
 msgid "Filter hidden apps…"
 msgstr "Filtriraj skrivene aplikacije…"
 
@@ -434,7 +473,6 @@ msgid "Unhide"
 msgstr "Otkrij"
 
 #: package/contents/ui/config/ConfigSearch.qml:25
-#| msgid "Search"
 msgid "Search:"
 msgstr "Pretraga:"
 
@@ -481,9 +519,9 @@ msgid ""
 "Affects only search results — the app grid keeps its own predictable "
 "ordering."
 msgstr ""
-"Koristi sustavne frecency podatke (učestalost + nedavnost) iz KActivities-a,"
-" pa se aplikacije koje ste u zadnje vrijeme često pokretali pojavljuju iznad"
-" jednako rangiranih alternativa. Utječe samo na rezultate pretrage — mreža "
+"Koristi sustavne frecency podatke (učestalost + nedavnost) iz KActivities-a, "
+"pa se aplikacije koje ste u zadnje vrijeme često pokretali pojavljuju iznad "
+"jednako rangiranih alternativa. Utječe samo na rezultate pretrage — mreža "
 "aplikacija zadržava vlastiti predvidljivi poredak."
 
 #: package/contents/ui/config/ConfigSearch.qml:63
@@ -491,7 +529,6 @@ msgid "Hidden apps:"
 msgstr "Skrivene aplikacije:"
 
 #: package/contents/ui/config/ConfigSearch.qml:64
-#| msgid "No hidden applications"
 msgid "Show hidden applications in search results"
 msgstr "Prikaži skrivene aplikacije u rezultatima pretrage"
 
@@ -518,8 +555,8 @@ msgid ""
 "Greys the rest of the best matching term after what you've typed (e.g. "
 "\"te\" → \"terminal\"); press Tab to accept it."
 msgstr ""
-"Posivljuje ostatak najbolje podudarajućeg pojma nakon onoga što ste utipkali"
-" (npr. „te” → „terminal”); pritisnite Tab za prihvaćanje."
+"Posivljuje ostatak najbolje podudarajućeg pojma nakon onoga što ste utipkali "
+"(npr. „te” → „terminal”); pritisnite Tab za prihvaćanje."
 
 #: package/contents/ui/config/ConfigSearch.qml:87
 msgid "Shortcuts:"
@@ -531,8 +568,8 @@ msgstr "Prikaži oznaku Alt+broj na rezultatima pretrage"
 
 #: package/contents/ui/config/ConfigSearch.qml:90
 msgid ""
-"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to"
-" hide the badges; the shortcuts still work."
+"Each of the first results gets an Alt+1..9 launch shortcut. Turn this off to "
+"hide the badges; the shortcuts still work."
 msgstr ""
 "Svaki od prvih rezultata dobiva prečac za pokretanje Alt+1..9. Isključite "
 "ovo za skrivanje oznaka; prečaci i dalje rade."
@@ -580,7 +617,6 @@ msgid "Menu"
 msgstr "Izbornik"
 
 #: package/contents/ui/config/HeaderActionsConfig.qml:41
-#| msgid "Office"
 msgid "Off"
 msgstr "Isključeno"
 
@@ -662,8 +698,7 @@ msgstr "Skrivene aplikacije"
 
 #: package/contents/ui/prefix/PrefixHiddenView.qml:71
 msgid "Right-click any app in the grid to hide it"
-msgstr ""
-"Desnom tipkom miša kliknite bilo koju aplikaciju u mreži za sakrivanje"
+msgstr "Desnom tipkom miša kliknite bilo koju aplikaciju u mreži za sakrivanje"
 
 #: package/contents/ui/prefix/PrefixHiddenView.qml:143
 msgid "%1 hidden application(s)"
@@ -705,14 +740,13 @@ msgstr "Kliknite za otvaranje napomena o izdanju za %1"
 msgid ""
 "Force an immediate check against the AppGrid website (bypasses the 24h "
 "schedule)."
-msgstr ""
-"Prisilno odmah provjeri AppGrid web stranicu (zaobilazi 24h raspored)."
+msgstr "Prisilno odmah provjeri AppGrid web stranicu (zaobilazi 24h raspored)."
 
 #: package/contents/ui/prefix/PrefixInfoView.qml:125
-#: package/contents/ui/widgets/CategoryBar.qml:87
-#: package/contents/ui/widgets/FavoritesTabButton.qml:36
-#: package/contents/ui/widgets/FavoritesTabButton.qml:40
-#: package/contents/ui/widgets/RecentAppsHeader.qml:144
+#: package/contents/ui/widgets/CategoryBar.qml:121
+#: package/contents/ui/widgets/FavoritesTabButton.qml:45
+#: package/contents/ui/widgets/FavoritesTabButton.qml:49
+#: package/contents/ui/widgets/RecentAppsHeader.qml:147
 msgid "Favorites"
 msgstr "Favoriti"
 
@@ -754,22 +788,22 @@ msgstr "Kopiraj u međuspremnik"
 msgid "Include this info when reporting issues on GitHub"
 msgstr "Uključi ove podatke pri prijavi problema na GitHubu"
 
-#: package/contents/ui/views/GridPanel.qml:1093
+#: package/contents/ui/views/GridPanel.qml:1108
 msgid "Launch all selected?"
 msgstr "Pokrenuti sve odabrane?"
 
-#: package/contents/ui/views/GridPanel.qml:1095
+#: package/contents/ui/views/GridPanel.qml:1110
 msgid "Open %1 application at once?"
 msgid_plural "Open %1 applications at once?"
 msgstr[0] "Otvoriti %1 aplikaciju odjednom?"
 msgstr[1] "Otvoriti %1 aplikacije odjednom?"
 msgstr[2] "Otvoriti %1 aplikacija odjednom?"
 
-#: package/contents/ui/views/GridPanel.qml:1105
+#: package/contents/ui/views/GridPanel.qml:1120
 msgid "Hide selected applications?"
 msgstr "Sakriti odabrane aplikacije?"
 
-#: package/contents/ui/views/GridPanel.qml:1107
+#: package/contents/ui/views/GridPanel.qml:1122
 msgid ""
 "Hide %1 application from AppGrid? You can unhide it later in Settings → "
 "Hidden Applications."
@@ -777,22 +811,20 @@ msgid_plural ""
 "Hide %1 applications from AppGrid? You can unhide them later in Settings → "
 "Hidden Applications."
 msgstr[0] ""
-"Sakriti %1 aplikaciju iz AppGrid-a? Možete je ponovno prikazati u Postavkama"
-" → Skrivene aplikacije."
+"Sakriti %1 aplikaciju iz AppGrid-a? Možete je ponovno prikazati u Postavkama "
+"→ Skrivene aplikacije."
 msgstr[1] ""
-"Sakriti %1 aplikacije iz AppGrid-a? Možete ih ponovno prikazati u Postavkama"
-" → Skrivene aplikacije."
+"Sakriti %1 aplikacije iz AppGrid-a? Možete ih ponovno prikazati u Postavkama "
+"→ Skrivene aplikacije."
 msgstr[2] ""
-"Sakriti %1 aplikacija iz AppGrid-a? Možete ih ponovno prikazati u Postavkama"
-" → Skrivene aplikacije."
+"Sakriti %1 aplikacija iz AppGrid-a? Možete ih ponovno prikazati u Postavkama "
+"→ Skrivene aplikacije."
 
 #: package/contents/ui/views/SearchResultsList.qml:153
-#| msgid "Application"
 msgid "Applications"
 msgstr "Aplikacije"
 
 #: package/contents/ui/views/SearchResultsList.qml:156
-#| msgid "Configure Search Plugins…"
 msgid "Search Plugins"
 msgstr "Dodaci za pretragu"
 
@@ -846,7 +878,6 @@ msgid "Manage in Discover…"
 msgstr "Upravljaj u Discoveru…"
 
 #: package/contents/ui/widgets/AppContextMenu.qml:295
-#| msgid "Hide Application"
 msgid "Unhide Application"
 msgstr "Otkrij aplikaciju"
 
@@ -903,41 +934,39 @@ msgstr[0] "Sakrij %1 aplikaciju"
 msgstr[1] "Sakrij %1 aplikacije"
 msgstr[2] "Sakrij %1 aplikacija"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:210
+#: package/contents/ui/widgets/AppIconDelegate.qml:223
 msgid "Source: %1"
 msgstr "Izvor: %1"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:237
+#: package/contents/ui/widgets/AppIconDelegate.qml:250
 msgid "new"
 msgstr "novo"
 
-#: package/contents/ui/widgets/AppIconDelegate.qml:238
+#: package/contents/ui/widgets/AppIconDelegate.qml:251
 msgid "selected"
 msgstr "odabrano"
 
-#: package/contents/ui/widgets/CategoryBar.qml:86
-#: package/contents/ui/widgets/CategoryBar.qml:292
-#: package/contents/ui/widgets/CategoryBar.qml:293
+#: package/contents/ui/widgets/CategoryBar.qml:120
 msgid "All"
 msgstr "Sve"
 
-#: package/contents/ui/widgets/CategoryBar.qml:308
+#: package/contents/ui/widgets/CategoryBar.qml:484
 msgid "All applications"
 msgstr "Sve aplikacije"
 
-#: package/contents/ui/widgets/CategoryBar.qml:351
+#: package/contents/ui/widgets/CategoryBar.qml:742
 msgid "Scroll categories left"
 msgstr "Pomakni lijevo"
 
-#: package/contents/ui/widgets/CategoryBar.qml:484
+#: package/contents/ui/widgets/CategoryBar.qml:750
 msgid "Scroll categories right"
 msgstr "Pomakni desno"
 
-#: package/contents/ui/widgets/CategoryBar.qml:501
+#: package/contents/ui/widgets/CategoryBar.qml:768
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr "Uredi \"%1\" u uređivaču izbornika…"
 
-#: package/contents/ui/widgets/CategoryBar.qml:507
+#: package/contents/ui/widgets/CategoryBar.qml:774
 msgid "Open Menu Editor…"
 msgstr "Otvori uređivač izbornika…"
 
@@ -958,11 +987,11 @@ msgstr "Više"
 msgid "More actions"
 msgstr "Više radnji"
 
-#: package/contents/ui/widgets/RecentAppsHeader.qml:62
+#: package/contents/ui/widgets/RecentAppsHeader.qml:64
 msgid "Recently Used"
 msgstr "Nedavno korišteno"
 
-#: package/contents/ui/widgets/RecentAppsHeader.qml:145
+#: package/contents/ui/widgets/RecentAppsHeader.qml:148
 msgid "All Apps"
 msgstr "Sve aplikacije"
 
@@ -979,7 +1008,7 @@ msgstr "Pretraži aplikacije"
 msgid "Clear search"
 msgstr "Očisti pretraživanje"
 
-#: src/appgridplugin.cpp:116
+#: src/appgridplugin.cpp:131
 msgid "Open in Compact Mode"
 msgstr "Otvori u kompaktnom načinu"
 
@@ -1048,15 +1077,16 @@ msgstr "Ostalo"
 #~ msgstr "Dostupno ažuriranje AppGrid-a"
 
 #~ msgid ""
-#~ "Anonymous request once per day to "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonymous request once per day to https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 #~ msgstr ""
-#~ "Anonimni zahtjev jednom dnevno na "
-#~ "https://appgrid.xarbit.dev/api/latest.json. "
+#~ "Anonimni zahtjev jednom dnevno na https://appgrid.xarbit.dev/api/"
+#~ "latest.json. "
 
 #~ msgid "Clears the migration flag. On next open, AppGrid recomputes the "
 #~ msgstr ""
-#~ "Briše oznaku migracije. Pri sljedećem otvaranju AppGrid ponovno izračunava "
+#~ "Briše oznaku migracije. Pri sljedećem otvaranju AppGrid ponovno "
+#~ "izračunava "
 
 #~ msgid "More Results"
 #~ msgstr "Više rezultata"

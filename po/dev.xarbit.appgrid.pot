@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/xarbit/plasma6-applet-appgrid/"
 "issues\n"
-"POT-Creation-Date: 2026-06-09 15:46+0200\n"
+"POT-Creation-Date: 2026-06-10 12:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -228,6 +228,20 @@ msgstr ""
 
 #: package/contents/ui/config/ConfigAppearance.qml:234
 msgid "Animate icons when the launcher opens"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:239
+msgid "System:"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:240
+msgid "Configure Animation Speed…"
+msgstr ""
+
+#: package/contents/ui/config/ConfigAppearance.qml:244
+msgid ""
+"Open KDE's animation settings to change the system-wide animation speed (the "
+"slider that drives every Plasma animation, this launcher included)."
 msgstr ""
 
 #: package/contents/ui/config/ConfigGeneral.qml:50
@@ -870,23 +884,23 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: package/contents/ui/widgets/CategoryBar.qml:478
+#: package/contents/ui/widgets/CategoryBar.qml:484
 msgid "All applications"
 msgstr ""
 
-#: package/contents/ui/widgets/CategoryBar.qml:569
+#: package/contents/ui/widgets/CategoryBar.qml:742
 msgid "Scroll categories left"
 msgstr ""
 
-#: package/contents/ui/widgets/CategoryBar.qml:720
+#: package/contents/ui/widgets/CategoryBar.qml:750
 msgid "Scroll categories right"
 msgstr ""
 
-#: package/contents/ui/widgets/CategoryBar.qml:737
+#: package/contents/ui/widgets/CategoryBar.qml:768
 msgid "Edit \"%1\" in Menu Editor…"
 msgstr ""
 
-#: package/contents/ui/widgets/CategoryBar.qml:743
+#: package/contents/ui/widgets/CategoryBar.qml:774
 msgid "Open Menu Editor…"
 msgstr ""
 
