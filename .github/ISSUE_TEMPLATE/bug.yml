@@ -147,6 +147,13 @@ body:
       description: Global + Plasma style name. Only matters for visual bugs.
       placeholder: "Breeze (default), Breeze Dark, Layan, …"
 
+  - type: input
+    id: third-party-effects
+    attributes:
+      label: Third-party KWin effects / plugins
+      description: Any non-default compositor effects or plugins that change blur, transparency, shadows or window borders — they often cause visual bugs that can't be reproduced on a stock setup. List them, or write "none".
+      placeholder: "Better Blur (DX), Force Blur, custom KWin scripts, … — or: none"
+
   - type: textarea
     id: screenshots
     attributes:
