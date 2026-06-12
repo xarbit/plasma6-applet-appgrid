@@ -286,36 +286,45 @@ ListView {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    PlasmaComponents.Label {
-                        Layout.fillWidth: true
+                    // The dictionary runner (and similar) puts a paragraph in the
+                    // result name: wrap it, three lines by default, expand to read
+                    // when selected. Most results are one line — no change for them.
+                    ExpandingLabel {
                         text: model.name || ""
-                        elide: Text.ElideRight
+                        expanded: resultDelegate.highlighted
+                        collapsedLines: 3
                         color: resultDelegate.labelColor
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.fontScale
                     }
+                    // Top-aligned so the indicator and pills stay beside the first
+                    // line when a long result name wraps to several lines (#183),
+                    // rather than floating to the middle of the grown row.
                     // Hidden indicator, paired with the row dim.
                     Kirigami.Icon {
                         visible: resultDelegate.itemHidden
                         source: "view-hidden"
                         implicitWidth: Kirigami.Units.iconSizes.small
                         implicitHeight: Kirigami.Units.iconSizes.small
-                        Layout.alignment: Qt.AlignVCenter
+                        Layout.alignment: Qt.AlignTop
                     }
                     InfoChip {
                         visible: model.installSource !== undefined
                                  && model.installSource.length > 0
                                  && model.installSource !== "System"
                         text: model.installSource || ""
+                        Layout.alignment: Qt.AlignTop
                     }
                     InfoChip {
                         text: model.category || i18nd("dev.xarbit.appgrid", "Application")
+                        Layout.alignment: Qt.AlignTop
                     }
                 }
 
-                PlasmaComponents.Label {
-                    Layout.fillWidth: true
+                // Secondary line — some runners carry the detail here instead of
+                // the name; wraps the same way, one line collapsed.
+                ExpandingLabel {
                     text: model.subtext || ""
-                    elide: Text.ElideRight
+                    expanded: resultDelegate.highlighted
                     font: Kirigami.Theme.smallFont
                     opacity: 0.6
                     visible: text.length > 0
