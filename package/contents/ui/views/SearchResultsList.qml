@@ -287,12 +287,12 @@ ListView {
                 RowLayout {
                     Layout.fillWidth: true
                     // The dictionary runner (and similar) puts a paragraph in the
-                    // result name: wrap it, three lines by default, expand to read
+                    // result name: wrap it, two lines by default, expand to read
                     // when selected. Most results are one line — no change for them.
                     ExpandingLabel {
                         text: model.name || ""
                         expanded: resultDelegate.highlighted
-                        collapsedLines: 3
+                        collapsedLines: 2
                         color: resultDelegate.labelColor
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.fontScale
                     }
