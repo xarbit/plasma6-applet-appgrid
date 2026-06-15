@@ -10,7 +10,6 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
-import org.kde.ksvg as KSvg
 import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
@@ -266,31 +265,18 @@ Kirigami.ShadowedRectangle {
     // (#151). The blur region reads this same `radius` via GridWindow, so the
     // visible panel and its blur stay consistent at every animated height.
     readonly property int maxValidRadius: Math.floor(Math.min(width, height) / 2)
-    // Plasma theme SVG that draws the panel face under theme chrome; shared by
-    // the FrameSvgItem below and the corner-radius query so they never drift.
-    readonly property string themeBackgroundPath: "dialogs/background"
-    // Bumped by the theme FrameSvgItem's repaintNeeded (fired on a live Plasma
-    // theme switch), so themeCornerRadius re-queries the new SVG instead of
-    // keeping the previous theme's corner.
-    property int themeRevision: 0
-    // Under theme chrome the SVG draws the visible corner; match its actual
-    // radius (from the theme, falling back to the Kirigami default) so the
-    // shadow, child clip and blur region all line up with the drawn curve
-    // instead of stepping past it on themes with larger corners (#188).
-    readonly property int themeCornerRadius: {
-        void themeRevision // re-evaluate when the theme changes
-        return useThemeChrome
-            ? (plasmoidBridge.themeBackgroundCornerRadius(themeBackgroundPath) || Kirigami.Units.cornerRadius)
-            : 0
-    }
+    // Under theme chrome ThemeChrome draws the SVG corner; match its actual
+    // radius (clamped to the geometric max) so the rounded-rect clip and the
+    // blur region line up with the drawn curve instead of stepping past it on
+    // themes with larger corners (#188).
     radius: nativePopup ? 0
-        : panel.useThemeChrome ? Math.min(themeCornerRadius, maxValidRadius)
+        : panel.useThemeChrome ? Math.min(themeChrome.cornerRadius, maxValidRadius)
         : Math.min(requestedRadius, maxValidRadius)
 
     readonly property real bgOpacity: cfg.effectiveBackgroundOpacity / 100
     // Three rendering paths:
     //   - nativePopup:                 Plasma's popup framework owns the chrome.
-    //   - cfg.useThemeBackground:      KSvg.FrameSvgItem below draws the panel face.
+    //   - cfg.useThemeBackground:      ThemeChrome draws the SVG panel face.
     //   - default (solid-color mode):  ShadowedRectangle's own color + border.
     readonly property bool useThemeChrome: !nativePopup && cfg.useThemeBackground
 
@@ -305,12 +291,10 @@ Kirigami.ShadowedRectangle {
                 Kirigami.Theme.backgroundColor,
                 Kirigami.Theme.textColor, 0.2)
 
-    // Layer-shell windows have no WM shadow, so the center variant always
-    // paints its own. The dialog SVG used under useThemeChrome would draw
-    // its own shadow too in theory, but that one renders inside the SVG's
-    // bounding box and gets clipped by GridPanel's edge — invisible. Keep
-    // ShadowedRectangle as the single, reliable shadow source for center.
-    shadow.size: nativePopup ? 0 : Kirigami.Units.gridUnit
+    // Layer-shell windows have no WM shadow, so the center variant paints its
+    // own — the theme's dialog shadow (via ThemeChrome) when it ships one, else
+    // this generic ShadowedRectangle shadow as a fallback.
+    shadow.size: nativePopup || themeChrome.hasThemeShadow ? 0 : Kirigami.Units.gridUnit
     shadow.color: nativePopup ? "transparent" : Qt.rgba(0, 0, 0, 0.4)
     shadow.xOffset: 0
     shadow.yOffset: nativePopup ? 0 : Kirigami.Units.smallSpacing
@@ -318,18 +302,16 @@ Kirigami.ShadowedRectangle {
     Kirigami.Theme.colorSet: Kirigami.Theme.View
     Kirigami.Theme.inherit: false
 
-    // Theme-driven panel background. `dialogs/background` is the SVG Plasma
-    // themes ship for popup-style surfaces (Kickoff, Plasma dialogs); using
-    // it here gives the center variant the same look as the rest of the
-    // user's Plasma theme instead of a flat tinted rectangle. Panel variant
-    // skips this — Plasma's popup framework renders its own chrome around it.
-    KSvg.FrameSvgItem {
+    // Theme background + matching shadow for the center variant. Behind the
+    // panel content; supplies the corner radius and shadow presence the chrome
+    // above reads. See ThemeChrome.qml.
+    ThemeChrome {
+        id: themeChrome
         anchors.fill: parent
-        imagePath: panel.themeBackgroundPath
-        visible: panel.useThemeChrome
-        opacity: panel.bgOpacity
         z: -1
-        onRepaintNeeded: panel.themeRevision++
+        bridge: panel.plasmoidBridge
+        active: panel.useThemeChrome
+        backgroundOpacity: panel.bgOpacity
     }
 
     // Compact mode: wheel toggles the grid while the search field has
