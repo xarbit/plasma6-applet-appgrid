@@ -586,6 +586,7 @@ GridView {
                    || model.decoration || gridView.defaultIcon)
                 : (model.iconName || gridView.defaultIcon)
             displayIcon: delegateRoot._fromShared ? "" : gridView.getDisplayIcon(model.index)
+            iconGeneration: gridView.appsModel ? gridView.appsModel.iconGeneration : 0
             appGenericName: delegateRoot._fromShared
                 ? (delegateRoot._appData ? delegateRoot._appData.genericName || "" : "")
                 : (model.genericName || "")

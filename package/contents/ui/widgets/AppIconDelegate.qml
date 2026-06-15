@@ -28,6 +28,9 @@ Item {
     property bool isNew: false
     property bool hideLabel: false
     property real iconSize: Kirigami.Units.iconSizes.huge
+    // Bumped by the model on a system icon-theme change so the icon re-renders
+    // in place (a same-named icon won't reload otherwise). See ShadowedIcon.
+    property int iconGeneration: 0
     // Multiplier on the label font, following the size preset (Scale.textScale).
     // Pinned to 1.0 when text size is decoupled from the preset (#167).
     property real fontScale: 1.0
@@ -169,6 +172,7 @@ Item {
                 id: delegateIcon
                 anchors.fill: parent
                 source: root.displayIcon || root.appIcon || Const.DEFAULT_ICON
+                reloadToken: root.iconGeneration
                 shadowEnabled: root.shadowEnabled
                 // No icon brighten — hover is shown by the Rectangle above (#106).
                 active: false

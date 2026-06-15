@@ -46,6 +46,9 @@ class AppFilterModel : public QSortFilterProxyModel
     // hidden-set so a typed name still finds the app without un-hiding
     // it from the grid.
     Q_PROPERTY(bool searchShowsHidden READ searchShowsHidden WRITE setSearchShowsHidden NOTIFY searchShowsHiddenChanged)
+    // Bumped on a system icon-theme change so QML icons can force a reload
+    // (a same-named icon won't re-resolve on its own).
+    Q_PROPERTY(int iconGeneration READ iconGeneration NOTIFY iconGenerationChanged)
 
 public:
     /** Sort modes for the grid view. */
@@ -65,6 +68,10 @@ public:
     void setSearchText(const QString &text);
 
     [[nodiscard]] int count() const;
+    [[nodiscard]] int iconGeneration() const
+    {
+        return m_iconGeneration;
+    }
 
     [[nodiscard]] QStringList hiddenApps() const;
     void setHiddenApps(const QStringList &list);
@@ -148,6 +155,7 @@ public:
     [[nodiscard]] Q_INVOKABLE QString completionFor(const QString &query) const;
 
 Q_SIGNALS:
+    void iconGenerationChanged();
     void defaultAppsChanged();
     void filterCategoryChanged();
     void searchTextChanged();
@@ -207,6 +215,7 @@ private:
     QString m_searchTextLowerSingular;
     int m_maxRecentApps = 6;
     int m_sortMode = Alphabetical;
+    int m_iconGeneration = 0;
     QHash<QString, int> m_frecencyScores;
     bool m_searchUsesFrecency = false;
     bool m_searchShowsHidden = false;

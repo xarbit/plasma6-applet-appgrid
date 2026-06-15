@@ -95,6 +95,7 @@ Column {
                     fontScale: recentHeader.fontScale
                     appName: recentDelegate.appData.name || ""
                     appIcon: recentDelegate.appData.iconName || Const.DEFAULT_ICON
+                    iconGeneration: recentHeader.appsModel ? recentHeader.appsModel.iconGeneration : 0
                     appGenericName: recentDelegate.appData.genericName || ""
                     appComment: recentDelegate.appData.comment || ""
                     installSource: recentDelegate.appData.installSource || ""

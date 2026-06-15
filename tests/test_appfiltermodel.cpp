@@ -6,13 +6,16 @@
     round-trip of list-typed properties.
 */
 
+#include <KIconLoader>
+
 #include <QSignalSpy>
 #include <QTest>
 
 #include "appfiltermodel.h"
 #include "stubappmodel.h"
 
-class TestAppFilterModel : public QObject {
+class TestAppFilterModel : public QObject
+{
     Q_OBJECT
 
 private Q_SLOTS:
@@ -52,6 +55,7 @@ private Q_SLOTS:
     void recordRecentLaunchDeduplicatesPriorEntry();
     void recordRecentLaunchAddsToKnownApps();
     void recordRecentLaunchIgnoresEmptyId();
+    void iconChangedBumpsIconGeneration();
 
 private:
     StubAppModel m_source;
@@ -154,9 +158,15 @@ void TestAppFilterModel::isNewAppReturnsTrueForUnknown()
 void TestAppFilterModel::getByStorageIdReturnsMatchingMap()
 {
     m_source.setApps({
-        {QStringLiteral("Kate"), QStringLiteral("kate-icon"), QStringLiteral("/x/kate.desktop"),
-         {QStringLiteral("Development")}, QStringLiteral("Editor"), QStringLiteral("kate"),
-         {}, QStringLiteral("Text editor"), QStringLiteral("System")},
+        {QStringLiteral("Kate"),
+         QStringLiteral("kate-icon"),
+         QStringLiteral("/x/kate.desktop"),
+         {QStringLiteral("Development")},
+         QStringLiteral("Editor"),
+         QStringLiteral("kate"),
+         {},
+         QStringLiteral("Text editor"),
+         QStringLiteral("System")},
     });
     const auto map = m_filter.getByStorageId(QStringLiteral("kate"));
     QCOMPARE(map.value(QStringLiteral("name")).toString(), QStringLiteral("Kate"));
@@ -192,8 +202,7 @@ void TestAppFilterModel::completionForCompletesNamePrefix()
 void TestAppFilterModel::completionForCompletesWordAcrossFields()
 {
     m_source.setApps({
-        {QStringLiteral("Ghostty"), {}, {}, {}, QStringLiteral("Terminal emulator"),
-         QStringLiteral("ghostty"), {}, {}, {}},
+        {QStringLiteral("Ghostty"), {}, {}, {}, QStringLiteral("Terminal emulator"), QStringLiteral("ghostty"), {}, {}, {}},
     });
     // No name prefix; pass 2 completes a word from the generic name.
     QCOMPARE(m_filter.completionFor(QStringLiteral("te")), QStringLiteral("Terminal"));
@@ -282,10 +291,8 @@ void TestAppFilterModel::nonEmptyCategoriesSkipsHiddenApps()
 void TestAppFilterModel::appsByCategoryGroupsMultiCategoryApp()
 {
     m_source.setApps({
-        {QStringLiteral("Multi"), {}, {}, {QStringLiteral("Dev"), QStringLiteral("Util")},
-         {}, QStringLiteral("m"), {}, {}, {}},
-        {QStringLiteral("Single"), {}, {}, {QStringLiteral("Dev")},
-         {}, QStringLiteral("s"), {}, {}, {}},
+        {QStringLiteral("Multi"), {}, {}, {QStringLiteral("Dev"), QStringLiteral("Util")}, {}, QStringLiteral("m"), {}, {}, {}},
+        {QStringLiteral("Single"), {}, {}, {QStringLiteral("Dev")}, {}, QStringLiteral("s"), {}, {}, {}},
     });
     const auto groups = m_filter.appsByCategory();
     QCOMPARE(groups.size(), 2);
@@ -293,8 +300,7 @@ void TestAppFilterModel::appsByCategoryGroupsMultiCategoryApp()
     QHash<QString, int> appsPerCategory;
     for (const auto &g : groups) {
         const auto map = g.toMap();
-        appsPerCategory[map.value(QStringLiteral("category")).toString()]
-            = map.value(QStringLiteral("apps")).toList().size();
+        appsPerCategory[map.value(QStringLiteral("category")).toString()] = map.value(QStringLiteral("apps")).toList().size();
     }
     QCOMPARE(appsPerCategory.value(QStringLiteral("Dev")), 2);
     QCOMPARE(appsPerCategory.value(QStringLiteral("Util")), 1);
@@ -322,8 +328,7 @@ void TestAppFilterModel::markAllKnownPopulatesFromSource()
     m_filter.markAllKnown();
     QStringList known = m_filter.knownApps();
     known.sort();
-    QCOMPARE(known, (QStringList{
-        QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")}));
+    QCOMPARE(known, (QStringList{QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")}));
 }
 
 void TestAppFilterModel::hideAppByProxyIndexAddsToList()
@@ -423,8 +428,7 @@ void TestAppFilterModel::recordRecentLaunchCapsAtMaxRecentApps()
     m_filter.recordRecentLaunch(QStringLiteral("c"));
     m_filter.recordRecentLaunch(QStringLiteral("d"));
     QCOMPARE(m_filter.recentApps().size(), 3);
-    QCOMPARE(m_filter.recentApps(), (QStringList{
-        QStringLiteral("d"), QStringLiteral("c"), QStringLiteral("b")}));
+    QCOMPARE(m_filter.recentApps(), (QStringList{QStringLiteral("d"), QStringLiteral("c"), QStringLiteral("b")}));
 }
 
 void TestAppFilterModel::recordRecentLaunchDeduplicatesPriorEntry()
@@ -432,8 +436,7 @@ void TestAppFilterModel::recordRecentLaunchDeduplicatesPriorEntry()
     m_filter.recordRecentLaunch(QStringLiteral("a"));
     m_filter.recordRecentLaunch(QStringLiteral("b"));
     m_filter.recordRecentLaunch(QStringLiteral("a")); // bump to front
-    QCOMPARE(m_filter.recentApps(), (QStringList{
-        QStringLiteral("a"), QStringLiteral("b")}));
+    QCOMPARE(m_filter.recentApps(), (QStringList{QStringLiteral("a"), QStringLiteral("b")}));
 }
 
 void TestAppFilterModel::recordRecentLaunchAddsToKnownApps()
@@ -449,6 +452,22 @@ void TestAppFilterModel::recordRecentLaunchIgnoresEmptyId()
     m_filter.recordRecentLaunch(QString());
     QCOMPARE(spy.count(), 0);
     QVERIFY(m_filter.recentApps().isEmpty());
+}
+
+void TestAppFilterModel::iconChangedBumpsIconGeneration()
+{
+    // System icon-theme switch / icon-file replacement (#86, #103) arrives as
+    // KIconLoader::iconChanged. iconGeneration must increment so QML icons can
+    // force an in-place reload (the icon name is unchanged, so Kirigami.Icon
+    // would not re-resolve on its own).
+    const int before = m_filter.iconGeneration();
+    QSignalSpy spy(&m_filter, &AppFilterModel::iconGenerationChanged);
+    QVERIFY(spy.isValid());
+
+    QMetaObject::invokeMethod(KIconLoader::global(), "iconChanged", Qt::DirectConnection, Q_ARG(int, int(KIconLoader::NoGroup)));
+
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(m_filter.iconGeneration() > before);
 }
 
 QTEST_MAIN(TestAppFilterModel)

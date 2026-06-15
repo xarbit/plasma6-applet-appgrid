@@ -9,14 +9,12 @@
 #include "categorymapping.h"
 
 #include <KIO/ApplicationLauncherJob>
-#include <KIconLoader>
 #include <KJob>
 #include <KLocalizedString>
 #include <KService>
 #include <KServiceGroup>
 #include <KSycoca>
 
-#include <QIcon>
 #include <QTimer>
 
 AppModel::AppModel(QObject *parent)
@@ -27,23 +25,9 @@ AppModel::AppModel(QObject *parent)
     // loop pass — long before the launcher window can be opened.
     QTimer::singleShot(0, this, &AppModel::reload);
     connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppModel::reload);
-    // Refresh delegate icons on either:
-    //   * #86 — icon file replaced on disk (menu editor, package upgrade
-    //     touching /usr/share/icons/...). KIconLoader::emitChange() fires
-    //     iconChanged after flushing its own caches.
-    //   * #103 — user switches icon theme in System Settings → Icons.
-    //     The KCM emits iconChanged via the same signal.
-    // We re-emit dataChanged on IconRole so Kirigami.Icon delegates
-    // re-resolve via the now-fresh pixmap cache. Replaces the older
-    // QIcon::setThemeName(QIcon::themeName()) trick that fixed #86 by
-    // setting a global theme-name override on Qt's icon engine — which
-    // blocked subsequent system theme changes from propagating (#103).
-    connect(KIconLoader::global(), &KIconLoader::iconChanged, this, [this]() {
-        if (m_apps.isEmpty()) {
-            return;
-        }
-        Q_EMIT dataChanged(index(0, 0), index(m_apps.size() - 1, 0), {IconRole});
-    });
+    // Icon-theme / icon-file refresh (#86, #103) is handled by
+    // AppFilterModel::iconGeneration, which the delegates watch to force an
+    // in-place reload — see there.
 }
 
 int AppModel::rowCount(const QModelIndex &parent) const
@@ -324,10 +308,8 @@ QStringList AppModel::categories() const
 
 void AppModel::reload()
 {
-    // Cache-busting for icon changes lives in the constructor's
-    // KIconLoader::iconChanged hookup, not here — reload() is for app-list
-    // changes (KSycoca databaseChanged). See ctor + issues #86 / #103 for
-    // why we dropped the older QIcon::setThemeName trick.
+    // reload() is for app-list changes (KSycoca databaseChanged). Icon-theme /
+    // icon-file refresh lives in AppFilterModel::iconGeneration.
     beginResetModel();
     m_apps.clear();
     m_categories.clear();

@@ -8,6 +8,8 @@
 #include "defaultappsresolver.h"
 #include "searchranking.h"
 
+#include <KIconLoader>
+
 #include <cstdlib>
 #include <limits>
 
@@ -45,6 +47,18 @@ AppFilterModel::AppFilterModel(QObject *parent)
     connect(this, &QAbstractItemModel::rowsInserted, this, &AppFilterModel::countChanged);
     connect(this, &QAbstractItemModel::rowsRemoved, this, &AppFilterModel::countChanged);
     connect(this, &QAbstractItemModel::modelReset, this, &AppFilterModel::countChanged);
+
+    // Icon refresh on KIconLoader::iconChanged, which fires for both an icon
+    // file replaced on disk (#86) and a system icon-theme switch (#103). The app
+    // icon names don't change, so QML's Kirigami.Icon won't re-resolve and the
+    // visible grid keeps stale pixmaps until delegates recycle on scroll. Bump a
+    // generation the delegates watch to force an in-place reload — no full model
+    // reset (keeps scroll + selection) and not QIcon::setThemeName, whose global
+    // override locked the whole process and blocked later theme switches (#103).
+    connect(KIconLoader::global(), &KIconLoader::iconChanged, this, [this]() {
+        ++m_iconGeneration;
+        Q_EMIT iconGenerationChanged();
+    });
 
     // groupedByCategory depends on visible rows — re-emit when filter state
     // changes. The lambda marks the cache dirty before the signal travels

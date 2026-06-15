@@ -94,6 +94,7 @@ TestCase {
         property var knownApps: []
         property var launchCounts: []
         property int maxRecentApps: 6
+        property int iconGeneration: 0
         property bool showFavoritesOnly: false
         property bool sortFavoritesAlphabetically: false
         property bool searchShowsHidden: false

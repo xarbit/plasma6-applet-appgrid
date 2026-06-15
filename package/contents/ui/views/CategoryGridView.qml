@@ -437,6 +437,7 @@ Flickable {
                                 anchors.fill: parent
                                 appName: modelData.name || ""
                                 appIcon: modelData.iconName || Const.DEFAULT_ICON
+                                iconGeneration: categoryGrid.appsModel ? categoryGrid.appsModel.iconGeneration : 0
                                 appComment: modelData.comment || ""
                                 installSource: modelData.installSource || ""
                                 showTooltip: categoryGrid.showTooltips

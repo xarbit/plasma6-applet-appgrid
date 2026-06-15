@@ -19,10 +19,20 @@ import org.kde.kirigami as Kirigami
 Item {
     id: root
 
-    property alias source: icon.source
+    property string source: ""
     property alias active: icon.active
 
     required property bool shadowEnabled
+
+    // Bumped (e.g. on a system icon-theme change) to force a reload: the icon
+    // name is unchanged, so Kirigami.Icon won't re-resolve on its own. We clear
+    // and rebind the source to make it (and the shadow's MultiEffect texture)
+    // re-render with the new theme. See AppFilterModel.iconGeneration.
+    property int reloadToken: 0
+    onReloadTokenChanged: {
+        icon.source = ""
+        icon.source = Qt.binding(() => root.source)
+    }
 
     implicitWidth: icon.implicitWidth
     implicitHeight: icon.implicitHeight
@@ -30,6 +40,7 @@ Item {
     Kirigami.Icon {
         id: icon
         anchors.fill: parent
+        source: root.source
         visible: !root.shadowEnabled
     }
 
