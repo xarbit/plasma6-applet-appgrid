@@ -21,6 +21,7 @@
 #include <KRunner/QueryMatch>
 #include <KRunner/ResultsModel>
 #include <KService>
+#include <KSvg/FrameSvg>
 #include <KTerminalLauncherJob>
 #include <KWindowEffects>
 #include <KWindowSystem>
@@ -403,6 +404,16 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
                                              theme.backgroundIntensity(),
                                              theme.backgroundSaturation(),
                                              region);
+}
+
+int AppGridPlugin::themeBackgroundCornerRadius(const QString &imagePath) const
+{
+    KSvg::FrameSvg frame;
+    frame.setImagePath(imagePath);
+    if (!frame.hasElement(QStringLiteral("topleft"))) {
+        return 0;
+    }
+    return qRound(frame.elementSize(QStringLiteral("topleft")).width());
 }
 
 void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)

@@ -122,6 +122,7 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     KIO
     Runner
     Service
+    Svg
     WindowSystem
 )
 find_package(LayerShellQt REQUIRED)
@@ -153,6 +154,7 @@ set(APPGRID_COMMON_LIBS
     KF6::WindowSystem
     KF6::IconThemes
     KF6::GlobalAccel
+    KF6::Svg
     LayerShellQt::Interface
     Plasma::PlasmaQuick
     KF6::Runner
