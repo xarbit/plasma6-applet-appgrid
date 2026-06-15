@@ -40,6 +40,7 @@ RowLayout {
     readonly property var _meta: ({
         "updateCheck": { "icon": HeaderActions.iconFor("updateCheck"), "label": i18nd("dev.xarbit.appgrid", "Update available") },
         "sleep": { "icon": HeaderActions.iconFor("sleep"), "label": i18nd("dev.xarbit.appgrid", "Sleep") },
+        "hibernate": { "icon": HeaderActions.iconFor("hibernate"), "label": i18nd("dev.xarbit.appgrid", "Hibernate") },
         "restart": { "icon": HeaderActions.iconFor("restart"), "label": i18nd("dev.xarbit.appgrid", "Restart") },
         "shutdown": { "icon": HeaderActions.iconFor("shutdown"), "label": i18nd("dev.xarbit.appgrid", "Shut Down") },
         "lock": { "icon": HeaderActions.iconFor("lock"), "label": i18nd("dev.xarbit.appgrid", "Lock") },
@@ -52,6 +53,7 @@ RowLayout {
     readonly property var _availability: ({
         "updateCheck": !!updateChecker && updateChecker.enabled === true && updateChecker.hasUpdate === true,
         "sleep": sessionActions.canSuspend,
+        "hibernate": sessionActions.canHibernate,
         "restart": sessionActions.canReboot,
         "shutdown": sessionActions.canShutdown,
         "lock": sessionActions.canLock,
@@ -63,6 +65,7 @@ RowLayout {
         switch (id) {
         case "updateCheck": if (updateChecker) updateChecker.openReleasePage(); break
         case "sleep":      sessionActions.suspend(); break
+        case "hibernate":  sessionActions.hibernate(); break
         case "restart":    sessionActions.reboot(); break
         case "shutdown":   sessionActions.shutdown(); break
         case "lock":       sessionActions.lock(); break

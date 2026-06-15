@@ -16,6 +16,7 @@ QtObject {
     id: actions
 
     readonly property bool canSuspend: _sm.canSuspend
+    readonly property bool canHibernate: _sm.canHibernate
     readonly property bool canReboot: _sm.canReboot
     readonly property bool canShutdown: _sm.canShutdown
     readonly property bool canLock: _sm.canLock
@@ -23,6 +24,7 @@ QtObject {
     readonly property bool canSwitchUser: _sessions.canSwitchUser
 
     function suspend()    { _sm.suspend() }
+    function hibernate()  { _sm.hibernate() }
     function reboot()     { _sm.requestReboot() }
     function shutdown()   { _sm.requestShutdown() }
     function lock()       { _sm.lock() }

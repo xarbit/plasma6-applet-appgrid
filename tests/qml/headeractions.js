@@ -18,6 +18,7 @@
 var CATALOGUE = [
     { id: "updateCheck", placement: "bar", icon: "system-software-update" },
     { id: "sleep", placement: "bar", icon: "system-suspend" },
+    { id: "hibernate", placement: "menu", icon: "system-suspend-hibernate" },
     { id: "restart", placement: "bar", icon: "system-reboot" },
     { id: "shutdown", placement: "bar", icon: "system-shutdown" },
     { id: "lock", placement: "menu", icon: "system-lock-screen" },

@@ -28,6 +28,7 @@ ColumnLayout {
     readonly property var labels: ({
         "updateCheck": i18nd("dev.xarbit.appgrid", "Update"),
         "sleep": i18nd("dev.xarbit.appgrid", "Sleep"),
+        "hibernate": i18nd("dev.xarbit.appgrid", "Hibernate"),
         "restart": i18nd("dev.xarbit.appgrid", "Restart"),
         "shutdown": i18nd("dev.xarbit.appgrid", "Shut Down"),
         "lock": i18nd("dev.xarbit.appgrid", "Lock"),

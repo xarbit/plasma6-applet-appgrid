@@ -15,9 +15,9 @@ TestCase {
     name: "HeaderActions"
 
     function test_parseDefaultLayout() {
-        var r = HeaderActions.parse(["updateCheck:bar", "sleep:bar", "restart:bar", "shutdown:bar", "lock:menu", "logout:menu", "switchuser:menu"]);
+        var r = HeaderActions.parse(["updateCheck:bar", "sleep:bar", "hibernate:menu", "restart:bar", "shutdown:bar", "lock:menu", "logout:menu", "switchuser:menu"]);
         compare(r.bar.join(","), "updateCheck,sleep,restart,shutdown");
-        compare(r.menu.join(","), "lock,logout,switchuser");
+        compare(r.menu.join(","), "hibernate,lock,logout,switchuser");
     }
 
     function test_parsePreservesOrderAndPlacement() {
@@ -46,7 +46,7 @@ TestCase {
     function test_parseEmptyUsesCatalogueDefaults() {
         var r = HeaderActions.parse([]);
         compare(r.bar.join(","), "updateCheck,sleep,restart,shutdown");
-        compare(r.menu.join(","), "lock,logout,switchuser");
+        compare(r.menu.join(","), "hibernate,lock,logout,switchuser");
     }
 
     function test_entriesCoversAllInOrder() {
@@ -56,12 +56,12 @@ TestCase {
         compare(e[0].placement, "bar");
         compare(e[1].id, "sleep");
         compare(e[1].placement, "off");
-        compare(e.length, 7); // whole catalogue present
+        compare(e.length, 8); // whole catalogue present
     }
 
     function test_entriesEmptyIsCatalogueDefaults() {
         var e = HeaderActions.entries([]);
-        compare(e.length, 7);
+        compare(e.length, 8);
         compare(e[0].id, "updateCheck");
         compare(e[0].placement, "bar");
     }
@@ -88,7 +88,7 @@ TestCase {
 
     function test_entriesOmitsUpdateCheckOnNonUniversal() {
         var e = HeaderActions.entries([], false);
-        compare(e.length, 6); // catalogue minus updateCheck
+        compare(e.length, 7); // catalogue minus updateCheck
         for (var i = 0; i < e.length; ++i)
             verify(e[i].id !== "updateCheck");
     }
