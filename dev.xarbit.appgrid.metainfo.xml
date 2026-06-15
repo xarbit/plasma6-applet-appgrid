@@ -66,17 +66,7 @@
     </screenshots>
 
     <releases>
-        <release version="1.9.0" date="2026-06-14">
-            <description>
-                <p>See CHANGELOG.md for the full list of changes.</p>
-            </description>
-        </release>
-        <release version="1.9.0-rc.7" date="2026-06-09">
-            <description>
-                <p>See CHANGELOG.md for the full list of changes.</p>
-            </description>
-        </release>
-        <release version="1.9.0-rc.6" date="2026-06-05">
+        <release version="1.9.0" date="2026-06-14" type="stable">
             <description>
                 <p>See CHANGELOG.md for the full list of changes.</p>
             </description>
