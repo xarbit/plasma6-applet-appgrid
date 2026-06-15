@@ -56,6 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     kwindowsystem
     kglobalaccel
     kiconthemes
+    ksvg
     krunner
     kirigami
     layer-shell-qt

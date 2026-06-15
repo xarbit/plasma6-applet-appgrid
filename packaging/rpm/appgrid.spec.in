@@ -35,6 +35,7 @@ BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-kconfig-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kiconthemes-devel
+BuildRequires:  kf6-ksvg-devel
 BuildRequires:  kf6-kwindowsystem-devel
 BuildRequires:  kf6-kglobalaccel-devel
 BuildRequires:  kf6-krunner-devel
@@ -47,6 +48,7 @@ BuildRequires:  appstream-qt-devel
 Requires:       plasma-workspace
 Requires:       plasma-desktop
 Requires:       kf6-kiconthemes
+Requires:       kf6-ksvg
 
 %description
 A modern application launcher for KDE Plasma. It offers unified
