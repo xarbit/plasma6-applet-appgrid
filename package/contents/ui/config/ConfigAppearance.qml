@@ -107,6 +107,14 @@ KCM.SimpleKCM {
             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
 
+        Kirigami.InlineMessage {
+            visible: !page.isPanel && useThemeBackground.checked
+            Layout.fillWidth: true
+            type: Kirigami.MessageType.Warning
+            text: i18nd("dev.xarbit.appgrid",
+                "Not all themes look right with this enabled. Some, like Emerald, don't behave as expected, so it's a bit hit or miss. If the panel looks off, turn it back off.")
+        }
+
         Item {
             visible: !page.isPanel
             Kirigami.FormData.isSection: true

@@ -115,6 +115,8 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
     });
 }
 
+AppGridPlugin::~AppGridPlugin() = default;
+
 void AppGridPlugin::registerCompactShortcut()
 {
     if (m_compactAction) {
@@ -352,7 +354,45 @@ QRect AppGridPlugin::targetScreenGeometry(bool useActiveScreen)
     return target ? target->geometry() : QRect();
 }
 
-void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius)
+namespace
+{
+// Rounded-rect region (square corners removed, elliptical arcs added) matching
+// the ShadowedRectangle's radius — used in solid-colour mode, where that
+// rectangle is the visible surface.
+QRegion roundedRectRegion(const QRect &r, int radius)
+{
+    const int d = radius * 2;
+    QRegion region(r);
+
+    QRegion corners;
+    corners += QRegion(r.x(), r.y(), radius, radius);
+    corners += QRegion(r.right() + 1 - radius, r.y(), radius, radius);
+    corners += QRegion(r.x(), r.bottom() + 1 - radius, radius, radius);
+    corners += QRegion(r.right() + 1 - radius, r.bottom() + 1 - radius, radius, radius);
+    region -= corners;
+
+    region += QRegion(r.x(), r.y(), d, d, QRegion::Ellipse);
+    region += QRegion(r.right() + 1 - d, r.y(), d, d, QRegion::Ellipse);
+    region += QRegion(r.x(), r.bottom() + 1 - d, d, d, QRegion::Ellipse);
+    region += QRegion(r.right() + 1 - d, r.bottom() + 1 - d, d, d, QRegion::Ellipse);
+
+    return region;
+}
+}
+
+// Mask of the theme's popup-background SVG at @p r — the same shape the panel's
+// FrameSvgItem paints under theme chrome. KWin blurs a hard-edged region, so
+// matching it to the drawn background lets the background's own antialiased
+// corner cover the blur edge (how Plasma's Dialog hides its rectangular blur).
+// Empty if the theme ships no mask, so callers fall back to the rounded rect.
+QRegion AppGridPlugin::themeBackgroundMask(const QRect &r) const
+{
+    KSvg::FrameSvg *frame = themeBackgroundFrame(QStringLiteral("dialogs/background"));
+    frame->resizeFrame(r.size());
+    return frame->mask().translated(r.topLeft());
+}
+
+void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius, bool useThemeMask)
 {
     if (!window) {
         return;
@@ -367,24 +407,16 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
 
     QRegion region;
     if ((enableBlur || enableContrast) && validRect) {
-        // Build a rounded-rect region by subtracting square corners
-        // and adding elliptical arcs.
-        const int diameter = radius * 2;
-        QRegion rect(x, y, w, h);
-
-        QRegion corners;
-        corners += QRegion(x, y, radius, radius);
-        corners += QRegion(x + w - radius, y, radius, radius);
-        corners += QRegion(x, y + h - radius, radius, radius);
-        corners += QRegion(x + w - radius, y + h - radius, radius, radius);
-        rect -= corners;
-
-        rect += QRegion(x, y, diameter, diameter, QRegion::Ellipse);
-        rect += QRegion(x + w - diameter, y, diameter, diameter, QRegion::Ellipse);
-        rect += QRegion(x, y + h - diameter, diameter, diameter, QRegion::Ellipse);
-        rect += QRegion(x + w - diameter, y + h - diameter, diameter, diameter, QRegion::Ellipse);
-
-        region = rect;
+        const QRect rect(x, y, w, h);
+        // Theme chrome: match the blur to the drawn FrameSvg shape so its
+        // antialiased corner covers the blur edge. Fall back to the rounded rect
+        // for solid-colour mode and themes that ship no mask.
+        if (useThemeMask) {
+            region = themeBackgroundMask(rect);
+        }
+        if (region.isEmpty()) {
+            region = roundedRectRegion(rect, radius);
+        }
     }
 
     KWindowEffects::enableBlurBehind(window, enableBlur && validRect, region);
@@ -406,14 +438,30 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
                                              region);
 }
 
+KSvg::FrameSvg *AppGridPlugin::themeBackgroundFrame(const QString &imagePath) const
+{
+    if (!m_themeBackgroundFrame) {
+        m_themeBackgroundFrame = std::make_unique<KSvg::FrameSvg>();
+        m_themeBackgroundFrame->setEnabledBorders(KSvg::FrameSvg::AllBorders);
+    }
+    if (m_themeBackgroundFrame->imagePath() != imagePath) {
+        m_themeBackgroundFrame->setImagePath(imagePath);
+    }
+    return m_themeBackgroundFrame.get();
+}
+
 int AppGridPlugin::themeBackgroundCornerRadius(const QString &imagePath) const
 {
-    KSvg::FrameSvg frame;
-    frame.setImagePath(imagePath);
-    if (!frame.hasElement(QStringLiteral("topleft"))) {
-        return 0;
+    KSvg::FrameSvg *frame = themeBackgroundFrame(imagePath);
+    // The mask prefix carries the theme's rounded shape; some themes draw a
+    // square frame and round purely via that mask. Prefer the mask corner, fall
+    // back to the frame corner.
+    for (const QString &corner : {QStringLiteral("mask-topleft"), QStringLiteral("topleft")}) {
+        if (frame->hasElement(corner)) {
+            return qRound(frame->elementSize(corner).width());
+        }
     }
-    return qRound(frame.elementSize(QStringLiteral("topleft")).width());
+    return 0;
 }
 
 void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)

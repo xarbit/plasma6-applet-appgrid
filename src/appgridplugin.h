@@ -9,11 +9,18 @@
 #include <Plasma/Applet>
 #include <QRect>
 
+#include <memory>
+
 class QAction;
 
 namespace KRunner
 {
 class ResultsModel;
+}
+
+namespace KSvg
+{
+class FrameSvg;
 }
 
 #include "appfiltermodel.h"
@@ -56,6 +63,9 @@ class AppGridPlugin : public Plasma::Applet
 
 public:
     AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
+    // Out-of-line so the unique_ptr<KSvg::FrameSvg> (forward-declared) is
+    // destroyed where the type is complete.
+    ~AppGridPlugin() override;
 
     [[nodiscard]] AppFilterModel *appsModel() const;
     [[nodiscard]] QAbstractItemModel *runnerModel() const;
@@ -78,17 +88,18 @@ public:
     /** Returns the target screen geometry for the overlay (used by QML on X11). */
     Q_INVOKABLE QRect targetScreenGeometry(bool useActiveScreen);
 
-    /** Apply blur + background-contrast effects to a rounded-rect region of
-     *  @p window matching the panel geometry. @p enableBlur and @p enableContrast
-     *  are independent — each can be applied without the other. The contrast
-     *  triple is pulled from the active Plasma theme so each theme controls
-     *  its own look. */
-    Q_INVOKABLE void setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius);
+    /** Apply blur + background-contrast effects to @p window over the panel
+     *  geometry. @p enableBlur and @p enableContrast are independent. When
+     *  @p useThemeMask is set the region is the theme's dialog-background mask
+     *  (matching the drawn FrameSvg, so its antialiased corner covers the blur
+     *  edge); otherwise a rounded rectangle of @p radius. The contrast triple is
+     *  pulled from the active Plasma theme so each theme controls its look. */
+    Q_INVOKABLE void setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius, bool useThemeMask);
 
     /** Corner radius, in pixels, of the @p imagePath FrameSvg in the active
      *  Plasma theme (0 if it ships no rounded corner). The center variant
-     *  queries its theme-background SVG so its shadow, clip and blur line up
-     *  with the drawn chrome under "Use Plasma theme background". */
+     *  queries its theme-background SVG so its blur region lines up with the
+     *  drawn corner under "Use Plasma theme background". */
     Q_INVOKABLE int themeBackgroundCornerRadius(const QString &imagePath) const;
 
     /**
@@ -223,6 +234,13 @@ private:
     // callers can early-out without repeating the bounds check.
     [[nodiscard]] QModelIndex runnerSourceIndex(int proxyIndex) const;
 
+    // Lazily-created, reused FrameSvg for the theme-background queries below, so
+    // the per-frame blur-region updates during a resize don't reconstruct one
+    // each call (the way Plasma's Dialog keeps a single dialogBackground).
+    [[nodiscard]] KSvg::FrameSvg *themeBackgroundFrame(const QString &imagePath) const;
+    // Mask region of the theme background at @p r — see setBackgroundEffects.
+    [[nodiscard]] QRegion themeBackgroundMask(const QRect &r) const;
+
     AppModel m_appModel;
     AppFilterModel m_filterModel;
     KRunner::ResultsModel *m_runnerModel = nullptr;
@@ -235,6 +253,7 @@ private:
     KSharedConfig::Ptr m_krunnerConfig;
     KConfigWatcher::Ptr m_krunnerWatcher;
     QAction *m_compactAction = nullptr;
+    mutable std::unique_ptr<KSvg::FrameSvg> m_themeBackgroundFrame;
 #ifdef APPGRID_UNIVERSAL_BUILD
     mutable UpdateChecker *m_updateChecker = nullptr;
 #endif

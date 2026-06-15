@@ -265,10 +265,10 @@ Kirigami.ShadowedRectangle {
     // (#151). The blur region reads this same `radius` via GridWindow, so the
     // visible panel and its blur stay consistent at every animated height.
     readonly property int maxValidRadius: Math.floor(Math.min(width, height) / 2)
-    // Under theme chrome ThemeChrome draws the SVG corner; match its actual
-    // radius (clamped to the geometric max) so the rounded-rect clip and the
-    // blur region line up with the drawn curve instead of stepping past it on
-    // themes with larger corners (#188).
+    // Under theme chrome ThemeChrome draws the SVG corner; match the blur region
+    // to the theme's radius (clamped to the geometric max) so the frosted area
+    // lines up with the drawn curve instead of stepping past it on themes with
+    // larger corners (#188). The blur region reads this via GridWindow.
     radius: nativePopup ? 0
         : panel.useThemeChrome ? Math.min(themeChrome.cornerRadius, maxValidRadius)
         : Math.min(requestedRadius, maxValidRadius)
@@ -292,8 +292,9 @@ Kirigami.ShadowedRectangle {
                 Kirigami.Theme.textColor, 0.2)
 
     // Layer-shell windows have no WM shadow, so the center variant paints its
-    // own — the theme's dialog shadow (via ThemeChrome) when it ships one, else
-    // this generic ShadowedRectangle shadow as a fallback.
+    // own. ThemeChrome draws the theme's dialog shadow when the theme ships one;
+    // otherwise (solid-colour mode, or a theme without a shadow prefix) this
+    // generic ShadowedRectangle shadow is used, matching the panel's radius.
     shadow.size: nativePopup || themeChrome.hasThemeShadow ? 0 : Kirigami.Units.gridUnit
     shadow.color: nativePopup ? "transparent" : Qt.rgba(0, 0, 0, 0.4)
     shadow.xOffset: 0
@@ -302,9 +303,9 @@ Kirigami.ShadowedRectangle {
     Kirigami.Theme.colorSet: Kirigami.Theme.View
     Kirigami.Theme.inherit: false
 
-    // Theme background + matching shadow for the center variant. Behind the
-    // panel content; supplies the corner radius and shadow presence the chrome
-    // above reads. See ThemeChrome.qml.
+    // Theme background + shadow for the center variant, behind the panel
+    // content. Supplies the corner radius the panel reads for its shadow gate
+    // and blur region. See ThemeChrome.qml.
     ThemeChrome {
         id: themeChrome
         anchors.fill: parent
