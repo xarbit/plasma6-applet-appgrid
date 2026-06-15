@@ -85,6 +85,12 @@ public:
      *  its own look. */
     Q_INVOKABLE void setBackgroundEffects(QWindow *window, bool enableBlur, bool enableContrast, int x, int y, int w, int h, int radius);
 
+    /** Corner radius, in pixels, of the @p imagePath FrameSvg in the active
+     *  Plasma theme (0 if it ships no rounded corner). The center variant
+     *  queries its theme-background SVG so its shadow, clip and blur line up
+     *  with the drawn chrome under "Use Plasma theme background". */
+    Q_INVOKABLE int themeBackgroundCornerRadius(const QString &imagePath) const;
+
     /**
      * Restrict pointer input on @p window to the rectangle (x,y,w,h). The
      * rest of the window becomes pass-through — events fall through to the

@@ -266,10 +266,25 @@ Kirigami.ShadowedRectangle {
     // (#151). The blur region reads this same `radius` via GridWindow, so the
     // visible panel and its blur stay consistent at every animated height.
     readonly property int maxValidRadius: Math.floor(Math.min(width, height) / 2)
-    // When useThemeChrome is on, the SVG owns the visible corner — use the
-    // theme's default so the child clip matches the SVG's drawn curve.
+    // Plasma theme SVG that draws the panel face under theme chrome; shared by
+    // the FrameSvgItem below and the corner-radius query so they never drift.
+    readonly property string themeBackgroundPath: "dialogs/background"
+    // Bumped by the theme FrameSvgItem's repaintNeeded (fired on a live Plasma
+    // theme switch), so themeCornerRadius re-queries the new SVG instead of
+    // keeping the previous theme's corner.
+    property int themeRevision: 0
+    // Under theme chrome the SVG draws the visible corner; match its actual
+    // radius (from the theme, falling back to the Kirigami default) so the
+    // shadow, child clip and blur region all line up with the drawn curve
+    // instead of stepping past it on themes with larger corners (#188).
+    readonly property int themeCornerRadius: {
+        void themeRevision // re-evaluate when the theme changes
+        return useThemeChrome
+            ? (plasmoidBridge.themeBackgroundCornerRadius(themeBackgroundPath) || Kirigami.Units.cornerRadius)
+            : 0
+    }
     radius: nativePopup ? 0
-        : panel.useThemeChrome ? Math.min(Kirigami.Units.cornerRadius, maxValidRadius)
+        : panel.useThemeChrome ? Math.min(themeCornerRadius, maxValidRadius)
         : Math.min(requestedRadius, maxValidRadius)
 
     readonly property real bgOpacity: cfg.effectiveBackgroundOpacity / 100
@@ -310,10 +325,11 @@ Kirigami.ShadowedRectangle {
     // skips this — Plasma's popup framework renders its own chrome around it.
     KSvg.FrameSvgItem {
         anchors.fill: parent
-        imagePath: "dialogs/background"
+        imagePath: panel.themeBackgroundPath
         visible: panel.useThemeChrome
         opacity: panel.bgOpacity
         z: -1
+        onRepaintNeeded: panel.themeRevision++
     }
 
     // Compact mode: wheel toggles the grid while the search field has

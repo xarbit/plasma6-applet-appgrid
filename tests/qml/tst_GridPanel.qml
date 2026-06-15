@@ -147,7 +147,8 @@ TestCase {
             launchAppAction: function(sid, idx) {},
             canManageInDiscover: function(sid) { return false },
             openInDiscover: function(sid) {},
-            listDirectory: function(path) { return [] }
+            listDirectory: function(path) { return [] },
+            themeBackgroundCornerRadius: function(imagePath) { return 0 }
         })
         var obj = c.createObject(null, {
             width: 600,
