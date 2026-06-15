@@ -8,6 +8,10 @@ All notable changes to AppGrid are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- *(header)* Add Hibernate to the header actions (#186)
+
 ### Fixed
 
 - *(categories)* Reserve scroll-arrow space via anchor (#172)margins, not a layout slot
@@ -15,6 +19,20 @@ All notable changes to AppGrid are documented here.
 ### I18n
 
 - Complete the maintainer-owned translations for recent strings
+
+
+## [1.9.1] - 2026-06-15
+
+### Added
+
+- *(theme)* Render the Plasma theme background and shadow for the center variant (#188)
+
+### Fixed
+
+- *(theme)* Match center chrome corners to the Plasma theme background (#188)
+- *(theme)* Draw the theme's dialog shadow under native chrome (#188)
+- *(metainfo)* Drop rc pre-releases from the release list
+- *(icons)* Refresh grid icons on a system icon-theme change
 
 
 ## [1.9.0] - 2026-06-14
