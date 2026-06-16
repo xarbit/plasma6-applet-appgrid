@@ -22,6 +22,7 @@ import "../js/constants.js" as Const
 import "../js/gridmetrics.js" as GridMetrics
 import "../js/prefixmodes.js" as PrefixModes
 import "../js/scale.js" as Scale
+import "../js/devicepixels.js" as DevicePixels
 
 Kirigami.ShadowedRectangle {
     id: panel
@@ -96,6 +97,13 @@ Kirigami.ShadowedRectangle {
     // Defaults to Screen for standalone/test use.
     property real availableWidth: Screen.width
     property real availableHeight: Screen.height
+
+    // Per-window device-pixel ratio used to snap the panel size to the device
+    // grid (#188). The owning GridWindow injects the true fractional ratio
+    // (window->devicePixelRatio(), e.g. 1.75); Screen.devicePixelRatio is the
+    // wrong, integer-clamped value on Wayland. Defaults to Screen for the
+    // standalone/native-popup case, where the size isn't snapped anyway.
+    property real devicePixelRatio: Screen.devicePixelRatio
 
     // -- Sort helpers --
     readonly property bool isSortByCategory: sortMode === 2
@@ -232,13 +240,18 @@ Kirigami.ShadowedRectangle {
     implicitWidth: nativePopup ? panelWidth : 0
     implicitHeight: nativePopup ? panelHeight : 0
 
+    // Snap the size to the device-pixel grid so the panel's painted edges and
+    // the blur region (PanelGeometry snaps it to the same grid) round to the same
+    // device pixels under fractional scaling — otherwise a frosted panel seams on
+    // its far edges (#188). No-op at integer scale. The centred position is
+    // snapped to the same grid by GridWindow.
     Binding on width {
         when: !panel.nativePopup
-        value: Math.min(panel.panelWidth, panel.availableWidth * 0.9)
+        value: DevicePixels.snap(Math.min(panel.panelWidth, panel.availableWidth * 0.9), panel.devicePixelRatio)
     }
     Binding on height {
         when: !panel.nativePopup
-        value: Math.min(panel.effectiveHeight, panel.availableHeight * 0.9)
+        value: DevicePixels.snap(Math.min(panel.effectiveHeight, panel.availableHeight * 0.9), panel.devicePixelRatio)
     }
 
     // Set by on_EmptyHiddenStateChanged to skip the next height Behavior

@@ -385,9 +385,20 @@ QRegion roundedRectRegion(const QRect &r, int radius)
 // matching it to the drawn background lets the background's own antialiased
 // corner cover the blur edge (how Plasma's Dialog hides its rectangular blur).
 // Empty if the theme ships no mask, so callers fall back to the rounded rect.
-QRegion AppGridPlugin::themeBackgroundMask(const QRect &r) const
+//
+// @p devicePixelRatio must be the panel window's ratio. FrameSvg renders the
+// mask at that ratio and scales it back to logical pixels, so its edges land on
+// the same fractional logical coordinates as the painted FrameSvgItem (which
+// takes its ratio from the window). KWindowEffects wants a logical region and
+// KWin rescales it to device pixels itself; if this frame were left at the
+// default ratio of 1, the mask edge and the painted edge would round to
+// different device pixels under fractional scaling — a 1px blur seam that grows
+// toward the bottom-right corner (#188). This mirrors KSvg's FrameSvgItem,
+// which sets the same ratio on its own FrameSvg.
+QRegion AppGridPlugin::themeBackgroundMask(const QRect &r, qreal devicePixelRatio) const
 {
     KSvg::FrameSvg *frame = themeBackgroundFrame(QStringLiteral("dialogs/background"));
+    frame->setDevicePixelRatio(devicePixelRatio);
     frame->resizeFrame(r.size());
     return frame->mask().translated(r.topLeft());
 }
@@ -412,7 +423,7 @@ void AppGridPlugin::setBackgroundEffects(QWindow *window, bool enableBlur, bool 
         // antialiased corner covers the blur edge. Fall back to the rounded rect
         // for solid-colour mode and themes that ship no mask.
         if (useThemeMask) {
-            region = themeBackgroundMask(rect);
+            region = themeBackgroundMask(rect, window->devicePixelRatio());
         }
         if (region.isEmpty()) {
             region = roundedRectRegion(rect, radius);
@@ -462,6 +473,11 @@ int AppGridPlugin::themeBackgroundCornerRadius(const QString &imagePath) const
         }
     }
     return 0;
+}
+
+qreal AppGridPlugin::windowDevicePixelRatio(QWindow *window) const
+{
+    return window ? window->devicePixelRatio() : 1.0;
 }
 
 void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)

@@ -102,6 +102,13 @@ public:
      *  drawn corner under "Use Plasma theme background". */
     Q_INVOKABLE int themeBackgroundCornerRadius(const QString &imagePath) const;
 
+    /** The window's own (per-window) device-pixel ratio. On Wayland fractional
+     *  scaling this is the true ratio (e.g. 1.75), unlike QML's
+     *  Screen.devicePixelRatio which reports the integer-clamped output scale
+     *  (2). The center variant snaps its panel geometry to this so the painted
+     *  edges land on the same device pixels as the blur region (#188). */
+    Q_INVOKABLE qreal windowDevicePixelRatio(QWindow *window) const;
+
     /**
      * Restrict pointer input on @p window to the rectangle (x,y,w,h). The
      * rest of the window becomes pass-through — events fall through to the
@@ -238,8 +245,9 @@ private:
     // the per-frame blur-region updates during a resize don't reconstruct one
     // each call (the way Plasma's Dialog keeps a single dialogBackground).
     [[nodiscard]] KSvg::FrameSvg *themeBackgroundFrame(const QString &imagePath) const;
-    // Mask region of the theme background at @p r — see setBackgroundEffects.
-    [[nodiscard]] QRegion themeBackgroundMask(const QRect &r) const;
+    // Mask region of the theme background at @p r, rendered at @p devicePixelRatio
+    // so its edges match the painted FrameSvgItem — see setBackgroundEffects.
+    [[nodiscard]] QRegion themeBackgroundMask(const QRect &r, qreal devicePixelRatio) const;
 
     AppModel m_appModel;
     AppFilterModel m_filterModel;

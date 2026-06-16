@@ -270,6 +270,13 @@ if(Qt6QuickTest_FOUND)
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/panelgeometry.js
         COPYONLY
     )
+    # panelgeometry.js imports "devicepixels.js"; stage it beside it so the import
+    # resolves under tests/qml/.
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/devicepixels.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/devicepixels.js
+        COPYONLY
+    )
     configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/categoryflatten.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/categoryflatten.js

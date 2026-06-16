@@ -41,4 +41,5 @@ QtObject {
     function setBackgroundEffects(window, blur, contrast, x, y, w, h, radius, useThemeMask) { Plasmoid.setBackgroundEffects(window, blur, contrast, x, y, w, h, radius, useThemeMask) }
     function setInputRect(window, x, y, w, h)              { Plasmoid.setInputRect(window, x, y, w, h) }
     function themeBackgroundCornerRadius(imagePath)       { return Plasmoid.themeBackgroundCornerRadius(imagePath) }
+    function windowDevicePixelRatio(window)               { return Plasmoid.windowDevicePixelRatio(window) }
 }

@@ -83,18 +83,36 @@ Window {
     // Blur management
     // -----------------------------------------------------------------------
 
-    // Geometry of the centered panel within the overlay window, including the
-    // user vertical offset. Shared by the blur region and the drag input rect.
-    function _panelRect() {
-        return PanelGeometry.panelRect(root.width, root.height, panel.width, panel.height,
-                                       root.panelVerticalOffset, panel.compactShift)
+    // Per-window device-pixel ratio — the TRUE fractional ratio on Wayland
+    // (e.g. 1.75), from window->devicePixelRatio(). NOT Screen.devicePixelRatio,
+    // which reports the integer-clamped output scale (2) and would snap the panel
+    // to a different grid than the blur mask (built C++-side with the same
+    // per-window ratio), reintroducing the #188 seam. Refreshed once the surface
+    // has a settled scale (on show and whenever effects re-apply).
+    property real devicePixelRatio: 1
+    function _refreshDevicePixelRatio() {
+        root.devicePixelRatio = root.plasmoidBridge.windowDevicePixelRatio(root)
     }
+    onScreenChanged: _refreshDevicePixelRatio()
+
+    // Geometry of the centered panel within the overlay window, including the
+    // user vertical offset and the compact shift, snapped to the device-pixel
+    // grid. Single source for the blur/contrast region, the drag-out input rect,
+    // and the panel's own placement (the Translate below positions the panel onto
+    // this rect) — so paint and effects round to identical device pixels and a
+    // frosted panel has no fractional-scale seam (#188).
+    readonly property var panelRect: PanelGeometry.panelRect(root.width, root.height,
+        panel.width, panel.height, root.panelVerticalOffset, panel.compactShift, root.devicePixelRatio)
 
     function applyBackgroundEffects() {
+        // Re-read the per-window ratio first: by the time effects apply (post-show
+        // / resize) the Wayland fractional scale has settled, so the panel snap
+        // and the blur region share the same 1.75 grid.
+        _refreshDevicePixelRatio()
         const blur = cfg.effectiveEnableBlur
         const contrast = cfg.effectiveEnableBackgroundContrast
         if ((blur || contrast) && visible) {
-            const r = _panelRect()
+            const r = root.panelRect
             root.plasmoidBridge.setBackgroundEffects(root, blur, contrast, r.x, r.y, r.w, r.h, panel.radius, cfg.useThemeBackground)
         } else {
             root.plasmoidBridge.setBackgroundEffects(root, false, false, 0, 0, 0, 0, 0, false)
@@ -214,6 +232,11 @@ Window {
             root.height = geo.height
         }
 
+        // Pick up the per-window fractional ratio now that the surface is
+        // configured, so the panel animates straight to its device-snapped
+        // position instead of correcting when effects apply.
+        _refreshDevicePixelRatio()
+
         // Delay close-on-deactivate to avoid reconfig race
         closeOnDeactivate = false
         deactivateGuard.start()
@@ -293,7 +316,7 @@ Window {
     // (orientation change, dynamic content) the input rect follows.
     function _applyDragInputRect() {
         if (_dragInFlight) {
-            const r = _panelRect()
+            const r = root.panelRect
             root.plasmoidBridge.setInputRect(root, r.x, r.y, r.w, r.h)
         } else {
             root.plasmoidBridge.setInputRect(root, 0, 0, 0, 0)
@@ -360,11 +383,19 @@ Window {
         // report a placeholder when outputs drop on resume from sleep).
         availableWidth: root.width
         availableHeight: root.height
-        // Static user offset + compact-mode downward shift, kept out of
-        // the anchor system so the open/close animations (which drive
-        // anchors.verticalCenterOffset) are unaffected.
+        // Per-window ratio (1.75), so the panel snaps its size to the same grid
+        // as the blur region — see root.devicePixelRatio.
+        devicePixelRatio: root.devicePixelRatio
+        // Position the centred panel onto the device-pixel-snapped panelRect:
+        // anchors.centerIn lands it at the unsnapped centre, and this Translate
+        // shifts it onto the snapped rect (which already folds in the user
+        // vertical offset and the compact shift) so paint and blur region round
+        // to the same device pixels. Kept a transform so centerIn and the
+        // open/close animations — which drive anchors.verticalCenterOffset — stay
+        // untouched.
         transform: Translate {
-            y: root.panelVerticalOffset + panel.compactShift
+            x: root.panelRect.x - (root.width - panel.width) / 2
+            y: root.panelRect.y - (root.height - panel.height) / 2
         }
         opacity: 0.0
         transformOrigin: Item.Center

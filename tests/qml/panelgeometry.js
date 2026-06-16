@@ -9,6 +9,7 @@
 */
 
 .pragma library
+.import "devicepixels.js" as DevicePixels
 
 // User vertical nudge for the centered panel. percent ∈ [-100, 100] is a
 // fraction of the slack between the full panel and the screen edge, so it
@@ -22,13 +23,21 @@ function verticalOffset(percent, windowHeight, panelHeight) {
 
 // Geometry of the centered panel within the overlay window, including the user
 // vertical offset and the compact-mode downward shift. Shared by the blur
-// region and the drag input rect — keep it the single source.
-function panelRect(windowWidth, windowHeight, panelWidth, panelHeight, vOffset, compactShift) {
-    const w = Math.round(panelWidth)
-    const h = Math.round(panelHeight)
+// region, the drag input rect and the panel's own placement — keep it the single
+// source so the three never drift.
+//
+// Size and position are snapped to the device-pixel grid for @p dpr so the
+// panel's painted edges and the blur region round to the same device pixels
+// under fractional scaling (see devicepixels.js). dpr defaults to 1 (no
+// fractional scaling), where snapping is plain integer rounding — the prior
+// behaviour.
+function panelRect(windowWidth, windowHeight, panelWidth, panelHeight, vOffset, compactShift, dpr) {
+    const ratio = dpr > 0 ? dpr : 1
+    const w = DevicePixels.snap(panelWidth, ratio)
+    const h = DevicePixels.snap(panelHeight, ratio)
     return {
-        x: Math.round((windowWidth - w) / 2),
-        y: Math.round((windowHeight - h) / 2) + vOffset + Math.round(compactShift),
+        x: DevicePixels.snap((windowWidth - w) / 2, ratio),
+        y: DevicePixels.snap((windowHeight - h) / 2 + vOffset + compactShift, ratio),
         w: w,
         h: h,
     }

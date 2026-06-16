@@ -69,4 +69,36 @@ TestCase {
         compare(r.x, 300)   // round((1001-401)/2) = round(300)
         compare(r.y, 265)   // round((800-300)/2)=250 + round(15.4)=15
     }
+
+    // --- device-pixel snapping (#188) ---
+
+    function test_rectDefaultsToIntegerRoundingWithoutDpr() {
+        // Omitting dpr (or passing 1) snaps on a 1px grid = the prior rounding.
+        const a = PanelGeometry.panelRect(1000, 800, 400, 300, 0, 0)
+        const b = PanelGeometry.panelRect(1000, 800, 400, 300, 0, 0, 1)
+        compare(a.x, b.x)
+        compare(a.y, b.y)
+        compare(a.w, b.w)
+        compare(a.h, b.h)
+        compare(a.x, 300)
+    }
+
+    function test_rectSnapsToDeviceGridAtFractionalScale() {
+        // dpr 1.75 → 4px logical grid. Size and centred position snap to it.
+        const r = PanelGeometry.panelRect(1024, 800, 401, 305, 0, 0, 1.75)
+        compare(r.w, 400)   // snap(401) → 400
+        compare(r.h, 304)   // snap(305) → 304
+        compare(r.x, 312)   // snap((1024-400)/2 = 312) → 312
+        compare(r.y, 248)   // snap((800-304)/2 = 248) → 248
+    }
+
+    function test_rectEdgesLandOnIntegerDevicePixels() {
+        // The point of the snap: all four edges are integer device pixels, so the
+        // painted panel and the blur region round identically (no seam).
+        const r = PanelGeometry.panelRect(1023, 801, 533, 407, 37, 11.3, 1.75)
+        verify(Math.abs(r.x * 1.75 - Math.round(r.x * 1.75)) < 1e-6)
+        verify(Math.abs((r.x + r.w) * 1.75 - Math.round((r.x + r.w) * 1.75)) < 1e-6)
+        verify(Math.abs(r.y * 1.75 - Math.round(r.y * 1.75)) < 1e-6)
+        verify(Math.abs((r.y + r.h) * 1.75 - Math.round((r.y + r.h) * 1.75)) < 1e-6)
+    }
 }
