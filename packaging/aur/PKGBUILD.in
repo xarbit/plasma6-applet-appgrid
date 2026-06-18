@@ -28,6 +28,7 @@ depends=(
     'libstdc++'
     'libgcc'
     'kcoreaddons'
+    'kcolorscheme'
     'kconfig'
     'kwindowsystem'
     'kglobalaccel'

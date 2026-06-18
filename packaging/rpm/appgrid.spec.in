@@ -34,6 +34,7 @@ BuildRequires:  kf6-kservice-devel
 BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-kconfig-devel
 BuildRequires:  kf6-kcoreaddons-devel
+BuildRequires:  kf6-kcolorscheme-devel
 BuildRequires:  kf6-kiconthemes-devel
 BuildRequires:  kf6-ksvg-devel
 BuildRequires:  kf6-kwindowsystem-devel
@@ -83,6 +84,8 @@ fi
 %doc README.md
 %{_qt6_plugindir}/plasma/applets/dev.xarbit.appgrid.so
 %{_qt6_plugindir}/plasma/applets/dev.xarbit.appgrid.panel.so
+%{_bindir}/appgrid
+%{_datadir}/applications/dev.xarbit.appgrid.desktop
 %{_metainfodir}/dev.xarbit.appgrid.metainfo.xml
 %{_datadir}/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
 

@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     ki18n
     kconfig
     kcoreaddons
+    kcolorscheme
     kwindowsystem
     kglobalaccel
     kiconthemes
