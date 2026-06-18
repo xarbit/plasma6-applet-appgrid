@@ -60,20 +60,19 @@ KCM.SimpleKCM {
 
         Item { Kirigami.FormData.isSection: true }
 
+        Kirigami.InlineMessage {
+            Layout.fillWidth: true
+            visible: true
+            type: Kirigami.MessageType.Information
+            text: i18nd("dev.xarbit.appgrid",
+                "The AppGrid launcher center variant now runs as its own application (like KRunner), so it can use the desktop's window effects and theming. Because of that, its settings — grid layout, appearance, search and hidden applications — have moved into the launcher's own window.\n\nThis page configures only the panel button shown here: its icon and text label. To change the launcher's settings, open it with the button below, or use the Settings action in the launcher's header.")
+        }
+
         QQC2.Button {
             Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Launcher:")
             text: i18ndc("dev.xarbit.appgrid", "@action:button open the standalone launcher settings window", "Configure Launcher…")
             icon.name: "configure"
             onClicked: Plasmoid.configureStandaloneWindow()
-        }
-
-        QQC2.Label {
-            Layout.fillWidth: true
-            Layout.maximumWidth: Kirigami.Units.gridUnit * 22
-            wrapMode: Text.WordWrap
-            font: Kirigami.Theme.smallFont
-            opacity: 0.7
-            text: i18nd("dev.xarbit.appgrid", "Grid layout, appearance, search and hidden apps are configured in the launcher's own settings window.")
         }
     }
 }
