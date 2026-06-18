@@ -158,27 +158,29 @@ Kirigami.ApplicationWindow {
 
         footer: QQC2.ToolBar {
             // System Settings / KRunner-style action row.
+            // Button order mirrors System Settings / Plasma's own config dialog:
+            // Reset, Defaults on the left; OK, Apply, Cancel on the right.
             RowLayout {
                 anchors.fill: parent
                 spacing: Kirigami.Units.smallSpacing
 
-                QQC2.Button {
-                    text: i18ndc("dev.xarbit.appgrid", "@action:button reset all settings to their defaults", "Defaults")
-                    icon.name: "edit-reset"
-                    enabled: !win.atDefaults
-                    onClicked: win._loadDefaults()
-                }
                 QQC2.Button {
                     text: i18ndc("dev.xarbit.appgrid", "@action:button discard unsaved changes", "Reset")
                     icon.name: "edit-undo"
                     enabled: win.dirty
                     onClicked: win._syncFromLive()
                 }
+                QQC2.Button {
+                    text: i18ndc("dev.xarbit.appgrid", "@action:button reset all settings to their defaults", "Defaults")
+                    icon.name: "edit-reset"
+                    enabled: !win.atDefaults
+                    onClicked: win._loadDefaults()
+                }
                 Item { Layout.fillWidth: true }
                 QQC2.Button {
-                    text: i18ndc("dev.xarbit.appgrid", "@action:button", "Cancel")
-                    icon.name: "dialog-cancel"
-                    onClicked: win.close()
+                    text: i18ndc("dev.xarbit.appgrid", "@action:button apply and close", "OK")
+                    icon.name: "dialog-ok"
+                    onClicked: { if (win.dirty) win._apply(); win.close() }
                 }
                 QQC2.Button {
                     text: i18ndc("dev.xarbit.appgrid", "@action:button apply settings", "Apply")
@@ -187,9 +189,9 @@ Kirigami.ApplicationWindow {
                     onClicked: win._apply()
                 }
                 QQC2.Button {
-                    text: i18ndc("dev.xarbit.appgrid", "@action:button apply and close", "OK")
-                    icon.name: "dialog-ok"
-                    onClicked: { if (win.dirty) win._apply(); win.close() }
+                    text: i18ndc("dev.xarbit.appgrid", "@action:button", "Cancel")
+                    icon.name: "dialog-cancel"
+                    onClicked: win.close()
                 }
             }
         }
