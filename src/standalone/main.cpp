@@ -15,6 +15,7 @@
 #include "appgridcontroller.h"
 #include "appgridstandalone.h"
 
+#include <KAboutData>
 #include <KConfigSkeleton>
 #include <KLocalizedContext>
 #include <KLocalizedString>
@@ -22,6 +23,7 @@
 
 #include <QApplication>
 #include <QEventLoop>
+#include <QIcon>
 #include <QMetaMethod>
 #include <QMetaProperty>
 #include <QQmlApplicationEngine>
@@ -47,17 +49,37 @@ int main(int argc, char *argv[])
     // the QApplication is constructed.
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication app(argc, argv);
-    // Binary name → KWin windowClass "appgrid appgrid". setDesktopFileName ties
-    // the window to the installed .desktop for icon/StartupWMClass matching.
-    app.setApplicationName(QStringLiteral("appgrid"));
-    app.setApplicationDisplayName(QStringLiteral("AppGrid"));
-    app.setDesktopFileName(QStringLiteral("dev.xarbit.appgrid"));
+
+    // Set the translation domain BEFORE building KAboutData: its strings go
+    // through i18n() and must resolve against AppGrid's catalog, not the default.
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral(APPGRID_APP_ID));
+
+    // App metadata for the settings window's About page. The component name is
+    // kept as "appgrid" (not the dev.xarbit.appgrid app id) so setApplicationData
+    // leaves QApplication::applicationName as "appgrid" — KWin derives the
+    // windowClass "appgrid appgrid" from it. setDesktopFileName ties the window
+    // to the installed .desktop for icon / StartupWMClass matching.
+    // Only the description is translatable copy; the product name, author,
+    // copyright line, version and URLs are literal values, not strings to localize.
+    KAboutData about(QStringLiteral("appgrid"),
+                     QStringLiteral("AppGrid"),
+                     QStringLiteral(APPGRID_VERSION),
+                     i18n("A modern centered application grid launcher for KDE Plasma"),
+                     KAboutLicense::GPL_V2,
+                     QStringLiteral("© 2026 AppGrid Contributors"));
+    about.addAuthor(QStringLiteral("Jason Scurtu"));
+    about.setHomepage(QStringLiteral("https://appgrid.xarbit.dev"));
+    about.setBugAddress(QByteArrayLiteral("https://github.com/xarbit/plasma6-applet-appgrid/issues"));
+    about.setDesktopFileName(QStringLiteral("dev.xarbit.appgrid"));
+    KAboutData::setApplicationData(about);
+    // The About page sources its icon from the window icon (the KAboutData
+    // component name "appgrid" has no installed icon — the app icon is named
+    // after the app id). Set it so the page and the window get the real logo.
+    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("dev.xarbit.appgrid")));
     // Stay resident after the launcher window hides (it closes on focus loss),
     // so the process lives on as a daemon a second launch / shortcut can toggle —
     // like KRunner. Without this, hiding the only window would quit the process.
     app.setQuitOnLastWindowClosed(false);
-
-    KLocalizedString::setApplicationDomain(QByteArrayLiteral(APPGRID_APP_ID));
 
     const QStringList appArgs = app.arguments();
     // --configure: open the settings window straight away and skip auto-showing
@@ -208,6 +230,7 @@ int main(int argc, char *argv[])
                 {QStringLiteral("appGridConfig"), QVariant::fromValue(&config)},
                 {QStringLiteral("appGridConfigBuffer"), QVariant::fromValue(&configBuffer)},
                 {QStringLiteral("appGridController"), QVariant::fromValue(&controller)},
+                {QStringLiteral("aboutData"), QVariant::fromValue(KAboutData::applicationData())},
             });
             configEngine->load(QUrl(QStringLiteral("qrc:/qt/qml/appgrid/ConfigWindow.qml")));
         }

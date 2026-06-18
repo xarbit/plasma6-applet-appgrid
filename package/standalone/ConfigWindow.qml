@@ -55,6 +55,8 @@ Kirigami.ApplicationWindow {
     required property var appGridConfig
     required property var appGridConfigBuffer
     required property var appGridController
+    //   aboutData           — KAboutData for the About page
+    required property var aboutData
 
     title: i18nd("dev.xarbit.appgrid", "AppGrid Settings")
     width: Kirigami.Units.gridUnit * 44
@@ -220,6 +222,7 @@ Kirigami.ApplicationWindow {
                         ListElement { label: "Search";         iconName: "system-search" }
                         ListElement { label: "Header Actions"; iconName: "configure-toolbars" }
                         ListElement { label: "Hidden Apps";    iconName: "view-hidden" }
+                        ListElement { label: "About";          iconName: "help-about" }
                     }
                     // Mirrors Plasma's plasmoid-config sidebar (ConfigCategoryDelegate):
                     // a medium icon over a centered, wrapping label, the style's own
@@ -341,6 +344,14 @@ Kirigami.ApplicationWindow {
                         appsModel: appGridController.appsModel
                         revision: win.revision
                     }
+                }
+
+                // ---- About ----
+                // Standard KDE about page, fed the app's KAboutData (set up in
+                // main.cpp). Manages its own scrolling, so it fills the stack
+                // page directly.
+                Kirigami.AboutPage {
+                    aboutData: win.aboutData
                 }
             }
         }
