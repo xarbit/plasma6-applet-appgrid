@@ -244,6 +244,11 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/configbuffer.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/configbuffer.js
+        COPYONLY
+    )
+    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/gridmetrics.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/gridmetrics.js
         COPYONLY

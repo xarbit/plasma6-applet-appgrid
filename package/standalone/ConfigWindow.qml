@@ -39,6 +39,7 @@ import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 
 import "config"
+import "js/configbuffer.js" as ConfigBuffer
 
 Kirigami.ApplicationWindow {
     id: win
@@ -88,60 +89,29 @@ Kirigami.ApplicationWindow {
         "hiddenApps"
     ]
 
-    function _capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
-
     // The live config as this window last saw it (captured on every sync/apply).
     // _apply writes back only the keys the user actually changed against this
-    // baseline, so a concurrent launcher live-write is not clobbered (#4).
+    // baseline, so a concurrent launcher live-write is not clobbered (#4). The
+    // value math lives in configbuffer.js (unit-tested in tst_ConfigBuffer.qml).
     property var _liveBaseline: ({})
 
-    // Deep (value) copy of every editable key off `src`, detaching the
-    // list-valued ones (hiddenApps, headerActions) so the baseline doesn't
-    // alias the live object.
-    function _snapshotKeys(src) {
-        var snap = ({})
-        for (var i = 0; i < _editableKeys.length; ++i) {
-            var k = _editableKeys[i]
-            snap[k] = JSON.parse(JSON.stringify(src[k]))
-        }
-        return snap
-    }
-
     // True when the buffer differs from the live config in any editable key.
-    // Reads both sides so it re-evaluates on any change; JSON.stringify handles
-    // the list-valued keys (hiddenApps, headerActions) that === compares by ref.
+    // Reads both sides + revision so it re-evaluates on any change.
     readonly property bool dirty: {
         void win.revision   // re-check after a bulk copy
-        for (var i = 0; i < _editableKeys.length; ++i) {
-            var k = _editableKeys[i]
-            if (JSON.stringify(appGridConfigBuffer[k]) !== JSON.stringify(appGridConfig[k]))
-                return true
-        }
-        return false
+        return ConfigBuffer.isDirty(appGridConfigBuffer, appGridConfig, _editableKeys)
     }
 
     // True when the buffer already holds every key's default (Defaults disables).
     readonly property bool atDefaults: {
         void win.revision
-        for (var i = 0; i < _editableKeys.length; ++i) {
-            var k = _editableKeys[i]
-            var def = _emptyDefaults.hasOwnProperty(k)
-                ? _emptyDefaults[k]
-                : appGridConfigBuffer["default" + _capitalize(k) + "Value"]
-            if (JSON.stringify(appGridConfigBuffer[k]) !== JSON.stringify(def))
-                return false
-        }
-        return true
+        return ConfigBuffer.atDefaults(appGridConfigBuffer, _editableKeys, _emptyDefaults)
     }
 
     // Copy live -> buffer: the pages start from what is actually saved.
     // Called on open and on Reset (discard staged edits).
     function _syncFromLive() {
-        for (var i = 0; i < _editableKeys.length; ++i) {
-            var k = _editableKeys[i]
-            appGridConfigBuffer[k] = appGridConfig[k]
-        }
-        win._liveBaseline = _snapshotKeys(appGridConfig)
+        win._liveBaseline = ConfigBuffer.syncFromLive(appGridConfigBuffer, appGridConfig, _editableKeys)
         win.revision++
     }
 
@@ -156,13 +126,7 @@ Kirigami.ApplicationWindow {
     // Stage each property's default value in the buffer (Defaults). Not applied
     // to the launcher / persisted until Apply / OK, matching System Settings.
     function _loadDefaults() {
-        for (var i = 0; i < _editableKeys.length; ++i) {
-            var k = _editableKeys[i]
-            if (_emptyDefaults.hasOwnProperty(k))
-                appGridConfigBuffer[k] = _emptyDefaults[k]
-            else
-                appGridConfigBuffer[k] = appGridConfigBuffer["default" + _capitalize(k) + "Value"]
-        }
+        ConfigBuffer.loadDefaults(appGridConfigBuffer, _editableKeys, _emptyDefaults)
         win.revision++
     }
 
@@ -177,11 +141,7 @@ Kirigami.ApplicationWindow {
     // Then re-sync from the now-authoritative live config so the pages and
     // `dirty` reflect both the applied edits and any concurrent change.
     function _apply() {
-        for (var i = 0; i < _editableKeys.length; ++i) {
-            var k = _editableKeys[i]
-            if (JSON.stringify(appGridConfigBuffer[k]) !== JSON.stringify(win._liveBaseline[k]))
-                appGridConfig[k] = appGridConfigBuffer[k]
-        }
+        ConfigBuffer.applyChanged(appGridConfigBuffer, appGridConfig, win._liveBaseline, _editableKeys)
         appGridConfig.save()
         _syncFromLive()   // re-baseline + refresh `dirty` (now false)
     }
