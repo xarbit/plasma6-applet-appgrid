@@ -90,6 +90,9 @@ ColumnLayout {
 
             QQC2.Label {
                 Layout.fillWidth: true
+                // Floor width so the placement + reorder buttons can't squeeze
+                // the action name down to a couple of elided characters (#191).
+                Layout.minimumWidth: Kirigami.Units.gridUnit * 6
                 elide: Text.ElideRight
                 text: root.labels[actionRow.actionId] || actionRow.actionId
                 opacity: actionRow.placement === "off" ? 0.6 : 1.0

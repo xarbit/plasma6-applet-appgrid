@@ -25,16 +25,19 @@ Item {
 
     implicitHeight: column.implicitHeight
 
-    // Centered, capped-width column; content inside it stays left-aligned.
+    // Centered, capped-width column; content inside it stays left-aligned. The
+    // header-action rows are denser than a plain settings form (name + three
+    // placement buttons + two reorder buttons), so this page gets a wider cap so
+    // the action name keeps a readable width instead of eliding away (#191).
     ColumnLayout {
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
-        width: Math.min(parent.width, Kirigami.Units.gridUnit * 22)
+        width: Math.min(parent.width, Kirigami.Units.gridUnit * 32)
         spacing: Kirigami.Units.largeSpacing
 
         HeaderActionsConfig {
             Layout.fillWidth: true
-            Layout.minimumWidth: Kirigami.Units.gridUnit * 18
+            Layout.minimumWidth: Kirigami.Units.gridUnit * 22
             actions: (root.revision, root.configuration.headerActions)
             universalBuild: root.isUniversalBuild
             onEdited: newList => root.configuration.headerActions = newList

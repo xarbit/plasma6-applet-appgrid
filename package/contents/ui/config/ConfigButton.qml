@@ -26,11 +26,27 @@ import "../js/constants.js" as Const
 KCM.SimpleKCM {
     id: page
 
+    // Standard Plasma KCM contract: cfg_<key> per setting drives Apply/Cancel/
+    // Defaults and the KConfigXT flush (#191). The shared Content writes to the
+    // buffer (property names match the keys) so edits stay staged until Apply/OK.
+    property alias cfg_icon: buffer.icon
+    property alias cfg_customButtonImage: buffer.customButtonImage
+    property alias cfg_useCustomButtonImage: buffer.useCustomButtonImage
+    property alias cfg_menuLabel: buffer.menuLabel
+
+    QtObject {
+        id: buffer
+        property string icon
+        property url customButtonImage
+        property bool useCustomButtonImage
+        property string menuLabel
+    }
+
     Kirigami.FormLayout {
         id: form
 
         ConfigButtonContent {
-            configuration: Plasmoid.configuration
+            configuration: buffer
             formFactor: Plasmoid.formFactor
             location: Plasmoid.location
             defaultIcon: Const.PLUGIN_ID_CENTER

@@ -29,6 +29,11 @@ import org.kde.plasma.core as PlasmaCore
 Kirigami.FormLayout {
     id: root
 
+    // Span the host's width so, nested inside another FormLayout (the General
+    // page / the daemon window), the twin label columns align left with the rest
+    // of the form instead of the icon + text-label rows drifting right (#191).
+    Layout.fillWidth: true
+
     // -- Injected context --------------------------------------------------
     property var configuration
     property int formFactor: 0          // PlasmaCore.Types.FormFactor

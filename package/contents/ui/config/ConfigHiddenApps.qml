@@ -4,10 +4,14 @@
 
     Thin Plasma-dialog wrapper around ConfigHiddenAppsContent. The body manages
     its own scrollable list, so an AbstractKCM (no built-in flickable) hosts it
-    and lets it fill the page. Writes go straight to Plasmoid.configuration
-    (live; the cfg_ buffering is gone — acceptable), so the launcher's
-    right-click "Unhide" (which mutates the same Plasmoid.configuration.hiddenApps)
-    updates the list reactively without the page's former Connections re-pull (#162).
+    and lets it fill the page.
+
+    Deliberate exception to the cfg_ buffering restored on the other pages (#191):
+    hiddenApps writes go straight to Plasmoid.configuration (live). This is an
+    action list, not a form — the launcher's right-click "Unhide" mutates the same
+    Plasmoid.configuration.hiddenApps, and the live binding keeps the list in sync
+    reactively without the page's former Connections re-pull (#162). Buffering it
+    would both desync that and risk clobbering a concurrent launcher hide on Apply.
 */
 
 import QtQuick
