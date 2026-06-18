@@ -350,7 +350,11 @@ void AppGridController::positionPanelWindow(QWindow *window, int panelFullHeight
     window->setScreen(target);
     auto *layer = LayerShellQt::Window::get(window);
     layer->setAnchors(LayerShellQt::Window::AnchorTop);
+#ifdef HAVE_LAYERSHELLQT_SETSCREEN
+    // Pin the surface to the chosen output explicitly. On older LayerShellQt
+    // (no setScreen) the surface follows the QWindow::setScreen above instead.
     layer->setScreen(target);
+#endif
 
     // Center the full panel; the user vertical offset is a fraction of the slack
     // between the full panel and the screen edge (PanelGeometry.verticalOffset in

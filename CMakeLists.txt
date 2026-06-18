@@ -133,6 +133,21 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     WindowSystem
 )
 find_package(LayerShellQt REQUIRED)
+# LayerShellQt::Window::setScreen() pins the layer surface to a specific output
+# (multi-monitor positioning). It is newer API — missing on e.g. Ubuntu 25.10's
+# LayerShellQt — so detect it and fall back to QWindow::setScreen() where absent.
+include(CheckCXXSourceCompiles)
+include(CMakePushCheckState)
+cmake_push_check_state()
+set(CMAKE_REQUIRED_LIBRARIES LayerShellQt::Interface)
+check_cxx_source_compiles("
+#include <LayerShellQt/Window>
+int main() { LayerShellQt::Window::get(nullptr)->setScreen(nullptr); return 0; }
+" HAVE_LAYERSHELLQT_SETSCREEN)
+cmake_pop_check_state()
+if(HAVE_LAYERSHELLQT_SETSCREEN)
+    add_compile_definitions(HAVE_LAYERSHELLQT_SETSCREEN)
+endif()
 find_package(Plasma ${PLASMA_MIN_VERSION} REQUIRED)
 find_package(PlasmaQuick ${PLASMA_MIN_VERSION} REQUIRED)
 # Write-side: KActivities::ResourceInstance::notifyAccessed broadcasts AppGrid
