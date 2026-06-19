@@ -22,6 +22,7 @@
 #include <PlasmaQuick/SharedQmlEngine>
 
 #include <QApplication>
+#include <QEvent>
 #include <QEventLoop>
 #include <QIcon>
 #include <QMetaMethod>
@@ -32,6 +33,122 @@
 #include <QQuickWindow>
 #include <QThread>
 #include <QTimer>
+
+namespace
+{
+/**
+ * Keeps the daemon resident like KRunner. When the launcher's layer-shell window
+ * hides as the last window, the Wayland platform posts a QEvent::Quit to
+ * terminate the app — a path setQuitOnLastWindowClosed(false) does not cover, so
+ * the daemon would die and the next launch would cold-start. This filter
+ * swallows that stray Quit; only the explicit D-Bus Quit (an upgrade asking us
+ * to step aside) sets @c allowQuit and lets the process exit.
+ */
+class ResidentQuitGuard : public QObject
+{
+public:
+    bool allowQuit = false;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        if (event->type() == QEvent::Quit && !allowQuit) {
+            return true;
+        }
+        return QObject::eventFilter(watched, event);
+    }
+};
+
+/**
+ * The daemon's settings window. It runs in its OWN QQmlApplicationEngine using
+ * the desktop colour platform (unlike the launcher's Plasma theme), created on
+ * first show() and destroyed the moment it closes — never left hidden, because a
+ * lingering qqc2-desktop-style window crashes when a later launcher hide
+ * re-lays-out its stale style items. Recreated fresh on the next open
+ * (ConfigWindow re-syncs from live on show), so nothing is lost.
+ */
+class SettingsWindow
+{
+public:
+    SettingsWindow(AppGridConfig *config, AppGridConfig *buffer, AppGridController *controller)
+        : m_config(config)
+        , m_buffer(buffer)
+        , m_controller(controller)
+    {
+    }
+
+    ~SettingsWindow()
+    {
+        // Declared after the QApplication in main(), so destroyed before it while
+        // the QQC2 style is still alive — a clean window teardown. Null first: the
+        // delete hides the window, re-entering destroy() via visibleChanged.
+        QQmlApplicationEngine *engine = m_engine;
+        m_engine = nullptr;
+        delete engine;
+    }
+
+    SettingsWindow(const SettingsWindow &) = delete;
+    SettingsWindow &operator=(const SettingsWindow &) = delete;
+
+    void show()
+    {
+        if (!m_engine) {
+            load();
+        }
+        if (QQuickWindow *w = window()) {
+            w->show();
+            w->raise();
+            w->requestActivate();
+        }
+    }
+
+private:
+    [[nodiscard]] QQuickWindow *window() const
+    {
+        if (!m_engine) {
+            return nullptr;
+        }
+        const QList<QObject *> roots = m_engine->rootObjects();
+        return roots.isEmpty() ? nullptr : qobject_cast<QQuickWindow *>(roots.first());
+    }
+
+    void load()
+    {
+        m_engine = new QQmlApplicationEngine;
+        m_engine->rootContext()->setContextObject(new KLocalizedContext(m_engine));
+        // Fail-loud contract: ConfigWindow.qml declares these `required`, so a
+        // missing injection errors at load instead of silently undefined (#6).
+        m_engine->setInitialProperties({
+            {QStringLiteral("appGridConfig"), QVariant::fromValue(m_config)},
+            {QStringLiteral("appGridConfigBuffer"), QVariant::fromValue(m_buffer)},
+            {QStringLiteral("appGridController"), QVariant::fromValue(m_controller)},
+            {QStringLiteral("aboutData"), QVariant::fromValue(KAboutData::applicationData())},
+        });
+        m_engine->load(QUrl(QStringLiteral("qrc:/qt/qml/appgrid/ConfigWindow.qml")));
+        if (QQuickWindow *w = window()) {
+            QObject::connect(w, &QWindow::visibleChanged, m_engine, [this](bool visible) {
+                if (!visible) {
+                    destroy();
+                }
+            });
+        }
+    }
+
+    void destroy()
+    {
+        if (!m_engine) {
+            return;
+        }
+        m_engine->deleteLater();
+        m_engine = nullptr;
+    }
+
+    AppGridConfig *const m_config;
+    AppGridConfig *const m_buffer;
+    AppGridController *const m_controller;
+    QQmlApplicationEngine *m_engine = nullptr;
+};
+}
 
 int main(int argc, char *argv[])
 {
@@ -78,8 +195,12 @@ int main(int argc, char *argv[])
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("dev.xarbit.appgrid")));
     // Stay resident after the launcher window hides (it closes on focus loss),
     // so the process lives on as a daemon a second launch / shortcut can toggle —
-    // like KRunner. Without this, hiding the only window would quit the process.
+    // like KRunner. setQuitOnLastWindowClosed handles the in-process last-window
+    // path; the quit guard below covers the Wayland platform's QEvent::Quit, which
+    // it does not.
     app.setQuitOnLastWindowClosed(false);
+    ResidentQuitGuard quitGuard;
+    app.installEventFilter(&quitGuard);
 
     const QStringList appArgs = app.arguments();
     // --configure: open the settings window straight away and skip auto-showing
@@ -132,7 +253,11 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-    QObject::connect(&standalone, &AppGridStandalone::quitRequested, &app, &QCoreApplication::quit);
+    // The only sanctioned exit: an upgrade's D-Bus Quit. Lift the guard, then quit.
+    QObject::connect(&standalone, &AppGridStandalone::quitRequested, &app, [&app, &quitGuard]() {
+        quitGuard.allowQuit = true;
+        app.quit();
+    });
 
     // Alpha buffer is required for the transparent overlay + blur region. The
     // controller also sets this, but do it here too in case any QML window is
@@ -243,43 +368,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // The settings window loads in its OWN QQmlApplicationEngine — deliberately
-    // without the launcher engine's "_kirigamiTheme=Plasma" — so Kirigami uses
-    // the desktop colour platform (the system colour scheme), themed like a
-    // normal KDE app / KRunner's config, not the dark Plasma desktop theme.
-    QQmlApplicationEngine *configEngine = nullptr;
-    auto showConfigWindow = [&]() {
-        if (!configEngine) {
-            configEngine = new QQmlApplicationEngine(&app);
-            configEngine->rootContext()->setContextObject(new KLocalizedContext(configEngine));
-            // Same fail-loud contract as the launcher engine: ConfigWindow.qml
-            // declares these `required`, so a missing injection errors at load (#6).
-            configEngine->setInitialProperties({
-                {QStringLiteral("appGridConfig"), QVariant::fromValue(&config)},
-                {QStringLiteral("appGridConfigBuffer"), QVariant::fromValue(&configBuffer)},
-                {QStringLiteral("appGridController"), QVariant::fromValue(&controller)},
-                {QStringLiteral("aboutData"), QVariant::fromValue(KAboutData::applicationData())},
-            });
-            configEngine->load(QUrl(QStringLiteral("qrc:/qt/qml/appgrid/ConfigWindow.qml")));
-        }
-        const auto roots = configEngine->rootObjects();
-        if (!roots.isEmpty()) {
-            if (auto *w = qobject_cast<QQuickWindow *>(roots.first())) {
-                w->show();
-                w->raise();
-                w->requestActivate();
-            }
-        }
-    };
+    // Settings window, in its own engine (see SettingsWindow). Declared after the
+    // QApplication so it is torn down before it — a clean QQC2 window teardown.
+    SettingsWindow settings(&config, &configBuffer, &controller);
+
     // Configure (from a plasmoid's "Configure Launcher", or a terminal --configure)
     // retargets the button-edit owner to that plasmoid (empty clears it).
     QObject::connect(&standalone, &AppGridStandalone::configureRequested, &app, [&](const QString &plasmoidId) {
         controller.setButtonTargetId(plasmoidId);
-        showConfigWindow();
+        settings.show();
     });
     // The launcher's own Settings action: open the window keeping the owner set
     // by the Toggle that opened this launcher session.
-    QObject::connect(&standalone, &AppGridStandalone::openSettingsRequested, &app, showConfigWindow);
+    QObject::connect(&standalone, &AppGridStandalone::openSettingsRequested, &app, [&settings]() {
+        settings.show();
+    });
 
     // Launched as "appgrid --configure" (plasmoid, daemon not yet running): open
     // the settings window now. The launcher itself stayed hidden (appGridAutoShow).
