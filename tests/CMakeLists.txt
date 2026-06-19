@@ -64,6 +64,16 @@ add_executable(test_pluginhelpers
 target_link_libraries(test_pluginhelpers PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
 add_test(NAME test_pluginhelpers COMMAND test_pluginhelpers)
 
+# LaunchStateStore depends only on KConfig (KSharedConfig + KConfigWatcher), so
+# a light standalone target like test_pluginhelpers.
+add_executable(test_launchstatestore
+    test_launchstatestore.cpp
+    ${CMAKE_SOURCE_DIR}/src/launchstatestore.cpp
+    ${CMAKE_SOURCE_DIR}/src/launchstatestore.h
+)
+target_link_libraries(test_launchstatestore PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
+add_test(NAME test_launchstatestore COMMAND test_launchstatestore)
+
 # LaunchBookkeeping is a plain value type (QtCore only) — light standalone
 # target like test_pluginhelpers.
 add_executable(test_launchbookkeeping
@@ -236,11 +246,6 @@ if(Qt6QuickTest_FOUND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/searchresultnav.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/searchresultnav.js
-        COPYONLY
-    )
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/launchcounts.js
-        ${CMAKE_CURRENT_SOURCE_DIR}/qml/launchcounts.js
         COPYONLY
     )
     configure_file(

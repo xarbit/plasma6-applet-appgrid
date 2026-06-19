@@ -130,10 +130,6 @@
       <label>When action labels are shown, still hide the text label on the overflow menu button.</label>
       <default>false</default>
     </entry>
-    <entry name="hiddenApps" type="StringList">
-      <label>List of hidden application storage IDs.</label>
-      <default></default>
-    </entry>
     <entry name="favoriteApps" type="StringList">
       <label>List of favorite application storage IDs.</label>
       <default></default>
@@ -170,10 +166,6 @@
       <label>Whether to show recently used applications at the top of the grid.</label>
       <default>true</default>
     </entry>
-    <entry name="recentApps" type="StringList">
-      <label>List of recently launched application storage IDs.</label>
-      <default></default>
-    </entry>
     <entry name="iconSize" type="Int">
       <label>Icon size preset (0=Small, 1=Medium, 2=Large).</label>
       <default>2</default>
@@ -189,14 +181,6 @@
     <entry name="sortMode" type="Int">
       <label>Sort mode (0=Alphabetical, 1=Most Used).</label>
       <default>1</default>
-    </entry>
-    <entry name="launchCounts" type="StringList">
-      <label>Launch counts per application (storageId=count format).</label>
-      <default></default>
-    </entry>
-    <entry name="knownApps" type="StringList">
-      <label>List of known application storage IDs for new-app detection.</label>
-      <default></default>
     </entry>
     <entry name="showCategoryBar" type="Bool">
       <label>Whether to show the category filter bar.</label>

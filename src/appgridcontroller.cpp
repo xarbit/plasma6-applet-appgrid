@@ -82,9 +82,57 @@ AppGridController::AppGridController(QObject *parent)
     });
     QQuickWindow::setDefaultAlphaBuffer(true);
 
+    wireLaunchState();
+
     // Warm the AppStream pool in the background now, so the first right-click
     // "Manage in Discover" check never blocks on a synchronous metadata parse.
     AppStreamResolver::warm();
+}
+
+void AppGridController::wireLaunchState()
+{
+    // The store is the single source of truth (appgridrc, shared by every
+    // variant + the daemon). Mirror it into the model on load and whenever
+    // another process/instance changes the file; mirror the model's own launch
+    // bookkeeping (hide, launch counts, recents) back. The equality guards in
+    // both the model's LaunchBookkeeping and the store's setters break the loop.
+    const auto pull = [this]() {
+        m_filterModel.setHiddenApps(m_launchState.hiddenApps());
+        m_filterModel.setRecentApps(m_launchState.recentApps());
+        m_filterModel.setKnownApps(m_launchState.knownApps());
+        m_filterModel.setLaunchCountsMap(m_launchState.launchCounts());
+    };
+    pull();
+    connect(&m_launchState, &LaunchStateStore::hiddenAppsChanged, &m_filterModel, [this]() {
+        m_filterModel.setHiddenApps(m_launchState.hiddenApps());
+    });
+    connect(&m_launchState, &LaunchStateStore::recentAppsChanged, &m_filterModel, [this]() {
+        m_filterModel.setRecentApps(m_launchState.recentApps());
+    });
+    connect(&m_launchState, &LaunchStateStore::knownAppsChanged, &m_filterModel, [this]() {
+        m_filterModel.setKnownApps(m_launchState.knownApps());
+    });
+    connect(&m_launchState, &LaunchStateStore::launchCountsChanged, &m_filterModel, [this]() {
+        m_filterModel.setLaunchCountsMap(m_launchState.launchCounts());
+    });
+
+    connect(&m_filterModel, &AppFilterModel::hiddenAppsChanged, &m_launchState, [this]() {
+        m_launchState.setHiddenApps(m_filterModel.hiddenApps());
+    });
+    connect(&m_filterModel, &AppFilterModel::recentAppsChanged, &m_launchState, [this]() {
+        m_launchState.setRecentApps(m_filterModel.recentApps());
+    });
+    connect(&m_filterModel, &AppFilterModel::knownAppsChanged, &m_launchState, [this]() {
+        m_launchState.setKnownApps(m_filterModel.knownApps());
+    });
+    connect(&m_filterModel, &AppFilterModel::launchCountsChanged, &m_launchState, [this]() {
+        m_launchState.setLaunchCounts(m_filterModel.launchCountsMap());
+    });
+}
+
+LaunchStateStore *AppGridController::launchState() const
+{
+    return const_cast<LaunchStateStore *>(&m_launchState);
 }
 
 void AppGridController::setLayerScope(const QString &scope)

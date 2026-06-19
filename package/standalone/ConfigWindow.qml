@@ -87,9 +87,10 @@ Kirigami.ApplicationWindow {
         "searchAll", "useExtraRunners", "searchUsesFrecency", "searchShowsHidden",
         "searchInlineCompletion", "showSearchShortcuts",
         // Header Actions
-        "headerActions", "showActionLabels", "hideMenuButtonLabel",
-        // Hidden Apps
-        "hiddenApps"
+        "headerActions", "showActionLabels", "hideMenuButtonLabel"
+        // (Hidden apps are not buffered here — they live in the shared
+        // LaunchStateStore and the Hidden Apps page edits it live, like the
+        // grid's right-click "Hide".)
     ]
 
     // The live config as this window last saw it (captured on every sync/apply).
@@ -169,8 +170,7 @@ Kirigami.ApplicationWindow {
     // public defaultXValue Q_PROPERTY for them (only a private _helper), so read
     // them from this table instead. Values mirror config/main.xml.
     readonly property var _emptyDefaults: ({
-        "terminalShell": "",
-        "hiddenApps": []
+        "terminalShell": ""
     })
 
     // Stage each property's default value in the buffer (Defaults). Not applied
@@ -424,7 +424,9 @@ Kirigami.ApplicationWindow {
                         ConfigHiddenAppsContent {
                             anchors.fill: parent
                             anchors.margins: Kirigami.Units.largeSpacing
-                            configuration: appGridConfigBuffer
+                            // The live model the launcher reads; edits persist to
+                            // the shared LaunchStateStore (appgridrc) via the
+                            // controller, live like the grid's right-click "Hide".
                             appsModel: appGridController.appsModel
                             revision: win.revision
                         }

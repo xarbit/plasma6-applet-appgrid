@@ -42,10 +42,10 @@ function migrateHeaderActions(cfg) {
 function migrateLauncherIcon(cfg) {
     if (cfg.iconMigratedFrom17)
         return
-    const hasPriorState =
-        (cfg.knownApps && cfg.knownApps.length > 0)
-        || (cfg.launchCounts && cfg.launchCounts.length > 0)
-        || (cfg.favoriteApps && cfg.favoriteApps.length > 0)
+    // "Existing user" signal: favourites set before the upgrade. (Hidden/known/
+    // launch state used to be checked too, but it has moved out of the applet
+    // config into the shared LaunchStateStore; favourites remain the marker.)
+    const hasPriorState = cfg.favoriteApps && cfg.favoriteApps.length > 0
     if (hasPriorState && !cfg.useCustomButtonImage && cfg.icon === Const.PLUGIN_ID_CENTER)
         cfg.icon = "start-here-kde-symbolic"
     cfg.iconMigratedFrom17 = true

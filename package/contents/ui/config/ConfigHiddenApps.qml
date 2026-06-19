@@ -7,11 +7,11 @@
     and lets it fill the page.
 
     Deliberate exception to the cfg_ buffering restored on the other pages (#191):
-    hiddenApps writes go straight to Plasmoid.configuration (live). This is an
-    action list, not a form — the launcher's right-click "Unhide" mutates the same
-    Plasmoid.configuration.hiddenApps, and the live binding keeps the list in sync
-    reactively without the page's former Connections re-pull (#162). Buffering it
-    would both desync that and risk clobbering a concurrent launcher hide on Apply.
+    hidden-app writes go straight to the live model (Plasmoid.appsModel), not a
+    buffer. This is an action list, not a form — the launcher's right-click
+    "Unhide" mutates the same model, the live binding keeps the list in sync, and
+    AppGridController persists every change to the shared LaunchStateStore
+    (appgridrc) so the panel and center variants share one hidden-apps list (#191).
 */
 
 import QtQuick
@@ -28,7 +28,6 @@ KCM.AbstractKCM {
     ConfigHiddenAppsContent {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.largeSpacing
-        configuration: Plasmoid.configuration
         appsModel: Plasmoid.appsModel
     }
 }

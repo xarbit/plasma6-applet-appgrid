@@ -92,7 +92,7 @@ TestCase {
         var cfg = {
             iconMigratedFrom17: true,
             icon: "dev.xarbit.appgrid",
-            knownApps: ["x"]
+            favoriteApps: ["x"]
         }
         Migrations.migrateLauncherIcon(cfg)
         compare(cfg.icon, "dev.xarbit.appgrid")
@@ -103,7 +103,7 @@ TestCase {
         // No prior state — user is fresh, let them see the new icon.
         var cfg = {
             icon: "dev.xarbit.appgrid",
-            knownApps: [], launchCounts: [], favoriteApps: []
+            favoriteApps: []
         }
         Migrations.migrateLauncherIcon(cfg)
         compare(cfg.icon, "dev.xarbit.appgrid")
@@ -111,11 +111,11 @@ TestCase {
     }
 
     function test_launcherIconUpgradeFlipsToLegacyDefault() {
-        // Prior state present, icon still at the new default → user
+        // Prior state (favourites) present, icon still at the new default → user
         // never picked one, so pin them to the old default.
         var cfg = {
             icon: "dev.xarbit.appgrid",
-            knownApps: ["firefox.desktop"]
+            favoriteApps: ["firefox.desktop"]
         }
         Migrations.migrateLauncherIcon(cfg)
         compare(cfg.icon, "start-here-kde-symbolic")
@@ -126,7 +126,7 @@ TestCase {
         var cfg = {
             icon: "dev.xarbit.appgrid",
             useCustomButtonImage: true,
-            knownApps: ["firefox.desktop"]
+            favoriteApps: ["firefox.desktop"]
         }
         Migrations.migrateLauncherIcon(cfg)
         compare(cfg.icon, "dev.xarbit.appgrid")
@@ -137,21 +137,22 @@ TestCase {
         // Prior state, icon is something else — user picked it, don't touch.
         var cfg = {
             icon: "applications-other",
-            knownApps: ["firefox.desktop"]
+            favoriteApps: ["firefox.desktop"]
         }
         Migrations.migrateLauncherIcon(cfg)
         compare(cfg.icon, "applications-other")
         verify(cfg.iconMigratedFrom17)
     }
 
-    function test_launcherIconHandlesMissingKnownAppsField() {
-        // Older config snapshot may not carry knownApps at all.
+    function test_launcherIconIgnoresLaunchStateWithoutFavorites() {
+        // Launch state (hidden/known/counts) moved to the shared store, so it is
+        // no longer a prior-state signal: without favourites the new default stays.
         var cfg = {
             icon: "dev.xarbit.appgrid",
-            launchCounts: ["firefox=3"]
+            launchCounts: ["firefox=3"], knownApps: ["firefox.desktop"]
         }
         Migrations.migrateLauncherIcon(cfg)
-        compare(cfg.icon, "start-here-kde-symbolic")
+        compare(cfg.icon, "dev.xarbit.appgrid")
         verify(cfg.iconMigratedFrom17)
     }
 }

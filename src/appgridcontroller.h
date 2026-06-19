@@ -18,6 +18,7 @@ class ResultsModel;
 #include "appfiltermodel.h"
 #include "appmodel.h"
 #include "frecencyprovider.h"
+#include "launchstatestore.h"
 #include "runnerfiltermodel.h"
 #include "unifiedsearchmodel.h"
 
@@ -61,6 +62,9 @@ public:
     explicit AppGridController(QObject *parent = nullptr);
 
     [[nodiscard]] AppFilterModel *appsModel() const;
+    /** The shared launch-state store (appgridrc); the plasmoid uses it to seed
+     *  the store from its old per-applet config on upgrade. */
+    [[nodiscard]] LaunchStateStore *launchState() const;
     [[nodiscard]] QAbstractItemModel *runnerModel() const;
     [[nodiscard]] QObject *runnerSourceModel() const;
     [[nodiscard]] UnifiedSearchModel *searchModel() const;
@@ -226,8 +230,14 @@ private:
     void configureX11(QWindow *window);
 #endif
 
+    // Push the store's lists into the model on load + external change, and the
+    // model's own mutations (hide, launch, recents) back into the store. The
+    // equality guards on both sides stop the round-trip from looping.
+    void wireLaunchState();
+
     AppModel m_appModel;
     AppFilterModel m_filterModel;
+    LaunchStateStore m_launchState;
     KRunner::ResultsModel *m_runnerModel = nullptr;
     RunnerFilterModel m_runnerFilterModel;
     UnifiedSearchModel m_searchModel;

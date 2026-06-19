@@ -42,7 +42,12 @@ PlasmoidItem {
     // "Pin to Task Manager" runs in-process via Kicker (needs this applet/corona).
     TaskManagerPinner { applet: appgrid }
 
-    Component.onCompleted: Migrations.migrateLauncherIcon(Plasmoid.configuration)
+    Component.onCompleted: {
+        Migrations.migrateLauncherIcon(Plasmoid.configuration)
+        // Move this applet's old per-applet hidden/recent/known/launch-count
+        // lists into the shared store, so the panel and center share one list.
+        Plasmoid.migrateLaunchState()
+    }
 
     Plasmoid.icon: Plasmoid.configuration.useCustomButtonImage
         ? Plasmoid.configuration.customButtonImage

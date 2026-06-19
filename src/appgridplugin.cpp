@@ -399,6 +399,18 @@ void AppGridPlugin::migrateConfigToStandalone()
     dst.sync();
 }
 
+void AppGridPlugin::migrateLaunchState()
+{
+    // The applet's old per-applet launch lists live under [Configuration][General]
+    // (the same keys, even though the schema no longer maps them). Hand them to
+    // the store, which seeds only the lists it doesn't already hold.
+    const KConfigGroup src = config().group(QStringLiteral("General"));
+    m_controller.launchState()->migrateFrom(src.readEntry("hiddenApps", QStringList()),
+                                            src.readEntry("recentApps", QStringList()),
+                                            src.readEntry("knownApps", QStringList()),
+                                            src.readEntry("launchCounts", QStringList()));
+}
+
 void AppGridPlugin::toggleStandaloneWindowCompact()
 {
     // Secondary "Open in Compact Mode" shortcut.

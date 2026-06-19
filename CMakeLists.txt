@@ -214,6 +214,8 @@ set(APPGRID_COMMON_SOURCES
     src/searchranking.h
     src/launchbookkeeping.cpp
     src/launchbookkeeping.h
+    src/launchstatestore.cpp
+    src/launchstatestore.h
     src/runnerfiltermodel.cpp
     src/runnerfiltermodel.h
     src/unifiedsearchmodel.cpp

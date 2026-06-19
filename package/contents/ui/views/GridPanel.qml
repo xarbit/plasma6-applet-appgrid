@@ -263,14 +263,14 @@ Kirigami.ShadowedRectangle {
         onTapped: { }
     }
 
-    // The model<->config bridge (push settings into the model, persist the
-    // model's launch bookkeeping back). syncModelFromConfig stays as the public
-    // entry point — the daemon calls it when the settings window edits config.
+    // Pushes the persisted settings into the model. syncModelFromConfig stays as
+    // the public entry point — the daemon calls it when the settings window edits
+    // config. (Launch state — hidden/recent/known/counts — is synced separately
+    // by AppGridController via the shared LaunchStateStore.)
     ModelConfigSync {
         id: modelSync
         appsModel: panel.appsModel
         cfg: cfg
-        configuration: panel.configuration
     }
     function syncModelFromConfig() { modelSync.sync() }
 

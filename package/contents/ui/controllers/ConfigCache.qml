@@ -65,12 +65,10 @@ QtObject {
     readonly property bool hideLabelsOnFavorites: source.hideLabelsOnFavorites
     readonly property bool favoritesPortedToKAstats: source.favoritesPortedToKAstats
 
-    // --- App state (mutated by the panel; read-only here) ---
-
-    readonly property list<string> hiddenApps: source.hiddenApps
-    readonly property list<string> recentApps: source.recentApps
-    readonly property list<string> knownApps: source.knownApps
-    readonly property list<string> launchCounts: source.launchCounts
+    // Hidden / recent / known apps and launch counts are no longer here: that
+    // per-user launch state lives in the shared LaunchStateStore (appgridrc),
+    // synced straight into the model by AppGridController, so every variant and
+    // the daemon share one list. See src/launchstatestore.h.
 
     // --- Search / runners ---
 

@@ -4,9 +4,12 @@
 
     Plasmoid-free body of the Hidden Apps settings page: an info line, a filter
     field, an "Unhide All" button and the scrollable list of hidden apps with a
-    per-row unhide button. Hosts inject `configuration` (read/write) and
-    `appsModel`, then size this ColumnLayout. Value bindings depend on
-    `revision` so a host can force a re-read after revert / load-defaults.
+    per-row unhide button. Hosts inject the live `appsModel` and size this
+    ColumnLayout. The hidden list is read and written straight on the model
+    (appsModel.hiddenApps) — both the panel config dialog (Plasmoid.appsModel)
+    and the daemon settings window (the controller's model) carry the live model,
+    and AppGridController persists every change to the shared LaunchStateStore.
+    Value bindings depend on `revision` so a host can force a re-read.
 
     (The plasmoid wrapper kept "Unhide All" in the ScrollViewKCM page header;
     here it lives inline so the same body works for the daemon window too.)
@@ -24,12 +27,11 @@ ColumnLayout {
     id: root
 
     // -- Injected context --------------------------------------------------
-    property var configuration
     property var appsModel
     property int revision: 0
 
     property string _filter: ""
-    readonly property var _hidden: (root.revision, root.configuration.hiddenApps || [])
+    readonly property var _hidden: (root.revision, (root.appsModel && root.appsModel.hiddenApps) || [])
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -47,11 +49,11 @@ ColumnLayout {
     }
 
     function _unhide(storageId) {
-        var list = root.configuration.hiddenApps.slice()
+        var list = root._hidden.slice()
         var i = list.indexOf(storageId)
         if (i >= 0) {
             list.splice(i, 1)
-            root.configuration.hiddenApps = list
+            root.appsModel.hiddenApps = list
         }
     }
 
@@ -78,7 +80,7 @@ ColumnLayout {
             text: i18nd("dev.xarbit.appgrid", "Unhide All")
             icon.name: "edit-undo"
             enabled: root._hidden.length > 0
-            onClicked: root.configuration.hiddenApps = []
+            onClicked: root.appsModel.hiddenApps = []
         }
     }
 

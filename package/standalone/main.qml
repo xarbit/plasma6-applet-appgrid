@@ -194,7 +194,8 @@ PlasmaCore.Window {
     // categories) when they change. Reactive bindings (blur, grid) self-update.
     property Connections _settingsConn: Connections {
         target: appGridConfig
-        function onHiddenAppsChanged() { panel.syncModelFromConfig() }
+        // Hidden-apps changes flow straight into the model via the shared
+        // LaunchStateStore (AppGridController), so they are not re-synced here.
         function onSortModeChanged() { panel.syncModelFromConfig() }
         function onUseSystemCategoriesChanged() { panel.syncModelFromConfig() }
         function onSortFavoritesAlphabeticallyChanged() { panel.syncModelFromConfig() }
