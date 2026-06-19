@@ -21,6 +21,9 @@ ColumnLayout {
     // updateCheck only exists in universal builds; hide it from the editor
     // on distro builds where the in-app updater isn't compiled in.
     property bool universalBuild: true
+    // header-action id -> available now (#194). An entry that is explicitly false
+    // greys + disables that row; anything absent is treated as available.
+    property var availability: ({})
     signal edited(var newList)
 
     spacing: Kirigami.Units.smallSpacing
@@ -78,15 +81,21 @@ ColumnLayout {
             required property int index
             required property string actionId
             required property string placement
+            // #194: an action the system can't currently do (e.g. hibernate where
+            // it isn't set up) is shown disabled, as a greyed "Off" row with an
+            // info hint. The runtime header already hides it; this stops the
+            // settings page from offering a meaningless toggle.
+            readonly property bool available: root.availability[actionRow.actionId] !== false
+            readonly property string shownPlacement: actionRow.available ? actionRow.placement : "off"
             spacing: Kirigami.Units.smallSpacing
 
             Kirigami.Icon {
                 implicitWidth: Kirigami.Units.iconSizes.smallMedium
                 implicitHeight: Kirigami.Units.iconSizes.smallMedium
                 source: HeaderActions.iconFor(actionRow.actionId)
-                // Greyed when this action is hidden, so the row reads as
-                // "off" at a glance.
-                opacity: actionRow.placement === "off" ? 0.4 : 1.0
+                // Greyed when this action is hidden/unavailable, so the row reads
+                // as "off" at a glance.
+                opacity: actionRow.shownPlacement === "off" ? 0.4 : 1.0
             }
 
             QQC2.Label {
@@ -96,7 +105,17 @@ ColumnLayout {
                 Layout.minimumWidth: Kirigami.Units.gridUnit * 6
                 elide: Text.ElideRight
                 text: root.labels[actionRow.actionId] || actionRow.actionId
-                opacity: actionRow.placement === "off" ? 0.6 : 1.0
+                opacity: !actionRow.available ? 0.4 : (actionRow.shownPlacement === "off" ? 0.6 : 1.0)
+            }
+
+            // Why this row is disabled — only when the system can't do the action.
+            QQC2.ToolButton {
+                visible: !actionRow.available
+                icon.name: "documentinfo"
+                display: QQC2.AbstractButton.IconOnly
+                QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Not available on this system, so the launcher hides it automatically.")
+                QQC2.ToolTip.visible: hovered
+                QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
             // Segmented Bar / Menu / Off placement selector.
@@ -107,8 +126,9 @@ ColumnLayout {
                     delegate: QQC2.Button {
                         required property string modelData
                         text: root.placementLabel[modelData]
-                        flat: actionRow.placement !== modelData
-                        highlighted: actionRow.placement === modelData
+                        enabled: actionRow.available
+                        flat: actionRow.shownPlacement !== modelData
+                        highlighted: actionRow.shownPlacement === modelData
                         onClicked: root._setPlacement(actionRow.index, modelData)
                     }
                 }

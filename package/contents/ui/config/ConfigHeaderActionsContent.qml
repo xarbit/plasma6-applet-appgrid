@@ -25,6 +25,28 @@ Item {
 
     implicitHeight: column.implicitHeight
 
+    // Per-action availability (sleep/hibernate/… the system can't do right now),
+    // so the editor can grey those rows out (#194). The session SPI is loaded
+    // behind a Loader — reusing the launcher's SessionActions bridge — so a host
+    // that can't bring up org.kde.plasma.private.sessions fails this alone and
+    // actionAvailability falls back to all-available: no regression, no crash.
+    Loader {
+        id: sessionLoader
+        source: Qt.resolvedUrl("../controllers/SessionActions.qml")
+    }
+    readonly property var actionAvailability: {
+        const sa = sessionLoader.status === Loader.Ready ? sessionLoader.item : null
+        return sa ? ({
+            "sleep": sa.canSuspend,
+            "hibernate": sa.canHibernate,
+            "restart": sa.canReboot,
+            "shutdown": sa.canShutdown,
+            "lock": sa.canLock,
+            "logout": sa.canLogout,
+            "switchuser": sa.canSwitchUser
+        }) : ({})
+    }
+
     // Centered, capped-width column; content inside it stays left-aligned. The
     // header-action rows are denser than a plain settings form (name + three
     // placement buttons + two reorder buttons), so this page gets a wider cap so
@@ -40,6 +62,7 @@ Item {
             Layout.minimumWidth: Kirigami.Units.gridUnit * 22
             actions: (root.revision, root.configuration.headerActions)
             universalBuild: root.isUniversalBuild
+            availability: root.actionAvailability
             onEdited: newList => root.configuration.headerActions = newList
         }
 
