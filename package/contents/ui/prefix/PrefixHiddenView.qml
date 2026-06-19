@@ -17,7 +17,22 @@ ColumnLayout {
 
     // Persistence is handled by GridPanel listening to
     // AppFilterModel.hiddenAppsChanged — mutate the model and walk away.
-    readonly property var hiddenApps: appsModel ? appsModel.hiddenApps : []
+    //
+    // appsModel is a `var`, so a plain `appsModel.hiddenApps` binding does not
+    // reliably re-fire on the QStringList property's NOTIFY (e.g. a cross-process
+    // hide synced into the model). Re-read explicitly on the signal so the list
+    // tracks live changes from the other variant, not just the grid's row churn.
+    property var hiddenApps: []
+    function _refreshHidden() {
+        hiddenApps = appsModel ? appsModel.hiddenApps : []
+    }
+    Component.onCompleted: _refreshHidden()
+    Connections {
+        target: hiddenView.appsModel
+        function onHiddenAppsChanged() {
+            hiddenView._refreshHidden()
+        }
+    }
 
     anchors.fill: parent
     anchors.margins: Kirigami.Units.largeSpacing * 2
