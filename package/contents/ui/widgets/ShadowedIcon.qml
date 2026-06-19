@@ -19,7 +19,9 @@ import org.kde.kirigami as Kirigami
 Item {
     id: root
 
-    property string source: ""
+    // var, not string: KRunner results hand us a QIcon (Qt::DecorationRole)
+    // rather than an icon-name string, and Kirigami.Icon.source takes either.
+    property var source: ""
     property alias active: icon.active
 
     required property bool shadowEnabled

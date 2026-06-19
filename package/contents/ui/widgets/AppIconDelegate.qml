@@ -18,7 +18,9 @@ Item {
     id: root
 
     property string appName: ""
-    property string appIcon: Const.DEFAULT_ICON
+    // var, not string: a favorite with no entry in our app model (a System
+    // Settings module) falls back to the KAStats QIcon (model.decoration).
+    property var appIcon: Const.DEFAULT_ICON
     property string appGenericName: ""
     property string appComment: ""
     property string installSource: ""
