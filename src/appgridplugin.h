@@ -9,8 +9,6 @@
 #include <QRect>
 #include <QVariantMap>
 
-class QAction;
-
 #include "appgridcontroller.h"
 
 #ifdef APPGRID_UNIVERSAL_BUILD
@@ -146,11 +144,6 @@ public:
      *  window open/close effect, like KRunner. */
     Q_INVOKABLE void toggleStandaloneWindow();
 
-    /** Toggle the daemon's window in compact mode (collapsed to the search bar),
-     *  launching it that way if not running. Wired to the secondary "Open in
-     *  Compact Mode" global shortcut (compactActivated). */
-    Q_INVOKABLE void toggleStandaloneWindowCompact();
-
     /** Open the standalone daemon's settings window (launching the daemon first
      *  if it is not running). Wired to the panel icon's "Configure AppGrid…". */
     Q_INVOKABLE void configureStandaloneWindow();
@@ -178,13 +171,6 @@ public:
     [[nodiscard]] QVariantMap buttonAppearance() const;
 
 Q_SIGNALS:
-    /**
-     * Emitted when the user triggers the secondary "Open in Compact Mode"
-     * global shortcut. Ships unbound; user assigns the key in System
-     * Settings → Keyboard → Shortcuts → AppGrid.
-     */
-    void compactActivated();
-
     /** Pin @p desktopFile to the Task Manager. Handled by the variant's QML
      *  (Kicker ContainmentInterface, which needs this applet). */
     void addToTaskManagerRequested(const QString &desktopFile);
@@ -201,14 +187,6 @@ private:
     // daemon can delegate the in-process Task Manager pin to it.
     void registerPlasmoidService();
 
-    /**
-     * Register the secondary "Open in Compact Mode" global shortcut on this
-     * applet. Deferred from the constructor so the applet's plugin metadata
-     * (the KGlobalAccel component identity) is fully resolved. Called only by
-     * the center variant; the popup variant skips it via m_useNativeActivation.
-     */
-    void registerCompactShortcut();
-
     // Shared trigger for the standalone daemon: call @p dbusMethod on the running
     // instance, or launch the executable with @p launchArgs if it is not running.
     void triggerStandalone(const QString &dbusMethod, const QStringList &launchArgs, const QVariantList &dbusArgs = {});
@@ -217,7 +195,6 @@ private:
     void triggerStandaloneAsOwner(const QString &dbusMethod, const QStringList &extraFlags = {});
 
     AppGridController m_controller;
-    QAction *m_compactAction = nullptr;
     AppGridPlasmoidService *m_plasmoidService = nullptr;
     QVariantMap m_buttonAppearance;
     // Cached result of the running daemon's version probe (see triggerStandalone).

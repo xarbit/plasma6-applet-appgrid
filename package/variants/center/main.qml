@@ -82,8 +82,6 @@ PlasmoidItem {
     Connections {
         target: Plasmoid
         function onActivated() { Plasmoid.toggleStandaloneWindow() }
-        // Secondary "Open in Compact Mode" shortcut → daemon's ToggleCompact.
-        function onCompactActivated() { Plasmoid.toggleStandaloneWindowCompact() }
     }
 
     // Runs the daemon's "Pin to Task Manager" in this applet's process (it has the

@@ -134,7 +134,6 @@ set(PLASMA_MIN_VERSION 6.0)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     Config
     CoreAddons
-    GlobalAccel
     I18n
     IconThemes
     KIO
@@ -186,7 +185,6 @@ set(APPGRID_COMMON_LIBS
     KF6::KIOGui
     KF6::WindowSystem
     KF6::IconThemes
-    KF6::GlobalAccel
     KF6::Svg
     LayerShellQt::Interface
     Plasma::PlasmaQuick
@@ -447,6 +445,17 @@ install(FILES dev.xarbit.appgrid.metainfo.xml
 
 install(FILES dev.xarbit.appgrid.svg
         DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps)
+
+# Global launcher shortcut, plasmoid-independent (#195): kglobalacceld reads this
+# at session start so "Open AppGrid" / "Open in Compact Mode" appear in System
+# Settings → Shortcuts and work without the applet on a panel — KRunner's model.
+# Installed under a DISTINCT component id (…​.launcher) so it does not merge into
+# the plasmoid applet's own component (dev.xarbit.appgrid, which Plasma files
+# under "System Services"); a separate Type=Application component lands the
+# launcher shortcut under "Applications", beside KRunner.
+install(FILES dev.xarbit.appgrid.kglobalaccel.desktop
+        DESTINATION ${KDE_INSTALL_DATAROOTDIR}/kglobalaccel
+        RENAME dev.xarbit.appgrid.launcher.desktop)
 
 # --- Tests ---
 

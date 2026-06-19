@@ -9,17 +9,12 @@
 
 #include <KConfig>
 #include <KConfigGroup>
-#include <KGlobalAccel>
 #include <KIO/CommandLauncherJob>
-#include <KLocalizedString>
-#include <QAction>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusMessage>
 #include <QDBusReply>
 #include <QGuiApplication>
-#include <QIcon>
-#include <QKeySequence>
 #include <QQuickWindow>
 #include <QScreen>
 #include <QTimer>
@@ -46,11 +41,6 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
                     quickItem->setProperty("expanded", false);
                 });
             }
-            // Compact mode is a center-variant feature (the popup variant is
-            // already small + anchored). Registering the shortcut only here also
-            // avoids a two-action contention on the same KGlobalAccel
-            // componentName when both variants are installed or briefly coexist.
-            registerCompactShortcut();
             // Let the standalone daemon delegate its in-process Task Manager pin.
             registerPlasmoidService();
         }
@@ -114,35 +104,6 @@ void AppGridPlugin::registerPlasmoidService()
     // registerService may fail if another center plasmoid already owns the name —
     // harmless: that instance services the daemon's requests.
     bus.registerService(AppGrid::PlasmoidDbus::Service);
-}
-
-void AppGridPlugin::registerCompactShortcut()
-{
-    if (m_compactAction) {
-        return;
-    }
-
-    // componentName + componentDisplayName are KGlobalAccel dynamic properties
-    // (not object identity). Matching the values Plasma uses for its own
-    // applet-activation shortcut (the applet's pluginId + display name) merges
-    // our action into the same group in System Settings → Keyboard, so the user
-    // sees both the primary "open" (owned by Plasma) and "open compact" (owned
-    // by us) shortcuts side-by-side under one AppGrid heading.
-    const auto meta = pluginMetaData();
-    m_compactAction = new QAction(QIcon::fromTheme(meta.iconName()), i18n("Open in Compact Mode"), this);
-    m_compactAction->setObjectName(QStringLiteral("appgrid_open_compact"));
-    m_compactAction->setProperty("componentName", meta.pluginId());
-    m_compactAction->setProperty("componentDisplayName", meta.name());
-
-    // Empty default by design. Any prefab combo (Meta+Space, Alt+Space,
-    // Ctrl+Space, …) collides with input-method engines like IBus / Fcitx5 for
-    // some users. The action is registered with an empty default so the KCM
-    // entry stays visible; user opts in by binding a key they know is free.
-    const QList<QKeySequence> defaults;
-    KGlobalAccel::self()->setDefaultShortcut(m_compactAction, defaults, KGlobalAccel::NoAutoloading);
-    KGlobalAccel::self()->setShortcut(m_compactAction, defaults, KGlobalAccel::Autoloading);
-
-    connect(m_compactAction, &QAction::triggered, this, &AppGridPlugin::compactActivated);
 }
 
 // --- Property forwarders ---
@@ -425,12 +386,6 @@ void AppGridPlugin::migrateLaunchState()
                                             src.readEntry("recentApps", QStringList()),
                                             src.readEntry("knownApps", QStringList()),
                                             src.readEntry("launchCounts", QStringList()));
-}
-
-void AppGridPlugin::toggleStandaloneWindowCompact()
-{
-    // Secondary "Open in Compact Mode" shortcut.
-    triggerStandaloneAsOwner(AppGrid::Dbus::MethodToggleCompact, {AppGrid::Standalone::FlagCompact});
 }
 
 void AppGridPlugin::toggleStandaloneWindow()

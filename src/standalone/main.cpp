@@ -247,10 +247,14 @@ int main(int argc, char *argv[])
             }
         } else {
             // A second launch forwards its intent to the running daemon: open
-            // settings (carrying the origin plasmoid id, empty for a terminal
-            // launch so the binding clears) for --configure, else toggle.
+            // settings for --configure, toggle compact for --compact (the global
+            // shortcut re-launches `appgrid --compact`), else a plain toggle. The
+            // origin plasmoid id (empty for a terminal / shortcut launch) rides
+            // along so the binding clears or retargets to match.
             if (openConfigOnStart) {
                 AppGridStandalone::callConfigureOnRunningInstance(plasmoidId);
+            } else if (startCompact) {
+                AppGridStandalone::callToggleCompactOnRunningInstance(plasmoidId);
             } else {
                 AppGridStandalone::callToggleOnRunningInstance(plasmoidId);
             }

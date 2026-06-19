@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Name=AppGrid
+GenericName=Application Launcher
+Comment=A modern application grid launcher
+Icon=dev.xarbit.appgrid
+Exec=appgrid
+Categories=Utility;
+OnlyShowIn=KDE;
+# kglobalacceld reads this at session start, so the shortcut exists in System
+# Settings -> Shortcuts (under Applications, beside KRunner) even with no plasmoid
+# on a panel; pressing it runs the Exec, which starts/toggles the daemon. Default
+# is Ctrl+Meta+Space: distinct from the Ctrl+Space input-method toggle and from
+# KRunner's Alt+Space, and not a stock Plasma binding. Users rebind freely.
+X-KDE-Shortcuts=Ctrl+Meta+Space
+Actions=Compact;
+
+[Desktop Action Compact]
+Name=Open in Compact Mode
+Exec=appgrid --compact
+# Awkward placeholder so the action registers + shows; bind your own key.
+X-KDE-Shortcuts=Meta+Ctrl+Alt+Shift+G

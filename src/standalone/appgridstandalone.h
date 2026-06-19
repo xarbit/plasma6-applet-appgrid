@@ -38,6 +38,10 @@ public:
      *  launch), which becomes the owner the settings button rows edit. */
     static bool callToggleOnRunningInstance(const QString &plasmoidId = QString());
 
+    /** Ask an already-running primary instance to toggle in compact mode (the
+     *  global "Open in Compact Mode" shortcut re-launching `appgrid --compact`). */
+    static bool callToggleCompactOnRunningInstance(const QString &plasmoidId = QString());
+
     /** Ask an already-running primary instance to open its config window. */
     static bool callConfigureOnRunningInstance(const QString &plasmoidId = QString());
 

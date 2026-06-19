@@ -38,7 +38,6 @@ BuildRequires:  kf6-kcolorscheme-devel
 BuildRequires:  kf6-kiconthemes-devel
 BuildRequires:  kf6-ksvg-devel
 BuildRequires:  kf6-kwindowsystem-devel
-BuildRequires:  kf6-kglobalaccel-devel
 BuildRequires:  kf6-krunner-devel
 BuildRequires:  layer-shell-qt-devel
 BuildRequires:  plasma-activities-devel
@@ -88,6 +87,7 @@ fi
 %{_datadir}/dbus-1/services/dev.xarbit.appgrid.service
 %{_userunitdir}/appgrid.service
 %{_datadir}/applications/dev.xarbit.appgrid.desktop
+%{_datadir}/kglobalaccel/dev.xarbit.appgrid.launcher.desktop
 %{_metainfodir}/dev.xarbit.appgrid.metainfo.xml
 %{_datadir}/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
 

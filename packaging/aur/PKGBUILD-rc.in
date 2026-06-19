@@ -33,7 +33,6 @@ depends=(
     'kcolorscheme'
     'kconfig'
     'kwindowsystem'
-    'kglobalaccel'
     'kcmutils'
     'libplasma'
     'plasma-activities-stats'

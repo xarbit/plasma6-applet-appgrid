@@ -51,6 +51,13 @@ bool AppGridStandalone::callToggleOnRunningInstance(const QString &plasmoidId)
     return QDBusConnection::sessionBus().send(msg);
 }
 
+bool AppGridStandalone::callToggleCompactOnRunningInstance(const QString &plasmoidId)
+{
+    auto msg = QDBusMessage::createMethodCall(serviceName(), objectPath(), interfaceName(), QStringLiteral("ToggleCompact"));
+    msg.setArguments({plasmoidId});
+    return QDBusConnection::sessionBus().send(msg);
+}
+
 bool AppGridStandalone::callConfigureOnRunningInstance(const QString &plasmoidId)
 {
     auto msg = QDBusMessage::createMethodCall(serviceName(), objectPath(), interfaceName(), QStringLiteral("Configure"));
