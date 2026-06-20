@@ -706,6 +706,7 @@ Kirigami.ShadowedRectangle {
                 customHeaderActions: cfg.customHeaderActions
                 commandRunner: panel.plasmoidBridge
                 terminalShell: cfg.terminalShell
+                menuButtonIcon: cfg.menuButtonIcon
                 iconShadow: cfg.iconShadow
                 updateChecker: panel.updateChecker
                 sessionActions: sessionActions

@@ -33,6 +33,8 @@ RowLayout {
     property var commandRunner: null
     // Shell passed to the runner, mirroring the t: prefix (cfg.terminalShell).
     property string terminalShell: ""
+    // Freedesktop icon for the overflow (⋮) menu button; empty → default (#190).
+    property string menuButtonIcon: ""
 
     readonly property var _customLayout: CustomHeaderActions.renderLayout(customHeaderActions)
     readonly property var customBarItems: _customLayout.bar
@@ -174,7 +176,7 @@ RowLayout {
         id: menuButton
         visible: actions.menuItems.length > 0 || actions.customMenuItems.length > 0
         Layout.alignment: Qt.AlignVCenter
-        icon.name: "overflow-menu"
+        icon.name: actions.menuButtonIcon || HeaderActions.MENU_BUTTON_DEFAULT_ICON
         text: actions._menuLabelVisible ? i18nd("dev.xarbit.appgrid", "More") : ""
         display: actions._menuLabelVisible ? PlasmaComponents.AbstractButton.TextBesideIcon
                                            : PlasmaComponents.AbstractButton.IconOnly

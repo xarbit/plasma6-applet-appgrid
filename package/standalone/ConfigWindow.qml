@@ -87,7 +87,7 @@ Kirigami.ApplicationWindow {
         "searchAll", "useExtraRunners", "searchUsesFrecency", "searchShowsHidden",
         "searchInlineCompletion", "showSearchShortcuts",
         // Header Actions
-        "headerActions", "customHeaderActions", "showActionLabels", "hideMenuButtonLabel"
+        "headerActions", "customHeaderActions", "menuButtonIcon", "showActionLabels", "hideMenuButtonLabel"
         // (Hidden apps are not buffered here — they live in the shared
         // LaunchStateStore and the Hidden Apps page edits it live, like the
         // grid's right-click "Hide".)

@@ -16,7 +16,6 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
-import org.kde.iconthemes as KIconThemes
 import org.kde.kirigami as Kirigami
 
 import "../js/customheaderactions.js" as CustomHeaderActions
@@ -99,68 +98,64 @@ ColumnLayout {
             required property string placement
             spacing: Kirigami.Units.smallSpacing
 
-            // Row 1: icon picker + label + delete.
+            // Icon on the left, spanning both field rows; the label and command
+            // fields share one column so they line up at the same left edge.
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.smallSpacing
 
                 // Click the icon to pick one from the system icon browser.
-                QQC2.Button {
-                    flat: true
-                    implicitWidth: Kirigami.Units.iconSizes.medium + Kirigami.Units.smallSpacing * 2
-                    implicitHeight: implicitWidth
-                    onClicked: iconDialog.open()
-                    QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Choose icon (%1)", actionRow.icon || CustomHeaderActions.DEFAULT_ICON)
-                    QQC2.ToolTip.visible: hovered
-                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                IconNamePicker {
+                    Layout.alignment: Qt.AlignTop
+                    iconName: actionRow.icon
+                    fallbackIcon: CustomHeaderActions.DEFAULT_ICON
+                    onPicked: name => root._set(actionRow.index, "icon", name)
+                }
 
-                    Kirigami.Icon {
-                        anchors.centerIn: parent
-                        width: Kirigami.Units.iconSizes.medium
-                        height: width
-                        source: actionRow.icon || CustomHeaderActions.DEFAULT_ICON
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+
+                    // Label + delete.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+                        QQC2.TextField {
+                            Layout.fillWidth: true
+                            text: actionRow.label
+                            placeholderText: i18nd("dev.xarbit.appgrid", "Label")
+                            onTextEdited: root._set(actionRow.index, "label", text)
+                        }
+                        QQC2.ToolButton {
+                            icon.name: "edit-delete"
+                            display: QQC2.AbstractButton.IconOnly
+                            onClicked: root._remove(actionRow.index)
+                            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Remove action")
+                            QQC2.ToolTip.visible: hovered
+                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                        }
                     }
 
-                    KIconThemes.IconDialog {
-                        id: iconDialog
-                        onIconNameChanged: iconName => root._set(actionRow.index, "icon", iconName)
+                    // Command + run-in-terminal + placement.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing
+                        QQC2.TextField {
+                            Layout.fillWidth: true
+                            text: actionRow.command
+                            placeholderText: i18nd("dev.xarbit.appgrid", "Command, e.g. systemctl --user restart plasma-plasmashell")
+                            onTextEdited: root._set(actionRow.index, "command", text)
+                        }
+                        QQC2.CheckBox {
+                            text: i18nd("dev.xarbit.appgrid", "In terminal")
+                            checked: actionRow.runInTerminal
+                            onToggled: root._set(actionRow.index, "runInTerminal", checked)
+                        }
+                        PlacementSelector {
+                            current: actionRow.placement
+                            onPlacementChosen: placement => root._set(actionRow.index, "placement", placement)
+                        }
                     }
-                }
-                QQC2.TextField {
-                    Layout.fillWidth: true
-                    text: actionRow.label
-                    placeholderText: i18nd("dev.xarbit.appgrid", "Label")
-                    onTextEdited: root._set(actionRow.index, "label", text)
-                }
-                QQC2.ToolButton {
-                    icon.name: "edit-delete"
-                    display: QQC2.AbstractButton.IconOnly
-                    onClicked: root._remove(actionRow.index)
-                    QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Remove action")
-                    QQC2.ToolTip.visible: hovered
-                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                }
-            }
-
-            // Row 2: command + run-in-terminal + placement.
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Kirigami.Units.smallSpacing
-
-                QQC2.TextField {
-                    Layout.fillWidth: true
-                    text: actionRow.command
-                    placeholderText: i18nd("dev.xarbit.appgrid", "Command, e.g. systemctl --user restart plasma-plasmashell")
-                    onTextEdited: root._set(actionRow.index, "command", text)
-                }
-                QQC2.CheckBox {
-                    text: i18nd("dev.xarbit.appgrid", "In terminal")
-                    checked: actionRow.runInTerminal
-                    onToggled: root._set(actionRow.index, "runInTerminal", checked)
-                }
-                PlacementSelector {
-                    current: actionRow.placement
-                    onPlacementChosen: placement => root._set(actionRow.index, "placement", placement)
                 }
             }
 

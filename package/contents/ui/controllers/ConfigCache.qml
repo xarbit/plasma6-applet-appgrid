@@ -87,6 +87,7 @@ QtObject {
     readonly property list<string> powerButtonsHidden: source.powerButtonsHidden
     readonly property list<string> headerActions: source.headerActions
     readonly property list<string> customHeaderActions: source.customHeaderActions
+    readonly property string menuButtonIcon: source.menuButtonIcon
     readonly property bool showActionLabels: source.showActionLabels
     readonly property bool hideMenuButtonLabel: source.hideMenuButtonLabel
 

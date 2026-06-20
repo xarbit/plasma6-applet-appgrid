@@ -30,6 +30,7 @@ RowLayout {
     property var customHeaderActions: []
     property var commandRunner: null
     property string terminalShell: ""
+    property string menuButtonIcon: ""
     property bool iconShadow: false
     property var updateChecker: null
     property var sessionActions: null
@@ -87,6 +88,7 @@ RowLayout {
             customHeaderActions: root.customHeaderActions
             commandRunner: root.commandRunner
             terminalShell: root.terminalShell
+            menuButtonIcon: root.menuButtonIcon
             updateChecker: root.updateChecker
             sessionActions: root.sessionActions
             canConfigure: root.canConfigure

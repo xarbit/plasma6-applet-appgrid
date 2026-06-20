@@ -15,6 +15,8 @@ import QtQuick.Layouts
 
 import org.kde.kirigami as Kirigami
 
+import "../js/headeractions.js" as HeaderActions
+
 Item {
     id: root
 
@@ -111,6 +113,32 @@ Item {
             text: i18nd("dev.xarbit.appgrid", "Hide label on the menu button")
             checked: (root.revision, root.configuration.hideMenuButtonLabel)
             onToggled: root.configuration.hideMenuButtonLabel = checked
+        }
+
+        // Custom icon for the overflow (⋮) menu button — useful when every
+        // action is moved into the menu, where the dots read as meaningless (#190).
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.Label {
+                text: i18nd("dev.xarbit.appgrid", "Menu button icon:")
+            }
+            IconNamePicker {
+                iconName: (root.revision, root.configuration.menuButtonIcon)
+                fallbackIcon: HeaderActions.MENU_BUTTON_DEFAULT_ICON
+                onPicked: name => root.configuration.menuButtonIcon = name
+            }
+            QQC2.ToolButton {
+                visible: (root.revision, root.configuration.menuButtonIcon.length > 0)
+                icon.name: "edit-clear"
+                display: QQC2.AbstractButton.IconOnly
+                onClicked: root.configuration.menuButtonIcon = ""
+                QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Reset to default")
+                QQC2.ToolTip.visible: hovered
+                QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
+            Item { Layout.fillWidth: true }
         }
     }
 }

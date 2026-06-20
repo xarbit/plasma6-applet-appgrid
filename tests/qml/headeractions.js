@@ -12,6 +12,11 @@
 */
 .pragma library
 
+// Default freedesktop icon for the overflow (⋮) menu button when the user has
+// not picked a custom one (#190). Shared by the live strip and the settings
+// preview so the two never drift.
+var MENU_BUTTON_DEFAULT_ICON = "overflow-menu";
+
 // Catalogue of arrangeable header actions, in default order + placement.
 // Used to validate ids, seed ids missing from saved config (forward-compat
 // when a later version adds an action), and drive the config UI.
