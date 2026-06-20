@@ -102,4 +102,23 @@ TestCase {
     function test_columnsZeroCellWidthFallsBackToMinimum() {
         compare(GridMetrics.columnsForWidth(650, 0, 3), 3)
     }
+
+    function test_columnsAbsorbSubPixelRounding_data() {
+        return [
+            // A width seeded for exactly N cells but snapped a fraction under
+            // must still yield N, not N-1 (the "set 5, get 4" regression).
+            { tag: "5 cells, 0.6px short", width: 5 * 126 - 0.6, cell: 126, min: 3, cols: 5 },
+            { tag: "6 cells, 1px short",   width: 6 * 126 - 1.0, cell: 126, min: 3, cols: 6 },
+            { tag: "exactly 5 cells",      width: 5 * 126,       cell: 126, min: 3, cols: 5 },
+        ]
+    }
+
+    function test_columnsAbsorbSubPixelRounding(d) {
+        compare(GridMetrics.columnsForWidth(d.width, d.cell, d.min), d.cols)
+    }
+
+    function test_columnsDoNotFalselyGainColumn() {
+        // A genuine ~half cell of extra width must NOT round up to an extra column.
+        compare(GridMetrics.columnsForWidth(5 * 126 + 60, 126, 3), 5)
+    }
 }

@@ -40,5 +40,10 @@ function labelledCellWidth(iconSize, gridUnit, smallSpacing, textScale, reduceSp
 function columnsForWidth(width, cellWidth, minColumns) {
     if (width <= 0 || cellWidth <= 0)
         return minColumns
-    return Math.max(minColumns, Math.floor(width / cellWidth))
+    // The popup is seeded to fit exactly N cells (estCellWidth * columns), but
+    // integer pixel-snapping of the window width can leave the grid a fraction
+    // of a pixel under N * cellWidth, which would floor to N-1 and silently drop
+    // a column versus the configured count. Absorb that rounding with a small
+    // fractional tolerance; gaining a real column still needs ~a full cell more.
+    return Math.max(minColumns, Math.floor(width / cellWidth + 0.02))
 }
