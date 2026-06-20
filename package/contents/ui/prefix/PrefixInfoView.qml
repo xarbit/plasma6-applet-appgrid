@@ -17,7 +17,11 @@ ScrollableColumn {
     property var sharedFavoritesModel: null
 
     // Injected from the boundary (see inner-widget-decoupling-plan.md).
-    required property var sysInfo
+    // A provider function, called once when this view is built (it's only
+    // instantiated on the i: info prefix), so the underlying /proc + os-release
+    // reads stay off the launcher's open path (#200).
+    required property var sysInfoProvider
+    readonly property var sysInfo: infoView.sysInfoProvider ? infoView.sysInfoProvider() : ({})
     required property var updateChecker
     required property bool favoritesPortedToKAstats
     required property list<string> favoriteApps

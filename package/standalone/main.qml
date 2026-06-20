@@ -81,7 +81,7 @@ PlasmaCore.Window {
         plasmoidBridge: appGridController
         updateChecker: appGridController.isUniversalBuild ? appGridController.updateChecker : null
         favoritesClientInstance: Const.FAVORITES_CLIENT_ID
-        sysInfo: appGridController.systemInfo("Standalone")
+        sysInfoProvider: () => appGridController.systemInfo("Standalone")
         onCloseRequested: win.closeWindow()
 
         Component.onCompleted: {

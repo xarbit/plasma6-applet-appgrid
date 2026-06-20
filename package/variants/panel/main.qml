@@ -75,7 +75,7 @@ PlasmoidItem {
             plasmoidBridge: bridge
             updateChecker: Plasmoid.updateChecker
             favoritesClientInstance: Const.FAVORITES_CLIENT_ID
-            sysInfo: Plasmoid.systemInfo()
+            sysInfoProvider: () => Plasmoid.systemInfo()
             opacity: 1.0
             onCloseRequested: appgrid.expanded = false
             // The "settings" header action opens the applet's own Plasma config

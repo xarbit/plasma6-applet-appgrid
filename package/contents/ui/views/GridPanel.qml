@@ -65,7 +65,9 @@ Kirigami.ShadowedRectangle {
 
     // System-info snapshot supplied by the plasmoid root, forwarded to
     // the prefix views (i.e. `i:`).
-    required property var sysInfo
+    // A function returning the system-info map, not the map itself, so the
+    // /proc + os-release reads only run when the i: info view opens (#200).
+    required property var sysInfoProvider
 
     // -- Configuration (single source of truth for all config reads) --
     ConfigCache { id: cfg; source: panel.configuration }
@@ -277,9 +279,11 @@ Kirigami.ShadowedRectangle {
     function syncModelFromConfig() { modelSync.sync() }
 
     Component.onCompleted: {
+        const _t0 = Date.now()
         Migrations.migratePowerButtons(panel.configuration)
         Migrations.migrateHeaderActions(panel.configuration)
         syncModelFromConfig()
+        _perfMark("coldBuild", _t0)
     }
 
     // -- KActivities-backed favorites (always the source of truth) --
@@ -421,8 +425,13 @@ Kirigami.ShadowedRectangle {
         openFolderId = ""
     }
 
+    // Perf instrumentation for the open path (#200). console.debug is silent
+    // unless QML debug logging is on: QT_LOGGING_RULES="qml.debug=true".
+    function _perfMark(label, since) { console.debug("[appgrid.perf]", label, (Date.now() - since), "ms") }
+
     // -- Reset state (called when showing the grid) --
     function resetState() {
+        const _t0 = Date.now()
         contextMenu.close()
         categoryBar.closeCategoryMenu()
         headerActions.closeMenus()
@@ -460,6 +469,7 @@ Kirigami.ShadowedRectangle {
         categoryGridView.resetView()
         _needsScrollToTop = true
         searchBar.field.forceActiveFocus()
+        _perfMark("resetState", _t0)
     }
 
     // Launch routing (single + bulk, the KActivities broadcast, the bulk
@@ -608,7 +618,7 @@ Kirigami.ShadowedRectangle {
                         panel.plasmoidBridge.runCommand(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === PrefixModes.FILES) {
-                        prefixModeView.activateFileCurrent()
+                        prefixModeLoader.item?.activateFileCurrent()
                     } else if (!panel.isPrefixMode) {
                         if (panel.isSearching) {
                             var idx = searchResultsList.currentIndex >= 0 ? searchResultsList.currentIndex : 0
@@ -656,7 +666,7 @@ Kirigami.ShadowedRectangle {
 
                 onMoveDown: {
                     if (panel.prefixMode === PrefixModes.FILES) {
-                        prefixModeView.focusFileList()
+                        prefixModeLoader.item?.focusFileList()
                         return
                     }
                     // Compact mode: first Down reveals the grid and
@@ -762,26 +772,32 @@ Kirigami.ShadowedRectangle {
         }
 
         // -- Prefix mode view --
-        PrefixModeView {
-            id: prefixModeView
+        // Built only when the user actually enters a prefix mode (#200). The
+        // five sub-views (file browser, terminal, info, help, hidden) are rare,
+        // so instantiating them eagerly only weighed down cold open.
+        Loader {
+            id: prefixModeLoader
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: panel.isPrefixMode
-            mode: panel.prefixMode
-            argument: panel.prefixArgument
-            searchField: searchBar.field
-            sharedFavoritesModel: panel.sharedFavoritesModel
-            showScrollbars: cfg.showScrollbars
-            appsModel: panel.appsModel
-            listDirectory: panel.plasmoidBridge.listDirectory
-            sysInfo: panel.sysInfo
-            updateChecker: panel.updateChecker
-            favoritesPortedToKAstats: cfg.favoritesPortedToKAstats
-            favoriteApps: cfg.favoriteApps
-            markUnported: function() { panel.configuration.favoritesPortedToKAstats = false }
-            onFileOpened: panel.closeRequested()
-            onDirectoryNavigated: function(path) {
-                searchBar.text = path
+            active: panel.isPrefixMode
+            visible: active
+            sourceComponent: PrefixModeView {
+                mode: panel.prefixMode
+                argument: panel.prefixArgument
+                searchField: searchBar.field
+                sharedFavoritesModel: panel.sharedFavoritesModel
+                showScrollbars: cfg.showScrollbars
+                appsModel: panel.appsModel
+                listDirectory: panel.plasmoidBridge.listDirectory
+                sysInfoProvider: panel.sysInfoProvider
+                updateChecker: panel.updateChecker
+                favoritesPortedToKAstats: cfg.favoritesPortedToKAstats
+                favoriteApps: cfg.favoriteApps
+                markUnported: function() { panel.configuration.favoritesPortedToKAstats = false }
+                onFileOpened: panel.closeRequested()
+                onDirectoryNavigated: function(path) {
+                    searchBar.text = path
+                }
             }
         }
 

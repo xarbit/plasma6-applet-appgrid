@@ -23,7 +23,7 @@ Item {
     // Per-mode dependencies, forwarded to the individual prefix views.
     required property var appsModel
     required property var listDirectory
-    required property var sysInfo
+    required property var sysInfoProvider
     required property var updateChecker
     required property bool favoritesPortedToKAstats
     required property list<string> favoriteApps
@@ -55,7 +55,7 @@ Item {
         visible: prefixView.mode === PrefixModes.INFO
         sharedFavoritesModel: prefixView.sharedFavoritesModel
         showScrollbars: prefixView.showScrollbars
-        sysInfo: prefixView.sysInfo
+        sysInfoProvider: prefixView.sysInfoProvider
         updateChecker: prefixView.updateChecker
         favoritesPortedToKAstats: prefixView.favoritesPortedToKAstats
         favoriteApps: prefixView.favoriteApps
