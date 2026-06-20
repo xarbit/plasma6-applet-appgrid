@@ -439,12 +439,11 @@ Kirigami.ShadowedRectangle {
         categoryBar.favoritesActive = startFav
         categoryBar.scrollOnlySelected = ""
 
-        // Sync model from config and reset filter state
+        // Sync model from config and reset filter state. Default apps are no
+        // longer re-resolved here (#200): AppFilterModel refreshes them on
+        // KSycoca / kdeglobals change, so the open path stays cheap.
         syncModelFromConfig()
         if (appsModel) {
-            // Re-read the default terminal/browser + mime defaults so a change
-            // since the last open boosts the new default while searching.
-            appsModel.reloadDefaultApps()
             appsModel.searchText = ""
             appsModel.filterCategory = ""
             appsModel.showFavoritesOnly = startFav

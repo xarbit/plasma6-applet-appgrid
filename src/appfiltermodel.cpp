@@ -8,10 +8,20 @@
 #include "defaultappsresolver.h"
 #include "searchranking.h"
 
+#include <KConfigGroup>
 #include <KIconLoader>
+#include <KSharedConfig>
+#include <KSycoca>
+
+#include <QElapsedTimer>
+#include <QLoggingCategory>
 
 #include <cstdlib>
 #include <limits>
+
+// Off by default; enable with QT_LOGGING_RULES="appgrid.perf.debug=true" to time
+// the per-refresh cost of resolving the role defaults (#200).
+Q_LOGGING_CATEGORY(lcPerf, "appgrid.perf", QtWarningMsg)
 
 // Re-run only the filter (not the sort). Qt 6.13 replaced invalidateFilter()
 // with begin/endFilterChange(); bridge both without leaking a deprecation
@@ -39,6 +49,20 @@ AppFilterModel::AppFilterModel(QObject *parent)
     sort(0);
 
     reloadDefaultApps();
+
+    // Refresh the role defaults on change instead of re-resolving them on every
+    // popup open (#200): DefaultAppsResolver::resolve() runs full KApplicationTrader
+    // service-DB scans, far too costly for the open path. KSycoca::databaseChanged
+    // covers app install/removal and the mimeapps default set; the kdeglobals
+    // watcher below covers the terminal override the KCM writes there.
+    connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppFilterModel::reloadDefaultApps);
+
+    m_kdeglobalsWatcher = KConfigWatcher::create(KSharedConfig::openConfig(QStringLiteral("kdeglobals")));
+    connect(m_kdeglobalsWatcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &group, const QByteArrayList &) {
+        if (group.name() == QLatin1String("General")) {
+            reloadDefaultApps();
+        }
+    });
 
     // countChanged: modelReset covers invalidate() / setSourceModel; the row
     // signals cover incremental row insertion/removal. Earlier code also
@@ -454,12 +478,16 @@ bool AppFilterModel::useSystemCategories() const
 
 void AppFilterModel::setUseSystemCategories(bool enabled)
 {
+    // Change-detect so a re-sync on every popup open (ModelConfigSync.sync())
+    // doesn't re-emit categoriesChanged() and rebuild the QML category bar when
+    // nothing changed (#200).
     auto *src = qobject_cast<AppModel *>(sourceModel());
-    if (src) {
-        src->setUseSystemCategories(enabled);
-        Q_EMIT useSystemCategoriesChanged();
-        Q_EMIT categoriesChanged();
+    if (!src || src->useSystemCategories() == enabled) {
+        return;
     }
+    src->setUseSystemCategories(enabled);
+    Q_EMIT useSystemCategoriesChanged();
+    Q_EMIT categoriesChanged();
 }
 
 int AppFilterModel::getLaunchCount(const QString &storageId) const
@@ -531,6 +559,9 @@ void AppFilterModel::setDefaultApps(const QStringList &list)
 
 void AppFilterModel::reloadDefaultApps()
 {
+    QElapsedTimer timer;
+    timer.start();
+
     // DefaultAppsResolver reads every source (mimeapps, KApplicationTrader,
     // kdeglobals). setDefaultApps already change-detects + re-sorts + notifies
     // for the broad default set; handle the preferred (role-default) set here.
@@ -541,6 +572,8 @@ void AppFilterModel::reloadDefaultApps()
         invalidateRowScoreCache(); // cached isPreferred changed
         invalidate();
     }
+
+    qCDebug(lcPerf) << "reloadDefaultApps resolved" << resolved.defaults.size() << "defaults in" << timer.nsecsElapsed() / 1000 << "us";
 }
 
 void AppFilterModel::recordLaunch(const QString &storageId)

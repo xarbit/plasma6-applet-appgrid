@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <KConfigWatcher>
+
 #include <QHash>
 #include <QSet>
 #include <QSortFilterProxyModel>
@@ -230,6 +232,10 @@ private:
     // manager via KApplicationTrader, terminal via kdeglobals). Outrank the
     // broader mimeapps defaults in the search tiebreak.
     QSet<QString> m_preferredAppsSet;
+    // Refreshes the role defaults when kdeglobals' terminal override changes
+    // (the one default-app input KSycoca doesn't notify), so the open path
+    // never has to re-resolve them (#200).
+    KConfigWatcher::Ptr m_kdeglobalsWatcher;
 
     // Hidden / favorite / recent / known lists, launch counts, and the
     // derived membership sets + favorite-position index consulted by
