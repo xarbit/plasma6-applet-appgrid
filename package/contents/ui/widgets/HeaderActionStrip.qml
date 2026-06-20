@@ -195,7 +195,7 @@ RowLayout {
 
         onClicked: if (!menuButton._menuJustClosed) overflow.open()
 
-        PlasmaComponents.Menu {
+        AppGridMenu {
             id: overflow
             y: menuButton.height
             x: menuButton.width - width

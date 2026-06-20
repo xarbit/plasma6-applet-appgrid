@@ -12,7 +12,7 @@ import QtQuick
 
 import org.kde.plasma.components as PlasmaComponents
 
-PlasmaComponents.Menu {
+AppGridMenu {
     id: root
 
     title: i18nd("dev.xarbit.appgrid", "Add to Folder")

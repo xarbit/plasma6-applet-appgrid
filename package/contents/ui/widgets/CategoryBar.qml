@@ -759,7 +759,7 @@ RowLayout {
     }
 
     // -- Category context menu (system categories mode only) --
-    PlasmaComponents.Menu {
+    AppGridMenu {
         id: catContextMenu
         property string categoryName: ""
 

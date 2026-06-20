@@ -311,7 +311,7 @@ Item {
     // sidesteps QtQuick.Dialogs / Clipboard plugin imports.
     TextEdit { id: bulkPathClipboard; visible: false }
 
-    PlasmaComponents.Menu {
+    AppGridMenu {
         id: singleMenu
 
         onAboutToHide: contextMenu._trackClose()
@@ -434,7 +434,7 @@ Item {
         }
     }
 
-    PlasmaComponents.Menu {
+    AppGridMenu {
         id: bulkMenu
 
         onAboutToHide: contextMenu._trackClose()
@@ -527,7 +527,7 @@ Item {
 
     // Folder cell actions (issue #18). Right-clicking a folder in the favourites
     // grid; "Ungroup" returns its members to loose favourites.
-    PlasmaComponents.Menu {
+    AppGridMenu {
         id: folderMenu
 
         PlasmaComponents.MenuItem {
@@ -609,7 +609,7 @@ Item {
     }
 
     // Right-click on empty favourites space: create a new (empty) folder (#18).
-    PlasmaComponents.Menu {
+    AppGridMenu {
         id: emptyAreaMenu
         PlasmaComponents.MenuItem {
             icon.name: "folder-new"
@@ -622,15 +622,8 @@ Item {
     // KRunner secondary actions (e.g. calculator "Copy result"). Same menu
     // owner as the app context menus so bounds/padding/close-tracking fixes
     // apply once.
-    PlasmaComponents.Menu {
+    AppGridMenu {
         id: runnerMenu
-
-        // PlasmaComponents.Menu defaults to max(background.implicitHeight,
-        // content) + padding so a KSvg-frame minimum bleeds through as
-        // dead space for short menus; force content-driven sizing here,
-        // the app menus stay tall enough on their own that they don't
-        // need this.
-        implicitHeight: contentItem.implicitHeight + topPadding + bottomPadding
 
         onAboutToHide: contextMenu._trackClose()
         onAboutToShow: contextMenu._stopMenuBounce(runnerMenu)
