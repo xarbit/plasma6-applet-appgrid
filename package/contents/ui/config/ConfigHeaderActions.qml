@@ -17,12 +17,14 @@ KCM.SimpleKCM {
     id: page
 
     property alias cfg_headerActions: buffer.headerActions
+    property alias cfg_customHeaderActions: buffer.customHeaderActions
     property alias cfg_showActionLabels: buffer.showActionLabels
     property alias cfg_hideMenuButtonLabel: buffer.hideMenuButtonLabel
 
     QtObject {
         id: buffer
         property var headerActions
+        property var customHeaderActions
         property bool showActionLabels
         property bool hideMenuButtonLabel
     }

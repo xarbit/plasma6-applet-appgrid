@@ -58,6 +58,10 @@
       <label>Whether the legacy powerButtonOrder/powerButtonsHidden config has been folded into headerActions.</label>
       <default>false</default>
     </entry>
+    <entry name="customHeaderActions" type="StringList">
+      <label>User-defined header actions (#196), one JSON object per entry: { id, label, icon, command, runInTerminal, placement }. Each runs a user command, optionally in the configured terminal, and carries its own placement (bar, menu, or off). Appended after the built-in header actions.</label>
+      <default></default>
+    </entry>
     <entry name="showScrollbars" type="Bool">
       <label>Whether to show scrollbars in the grid and search views.</label>
       <default>false</default>

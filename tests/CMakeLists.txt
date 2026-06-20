@@ -268,6 +268,11 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/customheaderactions.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/customheaderactions.js
+        COPYONLY
+    )
+    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/searchresultnav.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/searchresultnav.js
         COPYONLY

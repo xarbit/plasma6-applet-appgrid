@@ -39,12 +39,6 @@ ColumnLayout {
         "switchuser": i18nd("dev.xarbit.appgrid", "Switch User"),
         "settings": i18nd("dev.xarbit.appgrid", "Settings")
     })
-    readonly property var placementOrder: ["bar", "menu", "off"]
-    readonly property var placementLabel: ({
-        "bar": i18nd("dev.xarbit.appgrid", "Bar"),
-        "menu": i18nd("dev.xarbit.appgrid", "Menu"),
-        "off": i18nd("dev.xarbit.appgrid", "Off")
-    })
 
     ListModel { id: actionModel }
 
@@ -118,20 +112,10 @@ ColumnLayout {
                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            // Segmented Bar / Menu / Off placement selector.
-            RowLayout {
-                spacing: 0
-                Repeater {
-                    model: root.placementOrder
-                    delegate: QQC2.Button {
-                        required property string modelData
-                        text: root.placementLabel[modelData]
-                        enabled: actionRow.available
-                        flat: actionRow.shownPlacement !== modelData
-                        highlighted: actionRow.shownPlacement === modelData
-                        onClicked: root._setPlacement(actionRow.index, modelData)
-                    }
-                }
+            PlacementSelector {
+                current: actionRow.shownPlacement
+                enabled: actionRow.available
+                onPlacementChosen: placement => root._setPlacement(actionRow.index, placement)
             }
 
             QQC2.ToolButton {

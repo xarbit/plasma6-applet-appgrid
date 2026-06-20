@@ -695,6 +695,9 @@ Kirigami.ShadowedRectangle {
                 showActionLabels: cfg.showActionLabels
                 hideMenuButtonLabel: cfg.hideMenuButtonLabel
                 headerActions: cfg.headerActions
+                customHeaderActions: cfg.customHeaderActions
+                commandRunner: panel.plasmoidBridge
+                terminalShell: cfg.terminalShell
                 iconShadow: cfg.iconShadow
                 updateChecker: panel.updateChecker
                 sessionActions: sessionActions

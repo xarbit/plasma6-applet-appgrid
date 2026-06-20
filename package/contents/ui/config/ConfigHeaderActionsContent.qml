@@ -75,6 +75,29 @@ Item {
                 "Bar actions appear directly in the launcher header; Menu actions go behind a single ⋮ button (hidden when empty); Off hides the action.")
         }
 
+        Kirigami.Separator { Layout.fillWidth: true }
+
+        QQC2.Label {
+            Layout.fillWidth: true
+            text: i18nd("dev.xarbit.appgrid", "Custom actions")
+            font.bold: true
+        }
+        QQC2.Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            font: Kirigami.Theme.smallFont
+            opacity: 0.7
+            text: i18nd("dev.xarbit.appgrid",
+                "Run your own command from the header — for example to restart the shell. Enable \"In terminal\" for commands that need a terminal window; it uses the launcher's configured shell.")
+        }
+
+        CustomHeaderActionsEditor {
+            Layout.fillWidth: true
+            entries: (root.revision, root.configuration.customHeaderActions)
+            reloadToken: root.revision
+            onEdited: newList => root.configuration.customHeaderActions = newList
+        }
+
         QQC2.CheckBox {
             id: showActionLabels
             text: i18nd("dev.xarbit.appgrid", "Show labels on header buttons")

@@ -26,6 +26,10 @@ RowLayout {
     property bool showActionLabels: false
     property bool hideMenuButtonLabel: false
     property var headerActions: []
+    // Custom user actions (#196): raw config list + a command runner + shell.
+    property var customHeaderActions: []
+    property var commandRunner: null
+    property string terminalShell: ""
     property bool iconShadow: false
     property var updateChecker: null
     property var sessionActions: null
@@ -80,6 +84,9 @@ RowLayout {
             showActionLabels: root.showActionLabels
             hideMenuButtonLabel: root.hideMenuButtonLabel
             headerActions: root.headerActions
+            customHeaderActions: root.customHeaderActions
+            commandRunner: root.commandRunner
+            terminalShell: root.terminalShell
             updateChecker: root.updateChecker
             sessionActions: root.sessionActions
             canConfigure: root.canConfigure
