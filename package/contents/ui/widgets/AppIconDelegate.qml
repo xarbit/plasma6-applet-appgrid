@@ -168,6 +168,13 @@ Item {
         visible: root._isFoldTarget
     }
 
+    // The app icon's rect in this delegate's coordinates — the fold target zone
+    // for drag-to-folder (#200): dropping a favourite onto the icon merges, the
+    // rest of the cell reorders.
+    readonly property rect iconRect: Qt.rect(contentLayout.x + iconCell.x,
+                                             contentLayout.y + iconCell.y,
+                                             iconCell.width, iconCell.height)
+
     // Icon + label, sized to its content and centred vertically in the cell.
     // The cell height budget (gridmetrics) is slightly taller than two text
     // lines; centring splits that slack evenly top/bottom instead of pooling
@@ -182,6 +189,7 @@ Item {
         spacing: Kirigami.Units.smallSpacing
 
         Item {
+            id: iconCell
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: root.iconSize
             implicitHeight: root.iconSize
@@ -207,7 +215,9 @@ Item {
                 // No icon brighten — hover is shown by the Rectangle above (#106).
                 active: false
                 transformOrigin: Item.Center
-                opacity: parent._showRemoveMarker ? 0.25 : 1.0
+                // Dimmed under the ✕ remove marker; fully hidden under the
+                // folder-merge marker, which replaces the icon outright.
+                opacity: root._isFoldTarget ? 0 : (parent._showRemoveMarker ? 0.25 : 1.0)
             }
 
             Kirigami.Icon {
@@ -217,6 +227,15 @@ Item {
                 visible: parent._showRemoveMarker
                 source: "edit-delete-remove"
                 color: Kirigami.Theme.negativeTextColor
+            }
+
+            // Folder-merge marker: a favourite dwelled on this icon long enough to
+            // arm a fold (#200) — replaces the icon, pops to confirm.
+            FoldMarker {
+                width: root.iconSize
+                height: root.iconSize
+                visible: root._isFoldTarget
+                source: "folder-new"
             }
 
             // "New" badge dot
@@ -274,7 +293,11 @@ Item {
 
     MouseArea {
         id: delegateMouse
+        // Match the highlight inset (above) rather than filling the whole cell, so
+        // hover/select only react over the visible highlight and the gap between
+        // tiles is neutral — a clearer target for drop-between reordering (#200).
         anchors.fill: parent
+        anchors.margins: Kirigami.Units.smallSpacing
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: (pointerDrag.active || touchDrag.active)

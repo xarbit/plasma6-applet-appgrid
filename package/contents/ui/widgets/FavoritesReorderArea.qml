@@ -63,23 +63,31 @@ DropArea {
     // app) or adds to it (onto a folder); the thin outer edges reorder instead.
     // Only an app source folds; a folder source reorders only.
     property int _foldCandidate: -1
-    // Both single and multi drags can fold onto a centre; a folder source can't.
+    // Spring-loaded fold: the cursor must dwell this long over a target's icon
+    // before the fold arms, so a quick pass-over keeps reordering and only a
+    // deliberate pause merges (Dolphin/Kickoff spring-loaded folders).
+    readonly property int foldDwellMs: 500
+    // Both single and multi drags can fold onto an icon; a folder source can't.
     readonly property bool _canFold: _grouped && _sourceId.length > 0 && _source.sourceFolderId.length === 0
-    // Half-extent of the central fold band, as a fraction of the cell: inside it
-    // a drop folds, past it (the far side) reorders.
-    readonly property real _foldZoneHalf: 0.35
 
-    // Classify the cursor over target cell @p targetIdx relative to the dragged
-    // source cell @p sourceIdx, along the direction of travel:
-    //   0 none   — still approaching the target's near side, do nothing
-    //   1 fold   — over the small central band, arm a fold
-    //   2 reorder — moved past the centre to the far side, reflow (swap) live
-    // A small fold band means you must land on the icon to fold; pushing past it
-    // reorders, matching "reflow only once you pass the icon".
-    function _foldZone(pos, targetIdx, sourceIdx) {
+    // Classify the cursor @p pos (contentItem coords) over target cell @p targetIdx,
+    // given the dragged source cell @p sourceIdx (#200):
+    //   0 none   — approaching the target's icon, do nothing (keeps the icon
+    //              reachable; without this, entering the cell edge swaps first and
+    //              the icon slides away before you reach it)
+    //   1 fold   — over the icon (or anywhere on a folder cell) → merge
+    //   2 reorder — moved past the icon along the travel direction → swap live
+    function _dragZone(pos, targetIdx, sourceIdx) {
         const t = gridView.itemAtIndex(targetIdx)
         if (!t)
             return 0
+        const fr = t.foldRect
+        const fx = t.x + fr.x
+        const fy = t.y + fr.y
+        if (pos.x >= fx && pos.x <= fx + fr.width && pos.y >= fy && pos.y <= fy + fr.height)
+            return 1
+        // Direction of travel, source → target. Falls back to a horizontal
+        // default when the source item is recycled mid-drag (off-screen).
         const tcx = t.x + t.width / 2
         const tcy = t.y + t.height / 2
         const s = gridView.itemAtIndex(sourceIdx)
@@ -91,14 +99,10 @@ DropArea {
         const len = Math.hypot(dx, dy) || 1
         dx /= len
         dy /= len
-        // Cursor offset from the target centre projected onto source→target.
-        const proj = (pos.x - tcx) * dx + (pos.y - tcy) * dy
-        const half = (Math.abs(dx) >= Math.abs(dy) ? t.width : t.height) / 2
-        if (proj > half * _foldZoneHalf)
-            return 2
-        if (proj < -half * _foldZoneHalf)
-            return 0
-        return 1
+        // Cursor offset from the icon centre projected onto the travel direction:
+        // past it (the far side) reorders, before it stays neutral.
+        const proj = (pos.x - (fx + fr.width / 2)) * dx + (pos.y - (fy + fr.height / 2)) * dy
+        return proj > 0 ? 2 : 0
     }
 
     // Arm the fold highlight for the candidate row (or clear it when @p index < 0).
@@ -122,8 +126,16 @@ DropArea {
     }
 
     function _clearFold() {
+        foldDwellTimer.stop()
         _foldCandidate = -1
         _armFold(-1)
+    }
+
+    // Arms the fold once the cursor has dwelled foldDwellMs over _foldCandidate.
+    Timer {
+        id: foldDwellTimer
+        interval: reorderArea.foldDwellMs
+        onTriggered: reorderArea._armFold(reorderArea._foldCandidate)
     }
 
     // The bare storage id of the active drag's source, cached on DragSource
@@ -203,8 +215,8 @@ DropArea {
     onPositionChanged: drag => {
         if (!_source || !_source.isOwnDrag(drag) || !gridView.sharedFavoritesModel)
             return
-        // Grouped grid: a centre hover arms a fold (single or multi); a single
-        // drag also reorders live past the centre. A non-favourite
+        // Grouped grid: hovering a target's icon arms a fold (single or multi);
+        // anywhere else swaps live (single drag). A non-favourite
         // (add-from-other-tab) is added on drop instead.
         if (_grouped) {
             if (_isAddFromOtherTab(drag)) {
@@ -219,26 +231,28 @@ DropArea {
                 drag.accept(Qt.MoveAction)
                 return
             }
-            const zone = _canFold ? _foldZone(gpos, gtarget, gsource) : 2
+            const zone = _canFold ? _dragZone(gpos, gtarget, gsource) : 2
             if (zone === 1) {
-                // Over the central band → arm a fold, no reflow.
+                // Over the target's icon → start the dwell; the fold arms only if
+                // the cursor lingers (foldDwellTimer), so a quick pass-over still
+                // reorders. No reflow while dwelling.
                 if (_foldCandidate !== gtarget) {
                     _foldCandidate = gtarget
-                    _armFold(gtarget)
+                    _armFold(-1)
+                    foldDwellTimer.restart()
                 }
                 drag.accept(Qt.MoveAction)
                 return
             }
             _clearFold()
-            // A multi-drag only folds (onto a centre); it never reorders — the
+            // A multi-drag only folds (onto an icon); it never reorders — the
             // gaps for an N-item move are ambiguous.
             if (_isMultiDrag) {
                 drag.accept(Qt.MoveAction)
                 return
             }
             if (zone === 2) {
-                // Pushed past the centre → reflow (swap) live, unless animations
-                // are still settling.
+                // Past the icon → reflow (swap) live, unless animations are settling.
                 if (gridView.move.running || gridView.moveDisplaced.running
                         || gridView.flicking || gridView.moving || edgeScroller.active) {
                     drag.accept(Qt.MoveAction)
@@ -247,6 +261,7 @@ DropArea {
                 gridView.favoritesGroupedModel.moveRow(gsource, gtarget)
                 pendingMoves.push([gsource, gtarget])
             }
+            // zone 0 (approaching the icon) → neutral, keep the icon reachable.
             drag.accept(Qt.MoveAction)
             return
         }
@@ -349,6 +364,9 @@ DropArea {
     }
 
     onDropped: drag => {
+        // Stop the dwell now so it can't fire after the drop and arm a stale fold;
+        // any fold already armed stays set for the drop handlers below.
+        foldDwellTimer.stop()
         if (!gridView.sharedFavoritesModel) return
         if (_grouped) {
             _handleGroupedDrop(drag)

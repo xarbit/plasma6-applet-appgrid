@@ -157,6 +157,11 @@ GridView {
 
     readonly property string defaultIcon: Const.DEFAULT_ICON
 
+    // Drag-to-folder fold target (#200): the central fraction of the icon/folder
+    // tile that arms an add. The cursor must land inside this inset square; the
+    // rest of the cell reorders. One value so the app icon and folder tile match.
+    readonly property real foldZoneInset: 0.20
+
     function getDisplayIcon(index) {
         return iconSwaps[index] !== undefined ? iconSwaps[index] : ""
     }
@@ -665,6 +670,14 @@ GridView {
         readonly property string _sid: _isFolder
             ? ""
             : (_fromShared ? FavoriteId.stripPrefix(model.favoriteId) : (model.storageId || ""))
+        // Drag-to-folder target zone (#200): the folder's tile or the app's icon,
+        // inset a little so it's a tighter target and more of the cell reorders.
+        // Landing on it merges/adds; a drag can still pass over a folder.
+        readonly property rect foldRect: {
+            const r = _isFolder ? folderCell.iconRect : iconDelegate.iconRect
+            const m = r.width * gridView.foldZoneInset
+            return Qt.rect(r.x + m, r.y + m, r.width - 2 * m, r.height - 2 * m)
+        }
         readonly property var _appData: _fromShared && gridView.appsModel
                                         ? gridView.appsModel.getByStorageId(_sid) : null
         // getByStorageId returns {} (not null) for an id the app model doesn't
@@ -689,6 +702,7 @@ GridView {
         }
 
         FolderCell {
+            id: folderCell
             anchors.fill: parent
             visible: delegateRoot._isFolder
             folderId: delegateRoot._isFolder ? (model.folderId || "") : ""

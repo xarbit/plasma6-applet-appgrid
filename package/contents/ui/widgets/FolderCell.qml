@@ -77,7 +77,15 @@ Item {
         visible: root._isFoldTarget
     }
 
+    // The folder tile's rect in this cell's coordinates — the drag-to-folder
+    // target zone (#200): landing on it adds to the folder, the rest of the cell
+    // reorders.
+    readonly property rect iconRect: Qt.rect(contentLayout.x + tile.x,
+                                             contentLayout.y + tile.y,
+                                             tile.width, tile.height)
+
     ColumnLayout {
+        id: contentLayout
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
@@ -101,10 +109,17 @@ Item {
                 && root.dragSource.sourceFolderId.length > 0
                 && root.dragSource.sourceFolderId === root.folderId
 
+            // Another favourite is hovering this folder to add to it (#200) →
+            // the preview yields to a + marker, mirroring the app-icon fold.
+            readonly property bool _showAddMarker: root.dragSource
+                && root.dragSource.foldTargetFolderId.length > 0
+                && root.dragSource.foldTargetFolderId === root.folderId
+
             GridLayout {
                 anchors.fill: parent
                 anchors.margins: Math.round(root.iconSize * root._previewInset)
-                opacity: parent._showRemoveMarker ? root._removeDimOpacity : 1.0
+                opacity: (parent._showRemoveMarker || parent._showAddMarker) ? root._removeDimOpacity : 1.0
+                visible: !parent._showAddMarker
                 columns: 2
                 rowSpacing: Math.round(root.iconSize * root._previewSpacing)
                 columnSpacing: Math.round(root.iconSize * root._previewSpacing)
@@ -131,6 +146,15 @@ Item {
                 visible: tile._showRemoveMarker
                 source: "edit-delete-remove"
                 color: Kirigami.Theme.negativeTextColor
+            }
+
+            // Add-to-folder marker: a favourite dwelled on this folder long enough
+            // to arm a fold (#200) — replaces the preview, pops to confirm.
+            FoldMarker {
+                width: root.iconSize * root._removeIconScale
+                height: width
+                visible: tile._showAddMarker
+                source: "list-add"
             }
         }
 
