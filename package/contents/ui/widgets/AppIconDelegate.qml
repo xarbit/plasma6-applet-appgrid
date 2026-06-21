@@ -114,15 +114,6 @@ Item {
         }
     }
 
-    // Ready this delegate for a new app after recycling (GridView reuseItems):
-    // clear transient transforms a hover/open animation left behind, and force the
-    // icon to re-resolve so a recycled cell never shows the old or a blank icon.
-    function prepareForReuse() {
-        delegateIcon.scale = 1
-        delegateIcon.rotation = 0
-        delegateIcon.refresh()
-    }
-
     // Highlight background shown while this delegate is being dragged.
     Rectangle {
         anchors.fill: parent

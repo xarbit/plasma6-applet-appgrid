@@ -173,13 +173,6 @@ GridView {
 
     clip: true
 
-    // Recycle delegates on scroll instead of destroying + rebuilding them. The
-    // delegate is heavy (shadow MultiEffect, hover-anim Loader, tooltip), so
-    // rebuilding one per row as it scrolls in is what made a large grid sluggish.
-    // Bindings re-evaluate on the new index; transient visual state is reset in
-    // onReused on the delegate.
-    reuseItems: true
-
     WheelScroller { target: gridView }
 
     // Cache buffer: extra screens of delegates kept alive off-screen. Grown
@@ -655,10 +648,6 @@ GridView {
         id: delegateRoot
         width: gridView.cellWidth
         height: gridView.cellHeight
-
-        // Recycled for a new index (reuseItems): re-resolve the icon and drop any
-        // transient transform. Bindings re-evaluate for the new index on their own.
-        GridView.onReused: iconDelegate.prepareForReuse()
 
         // When favoritesActive, the grid is driven directly by
         // sharedFavoritesModel (KAStats), which exposes different role names

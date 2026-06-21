@@ -34,9 +34,8 @@ Item {
     onReloadTokenChanged: refresh()
 
     // Force the icon (and the shadow's MultiEffect texture) to re-resolve: clear
-    // then rebind the source. Needed on a system theme change (reloadToken) and
-    // when a delegate is recycled (GridView reuseItems) onto a new app — the plain
-    // source binding can leave the recycled cell blank.
+    // then rebind the source. The icon name is unchanged on a theme switch, so
+    // Kirigami.Icon won't re-resolve on its own (reloadToken bumps this).
     function refresh() {
         icon.source = ""
         icon.source = Qt.binding(() => root.source)
