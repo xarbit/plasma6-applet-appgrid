@@ -119,15 +119,31 @@ void AppGridFavoritesModel::initForClient(const QString &clientId)
         m_results->deleteLater();
     }
     m_results = model;
+    m_pendingRemovals.clear();
+
+    // When a row genuinely leaves the source (the unlink finally propagated, or an
+    // external change), drop any matching optimistic-removal entry so the set stays
+    // bounded and a later re-link isn't wrongly hidden.
+    connect(model, &QAbstractItemModel::rowsAboutToBeRemoved, this, [this, model](const QModelIndex &parent, int first, int last) {
+        for (int row = first; row <= last; ++row) {
+            m_pendingRemovals.remove(model->index(row, 0, parent).data(KAStats::ResultModel::ResourceRole).toString());
+        }
+    });
     Q_EMIT countChanged();
 }
 
 bool AppGridFavoritesModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    const QString resource = resourceForSourceRow(sourceRow, sourceParent);
+    // Just-removed favourite, hidden until the async unlink propagates (the
+    // ResultModel may not drop the row itself — see m_pendingRemovals).
+    if (m_pendingRemovals.contains(resource)) {
+        return false;
+    }
     // Drop dead favourites — an uninstalled app or a deleted file. Non-destructive:
     // the KActivities link stays, so reinstalling the app or restoring the file
     // brings the favourite back, matching Kicker, which also hides rather than unlinks.
-    return resolve(resourceForSourceRow(sourceRow, sourceParent)).valid;
+    return resolve(resource).valid;
 }
 
 void AppGridFavoritesModel::invalidateFilterCompat()
@@ -283,6 +299,10 @@ void AppGridFavoritesModel::addFavorite(const QString &id, int index)
     if (resource.isEmpty()) {
         return;
     }
+    // Re-adding something just optimistically removed: un-hide it.
+    if (m_pendingRemovals.remove(resource)) {
+        invalidateFilterCompat();
+    }
     if (index >= 0) {
         // linkToActivity is asynchronous; place the row once it surfaces. Watch
         // the model the link targets (not the member, which initForClient may
@@ -313,6 +333,12 @@ void AppGridFavoritesModel::removeFavorite(const QString &id)
         return;
     }
     m_results->unlinkFromActivity(urlForId(resource), KASTerms::Activity(kActivityAny), KASTerms::Agent(agentForResource(resource)));
+    // Hide it now; the ResultModel doesn't reliably drop the row on unlink, so the
+    // view would otherwise look unchanged until reload.
+    if (!m_pendingRemovals.contains(resource)) {
+        m_pendingRemovals.insert(resource);
+        invalidateFilterCompat();
+    }
 }
 
 void AppGridFavoritesModel::moveRow(int from, int to)

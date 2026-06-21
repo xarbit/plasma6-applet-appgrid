@@ -9,6 +9,7 @@
 #include <KServiceAction>
 
 #include <QMimeDatabase>
+#include <QSet>
 #include <QSortFilterProxyModel>
 #include <QUrl>
 
@@ -137,4 +138,9 @@ private:
     // Reused across data()/resolve() calls — constructing one per row on every
     // view refresh is wasteful (its methods are const, so resolve() stays const).
     QMimeDatabase m_mimeDb;
+    // Resources hidden the instant removeFavorite() runs. KActivities' ResultModel
+    // does not reliably drop a linked row when it is unlinked (Kicker rolled its
+    // own model for the same reason), so the view would otherwise only refresh on
+    // reload. Filtered out until the real removal lands or the id is re-added.
+    QSet<QString> m_pendingRemovals;
 };
