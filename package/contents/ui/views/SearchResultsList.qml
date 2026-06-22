@@ -147,14 +147,17 @@ ListView {
         positionViewAtIndex(idx, ListView.Beginning)
     }
 
-    // Group by source: app rows (empty category) under "Applications", runner
-    // rows under their own runner category (Files, Calculator, …), like KRunner.
+    // Our app results (the "applications" sentinel) under "Applications"; every
+    // KRunner section is a "plasma:<category>" value, labelled by its source,
+    // e.g. "Plasma Plugins (Files)" — or just "Plasma Plugins" when the runner
+    // gives no category.
     function _sectionLabel(section) {
-        const m = listView.model
-        if (section === "")
-            return i18nd("dev.xarbit.appgrid", "Applications") +
-                   (m ? " (" + m.appResultCount + ")" : "")
-        return section
+        if (section === "applications")
+            return i18nd("dev.xarbit.appgrid", "Applications")
+        const cat = section.substring(7) // drop "plasma:"
+        return cat.length > 0
+            ? i18nd("dev.xarbit.appgrid", "Plasma Plugins (%1)", cat)
+            : i18nd("dev.xarbit.appgrid", "Plasma Plugins")
     }
 
     section.property: "category"

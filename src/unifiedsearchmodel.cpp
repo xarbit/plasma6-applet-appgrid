@@ -136,8 +136,10 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             return comment.isEmpty() ? srcIdx.data(AppModel::GenericNameRole) : comment;
         }
         case CategoryRole:
-            // App rows share one section; QML labels the empty value "Applications".
-            return QString();
+            // Our app rows share one section. A non-empty sentinel (QML labels it
+            // "Applications") — empty would make ListView draw no header at all,
+            // and it stays distinct from KRunner's own "Applications" category.
+            return QStringLiteral("applications");
         case StorageIdRole:
             return srcIdx.data(AppModel::StorageIdRole);
         case DesktopFileRole:
@@ -161,8 +163,13 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             return srcIdx.data(Qt::DecorationRole);
         case SubtextRole:
             return m_runnerSubtextRole >= 0 ? srcIdx.data(m_runnerSubtextRole) : QVariant();
-        case CategoryRole:
-            return m_runnerCategoryRole >= 0 ? srcIdx.data(m_runnerCategoryRole) : QVariant();
+        case CategoryRole: {
+            // Prefix every runner section so it can never share a section with our
+            // own apps, whatever KRunner's category string is (its services runner
+            // uses "Applications" too). QML strips "plasma:" for the label.
+            const QString cat = m_runnerCategoryRole >= 0 ? srcIdx.data(m_runnerCategoryRole).toString() : QString();
+            return QString(QStringLiteral("plasma:") + cat);
+        }
         case StorageIdRole:
         case DesktopFileRole: {
             if (m_runnerUrlsRole < 0) {
