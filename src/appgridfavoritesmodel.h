@@ -88,6 +88,16 @@ public:
      *  asynchronous link surfaces (best effort); -1 appends. */
     Q_INVOKABLE void addFavorite(const QString &id, int index = -1);
     Q_INVOKABLE void removeFavorite(const QString &id);
+
+    // --- Per-activity favourites (the Kicker "Show in Favorites" submenu) ---
+    // The activity links live in the shared KActivities store, so every AppGrid
+    // variant agrees without any config plumbing.
+    /** Running activities as [{id, name}] to build the activity submenu. */
+    [[nodiscard]] Q_INVOKABLE QVariantList activities() const;
+    /** Activities @p id is pinned to; an empty list means all activities. */
+    [[nodiscard]] Q_INVOKABLE QStringList linkedActivitiesFor(const QString &id) const;
+    /** Pin @p id to exactly @p activityIds; an empty list means all activities. */
+    Q_INVOKABLE void setLinkedActivities(const QString &id, const QStringList &activityIds);
     Q_INVOKABLE void moveRow(int from, int to);
     /** Launch the favourite at @p row — an app (with its jump-list action when
      *  the id carried one), or a document opened with its default app. The grid's
@@ -128,6 +138,11 @@ private:
     [[nodiscard]] ResolvedFavorite resolve(const QString &favoriteId) const;
     // Stored form of @p id: action ids verbatim, plain apps canonicalised.
     [[nodiscard]] QString storeId(const QString &id) const;
+    // Whether @p resource is currently linked under @p agent in @p activity.
+    [[nodiscard]] static bool isLinkedTo(const QString &resource, const QString &agent, const QString &activity);
+    // Optimistically show/hide @p resource ahead of the async KActivities change
+    // the ResultModel doesn't reliably reflect. Re-filters only on a real change.
+    void setResourceHidden(const QString &resource, bool hidden);
     [[nodiscard]] static KService::Ptr serviceFor(const QString &storageId);
 
     KActivities::Consumer *const m_consumer;

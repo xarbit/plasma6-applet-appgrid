@@ -42,6 +42,10 @@ Item {
     readonly property bool _canFolder: favoritesGroupedModel && favoritesGroupedModel.editable
     property bool _folderSubAdded: false
     property bool _bulkFolderSubAdded: false
+    property bool _activitiesSubAdded: false
+    // Id-set of the activities currently built into the submenu, so its item list
+    // is only rebuilt when the set changes (not on every open).
+    property string _activitiesSig: ""
     signal openFolderRequested(string folderId)
     signal renameFolderRequested(string folderId)
     signal launchFolderRequested(string folderId)
@@ -79,6 +83,10 @@ Item {
     property bool popupCanPin: true
     property bool popupCanAddToDesktop: true
     property var popupActions: []
+    // Activity submenu state for the right-clicked favourite: the running
+    // activities and the ones it's pinned to (see ActivityFavoritesMenu).
+    property var popupActivities: []
+    property var popupLinkedActivities: []
     property list<string> popupSelectedSids: []
     property bool popupIsSelected: false
     // Whether the originating view supports multi-select. Search-results
@@ -174,6 +182,32 @@ Item {
             } else if (!wantFolderSub && _folderSubAdded) {
                 singleMenu.removeMenu(addToFolderSubmenu)
                 _folderSubAdded = false
+            }
+
+            // "Show in Favorites" activity submenu — attached whenever more than
+            // one activity exists (a stable condition, so it's added once and
+            // stays, like the folder submenu). Picking an activity on a
+            // non-favourite favourites it there.
+            const acts = sharedFavoritesModel ? sharedFavoritesModel.activities() : []
+            const wantActivitiesSub = acts.length > 1
+            if (wantActivitiesSub) {
+                // Rebuild the item list only when the activity set actually
+                // changes; a fresh array every open would churn the Instantiator
+                // and corrupt the menu.
+                const sig = acts.map(a => a.id).join("\n")
+                if (sig !== _activitiesSig) {
+                    popupActivities = acts
+                    _activitiesSig = sig
+                }
+                popupLinkedActivities = popupIsFavorite
+                    ? sharedFavoritesModel.linkedActivitiesFor(prefixed) : []
+                if (!_activitiesSubAdded) {
+                    singleMenu.addMenu(activitiesSubmenu)
+                    _activitiesSubAdded = true
+                }
+            } else if (_activitiesSubAdded) {
+                singleMenu.removeMenu(activitiesSubmenu)
+                _activitiesSubAdded = false
             }
         } else {
             // Bulk "Add to Folder" — any selection; non-favourites are favourited.
@@ -551,6 +585,23 @@ Item {
                 contextMenu.favoritesGroupedModel.ungroupFolder(contextMenu.popupFolderId)
                 folderMenu.close()
             }
+        }
+    }
+
+    // "Show in Favorites" submenu — attached to the single menu only for a
+    // favourite with more than one activity (see showForApp). Pins the favourite
+    // to the chosen activities (state lives in KActivities, shared by every variant).
+    ActivityFavoritesMenu {
+        id: activitiesSubmenu
+        activities: contextMenu.popupActivities
+        linkedActivities: contextMenu.popupLinkedActivities
+        isFavorite: contextMenu.popupIsFavorite
+        onChosen: activityIds => {
+            if (contextMenu.sharedFavoritesModel) {
+                contextMenu.sharedFavoritesModel.setLinkedActivities(
+                    FavoriteId.toPrefixed(contextMenu.popupStorageId), activityIds)
+            }
+            contextMenu.close()
         }
     }
 

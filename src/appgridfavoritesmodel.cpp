@@ -13,8 +13,10 @@
 #include <KSycoca>
 
 #include <PlasmaActivities/Consumer>
+#include <PlasmaActivities/Info>
 #include <PlasmaActivities/Stats/Query>
 #include <PlasmaActivities/Stats/ResultModel>
+#include <PlasmaActivities/Stats/ResultSet>
 #include <PlasmaActivities/Stats/Terms>
 
 #include <QFileInfo>
@@ -73,6 +75,16 @@ AppGridFavoritesModel::AppGridFavoritesModel(QObject *parent)
         // query actually returns the stored favourites (Kicker re-inits here too).
         if (m_consumer->serviceStatus() == KActivities::Consumer::Running && !m_clientId.isEmpty()) {
             initForClient(m_clientId);
+        }
+    });
+
+    // The query re-resolves for the new activity on a switch; drop the optimistic
+    // hides made for the previous activity's view so a favourite pinned to the
+    // activity we just entered shows up again.
+    connect(m_consumer, &KActivities::Consumer::currentActivityChanged, this, [this] {
+        if (!m_pendingRemovals.isEmpty()) {
+            m_pendingRemovals.clear();
+            invalidateFilterCompat();
         }
     });
 
@@ -300,9 +312,7 @@ void AppGridFavoritesModel::addFavorite(const QString &id, int index)
         return;
     }
     // Re-adding something just optimistically removed: un-hide it.
-    if (m_pendingRemovals.remove(resource)) {
-        invalidateFilterCompat();
-    }
+    setResourceHidden(resource, false);
     if (index >= 0) {
         // linkToActivity is asynchronous; place the row once it surfaces. Watch
         // the model the link targets (not the member, which initForClient may
@@ -323,6 +333,94 @@ void AppGridFavoritesModel::addFavorite(const QString &id, int index)
     m_results->linkToActivity(urlForId(resource), KASTerms::Activity(kActivityGlobal), KASTerms::Agent(agentForResource(resource)));
 }
 
+QVariantList AppGridFavoritesModel::activities() const
+{
+    QVariantList list;
+    const QStringList ids = m_consumer->activities();
+    list.reserve(ids.size());
+    for (const QString &id : ids) {
+        KActivities::Info info(id);
+        list.append(QVariantMap{{QStringLiteral("id"), id}, {QStringLiteral("name"), info.name()}});
+    }
+    return list;
+}
+
+bool AppGridFavoritesModel::isLinkedTo(const QString &resource, const QString &agent, const QString &activity)
+{
+    const auto results = KAStats::ResultSet(KAStats::Query(KASTerms::LinkedResources) | KASTerms::Agent({agent}) | KASTerms::Activity(activity)
+                                            | KASTerms::Type::any() | KASTerms::Limit(kFavoritesLimit));
+    for (const auto &result : results) {
+        if (result.resource() == resource) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void AppGridFavoritesModel::setResourceHidden(const QString &resource, bool hidden)
+{
+    bool changed = false;
+    if (hidden) {
+        if (!m_pendingRemovals.contains(resource)) {
+            m_pendingRemovals.insert(resource);
+            changed = true;
+        }
+    } else {
+        changed = m_pendingRemovals.remove(resource);
+    }
+    if (changed) {
+        invalidateFilterCompat();
+    }
+}
+
+QStringList AppGridFavoritesModel::linkedActivitiesFor(const QString &id) const
+{
+    const QString resource = storeId(id);
+    if (resource.isEmpty()) {
+        return {};
+    }
+    const QString agent = agentForResource(resource);
+    // A global link means "every activity"; report that as an empty list (the
+    // contract setLinkedActivities() takes) so callers never handle the sentinel.
+    if (isLinkedTo(resource, agent, kActivityGlobal)) {
+        return {};
+    }
+    QStringList linked;
+    for (const QString &activity : m_consumer->activities()) {
+        if (isLinkedTo(resource, agent, activity)) {
+            linked.append(activity);
+        }
+    }
+    return linked;
+}
+
+void AppGridFavoritesModel::setLinkedActivities(const QString &id, const QStringList &activityIds)
+{
+    if (!m_results) {
+        return;
+    }
+    const QString resource = storeId(id);
+    if (resource.isEmpty()) {
+        return;
+    }
+    const QUrl url = urlForId(resource);
+    const auto agent = KASTerms::Agent({agentForResource(resource)});
+    // Replace the whole link set: clear every link, then re-link to the target.
+    // An empty set means "all activities" → a single global link.
+    m_results->unlinkFromActivity(url, KASTerms::Activity(kActivityAny), agent);
+    if (activityIds.isEmpty()) {
+        m_results->linkToActivity(url, KASTerms::Activity(kActivityGlobal), agent);
+    } else {
+        for (const QString &activity : activityIds) {
+            m_results->linkToActivity(url, KASTerms::Activity(activity), agent);
+        }
+    }
+    // The favourite still covers this view when it's global or pinned to the
+    // current activity; otherwise it left, so hide it ahead of the async drop.
+    const bool stillVisible = activityIds.isEmpty() || activityIds.contains(m_consumer->currentActivity());
+    setResourceHidden(resource, !stillVisible);
+}
+
 void AppGridFavoritesModel::removeFavorite(const QString &id)
 {
     if (!m_results) {
@@ -335,10 +433,7 @@ void AppGridFavoritesModel::removeFavorite(const QString &id)
     m_results->unlinkFromActivity(urlForId(resource), KASTerms::Activity(kActivityAny), KASTerms::Agent(agentForResource(resource)));
     // Hide it now; the ResultModel doesn't reliably drop the row on unlink, so the
     // view would otherwise look unchanged until reload.
-    if (!m_pendingRemovals.contains(resource)) {
-        m_pendingRemovals.insert(resource);
-        invalidateFilterCompat();
-    }
+    setResourceHidden(resource, true);
 }
 
 void AppGridFavoritesModel::moveRow(int from, int to)
