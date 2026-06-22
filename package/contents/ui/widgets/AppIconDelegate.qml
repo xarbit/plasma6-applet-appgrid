@@ -114,6 +114,25 @@ Item {
         }
     }
 
+    // One-shot bounce acknowledging a Ctrl+D favourite toggle (#193). Dedicated
+    // (not the configurable hover animation), so it plays whatever that's set to.
+    function bounceFeedback() {
+        if (Kirigami.Units.longDuration === 0) return
+        toggleBounce.restart()
+    }
+
+    SequentialAnimation {
+        id: toggleBounce
+        NumberAnimation {
+            target: delegateIcon; property: "scale"
+            from: 1.0; to: 1.2; duration: 110; easing.type: Easing.OutQuad
+        }
+        NumberAnimation {
+            target: delegateIcon; property: "scale"
+            to: 1.0; duration: 180; easing.type: Easing.OutBounce
+        }
+    }
+
     // Highlight background shown while this delegate is being dragged.
     Rectangle {
         anchors.fill: parent

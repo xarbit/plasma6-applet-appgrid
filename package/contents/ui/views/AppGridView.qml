@@ -11,6 +11,7 @@ import org.kde.kirigami as Kirigami
 import "../controllers"
 import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
+import "../js/favoritetoggle.js" as FavoriteToggle
 import "../js/favoritevisual.js" as FavoriteVisual
 import "../js/gridnav.js" as GridNav
 import "../js/gridmetrics.js" as GridMetrics
@@ -366,12 +367,61 @@ GridView {
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
     function selectedIconNames() { return selection.iconNames(appsModel) }
 
+    // Unfavourite @p sid and pull it out of any folder it was in — folders hold
+    // favourites, so a stale member left behind would resurface. Mirrors the
+    // context menu's unfavourite path (#18, #193).
+    function _removeFavoriteWithFolder(sid) {
+        if (!sharedFavoritesModel || !sid) return
+        sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(sid))
+        if (favoritesGroupedModel) {
+            const fid = favoritesGroupedModel.folderOfMember(sid)
+            if (fid && fid.length > 0)
+                favoritesGroupedModel.removeFromFolder(fid, sid)
+        }
+    }
+
     function removeSelectedFromFavorites() {
         if (!_favoritesSelect || selectionCount === 0) return
         const sids = selectedSidList()
         for (var i = 0; i < sids.length; ++i)
-            sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(sids[i]))
+            _removeFavoriteWithFolder(sids[i])
         clearSelection()
+    }
+
+    // Ctrl+D (#193): browser-style toggle of the selected apps, or the single
+    // highlighted one when nothing is multi-selected. Works in every view (All,
+    // category, recents, favourites) — `_unifiedSidAt` resolves the row to a
+    // storageId, returning "" for folders so they're skipped. Add-all-if-any-
+    // missing, else remove-all, so a mixed selection has one predictable result.
+    function toggleFavoritesForSelectionOrCurrent() {
+        if (!sharedFavoritesModel) return
+        const sids = selectionCount > 0 ? selectedSidList()
+                                        : [_unifiedSidAt(virtualIndex)]
+        const entries = sids.map(s => ({
+            sid: s,
+            isFavorite: !!s && sharedFavoritesModel.isFavorite(FavoriteId.toPrefixed(s))
+        }))
+        const plan = FavoriteToggle.plan(entries)
+        for (const s of plan.add)
+            sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(s))
+        for (const s of plan.remove)
+            _removeFavoriteWithFolder(s)
+        _bounceSids(plan.add.concat(plan.remove))
+        clearSelection()
+    }
+
+    // Bounce every currently-visible delegate whose app was just toggled. One
+    // pass over the grid; off-screen rows return null from itemAtIndex and are
+    // skipped (a removed favourite in the favourites view simply isn't there).
+    function _bounceSids(sids) {
+        if (!sids || sids.length === 0) return
+        const want = {}
+        for (const s of sids) if (s) want[s] = true
+        for (let i = 0; i < count; ++i) {
+            const it = itemAtIndex(i)
+            if (it && want[it._sid])
+                it.bounceFeedback()
+        }
     }
 
     // Drop selection whenever the favorites tab is left or the underlying
@@ -698,6 +748,10 @@ GridView {
             }
             return icons
         }
+
+        // Bounce this cell's app icon (Ctrl+D toggle feedback, #193). Folder rows
+        // have no favourite to toggle, so they never get here.
+        function bounceFeedback() { iconDelegate.bounceFeedback() }
 
         FolderCell {
             id: folderCell

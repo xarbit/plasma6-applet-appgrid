@@ -301,6 +301,11 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/favoritetoggle.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/favoritetoggle.js
+        COPYONLY
+    )
+    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/prefixmodes.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/prefixmodes.js
         COPYONLY
