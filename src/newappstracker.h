@@ -29,8 +29,9 @@ class UsedAppsProvider;
  * to KActivities) drops it from the used-set's complement, clearing the badge
  * before the window even lapses — exactly Kickoff's resource-score clear.
  *
- * State lives in its own appgridrc group, not the launch-state keys: it is
- * locally recomputed on every KSycoca change and needs no cross-process sync.
+ * State lives in its own config file (appgridstaterc), never the shared
+ * appgridrc: it is recomputed locally on every KSycoca change, and keeping its
+ * sync off appgridrc means it can't trip the launch-state KConfigWatcher.
  */
 class NewAppsTracker : public QObject
 {

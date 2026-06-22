@@ -6,7 +6,6 @@
 #include "appgridplugin.h"
 
 #include "appgridconstants.h"
-#include "pluginhelpers.h"
 
 #include <KConfig>
 #include <KConfigGroup>
@@ -27,10 +26,10 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
     : Plasma::Applet(parent, data, args)
     , m_controller(this)
 {
-    // Tidy stale keys older versions left in this applet's own config (the
-    // controller already did the same for the shared appgridrc).
-    KConfigGroup appletGeneral = config().group(QStringLiteral("General"));
-    PluginHelpers::pruneObsoleteKeys(appletGeneral);
+    // Do NOT prune/sync this applet's config here: config() is plasmashell's
+    // appletsrc, and writing+syncing it from the constructor (before the shell
+    // finishes restoring its containments) persists a partial file and resets
+    // panel settings. Legacy keys are harmless; leave them.
 
     // PlasmoidItem::init() connects activated → setExpanded(true). For custom
     // Window mode, we add a second connection (fires after PlasmoidItem's) that

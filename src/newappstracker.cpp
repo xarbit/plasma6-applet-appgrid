@@ -52,7 +52,10 @@ QStringList firstSeenToList(const QHash<QString, QDate> &map)
 NewAppsTracker::NewAppsTracker(UsedAppsProvider *usedApps, const KSharedConfig::Ptr &config, QObject *parent)
     : QObject(parent)
     , m_usedApps(usedApps)
-    , m_config(config ? config : KSharedConfig::openConfig(QStringLiteral("appgridrc")))
+    // Own state file, NOT the shared appgridrc: syncing it must never trip the
+    // launch-state KConfigWatcher (that reload would clobber in-memory favorites
+    // / recents). Kickoff keeps its new-app state in a separate config too.
+    , m_config(config ? config : KSharedConfig::openConfig(QStringLiteral("appgridstaterc")))
 {
     m_firstSeen = firstSeenFromList(m_config->group(kGroup).readEntry(kFirstSeenKey, QStringList()));
     if (m_usedApps) {
