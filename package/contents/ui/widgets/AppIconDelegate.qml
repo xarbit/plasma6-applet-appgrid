@@ -257,17 +257,36 @@ Item {
                 source: "folder-new"
             }
 
-            // "New" badge dot
+            // "New" badge — Plasma's standard pill (Kirigami.Badge, Frameworks
+            // 6.25+). Behind a Loader so older Plasma 6 (Kirigami < 6.25, no Badge
+            // type) errors the Loader and falls back to the plain dot below
+            // instead of failing the whole delegate to load.
+            Loader {
+                id: newBadgeLoader
+                active: root.isNew
+                asynchronous: true
+                source: "NewAppBadge.qml"
+                // Flush inside the icon's top-right corner — not overhanging,
+                // which the view's clip would cut off on the top row, making the
+                // badge look like it jumps position between rows.
+                anchors.top: parent.top
+                anchors.right: parent.right
+                z: 1
+                // Scale the badge with the size preset, but steeper than the
+                // labels (fontScale squared): Large stays full size, Medium and
+                // Small shrink more so the pill never crowds a small icon.
+                onLoaded: item.fontScale = Qt.binding(() => root.fontScale * root.fontScale)
+            }
+
+            // Fallback dot for Kirigami < 6.25, where the badge Loader errors.
             Rectangle {
-                visible: root.isNew
+                visible: root.isNew && newBadgeLoader.status === Loader.Error
                 width: Kirigami.Units.smallSpacing * 3
                 height: width
                 radius: width / 2
                 color: Kirigami.Theme.positiveTextColor
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.topMargin: -Kirigami.Units.smallSpacing
-                anchors.rightMargin: -Kirigami.Units.smallSpacing
 
                 Accessible.ignored: true
             }
