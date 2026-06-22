@@ -874,6 +874,16 @@ Kirigami.ShadowedRectangle {
             Layout.fillHeight: true
             visible: panel.showAppGrid
 
+            // Favourites come from KActivities, which may still be starting on a
+            // cold boot; show a loading state instead of an empty grid until the
+            // store is ready.
+            Kirigami.LoadingPlaceholder {
+                anchors.centerIn: parent
+                z: 1
+                visible: panel.isFavoritesActive && panel.sharedFavoritesModel
+                         && !panel.sharedFavoritesModel.enabled
+            }
+
             AppGridView {
                 id: appGrid
                 anchors.fill: parent
