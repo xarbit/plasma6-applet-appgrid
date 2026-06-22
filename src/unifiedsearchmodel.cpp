@@ -136,7 +136,8 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             return comment.isEmpty() ? srcIdx.data(AppModel::GenericNameRole) : comment;
         }
         case CategoryRole:
-            return srcIdx.data(AppModel::CategoryRole);
+            // App rows share one section; QML labels the empty value "Applications".
+            return QString();
         case StorageIdRole:
             return srcIdx.data(AppModel::StorageIdRole);
         case DesktopFileRole:

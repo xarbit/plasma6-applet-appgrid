@@ -29,6 +29,8 @@ public:
         NameRole,
         IconRole,
         SubtextRole,
+        // Section grouping: empty for app rows (one "Applications" section), the
+        // runner's own category for runner rows (Files, Calculator, …).
         CategoryRole,
         StorageIdRole,
         DesktopFileRole,

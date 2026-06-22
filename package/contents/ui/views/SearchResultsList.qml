@@ -147,18 +147,17 @@ ListView {
         positionViewAtIndex(idx, ListView.Beginning)
     }
 
+    // Group by source: app rows (empty category) under "Applications", runner
+    // rows under their own runner category (Files, Calculator, …), like KRunner.
     function _sectionLabel(section) {
         const m = listView.model
-        if (section === "app")
+        if (section === "")
             return i18nd("dev.xarbit.appgrid", "Applications") +
                    (m ? " (" + m.appResultCount + ")" : "")
-        if (section === "runner")
-            return i18nd("dev.xarbit.appgrid", "Search Plugins") +
-                   (m ? " (" + m.runnerResultCount + ")" : "")
         return section
     }
 
-    section.property: "resultType"
+    section.property: "category"
     section.criteria: ViewSection.FullString
     section.delegate: Kirigami.ListSectionHeader {
         width: listView.width
@@ -311,15 +310,15 @@ ListView {
                         implicitHeight: Kirigami.Units.iconSizes.small
                         Layout.alignment: Qt.AlignTop
                     }
+                    // Source badge only (flatpak/snap/…); shown just for non-system
+                    // sources, so most rows carry no pill. The per-row category
+                    // pill was dropped (#189): redundant with the section header,
+                    // and it stole width from long result text.
                     InfoChip {
                         visible: model.installSource !== undefined
                                  && model.installSource.length > 0
                                  && model.installSource !== "System"
                         text: model.installSource || ""
-                        Layout.alignment: Qt.AlignTop
-                    }
-                    InfoChip {
-                        text: model.category || i18nd("dev.xarbit.appgrid", "Application")
                         Layout.alignment: Qt.AlignTop
                     }
                 }
