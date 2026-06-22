@@ -30,6 +30,11 @@ class ResultsModel;
 class QScreen;
 class QWindow;
 
+namespace KActivities
+{
+class Consumer;
+}
+
 /**
  * @brief Applet-independent core of the AppGrid launcher.
  *
@@ -240,6 +245,9 @@ private:
     AppFilterModel m_filterModel;
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
+    // Feeds the current activity to m_launchState so folders are per-activity;
+    // the store itself stays KConfig-only.
+    KActivities::Consumer *m_activities = nullptr;
     KRunner::ResultsModel *m_runnerModel = nullptr;
     RunnerFilterModel m_runnerFilterModel;
     UnifiedSearchModel m_searchModel;

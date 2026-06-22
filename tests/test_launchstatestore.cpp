@@ -26,6 +26,7 @@ private Q_SLOTS:
     void persists_acrossInstances();
     void migrateFrom_seedsOnlyAbsentKeys();
     void favoriteFolders_roundtripThroughFile();
+    void perActivityFolders_scopeAndFallback();
     void favoriteLayout_roundtripThroughFile();
 
 private:
@@ -46,9 +47,13 @@ void TestLaunchStateStore::init()
 
 KSharedConfig::Ptr TestLaunchStateStore::freshConfig()
 {
-    // A distinct config name per test so they never share on-disk state.
+    // Wipe every group (not just [General]) so per-activity [Folders] state from
+    // an earlier run or test never leaks in.
     auto cfg = KSharedConfig::openConfig(QStringLiteral("appgrid-test-%1rc").arg(m_seq));
-    cfg->group(QStringLiteral("General")).deleteGroup();
+    const QStringList groups = cfg->groupList();
+    for (const QString &group : groups) {
+        cfg->deleteGroup(group);
+    }
     cfg->sync();
     return cfg;
 }
@@ -135,7 +140,8 @@ void TestLaunchStateStore::favoriteFolders_roundtripThroughFile()
         store.setFavoriteFolders(folders);
         QTest::qWait(700);
     }
-    // On disk: one compact-JSON object per StringList entry.
+    // On disk: one compact-JSON object per StringList entry. No activity set, so
+    // the shared default — the legacy [General] group.
     const QStringList raw = cfg->group(QStringLiteral("General")).readEntry("favoriteFolders", QStringList());
     QCOMPARE(raw.size(), 1);
     QVERIFY(raw.first().contains(QStringLiteral("Games")));
@@ -144,6 +150,48 @@ void TestLaunchStateStore::favoriteFolders_roundtripThroughFile()
     QCOMPARE(reopened.favoriteFolders().size(), 1);
     QCOMPARE(reopened.favoriteFolders().first().toMap().value(QStringLiteral("id")).toString(), QStringLiteral("f1"));
     QCOMPARE(reopened.favoriteFolders().first().toMap().value(QStringLiteral("members")).toStringList().size(), 2);
+}
+
+void TestLaunchStateStore::perActivityFolders_scopeAndFallback()
+{
+    auto cfg = freshConfig();
+    const auto folder = [](const QString &id, const QString &name) {
+        return QVariantMap{{QStringLiteral("id"), id}, {QStringLiteral("name"), name}, {QStringLiteral("members"), QStringList{QStringLiteral("a.desktop")}}};
+    };
+    const auto nameOf = [](const LaunchStateStore &s) {
+        return s.favoriteFolders().isEmpty() ? QString() : s.favoriteFolders().first().toMap().value(QStringLiteral("name")).toString();
+    };
+
+    // Seed a shared (no-activity) layout.
+    {
+        LaunchStateStore store(cfg);
+        store.setFavoriteFolders({folder(QStringLiteral("g"), QStringLiteral("Shared"))});
+        QTest::qWait(700);
+    }
+    // An activity with no layout of its own falls back to the shared one, then
+    // editing copies-on-write into that activity's own group.
+    {
+        LaunchStateStore store(cfg);
+        store.setActivity(QStringLiteral("activity-A"));
+        QCOMPARE(nameOf(store), QStringLiteral("Shared"));
+        store.setFavoriteFolders({folder(QStringLiteral("a"), QStringLiteral("WorkOnly"))});
+        QTest::qWait(700);
+    }
+    // Activity A now has its own; the shared layout and other activities don't.
+    {
+        LaunchStateStore store(cfg);
+        store.setActivity(QStringLiteral("activity-A"));
+        QCOMPARE(nameOf(store), QStringLiteral("WorkOnly"));
+    }
+    {
+        LaunchStateStore store(cfg); // no activity → shared
+        QCOMPARE(nameOf(store), QStringLiteral("Shared"));
+    }
+    {
+        LaunchStateStore store(cfg);
+        store.setActivity(QStringLiteral("activity-B")); // never edited → shared
+        QCOMPARE(nameOf(store), QStringLiteral("Shared"));
+    }
 }
 
 void TestLaunchStateStore::favoriteLayout_roundtripThroughFile()

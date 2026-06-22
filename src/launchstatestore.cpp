@@ -23,8 +23,18 @@ const QString kLaunchCountsKey = QStringLiteral("launchCounts");
 const QString kFoldersKey = QStringLiteral("favoriteFolders");
 const QString kLayoutKey = QStringLiteral("favoriteLayout");
 
+// Per-activity folders live under [Folders][<activityId>]; the shared default is
+// the legacy [General] layout, which an activity reads until it's edited there
+// (copy-on-write). No activity set → the shared [General] layout directly.
+const QString kFoldersGroup = QStringLiteral("Folders");
+
 // Coalesce bursts of live writes (hide, launch, recents) into one save.
 constexpr int kSaveDebounceMs = 500;
+
+KConfigGroup activityFolders(const KSharedConfig::Ptr &config, const QString &activity)
+{
+    return activity.isEmpty() ? config->group(kGroup) : config->group(kFoldersGroup).group(activity);
+}
 }
 
 LaunchStateStore::LaunchStateStore(const KSharedConfig::Ptr &config, QObject *parent)
@@ -181,8 +191,40 @@ void LaunchStateStore::load()
     m_recent = group.readEntry(kRecentKey, QStringList());
     m_known = group.readEntry(kKnownKey, QStringList());
     m_launchCounts = countsFromList(group.readEntry(kLaunchCountsKey, QStringList()));
-    m_favoriteFolders = FavoritesFolderLogic::foldersFromJsonList(group.readEntry(kFoldersKey, QStringList()));
-    m_favoriteLayout = group.readEntry(kLayoutKey, QStringList());
+    loadFolders();
+}
+
+void LaunchStateStore::loadFolders()
+{
+    const KConfigGroup activity = activityFolders(m_config, m_activity);
+    // Once this activity has its own layout, read that; until then every activity
+    // shows the shared legacy [General] folders (copy-on-write on first edit).
+    const KConfigGroup src = activity.hasKey(kFoldersKey) ? activity : m_config->group(kGroup);
+    m_favoriteFolders = FavoritesFolderLogic::foldersFromJsonList(src.readEntry(kFoldersKey, QStringList()));
+    m_favoriteLayout = src.readEntry(kLayoutKey, QStringList());
+}
+
+void LaunchStateStore::setActivity(const QString &activityId)
+{
+    if (m_activity == activityId) {
+        return;
+    }
+    // Flush the outgoing activity's pending edits before the in-memory layout is
+    // replaced — m_activity still points at it, so they save to the right group.
+    if (m_saveTimer->isActive()) {
+        m_saveTimer->stop();
+        save();
+    }
+    m_activity = activityId;
+    const QVariantList prevFolders = m_favoriteFolders;
+    const QStringList prevLayout = m_favoriteLayout;
+    loadFolders();
+    if (m_favoriteFolders != prevFolders) {
+        Q_EMIT favoriteFoldersChanged();
+    }
+    if (m_favoriteLayout != prevLayout) {
+        Q_EMIT favoriteLayoutChanged();
+    }
 }
 
 void LaunchStateStore::scheduleSave()
@@ -201,8 +243,11 @@ void LaunchStateStore::save()
     group.writeEntry(kRecentKey, m_recent, flags);
     group.writeEntry(kKnownKey, m_known, flags);
     group.writeEntry(kLaunchCountsKey, countsToList(m_launchCounts), flags);
-    group.writeEntry(kFoldersKey, FavoritesFolderLogic::foldersToJsonList(m_favoriteFolders), flags);
-    group.writeEntry(kLayoutKey, m_favoriteLayout, flags);
+    // Folders/layout are per-activity (copy-on-write): they go under
+    // [Folders][<activityId>], not the shared [General] group.
+    KConfigGroup folders = activityFolders(m_config, m_activity);
+    folders.writeEntry(kFoldersKey, FavoritesFolderLogic::foldersToJsonList(m_favoriteFolders), flags);
+    folders.writeEntry(kLayoutKey, m_favoriteLayout, flags);
     group.sync();
 }
 

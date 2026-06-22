@@ -64,6 +64,13 @@ public:
     void setFavoriteFolders(const QVariantList &folders);
     void setFavoriteLayout(const QStringList &layout);
 
+    /** Scope folders/layout to @p activityId (per-activity folders). Flushes the
+     *  outgoing activity's pending edits, then loads the new activity's layout,
+     *  falling back to the shared legacy layout until that activity diverges. The
+     *  id is fed from the controller's KActivities consumer, so this class stays
+     *  KConfig-only. */
+    void setActivity(const QString &activityId);
+
     /** Seed any empty key from a variant's old per-applet config (panel upgrade).
      *  @p counts is the on-disk "storageId=count" StringList. Writes only the
      *  keys still absent from the file, so the first launcher to migrate wins and
@@ -80,6 +87,9 @@ Q_SIGNALS:
 
 private:
     void load();
+    // Read folders + layout for the current activity, with copy-on-write fallback
+    // to the shared legacy layout. Split out so setActivity() reuses it.
+    void loadFolders();
     void scheduleSave();
     void save();
     // Re-read after an external change and emit only the keys that moved.
@@ -100,4 +110,7 @@ private:
     QVariantMap m_launchCounts;
     QVariantList m_favoriteFolders;
     QStringList m_favoriteLayout;
+    // Current activity id; folders/layout are scoped to it. Empty = the shared
+    // legacy layout (the only state single-activity users ever see).
+    QString m_activity;
 };

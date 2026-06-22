@@ -13,6 +13,7 @@
 
 #include <KConfigGroup>
 #include <KDesktopFile>
+
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/CommandLauncherJob>
 #include <KIO/OpenUrlJob>
@@ -22,6 +23,7 @@
 #include <KService>
 #include <KTerminalLauncherJob>
 #include <KWindowSystem>
+#include <PlasmaActivities/Consumer>
 #include <QIcon>
 
 #include <PlasmaActivities/ResourceInstance>
@@ -135,6 +137,16 @@ void AppGridController::wireLaunchState()
     });
     connect(&m_filterModel, &AppFilterModel::launchCountsChanged, &m_launchState, [this]() {
         m_launchState.setLaunchCounts(m_filterModel.launchCountsMap());
+    });
+
+    // Per-activity folders: feed the current activity to the store before the
+    // initial push below, and re-scope on every switch. The store re-reads that
+    // activity's layout (or the shared one until it diverges) and emits the
+    // folders/layout-changed signals the grouped-model wiring below already handles.
+    m_activities = new KActivities::Consumer(this);
+    m_launchState.setActivity(m_activities->currentActivity());
+    connect(m_activities, &KActivities::Consumer::currentActivityChanged, &m_launchState, [this](const QString &id) {
+        m_launchState.setActivity(id);
     });
 
     // Favourites folders (issue #18): the store owns the persisted definitions +
