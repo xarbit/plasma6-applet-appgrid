@@ -40,6 +40,7 @@ public:
         InstallSourceRole,
         RunnerActionsCountRole,
         IsRunnerActionRole,
+        MultiLineRole,
     };
     Q_ENUM(Roles)
 
@@ -95,5 +96,6 @@ private:
     int m_runnerCategoryRole = -1;
     int m_runnerUrlsRole = -1;
     int m_runnerActionsRole = -1;
+    int m_runnerMultiLineRole = -1;
     bool m_resetPending = false;
 };

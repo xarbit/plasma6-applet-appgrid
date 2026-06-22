@@ -52,6 +52,9 @@ void UnifiedSearchModel::setRunnerModel(RunnerFilterModel *model)
         if (it.value() == QByteArrayLiteral("actions")) {
             m_runnerActionsRole = it.key();
         }
+        if (it.value() == QByteArrayLiteral("multiLine")) {
+            m_runnerMultiLineRole = it.key();
+        }
     }
 }
 
@@ -115,6 +118,8 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
         return isApp ? 0 : runnerActionsCount(index.row());
     case IsRunnerActionRole:
         return isApp ? false : m_runnerModel->rowIsAction(index.row() - appResultCount());
+    case MultiLineRole:
+        return (isApp || m_runnerMultiLineRole < 0) ? false : m_runnerModel->index(row - ac, 0).data(m_runnerMultiLineRole);
     default:
         break;
     }
@@ -201,6 +206,7 @@ QHash<int, QByteArray> UnifiedSearchModel::roleNames() const
         {InstallSourceRole, "installSource"},
         {RunnerActionsCountRole, "runnerActionsCount"},
         {IsRunnerActionRole, "isRunnerAction"},
+        {MultiLineRole, "multiLine"},
     };
     return kRoleNames;
 }

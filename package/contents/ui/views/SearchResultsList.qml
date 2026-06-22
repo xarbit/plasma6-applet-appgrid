@@ -289,13 +289,14 @@ ListView {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    // The dictionary runner (and similar) puts a paragraph in the
-                    // result name: wrap it, two lines by default, expand to read
-                    // when selected. Most results are one line — no change for them.
-                    ExpandingLabel {
+                    // KRunner-style: a result flagged multiLine (the dictionary
+                    // runner and similar) wraps to its full text; everything else
+                    // stays one elided line. The line count is fixed per result —
+                    // it doesn't change on selection, so selecting a row never
+                    // shifts the others (no jitter, no skipped rows) (#189).
+                    WrappingLabel {
                         text: model.name || ""
-                        expanded: resultDelegate.highlighted
-                        collapsedLines: 2
+                        lines: model.multiLine ? 8 : 1
                         color: resultDelegate.labelColor
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.fontScale
                     }
@@ -324,10 +325,10 @@ ListView {
                 }
 
                 // Secondary line — some runners carry the detail here instead of
-                // the name; wraps the same way, one line collapsed.
-                ExpandingLabel {
+                // the name; wraps with the name when the result is multiLine.
+                WrappingLabel {
                     text: model.subtext || ""
-                    expanded: resultDelegate.highlighted
+                    lines: model.multiLine ? 8 : 1
                     font: Kirigami.Theme.smallFont
                     opacity: 0.6
                     visible: text.length > 0
