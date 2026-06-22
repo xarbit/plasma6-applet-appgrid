@@ -157,6 +157,15 @@ Kirigami.FormLayout {
         checked: (root.revision, root.configuration.enableActivities)
         onToggled: root.configuration.enableActivities = checked
     }
+    QQC2.Label {
+        Layout.fillWidth: true
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 22
+        wrapMode: Text.WordWrap
+        font: Kirigami.Theme.smallFont
+        opacity: 0.7
+        text: i18nd("dev.xarbit.appgrid",
+            "Off keeps favorites and folders global. Turning it off later does not delete per-activity data, it just hides it until enabled again.")
+    }
     QQC2.CheckBox {
         id: showRecentApps
         text: i18nd("dev.xarbit.appgrid", "Show recently used applications")

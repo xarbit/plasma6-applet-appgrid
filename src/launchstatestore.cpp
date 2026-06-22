@@ -62,15 +62,22 @@ LaunchStateStore::LaunchStateStore(const KSharedConfig::Ptr &config, QObject *pa
     m_saveTimer->setInterval(kSaveDebounceMs);
     connect(m_saveTimer, &QTimer::timeout, this, &LaunchStateStore::save);
 
-    // Pick up hides/launches made by another launcher process or applet instance.
-    // Our own writes either don't notify this watcher or reload to identical
-    // values (reloadFromExternalChange only emits on a real change), so no guard
-    // against self-notification is needed.
+    // Coalesce the burst of per-group configChanged a single write emits into one
+    // reparse — without this, a save touching [General] + a [Folders] group would
+    // reparse the file (disk I/O) once per group.
+    m_reloadTimer = new QTimer(this);
+    m_reloadTimer->setSingleShot(true);
+    m_reloadTimer->setInterval(0);
+    connect(m_reloadTimer, &QTimer::timeout, this, &LaunchStateStore::reloadFromExternalChange);
+
+    // Pick up changes made by another launcher process or applet instance — both
+    // [General] (hides/launches/global folders) and a [Folders][<activity>] group
+    // (per-activity folders). appgridrc is ours, so any change is relevant; our
+    // own writes reload to identical values (reloadFromExternalChange only emits
+    // on a real change), so no self-notification guard is needed.
     m_watcher = KConfigWatcher::create(m_config);
-    connect(m_watcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &group, const QByteArrayList &) {
-        if (group.name() == kGroup) {
-            reloadFromExternalChange();
-        }
+    connect(m_watcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &, const QByteArrayList &) {
+        m_reloadTimer->start();
     });
 }
 
@@ -206,6 +213,28 @@ void LaunchStateStore::load()
     m_known = group.readEntry(kKnownKey, QStringList());
     m_launchCounts = countsFromList(group.readEntry(kLaunchCountsKey, QStringList()));
     loadFolders();
+}
+
+void LaunchStateStore::pruneActivities(const QStringList &activityIds)
+{
+    // Empty means KActivities isn't ready — don't mistake that for "no activities"
+    // and wipe every per-activity layout.
+    if (activityIds.isEmpty()) {
+        return;
+    }
+    KConfigGroup folders = m_config->group(kFoldersGroup);
+    bool removed = false;
+    const QStringList subGroups = folders.groupList();
+    for (const QString &sub : subGroups) {
+        if (!activityIds.contains(sub)) {
+            folders.group(sub).deleteGroup();
+            removed = true;
+        }
+    }
+    // Delete in memory; let the debounced save flush it, off this signal path.
+    if (removed) {
+        scheduleSave();
+    }
 }
 
 void LaunchStateStore::loadFolders()

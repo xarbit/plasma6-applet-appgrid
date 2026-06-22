@@ -97,6 +97,19 @@ AppGridFavoritesModel::AppGridFavoritesModel(QObject *parent)
     connect(this, &QAbstractItemModel::rowsInserted, this, &AppGridFavoritesModel::countChanged);
     connect(this, &QAbstractItemModel::rowsRemoved, this, &AppGridFavoritesModel::countChanged);
     connect(this, &QAbstractItemModel::modelReset, this, &AppGridFavoritesModel::countChanged);
+
+    // Activity-submenu caches: the running-activities list rebuilds when the set
+    // changes; the per-resource linked-activities lookup clears whenever the
+    // favourite rows change (external link edits surface as row inserts/removals).
+    connect(m_consumer, &KActivities::Consumer::activitiesChanged, this, [this] {
+        m_activitiesCacheValid = false;
+    });
+    const auto clearLinked = [this] {
+        m_linkedActivitiesCache.clear();
+    };
+    connect(this, &QAbstractItemModel::rowsInserted, this, clearLinked);
+    connect(this, &QAbstractItemModel::rowsRemoved, this, clearLinked);
+    connect(this, &QAbstractItemModel::modelReset, this, clearLinked);
 }
 
 AppGridFavoritesModel::~AppGridFavoritesModel() = default;
@@ -335,14 +348,18 @@ void AppGridFavoritesModel::addFavorite(const QString &id, int index)
 
 QVariantList AppGridFavoritesModel::activities() const
 {
-    QVariantList list;
+    if (m_activitiesCacheValid) {
+        return m_activitiesCache;
+    }
+    m_activitiesCache.clear();
     const QStringList ids = m_consumer->activities();
-    list.reserve(ids.size());
+    m_activitiesCache.reserve(ids.size());
     for (const QString &id : ids) {
         KActivities::Info info(id);
-        list.append(QVariantMap{{QStringLiteral("id"), id}, {QStringLiteral("name"), info.name()}});
+        m_activitiesCache.append(QVariantMap{{QStringLiteral("id"), id}, {QStringLiteral("name"), info.name()}});
     }
-    return list;
+    m_activitiesCacheValid = true;
+    return m_activitiesCache;
 }
 
 bool AppGridFavoritesModel::isLinkedTo(const QString &resource, const QString &agent, const QString &activity)
@@ -379,18 +396,22 @@ QStringList AppGridFavoritesModel::linkedActivitiesFor(const QString &id) const
     if (resource.isEmpty()) {
         return {};
     }
+    const auto cached = m_linkedActivitiesCache.constFind(resource);
+    if (cached != m_linkedActivitiesCache.constEnd()) {
+        return cached.value();
+    }
     const QString agent = agentForResource(resource);
+    QStringList linked;
     // A global link means "every activity"; report that as an empty list (the
     // contract setLinkedActivities() takes) so callers never handle the sentinel.
-    if (isLinkedTo(resource, agent, kActivityGlobal)) {
-        return {};
-    }
-    QStringList linked;
-    for (const QString &activity : m_consumer->activities()) {
-        if (isLinkedTo(resource, agent, activity)) {
-            linked.append(activity);
+    if (!isLinkedTo(resource, agent, kActivityGlobal)) {
+        for (const QString &activity : m_consumer->activities()) {
+            if (isLinkedTo(resource, agent, activity)) {
+                linked.append(activity);
+            }
         }
     }
+    m_linkedActivitiesCache.insert(resource, linked);
     return linked;
 }
 
@@ -419,6 +440,8 @@ void AppGridFavoritesModel::setLinkedActivities(const QString &id, const QString
     // current activity; otherwise it left, so hide it ahead of the async drop.
     const bool stillVisible = activityIds.isEmpty() || activityIds.contains(m_consumer->currentActivity());
     setResourceHidden(resource, !stillVisible);
+    // The links just changed — drop the stale lookup (its row may not move).
+    m_linkedActivitiesCache.remove(resource);
 }
 
 void AppGridFavoritesModel::removeFavorite(const QString &id)

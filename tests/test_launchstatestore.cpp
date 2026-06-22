@@ -27,6 +27,7 @@ private Q_SLOTS:
     void migrateFrom_seedsOnlyAbsentKeys();
     void favoriteFolders_roundtripThroughFile();
     void perActivityFolders_globalAndLocal();
+    void pruneDropsUnknownActivityGroups();
     void favoriteLayout_roundtripThroughFile();
 
 private:
@@ -200,6 +201,28 @@ void TestLaunchStateStore::perActivityFolders_globalAndLocal()
         LaunchStateStore store(cfg); // scoping off
         QCOMPARE(names(store), QStringList{QStringLiteral("Global")});
     }
+}
+
+void TestLaunchStateStore::pruneDropsUnknownActivityGroups()
+{
+    auto cfg = freshConfig();
+    cfg->group(QStringLiteral("Folders"))
+        .group(QStringLiteral("act-A"))
+        .writeEntry(QStringLiteral("favoriteLayout"), QStringList{QStringLiteral("app:x.desktop")});
+    cfg->group(QStringLiteral("Folders"))
+        .group(QStringLiteral("act-B"))
+        .writeEntry(QStringLiteral("favoriteLayout"), QStringList{QStringLiteral("app:y.desktop")});
+    cfg->sync();
+
+    LaunchStateStore store(cfg);
+    store.pruneActivities({QStringLiteral("act-A")}); // B is gone → its group is dropped
+    // The store shares cfg, so the in-memory delete is visible without a reparse.
+    QVERIFY(cfg->group(QStringLiteral("Folders")).hasGroup(QStringLiteral("act-A")));
+    QVERIFY(!cfg->group(QStringLiteral("Folders")).hasGroup(QStringLiteral("act-B")));
+
+    // An empty list means KActivities isn't ready — must not wipe A.
+    store.pruneActivities({});
+    QVERIFY(cfg->group(QStringLiteral("Folders")).hasGroup(QStringLiteral("act-A")));
 }
 
 void TestLaunchStateStore::favoriteLayout_roundtripThroughFile()

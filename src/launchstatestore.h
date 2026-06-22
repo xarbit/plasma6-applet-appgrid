@@ -71,6 +71,11 @@ public:
      *  KConfig-only. */
     void setActivity(const QString &activityId);
 
+    /** Drop [Folders][<id>] groups for activities no longer in @p activityIds
+     *  (deleted in Plasma), so stale per-activity layouts don't accumulate. A
+     *  no-op when @p activityIds is empty (KActivities not ready yet). */
+    void pruneActivities(const QStringList &activityIds);
+
     /** Seed any empty key from a variant's old per-applet config (panel upgrade).
      *  @p counts is the on-disk "storageId=count" StringList. Writes only the
      *  keys still absent from the file, so the first launcher to migrate wins and
@@ -106,6 +111,8 @@ private:
     KSharedConfig::Ptr m_config;
     KConfigWatcher::Ptr m_watcher;
     QTimer *m_saveTimer = nullptr;
+    // Coalesces the per-group configChanged burst into a single reparse+reload.
+    QTimer *m_reloadTimer = nullptr;
 
     QStringList m_hidden;
     QStringList m_recent;

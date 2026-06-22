@@ -148,6 +148,11 @@ void AppGridController::wireLaunchState()
     connect(m_activities, &KActivities::Consumer::currentActivityChanged, &m_launchState, [this](const QString &id) {
         m_launchState.setActivity(m_activityScoping ? id : QString());
     });
+    // Drop per-activity folder layouts for activities removed in Plasma.
+    m_launchState.pruneActivities(m_activities->activities());
+    connect(m_activities, &KActivities::Consumer::activitiesChanged, &m_launchState, [this](const QStringList &activities) {
+        m_launchState.pruneActivities(activities);
+    });
 
     // Favourites folders (issue #18): the store owns the persisted definitions +
     // layout, the grouped model owns the live reconciled view. Store → model is a

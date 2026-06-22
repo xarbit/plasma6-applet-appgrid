@@ -156,4 +156,11 @@ private:
     // own model for the same reason), so the view would otherwise only refresh on
     // reload. Filtered out until the real removal lands or the id is re-added.
     QSet<QString> m_pendingRemovals;
+
+    // Caches for the activity submenu, rebuilt per right-click otherwise. The
+    // running-activities list (+ names) is rebuilt on activitiesChanged; the
+    // per-resource linked-activities lookup is cleared whenever links change.
+    mutable QVariantList m_activitiesCache;
+    mutable bool m_activitiesCacheValid = false;
+    mutable QHash<QString, QStringList> m_linkedActivitiesCache;
 };
