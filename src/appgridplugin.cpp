@@ -6,6 +6,7 @@
 #include "appgridplugin.h"
 
 #include "appgridconstants.h"
+#include "pluginhelpers.h"
 
 #include <KConfig>
 #include <KConfigGroup>
@@ -26,6 +27,11 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
     : Plasma::Applet(parent, data, args)
     , m_controller(this)
 {
+    // Tidy stale keys older versions left in this applet's own config (the
+    // controller already did the same for the shared appgridrc).
+    KConfigGroup appletGeneral = config().group(QStringLiteral("General"));
+    PluginHelpers::pruneObsoleteKeys(appletGeneral);
+
     // PlasmoidItem::init() connects activated → setExpanded(true). For custom
     // Window mode, we add a second connection (fires after PlasmoidItem's) that
     // immediately reverses the expansion, preventing the native popup from

@@ -28,8 +28,9 @@ private:
     static QStringList entryNames(const QVariantList &list)
     {
         QStringList names;
-        for (const auto &v : list)
+        for (const auto &v : list) {
             names << v.toMap().value(QStringLiteral("name")).toString();
+        }
         return names;
     }
 
@@ -89,10 +90,8 @@ private Q_SLOTS:
     // closing quote-strip didn't see endsWith('"').
     void parseOsPrettyName_handlesCrlf()
     {
-        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=\"Foo\"\r\n")),
-                 QStringLiteral("Foo"));
-        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=Bar\r\n")),
-                 QStringLiteral("Bar"));
+        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=\"Foo\"\r\n")), QStringLiteral("Foo"));
+        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=Bar\r\n")), QStringLiteral("Bar"));
     }
 
     // Comment lines must not be matched as the key.
@@ -110,8 +109,7 @@ private Q_SLOTS:
     // documents that current behavior rather than relying on it.
     void parseOsPrettyName_toleratesLeadingWhitespace()
     {
-        QCOMPARE(parseOsPrettyName(QStringLiteral("    PRETTY_NAME=Indented\n")),
-                 QStringLiteral("Indented"));
+        QCOMPARE(parseOsPrettyName(QStringLiteral("    PRETTY_NAME=Indented\n")), QStringLiteral("Indented"));
     }
 
     // The first matching key wins; later definitions are ignored
@@ -157,10 +155,11 @@ private Q_SLOTS:
         int lastDir = -1;
         int firstFile = list.size();
         for (int i = 0; i < list.size(); ++i) {
-            if (list.at(i).toMap().value(QStringLiteral("isDir")).toBool())
+            if (list.at(i).toMap().value(QStringLiteral("isDir")).toBool()) {
                 lastDir = i;
-            else if (firstFile == list.size())
+            } else if (firstFile == list.size()) {
                 firstFile = i;
+            }
         }
         QVERIFY(lastDir < firstFile);
     }
@@ -193,8 +192,9 @@ private Q_SLOTS:
 
         for (const auto &v : listDirectoryAt(tmp.path())) {
             const auto map = v.toMap();
-            if (map.value(QStringLiteral("isDir")).toBool())
+            if (map.value(QStringLiteral("isDir")).toBool()) {
                 QCOMPARE(map.value(QStringLiteral("icon")).toString(), QStringLiteral("folder"));
+            }
         }
     }
 
@@ -211,25 +211,20 @@ private Q_SLOTS:
             "text/html=alsoignored.desktop\n");
         QStringList ids = parseMimeAppsDefaults(contents);
         ids.sort();
-        QCOMPARE(ids, QStringList({QStringLiteral("chromium.desktop"),
-                                   QStringLiteral("firefox.desktop"),
-                                   QStringLiteral("okular.desktop")}));
+        QCOMPARE(ids, QStringList({QStringLiteral("chromium.desktop"), QStringLiteral("firefox.desktop"), QStringLiteral("okular.desktop")}));
     }
 
     void parseMimeAppsDefaults_emptyOnNoDefaultSection()
     {
         QVERIFY(parseMimeAppsDefaults(QString()).isEmpty());
-        QVERIFY(parseMimeAppsDefaults(QStringLiteral(
-                    "[Added Associations]\ntext/plain=foo.desktop\n"))
-                    .isEmpty());
+        QVERIFY(parseMimeAppsDefaults(QStringLiteral("[Added Associations]\ntext/plain=foo.desktop\n")).isEmpty());
     }
 
     void desktopPathFromRunnerUrls_findsFirstDesktop()
     {
         const QList<QUrl> urls{QUrl::fromLocalFile(QStringLiteral("/tmp/note.txt")),
                                QUrl::fromLocalFile(QStringLiteral("/usr/share/applications/org.kde.kate.desktop"))};
-        QCOMPARE(desktopPathFromRunnerUrls(QVariant::fromValue(urls)),
-                 QStringLiteral("/usr/share/applications/org.kde.kate.desktop"));
+        QCOMPARE(desktopPathFromRunnerUrls(QVariant::fromValue(urls)), QStringLiteral("/usr/share/applications/org.kde.kate.desktop"));
     }
 
     void desktopPathFromRunnerUrls_emptyWhenNoDesktop()
@@ -281,9 +276,7 @@ private Q_SLOTS:
     {
         QTemporaryDir dir;
         auto cfg = KSharedConfig::openConfig(dir.filePath(QStringLiteral("krunnerrc")), KConfig::SimpleConfig);
-        const QStringList arrangement{QStringLiteral("windows"),
-                                      QStringLiteral("krunner_services"),
-                                      QStringLiteral("krunner_systemsettings")};
+        const QStringList arrangement{QStringLiteral("windows"), QStringLiteral("krunner_services"), QStringLiteral("krunner_systemsettings")};
         cfg->group(QStringLiteral("Plugins")).group(QStringLiteral("Favorites")).writeEntry("plugins", arrangement);
 
         // Order must be preserved exactly — it is the plugin arrangement.
@@ -296,6 +289,24 @@ private Q_SLOTS:
         auto cfg = KSharedConfig::openConfig(dir.filePath(QStringLiteral("empty")), KConfig::SimpleConfig);
         QVERIFY(readRunnerFavorites(cfg).isEmpty()); // group/key absent
         QVERIFY(readRunnerFavorites(KSharedConfig::Ptr()).isEmpty()); // null config
+    }
+
+    void pruneObsoleteKeys_dropsDeadFieldsOnly()
+    {
+        QTemporaryDir dir;
+        auto cfg = KSharedConfig::openConfig(dir.filePath(QStringLiteral("appgridrc")), KConfig::SimpleConfig);
+        KConfigGroup g = cfg->group(QStringLiteral("General"));
+        g.writeEntry(QStringLiteral("favoritesPortedToKAstats"), true); // dead migration flag
+        g.writeEntry(QStringLiteral("enableBlur"), false); // dead appearance key
+        g.writeEntry(QStringLiteral("gridColumns"), 6); // live schema key
+        g.writeEntry(QStringLiteral("hiddenApps"), QStringList{QStringLiteral("a.desktop")}); // launch-state key
+
+        pruneObsoleteKeys(g);
+
+        QVERIFY(!g.hasKey(QStringLiteral("favoritesPortedToKAstats")));
+        QVERIFY(!g.hasKey(QStringLiteral("enableBlur")));
+        QVERIFY(g.hasKey(QStringLiteral("gridColumns")));
+        QVERIFY(g.hasKey(QStringLiteral("hiddenApps")));
     }
 };
 

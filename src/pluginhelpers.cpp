@@ -249,4 +249,34 @@ QStringList readRunnerFavorites(const QExplicitlySharedDataPointer<KSharedConfig
     // krunnerrc shape: [Plugins][Favorites] plugins=id1,id2,…
     return config->group(QStringLiteral("Plugins")).group(QStringLiteral("Favorites")).readEntry("plugins", QStringList());
 }
+
+void pruneObsoleteKeys(KConfigGroup &group)
+{
+    static const QStringList obsolete = {
+        QStringLiteral("favoritesPortedToKAstats"),
+        QStringLiteral("headerActionsMigrated"),
+        QStringLiteral("iconMigratedFrom17"),
+        QStringLiteral("powerButtonsMigrated"),
+        QStringLiteral("powerButtonsHidden"),
+        QStringLiteral("powerButtonOrder"),
+        QStringLiteral("showSessionButtons"),
+        QStringLiteral("favoriteApps"),
+        QStringLiteral("backgroundOpacity"),
+        QStringLiteral("cornerRadius"),
+        QStringLiteral("enableBackgroundContrast"),
+        QStringLiteral("enableBlur"),
+        QStringLiteral("openAnimation"),
+        QStringLiteral("useThemeBackground"),
+    };
+    bool removed = false;
+    for (const QString &key : obsolete) {
+        if (group.hasKey(key)) {
+            group.deleteEntry(key);
+            removed = true;
+        }
+    }
+    if (removed) {
+        group.sync();
+    }
+}
 }

@@ -11,6 +11,7 @@
 #include <QVariantList>
 
 class KSharedConfig;
+class KConfigGroup;
 
 /**
  * Pure, Plasma-free helpers extracted from AppGridPlugin so the parsing and
@@ -88,4 +89,10 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  (#180). Empty when unset or @p config is null. The config is passed in
  *  (rather than opened here) so this stays unit-testable against a temp file. */
 [[nodiscard]] QStringList readRunnerFavorites(const QExplicitlySharedDataPointer<KSharedConfig> &config);
+
+/** One-time tidy of @p group: drop keys older versions wrote that no current
+ *  code reads — 1.x→2.0 migration flags and appearance settings removed in the
+ *  2.0 window rework. Used for both appgridrc [General] and the applet's own
+ *  config group. Idempotent; syncs only when something was removed. */
+void pruneObsoleteKeys(KConfigGroup &group);
 }

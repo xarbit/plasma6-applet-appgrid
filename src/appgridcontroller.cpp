@@ -94,6 +94,11 @@ AppGridController::AppGridController(QObject *parent)
 
     wireLaunchState();
 
+    // One-time tidy of stale appgridrc keys older versions left behind (same
+    // shared instance LaunchStateStore uses).
+    KConfigGroup appgridGeneral = KSharedConfig::openConfig(QStringLiteral("appgridrc"))->group(QStringLiteral("General"));
+    PluginHelpers::pruneObsoleteKeys(appgridGeneral);
+
     // Warm the AppStream pool in the background now, so the first right-click
     // "Manage in Discover" check never blocks on a synchronous metadata parse.
     AppStreamResolver::warm();
