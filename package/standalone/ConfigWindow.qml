@@ -81,7 +81,7 @@ Kirigami.ApplicationWindow {
         // Appearance / Animations
         "showDividers", "showScrollbars", "showTooltips", "showNewAppBadge",
         "iconShadow", "hoverHighlight", "independentTextSize", "reduceGridSpacing",
-        "hideLabelsOnFavorites", "favoriteFoldersEnabled",
+        "hideLabelsOnFavorites", "favoriteFoldersEnabled", "enableActivities",
         "hideGridWhenEmpty", "hoverAnimation", "shakeOnOpen",
         // Search
         "searchAll", "useExtraRunners", "searchUsesFrecency", "searchShowsHidden",

@@ -156,6 +156,10 @@ public:
     /** Surface hidden apps in search results when @p enabled is true. */
     Q_INVOKABLE void setSearchShowsHidden(bool enabled);
 
+    /** Opt-in per-activity scoping (favorites menus + folders). Off (default)
+     *  feeds the store an empty activity so folders stay global. */
+    Q_INVOKABLE void setActivityScopingEnabled(bool enabled);
+
     // --- Prefix mode commands ---
 
     /** Run @p command in the user's preferred terminal emulator using @p shell. */
@@ -246,8 +250,10 @@ private:
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
     // Feeds the current activity to m_launchState so folders are per-activity;
-    // the store itself stays KConfig-only.
+    // the store itself stays KConfig-only. Gated by m_activityScoping (opt-in):
+    // off feeds an empty activity, keeping folders global.
     KActivities::Consumer *m_activities = nullptr;
+    bool m_activityScoping = false;
     KRunner::ResultsModel *m_runnerModel = nullptr;
     RunnerFilterModel m_runnerFilterModel;
     UnifiedSearchModel m_searchModel;

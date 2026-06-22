@@ -152,6 +152,12 @@ Kirigami.FormLayout {
         onToggled: root.configuration.sortFavoritesAlphabetically = checked
     }
     QQC2.CheckBox {
+        id: enableActivities
+        text: i18nd("dev.xarbit.appgrid", "Scope favorites and folders per activity")
+        checked: (root.revision, root.configuration.enableActivities)
+        onToggled: root.configuration.enableActivities = checked
+    }
+    QQC2.CheckBox {
         id: showRecentApps
         text: i18nd("dev.xarbit.appgrid", "Show recently used applications")
         enabled: sortMode.currentIndex !== 1 || startWithFavorites.checked

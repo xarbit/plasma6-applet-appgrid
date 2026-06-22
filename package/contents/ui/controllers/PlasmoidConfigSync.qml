@@ -26,6 +26,7 @@ QtObject {
             updateChecker.enabled = configuration.checkForUpdates === true
         bridge.setSearchUsesFrecency(configuration.searchUsesFrecency === true)
         bridge.setSearchShowsHidden(configuration.searchShowsHidden === true)
+        bridge.setActivityScopingEnabled(configuration.enableActivities === true)
     }
 
     Component.onCompleted: _sync()
@@ -35,5 +36,6 @@ QtObject {
         function onCheckForUpdatesChanged() { sync._sync() }
         function onSearchUsesFrecencyChanged() { sync._sync() }
         function onSearchShowsHiddenChanged() { sync._sync() }
+        function onEnableActivitiesChanged() { sync._sync() }
     }
 }

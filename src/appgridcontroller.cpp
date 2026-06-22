@@ -144,9 +144,9 @@ void AppGridController::wireLaunchState()
     // activity's layout (or the shared one until it diverges) and emits the
     // folders/layout-changed signals the grouped-model wiring below already handles.
     m_activities = new KActivities::Consumer(this);
-    m_launchState.setActivity(m_activities->currentActivity());
+    m_launchState.setActivity(m_activityScoping ? m_activities->currentActivity() : QString());
     connect(m_activities, &KActivities::Consumer::currentActivityChanged, &m_launchState, [this](const QString &id) {
-        m_launchState.setActivity(id);
+        m_launchState.setActivity(m_activityScoping ? id : QString());
     });
 
     // Favourites folders (issue #18): the store owns the persisted definitions +
@@ -610,6 +610,16 @@ void AppGridController::setSearchUsesFrecency(bool enabled)
 void AppGridController::setSearchShowsHidden(bool enabled)
 {
     m_filterModel.setSearchShowsHidden(enabled);
+}
+
+void AppGridController::setActivityScopingEnabled(bool enabled)
+{
+    if (m_activityScoping == enabled) {
+        return;
+    }
+    m_activityScoping = enabled;
+    // Re-scope the store: the current activity when on, empty (global) when off.
+    m_launchState.setActivity(enabled ? m_activities->currentActivity() : QString());
 }
 
 // --- Prefix mode commands ---

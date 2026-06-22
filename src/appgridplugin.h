@@ -114,6 +114,7 @@ public:
     [[nodiscard]] QString panelScreenName() const;
     Q_INVOKABLE void setSearchUsesFrecency(bool enabled);
     Q_INVOKABLE void setSearchShowsHidden(bool enabled);
+    Q_INVOKABLE void setActivityScopingEnabled(bool enabled);
 
     // --- Prefix mode commands ---
 

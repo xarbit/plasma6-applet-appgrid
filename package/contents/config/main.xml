@@ -82,6 +82,10 @@
       <label>Whether favorites can be grouped into folders (issue #18).</label>
       <default>true</default>
     </entry>
+    <entry name="enableActivities" type="Bool">
+      <label>Whether favorites and folders can be scoped per Plasma activity. Off (default) keeps everything global.</label>
+      <default>false</default>
+    </entry>
     <entry name="checkForUpdates" type="Bool">
       <label>Whether to check the AppGrid website periodically for new releases. Universal-build only; ignored on distro packages where the package manager handles updates.</label>
       <default>false</default>

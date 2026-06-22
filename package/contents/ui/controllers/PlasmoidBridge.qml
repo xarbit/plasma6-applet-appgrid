@@ -41,4 +41,5 @@ QtObject {
     function listDirectory(path)            { return Plasmoid.listDirectory(path) }
     function setSearchUsesFrecency(on)      { Plasmoid.setSearchUsesFrecency(on) }
     function setSearchShowsHidden(on)       { Plasmoid.setSearchShowsHidden(on) }
+    function setActivityScopingEnabled(on)  { Plasmoid.setActivityScopingEnabled(on) }
 }

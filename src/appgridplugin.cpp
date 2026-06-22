@@ -196,6 +196,11 @@ void AppGridPlugin::setSearchUsesFrecency(bool enabled)
     m_controller.setSearchUsesFrecency(enabled);
 }
 
+void AppGridPlugin::setActivityScopingEnabled(bool enabled)
+{
+    m_controller.setActivityScopingEnabled(enabled);
+}
+
 void AppGridPlugin::setSearchShowsHidden(bool enabled)
 {
     m_controller.setSearchShowsHidden(enabled);

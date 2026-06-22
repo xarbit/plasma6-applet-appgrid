@@ -63,6 +63,7 @@ QtObject {
     readonly property bool sortFavoritesAlphabetically: source.sortFavoritesAlphabetically
     readonly property bool hideLabelsOnFavorites: source.hideLabelsOnFavorites
     readonly property bool favoriteFoldersEnabled: source.favoriteFoldersEnabled
+    readonly property bool enableActivities: source.enableActivities
 
     // Hidden / recent / known apps and launch counts are no longer here: that
     // per-user launch state lives in the shared LaunchStateStore (appgridrc),

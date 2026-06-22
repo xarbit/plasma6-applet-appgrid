@@ -1025,6 +1025,7 @@ Kirigami.ShadowedRectangle {
         // anywhere (grid, search) — not only on the favourites tab.
         favoritesGroupedModel: panel.favoritesGroupedModel
         favoritesManager: favorites
+        enableActivities: cfg.enableActivities
         favoritesActive: panel.isFavoritesActive
         appletInterface: panel.appletInterface
         onOpenFolderRequested: folderId => panel.openFolderId = folderId

@@ -35,6 +35,9 @@ Item {
     property var favoritesGroupedModel: null
     // Single source of truth for favourite mutations (controllers/FavoritesManager).
     property var favoritesManager: null
+    // Per-activity favourites/folders opt-in; off keeps everything global and
+    // hides the activity menus.
+    property bool enableActivities: false
     property bool favoritesActive: false
     property string popupFolderId: ""
     // Folders available at all (model present + editable). The favourites-tab
@@ -188,7 +191,7 @@ Item {
             // one activity exists (a stable condition, so it's added once and
             // stays, like the folder submenu). Picking an activity on a
             // non-favourite favourites it there.
-            const acts = sharedFavoritesModel ? sharedFavoritesModel.activities() : []
+            const acts = enableActivities && sharedFavoritesModel ? sharedFavoritesModel.activities() : []
             const wantActivitiesSub = acts.length > 1
             if (wantActivitiesSub) {
                 // Rebuild the item list only when the activity set actually
