@@ -92,9 +92,9 @@ public:
     [[nodiscard]] QVariantMap launchCountsMap() const;
     void setLaunchCountsMap(const QVariantMap &map);
 
-    /** Storage ids with recorded KActivities usage (UsedAppsProvider); an app
-     *  absent here and recently installed shows the "new" badge. */
-    void setUsedApps(const QSet<QString> &used);
+    /** Storage ids currently shown with the "new" badge, computed by
+     *  NewAppsTracker (recently installed and unused). */
+    void setNewApps(const QSet<QString> &newApps);
 
     [[nodiscard]] bool showFavoritesOnly() const;
     void setShowFavoritesOnly(bool enabled);
@@ -221,7 +221,7 @@ private:
     int m_sortMode = Alphabetical;
     int m_iconGeneration = 0;
     QHash<QString, int> m_frecencyScores;
-    QSet<QString> m_usedApps; // KActivities-used storage ids, for the new-app badge
+    QSet<QString> m_newApps; // storage ids with the new-app badge (from NewAppsTracker)
     bool m_searchUsesFrecency = false;
     bool m_searchShowsHidden = false;
     bool m_showFavoritesOnly = false;

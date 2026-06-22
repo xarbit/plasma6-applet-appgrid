@@ -424,21 +424,20 @@ bool AppFilterModel::isHidden(const QString &storageId) const
     return m_book.isHidden(storageId);
 }
 
-void AppFilterModel::setUsedApps(const QSet<QString> &used)
+void AppFilterModel::setNewApps(const QSet<QString> &newApps)
 {
-    if (m_usedApps == used) {
+    if (m_newApps == newApps) {
         return;
     }
-    m_usedApps = used;
+    m_newApps = newApps;
     Q_EMIT newAppsChanged(); // delegates re-read isNewApp
 }
 
 bool AppFilterModel::isNewApp(const QString &storageId) const
 {
-    // Newly installed = its .desktop is recent and it has no recorded usage
-    // (the same model kicker uses, owned via UsedAppsProvider).
-    auto *src = qobject_cast<AppModel *>(sourceModel());
-    return src && src->recentlyInstalled(storageId) && !m_usedApps.contains(storageId);
+    // The set is computed by NewAppsTracker (recently installed + unused, the
+    // Kickoff model); the filter just exposes membership to the delegates.
+    return m_newApps.contains(storageId);
 }
 
 bool AppFilterModel::showFavoritesOnly() const

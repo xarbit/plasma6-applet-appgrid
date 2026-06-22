@@ -1,0 +1,131 @@
+/*
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
+
+#include "newappstracker.h"
+
+#include "usedappsprovider.h"
+
+#include <KConfigGroup>
+
+namespace
+{
+// How many days an app counts as newly installed. Matches Kickoff's
+// AppEntry::s_newlyInstalledDays.
+constexpr int kNewAppDays = 3;
+
+constexpr QLatin1String kGroup{"NewApps"};
+constexpr QLatin1String kInstalledKey{"installedApps"};
+constexpr QLatin1String kFirstSeenKey{"firstSeen"};
+
+// firstSeen persists as a "storageId=yyyy-MM-dd" StringList, mirroring the
+// launch-count on-disk form; convert at the file boundary.
+QHash<QString, QDate> firstSeenFromList(const QStringList &list)
+{
+    QHash<QString, QDate> map;
+    for (const QString &entry : list) {
+        const int eq = entry.lastIndexOf(QLatin1Char('='));
+        if (eq <= 0) {
+            continue;
+        }
+        const QDate date = QDate::fromString(entry.mid(eq + 1), Qt::ISODate);
+        if (date.isValid()) {
+            map.insert(entry.left(eq), date);
+        }
+    }
+    return map;
+}
+
+QStringList firstSeenToList(const QHash<QString, QDate> &map)
+{
+    QStringList list;
+    list.reserve(map.size());
+    for (auto it = map.cbegin(); it != map.cend(); ++it) {
+        list.append(it.key() + QLatin1Char('=') + it.value().toString(Qt::ISODate));
+    }
+    list.sort(); // stable on-disk order, so an unchanged set never rewrites
+    return list;
+}
+}
+
+NewAppsTracker::NewAppsTracker(UsedAppsProvider *usedApps, const KSharedConfig::Ptr &config, QObject *parent)
+    : QObject(parent)
+    , m_usedApps(usedApps)
+    , m_config(config ? config : KSharedConfig::openConfig(QStringLiteral("appgridrc")))
+{
+    m_firstSeen = firstSeenFromList(m_config->group(kGroup).readEntry(kFirstSeenKey, QStringList()));
+    if (m_usedApps) {
+        connect(m_usedApps, &UsedAppsProvider::usedAppsChanged, this, &NewAppsTracker::recompute);
+    }
+    recompute();
+}
+
+void NewAppsTracker::refresh(const QStringList &installedIds)
+{
+    // The app model loads asynchronously; an empty list means "not loaded yet",
+    // never a real install state. Refreshing on it would wipe the baseline and
+    // then reseed from the full list, so a genuinely new app would never flag.
+    if (installedIds.isEmpty()) {
+        return;
+    }
+
+    KConfigGroup group = m_config->group(kGroup);
+    const QStringList stored = group.readEntry(kInstalledKey, QStringList());
+    const QDate today = QDate::currentDate();
+
+    QHash<QString, QDate> next;
+    next.reserve(installedIds.size());
+    for (const QString &id : installedIds) {
+        QDate firstSeen;
+        if (stored.isEmpty() || stored.contains(id)) {
+            // Baseline seed (empty store) or an already-known app: keep its date,
+            // but stop tracking once the window has lapsed so firstSeen stays small.
+            firstSeen = m_firstSeen.value(id);
+            if (firstSeen.isValid() && firstSeen.daysTo(today) >= kNewAppDays) {
+                firstSeen = QDate();
+            }
+        } else {
+            // Absent from a non-empty baseline → genuinely newly installed.
+            firstSeen = today;
+        }
+        if (firstSeen.isValid()) {
+            next.insert(id, firstSeen);
+        }
+    }
+
+    // ponytail: a reinstall inside the window re-flags as new (no LastSeen grace
+    // like Kickoff's). Rare and harmless; add the grace only if it bites.
+    if (stored != installedIds) {
+        group.writeEntry(kInstalledKey, installedIds);
+    }
+    const QStringList nextList = firstSeenToList(next);
+    if (group.readEntry(kFirstSeenKey, QStringList()) != nextList) {
+        group.writeEntry(kFirstSeenKey, nextList);
+    }
+    if (group.config()->isDirty()) {
+        group.sync();
+    }
+
+    m_firstSeen = next;
+    recompute();
+}
+
+void NewAppsTracker::recompute()
+{
+    const QDate today = QDate::currentDate();
+    QSet<QString> next;
+    for (auto it = m_firstSeen.cbegin(); it != m_firstSeen.cend(); ++it) {
+        if (it.value().daysTo(today) >= kNewAppDays) {
+            continue; // window lapsed
+        }
+        if (m_usedApps && m_usedApps->isUsed(it.key())) {
+            continue; // already launched → no longer new (Kickoff's score clear)
+        }
+        next.insert(it.key());
+    }
+    if (next != m_new) {
+        m_new = next;
+        Q_EMIT newAppsChanged();
+    }
+}

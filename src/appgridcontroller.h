@@ -20,6 +20,7 @@ class ResultsModel;
 #include "favoritesgroupedmodel.h"
 #include "frecencyprovider.h"
 #include "launchstatestore.h"
+#include "newappstracker.h"
 #include "runnerfiltermodel.h"
 #include "unifiedsearchmodel.h"
 #include "usedappsprovider.h"
@@ -260,6 +261,8 @@ private:
     UnifiedSearchModel m_searchModel;
     FrecencyProvider m_frecencyProvider;
     UsedAppsProvider m_usedApps;
+    // Declared after m_usedApps: the tracker subscribes to it on construction.
+    NewAppsTracker m_newAppsTracker;
     KSharedConfig::Ptr m_krunnerConfig;
     KConfigWatcher::Ptr m_krunnerWatcher;
     // Always set by setLayerScope() before configurePanelWayland() reads it; the

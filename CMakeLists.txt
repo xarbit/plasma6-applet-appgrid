@@ -245,6 +245,8 @@ set(APPGRID_COMMON_SOURCES
     src/frecencyprovider.h
     src/usedappsprovider.cpp
     src/usedappsprovider.h
+    src/newappstracker.cpp
+    src/newappstracker.h
     src/frecencyscoring.cpp
     src/frecencyscoring.h
 )

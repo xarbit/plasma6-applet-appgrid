@@ -20,7 +20,6 @@ struct AppEntry {
     QStringList keywords;
     QString comment;
     QString installSource;
-    bool recentlyInstalled = false; // .desktop modified within the new-app window
 };
 
 /**
@@ -59,11 +58,11 @@ public:
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     [[nodiscard]] Q_INVOKABLE QString categoryIcon(const QString &category) const;
 
-    // Pure helpers — testable without constructing the model.
-    /** True if @p storageId's .desktop is recent enough to be a candidate for
-     *  the "new app" badge (the badge also requires it to be unused). */
-    [[nodiscard]] bool recentlyInstalled(const QString &storageId) const;
+    /** Storage ids of every currently installed app, in model order. The
+     *  new-app tracker diffs this against its stored baseline. */
+    [[nodiscard]] QStringList storageIds() const;
 
+    // Pure helpers — testable without constructing the model.
     [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
     [[nodiscard]] static QStringList mapCategories(const QStringList &categories);
 
@@ -80,7 +79,6 @@ private:
     void loadApplications();
 
     QVector<AppEntry> m_apps;
-    QHash<QString, bool> m_recentlyInstalled; // storageId → recent, rebuilt on load
     QStringList m_categories;
     QHash<QString, QString> m_categoryMenuPaths;
     QHash<QString, QString> m_categoryIcons;

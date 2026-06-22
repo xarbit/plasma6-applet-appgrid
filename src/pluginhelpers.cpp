@@ -267,8 +267,8 @@ void pruneObsoleteKeys(KConfigGroup &group)
         QStringLiteral("enableBlur"),
         QStringLiteral("openAnimation"),
         QStringLiteral("useThemeBackground"),
-        // The new-app baseline is now derived from KActivities usage + .desktop
-        // recency (UsedAppsProvider), so the stored seen-apps list is dead.
+        // Old new-app seen-set: replaced by NewAppsTracker's [NewApps] baseline
+        // (installed-apps list + per-app FirstSeen), so this key is dead.
         QStringLiteral("knownApps"),
     };
     bool removed = false;

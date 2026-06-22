@@ -60,6 +60,7 @@
 
 AppGridController::AppGridController(QObject *parent)
     : QObject(parent)
+    , m_newAppsTracker(&m_usedApps)
 {
     // Make the favourites model importable from QML (SharedFavoritesProvider).
     // Once per process — every variant and the daemon construct a controller.
@@ -127,11 +128,18 @@ void AppGridController::wireLaunchState()
         m_filterModel.setLaunchCountsMap(m_launchState.launchCounts());
     });
 
-    // New-app badge: the set of KActivities-used apps drives isNewApp (an unused,
-    // recently-installed app is "new"). Always on; feeds the filter model live.
-    m_filterModel.setUsedApps(m_usedApps.usedApps());
-    connect(&m_usedApps, &UsedAppsProvider::usedAppsChanged, &m_filterModel, [this]() {
-        m_filterModel.setUsedApps(m_usedApps.usedApps());
+    // New-app badge: NewAppsTracker diffs the installed set against its persisted
+    // baseline (Kickoff's model) and pushes the badge set to the filter. Re-run
+    // the diff whenever the app list changes (KSycoca → AppModel reset); the
+    // tracker also recomputes on its own when KActivities usage changes.
+    const auto refreshNewApps = [this]() {
+        m_newAppsTracker.refresh(m_appModel.storageIds());
+    };
+    refreshNewApps();
+    connect(&m_appModel, &QAbstractItemModel::modelReset, this, refreshNewApps);
+    m_filterModel.setNewApps(m_newAppsTracker.newApps());
+    connect(&m_newAppsTracker, &NewAppsTracker::newAppsChanged, &m_filterModel, [this]() {
+        m_filterModel.setNewApps(m_newAppsTracker.newApps());
     });
 
     connect(&m_filterModel, &AppFilterModel::hiddenAppsChanged, &m_launchState, [this]() {

@@ -84,6 +84,21 @@ add_executable(test_launchstatestore
 target_link_libraries(test_launchstatestore PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
 add_test(NAME test_launchstatestore COMMAND test_launchstatestore)
 
+# NewAppsTracker — Kickoff-style new-app baseline. KActivities usage is injected
+# null in the test, but usedappsprovider.{cpp,h} is compiled for its moc + the
+# isUsed/signal symbols the tracker references.
+add_executable(test_newappstracker
+    test_newappstracker.cpp
+    ${CMAKE_SOURCE_DIR}/src/newappstracker.cpp
+    ${CMAKE_SOURCE_DIR}/src/newappstracker.h
+    ${CMAKE_SOURCE_DIR}/src/usedappsprovider.cpp
+    ${CMAKE_SOURCE_DIR}/src/usedappsprovider.h
+    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
+    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.h
+)
+target_link_libraries(test_newappstracker PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore Plasma::ActivitiesStats)
+add_test(NAME test_newappstracker COMMAND test_newappstracker)
+
 # FavoritesFolderLogic — pure folder/layout transforms, QtCore only (issue #18).
 add_executable(test_favoritesfolderlogic
     test_favoritesfolderlogic.cpp
