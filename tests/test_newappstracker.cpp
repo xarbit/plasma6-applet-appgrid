@@ -28,6 +28,7 @@ private Q_SLOTS:
     void expiredFirstSeenIsNotNew();
     void freshFirstSeenIsNew();
     void emptyRefreshKeepsBaseline();
+    void unchangedRefreshDoesNotReemit();
 
 private:
     KSharedConfig::Ptr freshConfig();
@@ -118,6 +119,22 @@ void TestNewAppsTracker::emptyRefreshKeepsBaseline()
     // or a genuinely new app installed while closed would never flag.
     tracker.refresh({});
     QCOMPARE(cfg->group(QStringLiteral("NewApps")).readEntry("installedApps", QStringList()).size(), 2);
+}
+
+void TestNewAppsTracker::unchangedRefreshDoesNotReemit()
+{
+    auto cfg = freshConfig();
+    NewAppsTracker tracker(nullptr, cfg);
+    tracker.refresh({QStringLiteral("a"), QStringLiteral("b")}); // seed
+    tracker.refresh({QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("d")}); // d new
+    QCOMPARE(tracker.newApps(), QSet<QString>{QStringLiteral("d")});
+
+    // Re-running with the same install set leaves the badge set untouched → no
+    // spurious signal (delegates would needlessly re-evaluate isNewApp).
+    QSignalSpy spy(&tracker, &NewAppsTracker::newAppsChanged);
+    tracker.refresh({QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("d")});
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(tracker.newApps(), QSet<QString>{QStringLiteral("d")});
 }
 
 QTEST_GUILESS_MAIN(TestNewAppsTracker)

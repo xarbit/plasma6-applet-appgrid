@@ -37,7 +37,7 @@ class NewAppsTracker : public QObject
 {
     Q_OBJECT
 public:
-    /** @p config defaults to appgridrc; injectable so tests can use a scratch file. */
+    /** @p config defaults to appgridstaterc; injectable so tests can use a scratch file. */
     explicit NewAppsTracker(UsedAppsProvider *usedApps, const KSharedConfig::Ptr &config = {}, QObject *parent = nullptr);
 
     /** Diff @p installedIds against the stored baseline, stamp newly-installed

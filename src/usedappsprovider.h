@@ -19,11 +19,10 @@ class ResultModel;
 
 /**
  * Always-on KActivities view of which applications have been used (have any
- * usage score). Drives the "new app" badge the way kicker does, but owned here
- * instead of via the private kicker API: an app the user has never launched and
- * whose .desktop file is recent counts as newly installed. AppGrid's own launch
- * broadcasts (ResourceInstance::notifyAccessed) feed the same database, so an
- * app stops being "new" the moment it is launched.
+ * usage score). NewAppsTracker uses it to clear the "new app" badge: a recently
+ * installed app the user has never launched is new; once launched it isn't.
+ * AppGrid's own launch broadcasts (ResourceInstance::notifyAccessed) feed the
+ * same database, so an app drops out of "new" the moment it is launched.
  */
 class UsedAppsProvider : public QObject
 {
@@ -37,10 +36,6 @@ public:
     [[nodiscard]] bool isUsed(const QString &storageId) const
     {
         return m_used.contains(storageId);
-    }
-    [[nodiscard]] QSet<QString> usedApps() const
-    {
-        return m_used;
     }
 
 Q_SIGNALS:

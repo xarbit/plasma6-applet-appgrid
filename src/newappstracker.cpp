@@ -19,6 +19,13 @@ constexpr QLatin1String kGroup{"NewApps"};
 constexpr QLatin1String kInstalledKey{"installedApps"};
 constexpr QLatin1String kFirstSeenKey{"firstSeen"};
 
+// An app is "newly installed" while its first-seen date is valid and inside the
+// window; the same predicate gates both the stored set and the badge set.
+bool withinWindow(const QDate &firstSeen, const QDate &today)
+{
+    return firstSeen.isValid() && firstSeen.daysTo(today) < kNewAppDays;
+}
+
 // firstSeen persists as a "storageId=yyyy-MM-dd" StringList, mirroring the
 // launch-count on-disk form; convert at the file boundary.
 QHash<QString, QDate> firstSeenFromList(const QStringList &list)
@@ -74,7 +81,8 @@ void NewAppsTracker::refresh(const QStringList &installedIds)
     }
 
     KConfigGroup group = m_config->group(kGroup);
-    const QStringList stored = group.readEntry(kInstalledKey, QStringList());
+    const QStringList storedList = group.readEntry(kInstalledKey, QStringList());
+    const QSet<QString> stored(storedList.cbegin(), storedList.cend());
     const QDate today = QDate::currentDate();
 
     QHash<QString, QDate> next;
@@ -83,9 +91,9 @@ void NewAppsTracker::refresh(const QStringList &installedIds)
         QDate firstSeen;
         if (stored.isEmpty() || stored.contains(id)) {
             // Baseline seed (empty store) or an already-known app: keep its date,
-            // but stop tracking once the window has lapsed so firstSeen stays small.
+            // but drop it once the window has lapsed so firstSeen stays small.
             firstSeen = m_firstSeen.value(id);
-            if (firstSeen.isValid() && firstSeen.daysTo(today) >= kNewAppDays) {
+            if (!withinWindow(firstSeen, today)) {
                 firstSeen = QDate();
             }
         } else {
@@ -99,7 +107,7 @@ void NewAppsTracker::refresh(const QStringList &installedIds)
 
     // ponytail: a reinstall inside the window re-flags as new (no LastSeen grace
     // like Kickoff's). Rare and harmless; add the grace only if it bites.
-    if (stored != installedIds) {
+    if (storedList != installedIds) {
         group.writeEntry(kInstalledKey, installedIds);
     }
     const QStringList nextList = firstSeenToList(next);
@@ -119,7 +127,7 @@ void NewAppsTracker::recompute()
     const QDate today = QDate::currentDate();
     QSet<QString> next;
     for (auto it = m_firstSeen.cbegin(); it != m_firstSeen.cend(); ++it) {
-        if (it.value().daysTo(today) >= kNewAppDays) {
+        if (!withinWindow(it.value(), today)) {
             continue; // window lapsed
         }
         if (m_usedApps && m_usedApps->isUsed(it.key())) {
