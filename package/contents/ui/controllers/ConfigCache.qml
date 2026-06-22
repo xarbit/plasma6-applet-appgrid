@@ -60,10 +60,8 @@ QtObject {
 
     // --- Favorites ---
 
-    readonly property list<string> favoriteApps: source.favoriteApps
     readonly property bool sortFavoritesAlphabetically: source.sortFavoritesAlphabetically
     readonly property bool hideLabelsOnFavorites: source.hideLabelsOnFavorites
-    readonly property bool favoritesPortedToKAstats: source.favoritesPortedToKAstats
     readonly property bool favoriteFoldersEnabled: source.favoriteFoldersEnabled
 
     // Hidden / recent / known apps and launch counts are no longer here: that
@@ -83,8 +81,6 @@ QtObject {
 
     // --- Power / session ---
 
-    readonly property list<string> powerButtonOrder: source.powerButtonOrder
-    readonly property list<string> powerButtonsHidden: source.powerButtonsHidden
     readonly property list<string> headerActions: source.headerActions
     readonly property list<string> customHeaderActions: source.customHeaderActions
     readonly property string menuButtonIcon: source.menuButtonIcon

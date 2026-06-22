@@ -9,9 +9,9 @@
 
 .pragma library
 
-// Build the clipboard text from a sysInfo-shaped object plus the favorites
-// migration state. Missing fields render as empty after the colon.
-function clipboardText(info, migrated, kastatsCount, localCount) {
+// Build the clipboard text from a sysInfo-shaped object. Missing fields render
+// as empty after the colon.
+function clipboardText(info) {
     var i = info || {};
     var lines = [
         "AppGrid: " + (i.appgridVersion || ""),
@@ -22,10 +22,7 @@ function clipboardText(info, migrated, kastatsCount, localCount) {
         "KF: " + (i.kfVersion || ""),
         "Qt: " + (i.qtVersion || ""),
         "OS: " + (i.os || ""),
-        "Screens: " + (i.screens || ""),
-        "Favorites: " + (migrated
-            ? "KAStats (" + kastatsCount + "; backup " + localCount + ")"
-            : "not migrated (" + localCount + ")")
+        "Screens: " + (i.screens || "")
     ];
     return lines.join("\n");
 }

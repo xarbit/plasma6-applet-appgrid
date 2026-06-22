@@ -13,7 +13,6 @@ import QtQuick
 import org.kde.plasma.plasmoid
 
 import "controllers"
-import "js/migrations.js" as Migrations
 
 PlasmoidItem {
     id: appgrid
@@ -63,7 +62,6 @@ PlasmoidItem {
     }
 
     Component.onCompleted: {
-        Migrations.migrateLauncherIcon(Plasmoid.configuration)
         // One-shot: hand the user's existing settings to the daemon's appgridrc.
         Plasmoid.migrateConfigToStandalone()
         Plasmoid.updateButtonAppearanceCache(buttonAppearance)

@@ -5,8 +5,7 @@
     Pure helpers for the customizable header-action layout. The config stores
     one ordered StringList of "id:placement" tokens (placement = bar | menu |
     off); list order is display order. parse() turns that into ordered bar/menu
-    id lists for rendering; migrateFromLegacy() folds the old
-    powerButtonOrder/powerButtonsHidden config into the new format.
+    id lists for rendering.
 
     No QML/Plasma deps so the logic is unit-testable in isolation.
 */
@@ -155,31 +154,3 @@ function serialize(entryList) {
     return out;
 }
 
-// Build a headerActions list from the legacy powerButtonOrder (top-level slot
-// order) + powerButtonsHidden (hidden ids). The legacy "session" slot was a
-// dropdown grouping lock/logout/switchuser, so it expands to those three at
-// menu placement. updateCheck (new) is placed on the bar.
-function migrateFromLegacy(order, hidden) {
-    var hiddenSet = {};
-    var h = hidden || [];
-    for (var i = 0; i < h.length; ++i)
-        hiddenSet[h[i]] = true;
-
-    var slots = (order && order.length > 0) ? order : ["sleep", "restart", "shutdown", "session"];
-    var result = ["updateCheck:bar"];
-    var sessionHidden = hiddenSet["session"];
-
-    for (var j = 0; j < slots.length; ++j) {
-        var slot = slots[j];
-        if (slot === "session") {
-            var sub = ["lock", "logout", "switchuser"];
-            for (var k = 0; k < sub.length; ++k) {
-                var off = sessionHidden || hiddenSet[sub[k]];
-                result.push(sub[k] + ":" + (off ? "off" : "menu"));
-            }
-        } else if (_defaultPlacement(slot) !== null) {
-            result.push(slot + ":" + (hiddenSet[slot] ? "off" : "bar"));
-        }
-    }
-    return result;
-}

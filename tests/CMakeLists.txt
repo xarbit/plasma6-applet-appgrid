@@ -241,11 +241,6 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/migrations.js
-        ${CMAKE_CURRENT_SOURCE_DIR}/qml/migrations.js
-        COPYONLY
-    )
-    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/controllers/SelectionState.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/SelectionState.qml
         COPYONLY

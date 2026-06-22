@@ -12,7 +12,6 @@ import org.kde.plasma.plasmoid
 import "controllers"
 import "views" as Views
 import "js/constants.js" as Const
-import "js/migrations.js" as Migrations
 
 PlasmoidItem {
     id: appgrid
@@ -43,7 +42,6 @@ PlasmoidItem {
     TaskManagerPinner { applet: appgrid }
 
     Component.onCompleted: {
-        Migrations.migrateLauncherIcon(Plasmoid.configuration)
         // Move this applet's old per-applet hidden/recent/known/launch-count
         // lists into the shared store, so the panel and center share one list.
         Plasmoid.migrateLaunchState()

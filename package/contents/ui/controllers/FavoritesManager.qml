@@ -2,15 +2,12 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    KAStats-backed favorites lifecycle: loads the private Kicker
-    provider, runs the one-shot 1.7.x → KAStats migration (gated by
-    favoritesPortedToKAstats), mirrors the live model into
-    AppFilterModel for alpha-sort, and coalesces the burst of source
-    signals into one mirror per event-loop turn.
+    KAStats-backed favorites lifecycle: loads the favourites model, mirrors the
+    live model into AppFilterModel for alpha-sort, and coalesces the burst of
+    source signals into one mirror per event-loop turn.
 
-    Pure decision math lives in favoritesmigration.js so the
-    migration plan and mirror-id collection are unit-tested in
-    isolation; this file owns the Plasma-glue around it.
+    Pure mirror-id collection lives in favoritesmigration.js so it is
+    unit-tested in isolation; this file owns the Plasma-glue around it.
 */
 
 import QtQuick
@@ -36,12 +33,6 @@ Item {
 
     // Config inputs, injected from the boundary's ConfigCache.
     required property bool sortFavoritesAlphabetically
-    required property bool favoritesPortedToKAstats
-    required property list<string> legacyFavorites
-
-    // Persists the one-shot "ported to KAStats" flag — replaces the direct
-    // config write. A no-op stub in tests.
-    required property var markPorted
 
     // --- Outputs (panel re-exposes these via aliases) ---
 
@@ -77,45 +68,16 @@ Item {
                 item.initForClient(manager.clientInstance)
                 // The model publishes its own favourite-id role; no probing.
                 manager.favoriteIdRole = item.favoriteIdRole
-                // Favourites only migrate once kactivitymanagerd is up; the
-                // enabled-watcher below catches the later flip.
-                if (item.enabled) {
-                    manager._maybeMigrateAndMirror()
-                }
+                if (item.enabled)
+                    manager._refreshMirror()
             }
         }
     }
 
-    // --- Migration + mirror ---
+    // --- Mirror ---
 
-    function _maybeMigrateAndMirror() {
-        const item = sharedFavoritesLoader.item
-        if (!item) return
-        // Role probe hasn't resolved yet — try once it has on the next
-        // model signal. Skip mirror; nothing useful to do.
+    function _refreshMirror() {
         if (favoriteIdRole < 0) return
-
-        if (manager.favoritesPortedToKAstats) {
-            _mirrorFavorites()
-            return
-        }
-
-        const local = manager.legacyFavorites
-        if (local.length > 0) {
-            // 1.7.x upgrade path. KAStatsFavoritesModel has no clear()
-            // and portOldFavorites only re-ranks, so any entry already
-            // in the KActivities backing store (Plasma's seeded defaults
-            // or favourites added during earlier 1.8.x sessions) would
-            // survive and merge into the result — #144. Remove every
-            // existing id first, then port the user's actual backup.
-            const actions = FavoritesMigration.decideMigrationActions(
-                item, favoriteIdRole, local)
-            for (let i = 0; i < actions.idsToRemove.length; ++i)
-                item.removeFavorite(actions.idsToRemove[i])
-            item.portOldFavorites(actions.prefixedToPort)
-        }
-        // else: fresh install — leave KAStats's seed alone.
-
         _mirrorFavorites()
         _pushGrouped()
     }
@@ -144,26 +106,19 @@ Item {
         ignoreUnknownSignals: true
         function onEnabledChanged() {
             if (sharedFavoritesLoader.item && sharedFavoritesLoader.item.enabled)
-                manager._maybeMigrateAndMirror()
+                manager._refreshMirror()
         }
     }
 
-    // KAStatsFavoritesModel's `favoritesChanged` is a stub in upstream
-    // Kicker, so we listen to QAbstractItemModel signals and coalesce
-    // the resulting burst (insert/remove/move/reset/layoutChanged/dataChanged
-    // often fire back-to-back) into one mirror per event-loop turn. The
-    // mirror only runs in alpha-sort mode; drag-reorder reads the shared
-    // model directly.
+    // Coalesce the burst of model signals (insert/remove/move/reset/
+    // layoutChanged/dataChanged often fire back-to-back) into one mirror per
+    // event-loop turn. The mirror only runs in alpha-sort mode; drag-reorder
+    // reads the shared model directly.
     Timer {
         id: mirrorCoalesce
         interval: 0
         repeat: false
         onTriggered: {
-            if (!manager.favoritesPortedToKAstats
-                    && manager.sharedFavoritesModel
-                    && manager.sharedFavoritesModel.count > 0) {
-                manager.markPorted()
-            }
             if (manager.mirrorRequired)
                 manager._mirrorFavorites()
             manager._pushGrouped()

@@ -48,10 +48,8 @@ TestCase {
         property bool showRecentApps: false
         property bool hideGridWhenEmpty: false
         property bool startWithFavorites: false
-        property var favoriteApps: []
         property bool sortFavoritesAlphabetically: false
         property bool hideLabelsOnFavorites: false
-        property bool favoritesPortedToKAstats: true
         property var hiddenApps: []
         property var recentApps: []
         property var knownApps: []
@@ -64,15 +62,9 @@ TestCase {
         property bool showSearchShortcuts: false
         property bool hideMenuButtonLabel: false
         property string terminalShell: ""
-        property var powerButtonOrder: []
-        property var powerButtonsHidden: []
         property var headerActions: []
         property bool showActionLabels: false
         property bool checkForUpdates: false
-        // One-shot migration flags written by migrations.js on construction.
-        property bool powerButtonsMigrated: true
-        property bool headerActionsMigrated: true
-        property bool iconMigratedFrom17: true
     }
 
     // Stub appsModel — the QML-visible surface of AppFilterModel/AppModel.

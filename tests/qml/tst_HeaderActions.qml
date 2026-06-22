@@ -93,27 +93,6 @@ TestCase {
             verify(e[i].id !== "updateCheck");
     }
 
-    function test_migrateDefault() {
-        var m = HeaderActions.migrateFromLegacy([], []);
-        compare(m.join(","), "updateCheck:bar,sleep:bar,restart:bar,shutdown:bar,lock:menu,logout:menu,switchuser:menu");
-    }
-
-    function test_migrateRespectsHiddenAndOrder() {
-        var m = HeaderActions.migrateFromLegacy(["sleep", "session"], ["logout"]);
-        verify(m.indexOf("updateCheck:bar") >= 0);
-        verify(m.indexOf("sleep:bar") >= 0);
-        verify(m.indexOf("lock:menu") >= 0);
-        verify(m.indexOf("logout:off") >= 0);
-        verify(m.indexOf("switchuser:menu") >= 0);
-    }
-
-    function test_migrateHiddenSessionDisablesSubItems() {
-        var m = HeaderActions.migrateFromLegacy(["sleep", "session"], ["session"]);
-        verify(m.indexOf("lock:off") >= 0);
-        verify(m.indexOf("logout:off") >= 0);
-        verify(m.indexOf("switchuser:off") >= 0);
-    }
-
     function test_iconForKnownAndUnknown() {
         compare(HeaderActions.iconFor("sleep"), "system-suspend");
         compare(HeaderActions.iconFor("shutdown"), "system-shutdown");

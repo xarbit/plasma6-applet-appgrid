@@ -14,8 +14,6 @@ import "../js/sysinfoformat.js" as SysInfoFormat
 ScrollableColumn {
     id: infoView
 
-    property var sharedFavoritesModel: null
-
     // Injected from the boundary (see inner-widget-decoupling-plan.md).
     // A provider function, called once when this view is built (it's only
     // instantiated on the i: info prefix), so the underlying /proc + os-release
@@ -23,14 +21,6 @@ ScrollableColumn {
     required property var sysInfoProvider
     readonly property var sysInfo: infoView.sysInfoProvider ? infoView.sysInfoProvider() : ({})
     required property var updateChecker
-    required property bool favoritesPortedToKAstats
-    required property list<string> favoriteApps
-    // markUnported() clears the KAStats migration flag at the boundary.
-    required property var markUnported
-
-    readonly property bool _migrated: infoView.favoritesPortedToKAstats
-    readonly property int _kastatsCount: sharedFavoritesModel ? sharedFavoritesModel.count : 0
-    readonly property int _localCount: infoView.favoriteApps.length
 
     PlasmaComponents.Label {
         text: i18nd("dev.xarbit.appgrid", "System Information")
@@ -119,59 +109,6 @@ ScrollableColumn {
         }
     }
 
-    // -- Favorites backend status --
-    RowLayout {
-        Layout.fillWidth: true
-        Layout.topMargin: Kirigami.Units.largeSpacing
-        spacing: Kirigami.Units.largeSpacing
-
-        PlasmaComponents.Label {
-            text: i18nd("dev.xarbit.appgrid", "Favorites")
-            font.bold: true
-            opacity: 0.6
-            Layout.preferredWidth: Kirigami.Units.gridUnit * 5
-        }
-
-        PlasmaComponents.Label {
-            Layout.fillWidth: true
-            font.family: Kirigami.Theme.fixedWidthFont.family
-            text: infoView._migrated
-                ? i18nd("dev.xarbit.appgrid", "KAStats (%1 entries; legacy backup: %2)",
-                        infoView._kastatsCount, infoView._localCount)
-                : i18nd("dev.xarbit.appgrid", "Not migrated (legacy: %1 entries)",
-                        infoView._localCount)
-            elide: Text.ElideRight
-        }
-
-        PlasmaComponents.ToolButton {
-            visible: infoView._migrated
-            icon.name: "edit-undo"
-            text: i18nd("dev.xarbit.appgrid", "Re-run migration")
-            PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Clears the migration flag. On next open, AppGrid recomputes the favorites list as the union of the legacy backup and current KAStats entries. Nothing is lost; missing legacy items are re-added.")
-            PlasmaComponents.ToolTip.visible: hovered
-            PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-            onClicked: {
-                infoView.markUnported()
-                migrateHintTimer.start()
-            }
-        }
-    }
-
-    PlasmaComponents.Label {
-        Layout.fillWidth: true
-        visible: migrateHintTimer.running
-        text: i18nd("dev.xarbit.appgrid",
-            "Migration flag cleared. Reopen AppGrid to re-run the port.")
-        font: Kirigami.Theme.smallFont
-        opacity: 0.6
-        horizontalAlignment: Text.AlignRight
-    }
-
-    Timer {
-        id: migrateHintTimer
-        interval: 5000
-    }
-
     PlasmaComponents.Button {
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: Kirigami.Units.largeSpacing
@@ -180,8 +117,7 @@ ScrollableColumn {
             ? i18nd("dev.xarbit.appgrid", "Copied!")
             : i18nd("dev.xarbit.appgrid", "Copy to Clipboard")
         onClicked: {
-            infoClipboard.text = SysInfoFormat.clipboardText(infoView.sysInfo, infoView._migrated,
-                                                             infoView._kastatsCount, infoView._localCount)
+            infoClipboard.text = SysInfoFormat.clipboardText(infoView.sysInfo)
             infoClipboard.selectAll()
             infoClipboard.copy()
             copyTimer.start()

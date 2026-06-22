@@ -16,7 +16,6 @@ import org.kde.plasma.components as PlasmaComponents
 import "../controllers"
 import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
-import "../js/migrations.js" as Migrations
 import "../js/searchresultnav.js" as SearchResultNav
 import "../js/constants.js" as Const
 import "../js/gridmetrics.js" as GridMetrics
@@ -50,7 +49,7 @@ Kirigami.ShadowedRectangle {
     // Read-write handle to Plasmoid.configuration. Reads route through
     // ConfigCache (`cfg`) below; writes still target this handle directly
     // for the launch-bookkeeping flush (recents / launchCounts / knownApps /
-    // hiddenApps / favoritesPortedToKAstats / iconMigratedFrom17).
+    // hiddenApps).
     required property var configuration
 
     // Single Plasmoid-callback surface; see PlasmoidBridge.qml. Tests
@@ -279,8 +278,6 @@ Kirigami.ShadowedRectangle {
 
     Component.onCompleted: {
         const _t0 = Date.now()
-        Migrations.migratePowerButtons(panel.configuration)
-        Migrations.migrateHeaderActions(panel.configuration)
         syncModelFromConfig()
         _perfMark("coldBuild", _t0)
     }
@@ -292,9 +289,6 @@ Kirigami.ShadowedRectangle {
         favoritesGroupedModel: panel.favoritesGroupedModel
         clientInstance: panel.favoritesClientInstance
         sortFavoritesAlphabetically: cfg.sortFavoritesAlphabetically
-        favoritesPortedToKAstats: cfg.favoritesPortedToKAstats
-        legacyFavorites: cfg.favoriteApps
-        markPorted: function() { panel.configuration.favoritesPortedToKAstats = true }
     }
     readonly property alias favoriteIdRole: favorites.favoriteIdRole
     readonly property alias sharedFavoritesModel: favorites.sharedFavoritesModel
@@ -785,15 +779,11 @@ Kirigami.ShadowedRectangle {
                 mode: panel.prefixMode
                 argument: panel.prefixArgument
                 searchField: searchBar.field
-                sharedFavoritesModel: panel.sharedFavoritesModel
                 showScrollbars: cfg.showScrollbars
                 appsModel: panel.appsModel
                 listDirectory: panel.plasmoidBridge.listDirectory
                 sysInfoProvider: panel.sysInfoProvider
                 updateChecker: panel.updateChecker
-                favoritesPortedToKAstats: cfg.favoritesPortedToKAstats
-                favoriteApps: cfg.favoriteApps
-                markUnported: function() { panel.configuration.favoritesPortedToKAstats = false }
                 onFileOpened: panel.closeRequested()
                 onDirectoryNavigated: function(path) {
                     searchBar.text = path

@@ -17,7 +17,6 @@ Item {
     property string mode: ""
     property string argument: ""
     property Item searchField: null
-    property var sharedFavoritesModel: null
     required property bool showScrollbars
 
     // Per-mode dependencies, forwarded to the individual prefix views.
@@ -25,9 +24,6 @@ Item {
     required property var listDirectory
     required property var sysInfoProvider
     required property var updateChecker
-    required property bool favoritesPortedToKAstats
-    required property list<string> favoriteApps
-    required property var markUnported
 
     signal fileOpened()
     signal directoryNavigated(string path)
@@ -53,13 +49,9 @@ Item {
     Prefix.PrefixInfoView {
         anchors.fill: parent
         visible: prefixView.mode === PrefixModes.INFO
-        sharedFavoritesModel: prefixView.sharedFavoritesModel
         showScrollbars: prefixView.showScrollbars
         sysInfoProvider: prefixView.sysInfoProvider
         updateChecker: prefixView.updateChecker
-        favoritesPortedToKAstats: prefixView.favoritesPortedToKAstats
-        favoriteApps: prefixView.favoriteApps
-        markUnported: prefixView.markUnported
     }
 
     // -- Hidden apps --

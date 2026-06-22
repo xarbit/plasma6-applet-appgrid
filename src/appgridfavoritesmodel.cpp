@@ -376,10 +376,3 @@ bool AppGridFavoritesModel::trigger(int row, const QString &actionId, const QVar
     job->start();
     return true;
 }
-
-void AppGridFavoritesModel::portOldFavorites(const QStringList &ids)
-{
-    for (const QString &id : ids) {
-        addFavorite(id);
-    }
-}

@@ -26,10 +26,10 @@ TestCase {
         screens: "1x 2256x1504"
     })
 
-    function test_migratedLayout() {
-        const t = SysInfoFormat.clipboardText(fullInfo, true, 12, 5)
+    function test_layout() {
+        const t = SysInfoFormat.clipboardText(fullInfo)
         const lines = t.split("\n")
-        compare(lines.length, 10)
+        compare(lines.length, 9)
         // Every line pinned by index so a reorder of the block is caught.
         compare(lines[0], "AppGrid: 1.10.0")
         compare(lines[1], "Install: AUR")
@@ -40,25 +40,17 @@ TestCase {
         compare(lines[6], "Qt: 6.8.1")
         compare(lines[7], "OS: CachyOS")
         compare(lines[8], "Screens: 1x 2256x1504")
-        compare(lines[9], "Favorites: KAStats (12; backup 5)")
-    }
-
-    function test_notMigratedFavoritesLine() {
-        const t = SysInfoFormat.clipboardText(fullInfo, false, 0, 7)
-        const lines = t.split("\n")
-        compare(lines[9], "Favorites: not migrated (7)")
     }
 
     function test_missingFieldsRenderEmpty() {
-        const t = SysInfoFormat.clipboardText({}, false, 0, 0)
+        const t = SysInfoFormat.clipboardText({})
         const lines = t.split("\n")
         compare(lines[0], "AppGrid: ")
         compare(lines[7], "OS: ")
-        compare(lines[9], "Favorites: not migrated (0)")
     }
 
     function test_nullInfoDoesNotThrow() {
-        const t = SysInfoFormat.clipboardText(null, false, 0, 3)
-        compare(t.split("\n")[9], "Favorites: not migrated (3)")
+        const t = SysInfoFormat.clipboardText(null)
+        compare(t.split("\n")[0], "AppGrid: ")
     }
 }

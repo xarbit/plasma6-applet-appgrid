@@ -95,8 +95,6 @@ public:
      *  @p actionId / @p argument exist for Kicker-model call compatibility and are
      *  unused — what to launch comes from the favourite id itself. */
     Q_INVOKABLE bool trigger(int row, const QString &actionId, const QVariant &argument);
-    /** One-shot legacy import: link each id as a favourite, in order. */
-    Q_INVOKABLE void portOldFavorites(const QStringList &ids);
 
     [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
