@@ -252,9 +252,12 @@ DropArea {
                 return
             }
             if (zone === 2) {
-                // Past the icon → reflow (swap) live, unless animations are settling.
-                if (gridView.move.running || gridView.moveDisplaced.running
-                        || gridView.flicking || gridView.moving || edgeScroller.active) {
+                // Past the icon → reflow (swap) live. Don't gate on the move
+                // transitions: moveRow jumps straight to gtarget however far the
+                // cursor travelled, and the displaced transition animates the
+                // catch-up, so a fast drag keeps up instead of skipping swaps.
+                // Only a real scroll (flick / edge auto-scroll) holds it off.
+                if (gridView.flicking || gridView.moving || edgeScroller.active) {
                     drag.accept(Qt.MoveAction)
                     return
                 }
@@ -267,11 +270,11 @@ DropArea {
         }
         // Non-grouped grid: multi-drag stays put (drag-out only).
         if (_isMultiDrag) return
-        // Hold off on reorder while existing animations or auto-scroll are
-        // settling. Subsequent positionChanged events will retry.
-        if (gridView.move.running || gridView.moveDisplaced.running
-                || gridView.flicking || gridView.moving
-                || edgeScroller.active) {
+        // Reorder fires live even while the move/displaced transitions animate:
+        // findFavoriteRow re-reads the source's live row each event and moveRow
+        // jumps straight to the cursor's target, so a fast drag keeps up instead
+        // of skipping swaps. Only a real scroll (flick / edge auto-scroll) waits.
+        if (gridView.flicking || gridView.moving || edgeScroller.active) {
             drag.accept(addPreviewActive || _isAddFromOtherTab(drag)
                         ? Qt.CopyAction : Qt.MoveAction)
             return
