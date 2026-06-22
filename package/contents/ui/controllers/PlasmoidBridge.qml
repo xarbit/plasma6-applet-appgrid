@@ -3,8 +3,8 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     Single Plasmoid-callback surface. Wraps every Plasmoid.Q_INVOKABLE
-    that QML needs, so the two variant main.qml files don't each
-    redeclare a dozen forwarding lambdas, GridWindow/GridPanel hold
+    that QML needs, so the variant main.qml files don't each
+    redeclare a dozen forwarding lambdas, GridPanel holds
     one bridge property instead of a fan of `required property var`
     slots, and tests can inject a plain QtObject stub with the same
     method names.
@@ -41,10 +41,4 @@ QtObject {
     function listDirectory(path)            { return Plasmoid.listDirectory(path) }
     function setSearchUsesFrecency(on)      { Plasmoid.setSearchUsesFrecency(on) }
     function setSearchShowsHidden(on)       { Plasmoid.setSearchShowsHidden(on) }
-
-    // -- Window-management glue, used by GridWindow.qml --
-    function configureWindow(window)                       { Plasmoid.configureWindow(window) }
-    function configurePanelWindow(window)                  { Plasmoid.configurePanelWindow(window) }
-    function setInputRect(window, x, y, w, h)              { Plasmoid.setInputRect(window, x, y, w, h) }
-    function windowDevicePixelRatio(window)               { return Plasmoid.windowDevicePixelRatio(window) }
 }

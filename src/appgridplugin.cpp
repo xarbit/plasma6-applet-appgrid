@@ -150,28 +150,6 @@ UpdateChecker *AppGridPlugin::updateChecker() const
 }
 #endif
 
-// --- Window management forwarders ---
-
-void AppGridPlugin::configureWindow(QWindow *window)
-{
-    m_controller.configureWindow(window);
-}
-
-void AppGridPlugin::configurePanelWindow(QWindow *window)
-{
-    m_controller.configurePanelWindow(window);
-}
-
-qreal AppGridPlugin::windowDevicePixelRatio(QWindow *window) const
-{
-    return m_controller.windowDevicePixelRatio(window);
-}
-
-void AppGridPlugin::setInputRect(QWindow *window, int x, int y, int w, int h)
-{
-    m_controller.setInputRect(window, x, y, w, h);
-}
-
 void AppGridPlugin::notifyAppLaunched(const QString &storageId)
 {
     m_controller.notifyAppLaunched(storageId);

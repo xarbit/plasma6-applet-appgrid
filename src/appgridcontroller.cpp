@@ -308,23 +308,6 @@ QScreen *AppGridController::screenForCursor() const
 
 // -- Wayland (LayerShellQt) --
 
-void AppGridController::configureWayland(QWindow *window)
-{
-    auto *layer = LayerShellQt::Window::get(window);
-    // LayerTop: above normal windows but below OSD popups (like KRunner)
-    layer->setLayer(LayerShellQt::Window::LayerTop);
-    layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
-    // The scope decides KWin's WindowType. The plasmoid keeps "appgrid"
-    // (an overlay scope KWin's open/close effects exclude on plasmashell
-    // surfaces anyway); the standalone overrides it (setLayerScope) with a
-    // scope KWin maps to WindowType::Normal so Glide/Scale animate it.
-    layer->setScope(m_layerScope);
-    // Cover the full screen including panel exclusive zones
-    layer->setExclusiveZone(-1);
-    layer->setAnchors(LayerShellQt::Window::Anchors(LayerShellQt::Window::AnchorTop | LayerShellQt::Window::AnchorBottom | LayerShellQt::Window::AnchorLeft
-                                                    | LayerShellQt::Window::AnchorRight));
-}
-
 QScreen *AppGridController::screenByName(const QString &name) const
 {
     if (name.isEmpty()) {
@@ -389,33 +372,14 @@ void enableAlphaChannel(QWindow *window)
 
 }
 
-void AppGridController::configureWindow(QWindow *window)
-{
-    if (!window) {
-        return;
-    }
-
-    enableAlphaChannel(window);
-
-    if (KWindowSystem::isPlatformWayland()) {
-        configureWayland(window);
-    }
-#ifdef APPGRID_X11_SUPPORT
-    else {
-        configureX11(window);
-    }
-#endif
-}
-
 void AppGridController::configurePanelWayland(QWindow *window)
 {
     auto *layer = LayerShellQt::Window::get(window);
     layer->setLayer(LayerShellQt::Window::LayerTop);
     layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
-    // m_layerScope decides KWin's WindowType. The plasmoid keeps its default
-    // (a plasmashell surface KWin's Glide/Scale exclude regardless); the
-    // standalone overrides it (setLayerScope) with a scope KWin maps to
-    // WindowType::Normal so every window open/close effect animates it.
+    // m_layerScope decides KWin's WindowType: the standalone sets it
+    // (setLayerScope) to a scope KWin maps to WindowType::Normal so every window
+    // open/close effect animates it, like KRunner.
     layer->setScope(m_layerScope);
     layer->setExclusiveZone(0);
     // Anchor the top edge only: horizontally the surface stays centered (no
@@ -471,35 +435,13 @@ void AppGridController::positionPanelWindow(QWindow *window, int panelFullHeight
 #endif
 
     // Center the full panel; the user vertical offset is a fraction of the slack
-    // between the full panel and the screen edge (PanelGeometry.verticalOffset in
-    // QML keeps the same formula for the blur/input rect). A compact panel uses
-    // the full height too, so it hangs from the full panel's top.
+    // between the full panel and the screen edge. A compact panel uses the full
+    // height too, so it hangs from the full panel's top.
     const int screenHeight = target->geometry().height();
     const int centered = (screenHeight - panelFullHeight) / 2;
     const int slack = qMax(0, centered);
     const int offset = qRound(verticalOffsetPercent / 100.0 * slack);
     layer->setMargins(QMargins(0, qMax(0, centered + offset), 0, 0));
-}
-
-qreal AppGridController::windowDevicePixelRatio(QWindow *window) const
-{
-    return window ? window->devicePixelRatio() : 1.0;
-}
-
-void AppGridController::setInputRect(QWindow *window, int x, int y, int w, int h)
-{
-    if (!window) {
-        return;
-    }
-
-    if (w <= 0 || h <= 0) {
-        // Empty region = "remove mask" per Qt docs, restores full-window input.
-        window->setMask(QRegion());
-        return;
-    }
-    // On Wayland this maps to wl_surface.set_input_region(rect). Areas outside
-    // the rect become pass-through, so events land on the surface below.
-    window->setMask(QRegion(QRect(x, y, w, h)));
 }
 
 void AppGridController::notifyAppLaunched(const QString &storageId)

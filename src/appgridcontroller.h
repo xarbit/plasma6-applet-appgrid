@@ -79,18 +79,14 @@ public:
     [[nodiscard]] bool isWayland() const;
 
     /**
-     * Layer-shell scope the next configureWindow() applies. The plasmoid keeps
-     * the default "appgrid" overlay scope; the standalone executable sets a
-     * scope that KWin maps to WindowType::Normal so the window open/close
-     * effect (Glide/Scale/Fade) animates it like KRunner. Must be set before
-     * configureWindow() is called.
+     * Layer-shell scope the next configurePanelWindow() applies. The standalone
+     * executable sets a scope that KWin maps to WindowType::Normal so the window
+     * open/close effect (Glide/Scale/Fade) animates it like KRunner. Must be set
+     * before configurePanelWindow() is called.
      */
     void setLayerScope(const QString &scope);
 
-    // --- Window management ---
-
-    /** Configure @p window as an overlay (LayerShell on Wayland, flags on X11). */
-    Q_INVOKABLE void configureWindow(QWindow *window);
+    // --- Window management (the standalone daemon's own window) ---
 
     /** Configure @p window as the centered, content-sized panel surface that
      *  carries the theme background and blur. */
@@ -107,12 +103,6 @@ public:
      *  Wayland-only. @p panelFullHeight is the full (non-compact) panel height so a
      *  compact panel still hangs from the full panel's top. */
     Q_INVOKABLE void positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen);
-
-    /** The window's own (per-window) device-pixel ratio. */
-    Q_INVOKABLE qreal windowDevicePixelRatio(QWindow *window) const;
-
-    /** Restrict pointer input on @p window to the rectangle (x,y,w,h). */
-    Q_INVOKABLE void setInputRect(QWindow *window, int x, int y, int w, int h);
 
     /** Broadcast an app launch to the system-wide KActivities database. */
     Q_INVOKABLE void notifyAppLaunched(const QString &storageId);
@@ -236,7 +226,6 @@ private:
     // (the daemon has no containment of its own). Null if no plasmoid answers.
     [[nodiscard]] QScreen *panelScreen() const;
 
-    void configureWayland(QWindow *window);
     void configurePanelWayland(QWindow *window);
 #ifdef APPGRID_X11_SUPPORT
     void configureX11(QWindow *window);
@@ -257,7 +246,9 @@ private:
     FrecencyProvider m_frecencyProvider;
     KSharedConfig::Ptr m_krunnerConfig;
     KConfigWatcher::Ptr m_krunnerWatcher;
-    QString m_layerScope = QStringLiteral("appgrid");
+    // Always set by setLayerScope() before configurePanelWayland() reads it; the
+    // standalone is the only caller and uses "appgrid-standalone".
+    QString m_layerScope = QStringLiteral("appgrid-standalone");
     // D-Bus object path of the plasmoid whose panel button the settings window
     // edits; set in the constructor to the shared path, retargeted per instance
     // by setButtonTargetId().

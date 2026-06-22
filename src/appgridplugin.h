@@ -97,12 +97,6 @@ public:
 #endif
     [[nodiscard]] bool isWayland() const;
 
-    // --- Window management (forwarded to the controller) ---
-
-    Q_INVOKABLE void configureWindow(QWindow *window);
-    Q_INVOKABLE void configurePanelWindow(QWindow *window);
-    Q_INVOKABLE qreal windowDevicePixelRatio(QWindow *window) const;
-    Q_INVOKABLE void setInputRect(QWindow *window, int x, int y, int w, int h);
     Q_INVOKABLE void notifyAppLaunched(const QString &storageId);
     // Pin to Task Manager runs in-process (Kicker's ContainmentInterface needs a
     // live applet): emit addToTaskManagerRequested so the variant's QML does it.
