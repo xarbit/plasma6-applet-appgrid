@@ -14,6 +14,10 @@ import "../js/sysinfoformat.js" as SysInfoFormat
 ScrollableColumn {
     id: infoView
 
+    // Only flick when the content overflows; otherwise the Flickable steals the
+    // press-drag and the SelectableLabel values can't be selected.
+    interactive: contentHeight > height
+
     // Injected from the boundary (see inner-widget-decoupling-plan.md).
     // A provider function, called once when this view is built (it's only
     // instantiated on the i: info prefix), so the underlying /proc + os-release
@@ -62,11 +66,13 @@ ScrollableColumn {
                     Layout.preferredWidth: Kirigami.Units.gridUnit * 5
                 }
 
-                PlasmaComponents.Label {
+                // Selectable so a single value can be copied on its own; the
+                // Copy button below still grabs the whole block.
+                Kirigami.SelectableLabel {
                     text: modelData.value
                     font.family: Kirigami.Theme.fixedWidthFont.family
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
+                    wrapMode: Text.NoWrap
                 }
                 PlasmaComponents.ToolButton {
                     visible: modelData.checkUpdates === true
