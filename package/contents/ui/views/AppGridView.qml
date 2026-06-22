@@ -175,14 +175,12 @@ GridView {
 
     WheelScroller { target: gridView }
 
-    // Cache buffer: extra screens of delegates kept alive off-screen. Grown
-    // while a drag is in flight so an auto-scroll cannot recycle the source
-    // delegate (which would drop the pointer grab). One viewport of slack
-    // is enough — the row count of favorites that fit in a viewport is the
-    // upper bound on how far auto-scroll moves before the user lifts.
-    cacheBuffer: (dragSource && dragSource.isDragInFlight)
-                 ? Math.max(height, Kirigami.Units.gridUnit * 16)
-                 : Kirigami.Units.gridUnit * 4
+    // Cache buffer: a viewport of delegates kept alive off-screen. Builds the
+    // next rows ahead of the scroll so they aren't constructed on-frame (the main
+    // scroll-smoothness lever now that delegates aren't recycled). The viewport
+    // of slack also keeps a drag's source delegate alive through auto-scroll, so
+    // the pointer grab isn't dropped.
+    cacheBuffer: Math.max(height, Kirigami.Units.gridUnit * 16)
     readonly property bool labelsHidden: hideLabelsOnFavorites && favoritesActive
     cellWidth: Math.floor(width / effectiveColumns)
     cellHeight: labelsHidden

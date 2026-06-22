@@ -48,12 +48,18 @@ Item {
         id: icon
         anchors.fill: parent
         source: root.source
-        visible: !root.shadowEnabled
+        // Show the plain icon until the (async) shadow pass is ready, so a row
+        // scrolling in is never blank while the MultiEffect builds off-frame.
+        visible: !root.shadowEnabled || shadowLoader.status !== Loader.Ready
     }
 
     Loader {
+        id: shadowLoader
         anchors.fill: icon
         active: root.shadowEnabled
+        // Build the offscreen shadow pass off the scroll frame — it is the heavy
+        // part of the delegate, so deferring it keeps scrolling smooth.
+        asynchronous: true
         sourceComponent: MultiEffect {
             source: icon
             shadowEnabled: true
