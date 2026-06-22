@@ -13,7 +13,6 @@
 #include <KRunner/ResultsModel>
 
 #include <QFileInfo>
-#include <QList>
 #include <QUrl>
 
 RunnerFilterModel::RunnerFilterModel(QObject *parent)

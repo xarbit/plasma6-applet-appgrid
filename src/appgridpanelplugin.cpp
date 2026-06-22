@@ -10,6 +10,17 @@
 #include <KConfigGroup>
 #include <QTimer>
 
+namespace
+{
+// Per-instance keys (this applet's own config) and the global keys (shared
+// across panel instances) for the popup geometry handshake.
+constexpr QLatin1String kPopupWidth{"popupWidth"};
+constexpr QLatin1String kPopupHeight{"popupHeight"};
+constexpr QLatin1String kPopupSizeOwner{"popupSizeOwner"};
+constexpr QLatin1String kGlobalPopupWidth{"appgridPopupWidth"};
+constexpr QLatin1String kGlobalPopupHeight{"appgridPopupHeight"};
+}
+
 AppGridPanelPlugin::AppGridPanelPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
     : AppGridPlugin(parent, data, args)
 {
@@ -34,28 +45,28 @@ void AppGridPanelPlugin::restorePopupSizeIfStranger()
     auto inst = config();
     auto global = globalConfig();
 
-    const int instW = inst.readEntry(QStringLiteral("popupWidth"), -1);
-    const int instH = inst.readEntry(QStringLiteral("popupHeight"), -1);
-    const QString tag = inst.readEntry(QStringLiteral("popupSizeOwner"), QString());
-    const int globalW = global.readEntry(QStringLiteral("appgridPopupWidth"), -1);
-    const int globalH = global.readEntry(QStringLiteral("appgridPopupHeight"), -1);
+    const int instW = inst.readEntry(kPopupWidth, -1);
+    const int instH = inst.readEntry(kPopupHeight, -1);
+    const QString tag = inst.readEntry(kPopupSizeOwner, QString());
+    const int globalW = global.readEntry(kGlobalPopupWidth, -1);
+    const int globalH = global.readEntry(kGlobalPopupHeight, -1);
 
     const auto action = PopupSizePolicy::decideRestore(instW, instH, tag, globalW, globalH);
     switch (action.kind) {
     case PopupSizePolicy::RestoreAction::Keep:
         return;
     case PopupSizePolicy::RestoreAction::Adopt:
-        inst.writeEntry(QStringLiteral("popupWidth"), action.width);
-        inst.writeEntry(QStringLiteral("popupHeight"), action.height);
-        inst.writeEntry(QStringLiteral("popupSizeOwner"), PopupSizePolicy::ownerTag(action.width, action.height));
+        inst.writeEntry(kPopupWidth, action.width);
+        inst.writeEntry(kPopupHeight, action.height);
+        inst.writeEntry(kPopupSizeOwner, PopupSizePolicy::ownerTag(action.width, action.height));
         break;
     case PopupSizePolicy::RestoreAction::Clear:
         // No trustworthy size anywhere — clear the foreign keys so AppletPopup
         // falls back to GridPanel's implicitWidth/Height instead of inheriting
         // the previous launcher's geometry.
-        inst.deleteEntry(QStringLiteral("popupWidth"));
-        inst.deleteEntry(QStringLiteral("popupHeight"));
-        inst.deleteEntry(QStringLiteral("popupSizeOwner"));
+        inst.deleteEntry(kPopupWidth);
+        inst.deleteEntry(kPopupHeight);
+        inst.deleteEntry(kPopupSizeOwner);
         break;
     }
     inst.sync();
@@ -66,17 +77,17 @@ void AppGridPanelPlugin::persistPopupSize()
     auto inst = config();
     auto global = globalConfig();
 
-    const int w = inst.readEntry(QStringLiteral("popupWidth"), 0);
-    const int h = inst.readEntry(QStringLiteral("popupHeight"), 0);
+    const int w = inst.readEntry(kPopupWidth, 0);
+    const int h = inst.readEntry(kPopupHeight, 0);
     if (!PopupSizePolicy::isPersistable(w, h)) {
         return;
     }
 
-    global.writeEntry(QStringLiteral("appgridPopupWidth"), w);
-    global.writeEntry(QStringLiteral("appgridPopupHeight"), h);
+    global.writeEntry(kGlobalPopupWidth, w);
+    global.writeEntry(kGlobalPopupHeight, h);
     global.sync();
 
-    inst.writeEntry(QStringLiteral("popupSizeOwner"), PopupSizePolicy::ownerTag(w, h));
+    inst.writeEntry(kPopupSizeOwner, PopupSizePolicy::ownerTag(w, h));
     inst.sync();
 }
 

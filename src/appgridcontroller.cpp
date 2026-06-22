@@ -24,7 +24,6 @@
 #include <KTerminalLauncherJob>
 #include <KWindowSystem>
 #include <PlasmaActivities/Consumer>
-#include <QIcon>
 
 #include <PlasmaActivities/ResourceInstance>
 

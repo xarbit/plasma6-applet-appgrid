@@ -5,7 +5,6 @@
 
 #include "favoritesfolderlogic.h"
 
-#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSet>
@@ -157,14 +156,7 @@ Layout createFolder(const Layout &in, const QString &sidA, const QString &sidB, 
 
 Layout createFolderWith(const Layout &in, const QStringList &members, const QString &name)
 {
-    QStringList unique;
-    QSet<QString> seen;
-    for (const QString &m : members) {
-        if (!m.isEmpty() && !seen.contains(m)) {
-            unique.append(m);
-            seen.insert(m);
-        }
-    }
+    const QStringList unique = dedupMembers(members);
     Layout out = in;
     Folder folder{nextFolderId(out.folders), name, unique};
     out.folders.append(folder);
@@ -178,7 +170,7 @@ Layout createFolderWith(const Layout &in, const QStringList &members, const QStr
 
     // Anchor the new folder at the first member's slot; drop the others' loose
     // tokens. reconcile() drops any stragglers (folder membership wins).
-    const QString anchor = unique.first();
+    const QString &anchor = unique.first();
     const QSet<QString> fold(unique.cbegin() + 1, unique.cend());
     bool anchored = false;
     QStringList tokens;

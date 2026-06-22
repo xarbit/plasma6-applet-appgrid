@@ -22,7 +22,6 @@
 #include <QRegularExpression>
 #include <QSslConfiguration>
 #include <QStandardPaths>
-#include <QSysInfo>
 #include <QUrl>
 
 namespace

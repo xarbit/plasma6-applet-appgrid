@@ -11,8 +11,13 @@
 #include <KRunner/Action>
 
 #include <QFileInfo>
-#include <QList>
 #include <QUrl>
+
+namespace
+{
+// Single-digit launch shortcuts: the first 9 results map to Alt+1 .. Alt+9.
+constexpr int kMaxShortcutNumber = 9;
+}
 
 UnifiedSearchModel::UnifiedSearchModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -111,7 +116,7 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
     case IsSectionBoundaryRole:
         return !isApp && row == ac && ac > 0;
     case ShortcutNumberRole:
-        return (row < 9) ? row + 1 : 0;
+        return (row < kMaxShortcutNumber) ? row + 1 : 0;
     case SourceIndexRole:
         return isApp ? row : (row - ac);
     case RunnerActionsCountRole:

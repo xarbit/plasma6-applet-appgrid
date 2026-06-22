@@ -18,6 +18,13 @@
 #include <QUrl>
 #include <QVariantMap>
 
+namespace
+{
+// Cap the prefix-mode file browser listing so a huge directory can't stall the
+// completion popup; the user narrows with the filter rather than scrolling.
+constexpr int kMaxDirectoryEntries = 200;
+}
+
 namespace PluginHelpers
 {
 QStringList parseShells(const QString &contents)
@@ -77,6 +84,7 @@ QVariantList listDirectoryAt(const QString &path)
     }
 
     QVariantList result;
+    result.reserve(kMaxDirectoryEntries);
     QMimeDatabase mimeDb;
 
     dir.setFilter(QDir::AllEntries | QDir::NoDot);
@@ -101,7 +109,7 @@ QVariantList listDirectoryAt(const QString &path)
         }
 
         result.append(item);
-        if (result.size() >= 200) {
+        if (result.size() >= kMaxDirectoryEntries) {
             break;
         }
     }

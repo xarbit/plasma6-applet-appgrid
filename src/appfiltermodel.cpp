@@ -28,6 +28,20 @@ namespace
 // Off by default; enable with QT_LOGGING_RULES="appgrid.perf.debug=true" to time
 // the per-refresh cost of resolving the role defaults (#200).
 Q_LOGGING_CATEGORY(lcPerf, "appgrid.perf", QtWarningMsg)
+
+// The app fields shared by getByStorageId() and appsByCategory(); each caller
+// adds its own extra key (genericName resp. proxyIndex) on top.
+QVariantMap baseAppMap(const QModelIndex &idx)
+{
+    QVariantMap map;
+    map[QStringLiteral("name")] = idx.data(AppModel::NameRole);
+    map[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
+    map[QStringLiteral("desktopFile")] = idx.data(AppModel::DesktopFileRole);
+    map[QStringLiteral("storageId")] = idx.data(AppModel::StorageIdRole);
+    map[QStringLiteral("comment")] = idx.data(AppModel::CommentRole);
+    map[QStringLiteral("installSource")] = idx.data(AppModel::InstallSourceRole);
+    return map;
+}
 }
 
 // Re-run only the filter (not the sort). Qt 6.13 replaced invalidateFilter()
@@ -771,13 +785,7 @@ QVariantList AppFilterModel::appsByCategory() const
         const auto idx = index(i, 0);
         const auto cats = idx.data(AppModel::CategoriesRole).toStringList();
 
-        QVariantMap app;
-        app[QStringLiteral("name")] = idx.data(AppModel::NameRole);
-        app[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
-        app[QStringLiteral("storageId")] = idx.data(AppModel::StorageIdRole);
-        app[QStringLiteral("desktopFile")] = idx.data(AppModel::DesktopFileRole);
-        app[QStringLiteral("comment")] = idx.data(AppModel::CommentRole);
-        app[QStringLiteral("installSource")] = idx.data(AppModel::InstallSourceRole);
+        QVariantMap app = baseAppMap(idx);
         app[QStringLiteral("proxyIndex")] = i;
 
         for (const auto &cat : cats) {
@@ -874,13 +882,8 @@ QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
         return map;
     }
     const auto idx = src->index(row, 0);
-    map[QStringLiteral("name")] = idx.data(AppModel::NameRole);
-    map[QStringLiteral("iconName")] = idx.data(AppModel::IconRole);
-    map[QStringLiteral("desktopFile")] = idx.data(AppModel::DesktopFileRole);
-    map[QStringLiteral("storageId")] = idx.data(AppModel::StorageIdRole);
+    map = baseAppMap(idx);
     map[QStringLiteral("genericName")] = idx.data(AppModel::GenericNameRole);
-    map[QStringLiteral("comment")] = idx.data(AppModel::CommentRole);
-    map[QStringLiteral("installSource")] = idx.data(AppModel::InstallSourceRole);
     return map;
 }
 
