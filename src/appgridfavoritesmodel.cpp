@@ -17,11 +17,13 @@
 #include <PlasmaActivities/Stats/Query>
 #include <PlasmaActivities/Stats/ResultModel>
 #include <PlasmaActivities/Stats/ResultSet>
+#include <PlasmaActivities/Stats/ResultWatcher>
 #include <PlasmaActivities/Stats/Terms>
 
 #include <QFileInfo>
 #include <QMimeType>
 #include <QQmlEngine>
+#include <QTimer>
 
 #include <memory>
 
@@ -30,6 +32,7 @@ namespace KASTerms = KActivities::Stats::Terms;
 
 namespace
 {
+
 // The shared favourites agents — the same Kicker/Kickoff link to, so AppGrid
 // reads and writes one cross-launcher set. Apps go under one, files/images under
 // the other; both are read so every favourite type shows.
@@ -69,6 +72,17 @@ AppGridFavoritesModel::AppGridFavoritesModel(QObject *parent)
     : QSortFilterProxyModel(parent)
     , m_consumer(new KActivities::Consumer(this))
 {
+    // Coalesce the burst of watcher signals one external change emits (an unlink
+    // fires resultUnlinked twice) into a single rebuild.
+    m_reloadTimer = new QTimer(this);
+    m_reloadTimer->setSingleShot(true);
+    m_reloadTimer->setInterval(0);
+    connect(m_reloadTimer, &QTimer::timeout, this, [this] {
+        if (!m_clientId.isEmpty()) {
+            initForClient(m_clientId);
+        }
+    });
+
     connect(m_consumer, &KActivities::Consumer::serviceStatusChanged, this, [this] {
         Q_EMIT enabledChanged();
         // kactivitymanagerd came up after the model was built — rebuild so the
@@ -145,6 +159,23 @@ void AppGridFavoritesModel::initForClient(const QString &clientId)
     }
     m_results = model;
     m_pendingRemovals.clear();
+
+    // Cross-process favourite sync: the ResultModel reflects a *link* (a favourite
+    // added elsewhere shows up), but not an *unlink* — it keeps the row. So watch
+    // the same query and mirror unlink/link into the hidden set ourselves. This is
+    // what propagates a removal in one launcher variant to the other (and back).
+    if (m_watcher) {
+        m_watcher->deleteLater();
+    }
+    m_watcher = new KAStats::ResultWatcher(query, this);
+    // A favourite unlinked in another launcher: KActivities' ResultModel keeps the
+    // row (it doesn't drop on unlink), so rebuild from a fresh query — that query
+    // reflects the unlink. We can't just hide the row by name: KActivities emits
+    // the unlink resource WITHOUT the "applications:" scheme the model keys on, so
+    // a string match would never hit. resultsInvalidated (KActivities' "reload
+    // everything" broadcast) gets the same treatment. Coalesced via m_reloadTimer.
+    connect(m_watcher, &KAStats::ResultWatcher::resultUnlinked, m_reloadTimer, qOverload<>(&QTimer::start));
+    connect(m_watcher, &KAStats::ResultWatcher::resultsInvalidated, m_reloadTimer, qOverload<>(&QTimer::start));
 
     // When a row genuinely leaves the source (the unlink finally propagated, or an
     // external change), drop any matching optimistic-removal entry so the set stays
@@ -453,9 +484,19 @@ void AppGridFavoritesModel::removeFavorite(const QString &id)
     if (resource.isEmpty()) {
         return;
     }
-    m_results->unlinkFromActivity(urlForId(resource), KASTerms::Activity(kActivityAny), KASTerms::Agent(agentForResource(resource)));
-    // Hide it now; the ResultModel doesn't reliably drop the row on unlink, so the
-    // view would otherwise look unchanged until reload.
+    // Unlink from the global link AND every activity it could be pinned to.
+    // ":any" does not remove the global link, so the favourite was never actually
+    // unlinked — only hidden locally, which is why a removal never reached the
+    // other launcher variant. Unlinking the real targets removes it and makes
+    // kactivitymanagerd broadcast the unlink the other process picks up.
+    const QUrl url = urlForId(resource);
+    const auto agent = KASTerms::Agent(agentForResource(resource));
+    m_results->unlinkFromActivity(url, KASTerms::Activity(kActivityGlobal), agent);
+    const auto currentActivities = m_consumer->activities();
+    for (const QString &activity : currentActivities) {
+        m_results->unlinkFromActivity(url, KASTerms::Activity(activity), agent);
+    }
+    // Hide it now; the ResultModel doesn't drop the row synchronously.
     setResourceHidden(resource, true);
 }
 

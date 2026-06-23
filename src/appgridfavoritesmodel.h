@@ -15,12 +15,15 @@
 
 #include <optional>
 
+class QTimer;
+
 namespace KActivities
 {
 class Consumer;
 namespace Stats
 {
 class ResultModel;
+class ResultWatcher;
 }
 }
 
@@ -147,6 +150,12 @@ private:
 
     KActivities::Consumer *const m_consumer;
     KActivities::Stats::ResultModel *m_results = nullptr;
+    // Watches the same favourites query for cross-process link/unlink: the
+    // ResultModel doesn't drop a row on unlink, so a removal in one launcher
+    // variant wouldn't otherwise reach the other.
+    KActivities::Stats::ResultWatcher *m_watcher = nullptr;
+    // Coalesces the watcher's reload signals into one rebuild.
+    QTimer *m_reloadTimer = nullptr;
     QString m_clientId;
     // Reused across data()/resolve() calls — constructing one per row on every
     // view refresh is wasteful (its methods are const, so resolve() stays const).

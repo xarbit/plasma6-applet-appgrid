@@ -121,6 +121,12 @@ Item {
     function removeFavorite(sid) {
         if (!sharedFavoritesModel || !sid) return
         sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(sid))
+        // Push the now-shorter flat list (removeFavorite hid it synchronously)
+        // into the grouped model BEFORE pulling it from the folder. Otherwise
+        // removeFromFolder reconciles against the stale list that still has this
+        // app, re-places it as a loose favourite, and persists that — leaving it
+        // stuck (loose) in the other launcher variant.
+        _pushGrouped()
         removeFromAnyFolder(sid)
     }
 
