@@ -9,7 +9,6 @@ import QtQuick
 import org.kde.kirigami as Kirigami
 
 import "../controllers"
-import "../js/themecolors.js" as ThemeColors
 import "../js/constants.js" as Const
 
 Column {
@@ -78,14 +77,9 @@ Column {
                 height: recentHeader.cellHeight
                 visible: appData.name !== undefined
 
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: recentHeader.cellWidth - Kirigami.Units.smallSpacing * 2
-                    height: recentHeader.cellHeight - Kirigami.Units.smallSpacing * 2
-                    radius: Kirigami.Units.cornerRadius
-                    color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.2)
-                    border.width: 1
-                    border.color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.6)
+                GridHighlight {
+                    cellWidth: recentHeader.cellWidth
+                    cellHeight: recentHeader.cellHeight
                     visible: recentHeader.currentRecentIndex === recentDelegate.index && recentHeader.gridHasFocus
                 }
 
