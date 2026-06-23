@@ -698,7 +698,7 @@ Item {
                 runnerMenu.close()
             }
         }
-        PlasmaComponents.MenuSeparator {
+        AppGridMenuSeparator {
             visible: contextMenu._canFavoriteRunner && contextMenu.popupRunnerActions.length > 0
         }
 
