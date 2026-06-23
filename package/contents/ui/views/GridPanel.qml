@@ -877,6 +877,8 @@ Kirigami.ShadowedRectangle {
             showShortcuts: cfg.showSearchShortcuts
             animateHighlight: cfg.hoverAnimation > 0
             searchField: searchBar.field
+            favoritesManager: favorites
+            plasmoidBridge: panel.plasmoidBridge
             onLaunched: function(index) { panel.launchSearchResult(index) }
             onContextMenuRequested: function(index, storageId, desktopFile) {
                 // search-results has no multi-select; passing canSelect=false

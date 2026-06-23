@@ -18,6 +18,7 @@ import "../controllers"
 import "../widgets"
 import "../js/themecolors.js" as ThemeColors
 import "../js/constants.js" as Const
+import "../js/favoriteid.js" as FavoriteId
 
 ListView {
     id: listView
@@ -34,6 +35,20 @@ ListView {
     // Show the Alt+N launch-shortcut badge on each row. The shortcut still
     // works when hidden — this only drops the visual label (#165).
     property bool showShortcuts: true
+
+    // Favourite toggle on the highlighted row (#200). The manager owns the
+    // mutation + folder cleanup; the bridge resolves a runner row's favourite id
+    // (the menu uses the same two). Left null disables the star button.
+    property var favoritesManager: null
+    property var plasmoidBridge: null
+    // Bumped on any favourites change so the star's filled/outline state and the
+    // per-row "is favourite" binding re-evaluate (isFavorite() isn't a property).
+    property int _favRevision: 0
+    Connections {
+        target: listView.favoritesManager ? listView.favoritesManager.sharedFavoritesModel : null
+        ignoreUnknownSignals: true
+        function onCountChanged() { listView._favRevision++ }
+    }
 
     signal launched(int index)
     signal contextMenuRequested(int index, string storageId, string desktopFile)
@@ -250,6 +265,22 @@ ListView {
         // flag them so the row dims and shows the hidden indicator below.
         readonly property bool itemHidden: model.isHidden === true
 
+        // Favourite id for the star button. App-like rows favourite by storage id
+        // (same as showForApp); other runner rows ask the bridge (same as
+        // showForRunner). Empty = not favouritable. Only visible (virtualized) rows
+        // render, so the bridge lookup runs for a handful of rows, not the list.
+        readonly property string favoriteId: {
+            if (actsLikeApp)
+                return (model.storageId || "").length > 0 ? FavoriteId.toPrefixed(model.storageId) : ""
+            return listView.plasmoidBridge ? listView.plasmoidBridge.runnerResultFavoriteId(model.sourceIndex) : ""
+        }
+        readonly property bool favoritable: favoriteId.length > 0
+        readonly property bool isFavorite: {
+            listView._favRevision  // re-evaluate when favourites change
+            return favoritable && listView.favoritesManager
+                   && listView.favoritesManager.isFavorite(favoriteId)
+        }
+
         TapHandler {
             acceptedButtons: Qt.RightButton
             onTapped: {
@@ -340,30 +371,53 @@ ListView {
                 }
             }
 
-            PlasmaComponents.ToolButton {
-                id: overflowButton
-                // App context menu (Pin / Add to Desktop / Hide / …) for
-                // anything app-shaped — native AppFilterModel rows AND
-                // runner rows whose .desktop URL we resolved a storageId
-                // out of. Runner-action overflow only for runner rows
-                // that actually expose secondary actions (calculator yes,
-                // most other runners no — empty menu otherwise).
-                visible: resultDelegate.highlighted
-                         && (resultDelegate.actsLikeApp
-                             || model.isRunnerAction === true
-                             || (model.runnerActionsCount || 0) > 0)
+            // The two action buttons sit tight together (no largeSpacing between
+            // them); the outer RowLayout spacing still separates them from the text.
+            RowLayout {
+                spacing: 0
                 Layout.alignment: Qt.AlignVCenter
-                icon.name: "overflow-menu"
-                PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "More options")
-                PlasmaComponents.ToolTip.visible: hovered
-                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-                onClicked: {
-                    if (resultDelegate.actsLikeApp) {
-                        listView.contextMenuRequested(model.index,
-                                                      model.storageId || "",
-                                                      model.desktopFile || "")
-                    } else {
-                        listView.runnerContextMenuRequested(model.index)
+
+                PlasmaComponents.ToolButton {
+                    id: favoriteButton
+                    // Filled star when already favourited, outline otherwise. Shown on
+                    // every favouritable row, not just the selected one.
+                    visible: resultDelegate.favoritable
+                    icon.name: resultDelegate.isFavorite ? "starred-symbolic" : "non-starred-symbolic"
+                    PlasmaComponents.ToolTip.text: resultDelegate.isFavorite
+                        ? i18nd("dev.xarbit.appgrid", "Remove from Favorites")
+                        : i18nd("dev.xarbit.appgrid", "Add to Favorites")
+                    PlasmaComponents.ToolTip.visible: hovered
+                    PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: {
+                        if (listView.favoritesManager)
+                            listView.favoritesManager.toggleFavorite(resultDelegate.favoriteId)
+                    }
+                }
+
+                PlasmaComponents.ToolButton {
+                    id: overflowButton
+                    // App context menu (Pin / Add to Desktop / Hide / …) for
+                    // anything app-shaped — native AppFilterModel rows AND
+                    // runner rows whose .desktop URL we resolved a storageId
+                    // out of. Runner-action overflow only for runner rows
+                    // that actually expose secondary actions (calculator yes,
+                    // most other runners no — empty menu otherwise).
+                    visible: resultDelegate.actsLikeApp
+                             || resultDelegate.favoritable
+                             || model.isRunnerAction === true
+                             || (model.runnerActionsCount || 0) > 0
+                    icon.name: "overflow-menu"
+                    PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "More options")
+                    PlasmaComponents.ToolTip.visible: hovered
+                    PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    onClicked: {
+                        if (resultDelegate.actsLikeApp) {
+                            listView.contextMenuRequested(model.index,
+                                                          model.storageId || "",
+                                                          model.desktopFile || "")
+                        } else {
+                            listView.runnerContextMenuRequested(model.index)
+                        }
                     }
                 }
             }
