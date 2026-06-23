@@ -48,7 +48,18 @@ Item {
     readonly property real _overlayMaxWidthFraction: 0.98
 
     focus: true
+    // Esc closes just the folder. The inner grid holds focus, so this catches the
+    // Esc that bubbles up from it.
     Keys.onEscapePressed: closeRequested()
+
+    // Give keyboard focus to the grid (not this host) and preselect the first
+    // member, so arrow keys navigate and Enter launches right away on a keyboard
+    // open. Runs after the child grid has built its model (children complete first).
+    Component.onCompleted: {
+        if (contents.count > 0)
+            contents.currentIndex = 0
+        contents.forceActiveFocus()
+    }
 
     // Transparent catcher behind the card: tap outside to close, no dim. Uses a
     // hover-enabled MouseArea (not a bare TapHandler) so it also swallows hover

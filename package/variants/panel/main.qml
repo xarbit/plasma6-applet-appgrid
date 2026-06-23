@@ -102,6 +102,9 @@ PlasmoidItem {
 
             Shortcut {
                 sequence: "Escape"
+                // Yield to an open folder (a Shortcut outranks the folder grid's
+                // Keys handler): Esc closes the folder first, the popup on the next.
+                enabled: panel.openFolderId.length === 0
                 onActivated: appgrid.expanded = false
             }
         }

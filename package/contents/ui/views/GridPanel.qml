@@ -359,6 +359,18 @@ Kirigami.ShadowedRectangle {
     }
     // Leaving the favourites tab closes any open folder.
     onIsFavoritesActiveChanged: if (!isFavoritesActive) openFolderId = ""
+    // The open folder's grid holds keyboard focus; on close, hand it back to the
+    // grid tile the folder was entered from (currentIndex still points there) so
+    // arrow nav resumes where the user left off. Off the favourites tab there is
+    // no tile, so fall back to the search field.
+    onOpenFolderIdChanged: {
+        if (openFolderId.length > 0)
+            return
+        if (isFavoritesActive)
+            appGrid.forceActiveFocus()
+        else
+            searchBar.field.forceActiveFocus()
+    }
 
     // #193: drop a favorite into the launcher's empty space (anywhere that isn't
     // the favorites grid, but inside the window) to remove it. Lowest z, so the
@@ -1026,7 +1038,6 @@ Kirigami.ShadowedRectangle {
                     reduceGridSpacing: cfg.reduceGridSpacing
                     hoverAnimation: cfg.hoverAnimation
                     hoverHighlight: cfg.hoverHighlight
-                    Component.onCompleted: forceActiveFocus()
                     onCloseRequested: panel.openFolderId = ""
                     onMemberRemoveRequested: sid => {
                         if (panel.favoritesGroupedModel)

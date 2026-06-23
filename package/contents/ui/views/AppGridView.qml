@@ -753,7 +753,12 @@ GridView {
             hoverHighlight: gridView.hoverHighlight
             dragSource: gridView.dragSource
             gridRow: model.index
-            onClicked: gridView.openFolderRequested(model.folderId)
+            // Record the tile as current so focus returns here when the folder
+            // closes (e.g. Esc), not to the search field.
+            onClicked: {
+                gridView.currentIndex = model.index
+                gridView.openFolderRequested(model.folderId)
+            }
             onContextRequested: gridView.folderContextMenuRequested(model.folderId)
         }
 
