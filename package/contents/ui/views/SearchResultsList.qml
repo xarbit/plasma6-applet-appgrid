@@ -345,12 +345,12 @@ ListView {
                 // App context menu (Pin / Add to Desktop / Hide / …) for
                 // anything app-shaped — native AppFilterModel rows AND
                 // runner rows whose .desktop URL we resolved a storageId
-                // out of. Runner-action overflow only for runner rows
-                // that actually expose secondary actions (calculator yes,
-                // most other runners no — empty menu otherwise).
+                // out of. Runner-action overflow only for runner rows that
+                // actually expose secondary actions (calculator yes, most
+                // other runners no) — otherwise the menu is empty and the
+                // button is a dud (#200).
                 visible: resultDelegate.highlighted
                          && (resultDelegate.actsLikeApp
-                             || model.isRunnerAction === true
                              || (model.runnerActionsCount || 0) > 0)
                 Layout.alignment: Qt.AlignVCenter
                 icon.name: "overflow-menu"
