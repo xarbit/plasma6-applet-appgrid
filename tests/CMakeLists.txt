@@ -124,6 +124,20 @@ add_executable(test_favoritesgroupedmodel
 target_link_libraries(test_favoritesgroupedmodel PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_favoritesgroupedmodel COMMAND test_favoritesgroupedmodel)
 
+# MenuTreeModel — read-only, multi-level category folders over the app-menu tree
+# (#201). Pure builder + the navigable cursor; no KSycoca, fed a synthetic tree.
+add_executable(test_menutree
+    test_menutree.cpp
+    ${CMAKE_SOURCE_DIR}/src/abstractgroupedmodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/abstractgroupedmodel.h
+    ${CMAKE_SOURCE_DIR}/src/menutree.cpp
+    ${CMAKE_SOURCE_DIR}/src/menutree.h
+    ${CMAKE_SOURCE_DIR}/src/menutreemodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/menutreemodel.h
+)
+target_link_libraries(test_menutree PRIVATE Qt6::Test Qt6::Core)
+add_test(NAME test_menutree COMMAND test_menutree)
+
 # LaunchBookkeeping is a plain value type (QtCore only) — light standalone
 # target like test_pluginhelpers.
 add_executable(test_launchbookkeeping
