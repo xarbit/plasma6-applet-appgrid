@@ -653,7 +653,7 @@ static int searchRelevance(const QModelIndex &idx, const QString &query)
                                     query);
 }
 
-const AppFilterModel::RowScore &AppFilterModel::rowScore(const QModelIndex &sourceIndex) const
+AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex) const
 {
     // lessThan() is handed *source* indices; key by the source row, which is
     // stable across a re-sort — so sorting alone (the per-keystroke case)
@@ -686,11 +686,6 @@ void AppFilterModel::invalidateRowScoreCache()
 
 bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-    // Snapshot by value: rowScore() may insert into m_rowScoreCache, and the
-    // second call's insert can rehash the QHash, dangling a reference held from
-    // the first. A dangling l.name then fed to ICU collation segfaults mid-sort
-    // (issue #202). RowScore is 3 implicitly-shared QStrings + a few scalars —
-    // the copy is cheap.
     const RowScore l = rowScore(left);
     const RowScore r = rowScore(right);
 

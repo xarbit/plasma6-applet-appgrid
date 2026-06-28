@@ -203,7 +203,11 @@ private:
         bool isDefault = false; // a mimeapps.list default for some type
         bool isPreferred = false; // a role default (browser/mail/file-mgr/terminal) — ranks above isDefault
     };
-    [[nodiscard]] const RowScore &rowScore(const QModelIndex &sourceIndex) const;
+    // Returns by value, not by reference: the cache is a QHash and a later
+    // insert can rehash it, so a reference into it can't be promised to outlive
+    // the next rowScore() call (was issue #202). The contents are implicitly
+    // shared QStrings + scalars, so the copy is cheap.
+    [[nodiscard]] RowScore rowScore(const QModelIndex &sourceIndex) const;
     void invalidateRowScoreCache();
 
     QString m_filterCategory;
