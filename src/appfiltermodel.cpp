@@ -637,8 +637,13 @@ void AppFilterModel::invalidateRowScoreCache()
 
 bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-    const RowScore &l = rowScore(left);
-    const RowScore &r = rowScore(right);
+    // Snapshot by value: rowScore() may insert into m_rowScoreCache, and the
+    // second call's insert can rehash the QHash, dangling a reference held from
+    // the first. A dangling l.name then fed to ICU collation segfaults mid-sort
+    // (issue #202). RowScore is 3 implicitly-shared QStrings + a few scalars —
+    // the copy is cheap.
+    const RowScore l = rowScore(left);
+    const RowScore r = rowScore(right);
 
     // In favorites mode, sort by position in favoriteApps list — unless the
     // user opted into alphabetical ordering.
