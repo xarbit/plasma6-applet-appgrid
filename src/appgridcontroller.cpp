@@ -112,9 +112,10 @@ AppGridController::AppGridController(QObject *parent)
     KConfigGroup appgridGeneral = KSharedConfig::openConfig(QStringLiteral("appgridrc"))->group(QStringLiteral("General"));
     PluginHelpers::pruneObsoleteKeys(appgridGeneral);
 
-    // Warm the AppStream pool in the background now, so the first right-click
-    // "Manage in Discover" check never blocks on a synchronous metadata parse.
-    AppStreamResolver::warm();
+    // The AppStream pool is NOT warmed here. Its metadata catalogs are large
+    // (~25 MB, dominated by the Flatpak remote catalog the distro lookup leans on
+    // when the OS catalog is sparse), so a session that never opens "Manage in
+    // Discover" should never map them. It loads lazily on the first openInDiscover().
 }
 
 void AppGridController::wireLaunchState()
@@ -682,14 +683,22 @@ bool AppGridController::canManageInDiscover(const QString &storageId) const
     // authoritatively identifies the backend (PackageKit / Flatpak / Snap) —
     // more reliable than the AppStream id, which on its own can't tell apart
     // multiple sources of the same component.
+    // Gate on the Discover backend owning the installed copy — a cheap, pool-free
+    // check. We deliberately do NOT resolve the AppStream id here (that would be a
+    // pool query per right-click just to decide visibility); the id is resolved
+    // when the user actually clicks (openInDiscover).
     const QString backend = discoverBackendFor(service);
     if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend)) {
         return false;
     }
 
-    // Only offer the menu when AppStream actually knows the component, so we
-    // never open Discover on a dead appstream:// id.
-    return !appStreamIdFor(service).isEmpty();
+    // The menu is opening for a manageable app, so warm the pool now (async) — by
+    // the time the user reads the menu and clicks "Manage in Discover", the load
+    // is done and that very first click resolves the exact component instead of
+    // racing it into a search fallback. Idempotent; only loads the ~25 MB catalogs
+    // the first time such a menu opens, never at startup.
+    AppStreamResolver::prefetch();
+    return true;
 }
 
 void AppGridController::openInDiscover(const QString &storageId)
@@ -703,13 +712,21 @@ void AppGridController::openInDiscover(const QString &storageId)
     }
 
     // X-AppStream-Component wins if the .desktop declares one; otherwise ask the
-    // AppStream pool for the canonical id.
+    // AppStream pool for the canonical id. resolve() lazily loads the pool on its
+    // first call (kept off every session that never opens Discover), so this first
+    // click returns empty and falls through to the search below; the next resolves.
     KDesktopFile desktopFile(service->entryPath());
     QString appId = desktopFile.desktopGroup().readEntry("X-AppStream-Component", QString());
     if (appId.isEmpty()) {
         appId = appStreamIdFor(service);
     }
+
+    // No id — either AppStream doesn't know this app, or the pool is still loading
+    // on this very first click. Open Discover searching the app name so the action
+    // is never dead; the next click (pool warm) resolves to the exact component.
     if (appId.isEmpty()) {
+        auto *job = new KIO::CommandLauncherJob(QStringLiteral("plasma-discover"), {QStringLiteral("--search"), service->name()});
+        job->start();
         return;
     }
 

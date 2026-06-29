@@ -33,7 +33,7 @@ SharedPool &shared()
 }
 }
 
-void warm()
+void prefetch()
 {
     static bool started = false;
     if (started) {
@@ -47,6 +47,7 @@ void warm()
             qWarning() << "AppGrid: AppStream pool load failed:" << shared().pool.lastError();
         }
     });
+    // Asynchronous so opening the menu never blocks on parsing metadata.
     s.pool.loadAsync();
 }
 
@@ -54,6 +55,7 @@ QString resolve(const QString &desktopId)
 {
     SharedPool &s = shared();
     if (!s.ready) {
+        prefetch();
         return {};
     }
     const auto components = s.pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);

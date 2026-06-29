@@ -20,12 +20,15 @@
  */
 namespace AppStreamResolver
 {
-/** Kick off the one-time background pool load. Cheap no-op after first call.
- *  Call once at plugin startup so the first query doesn't block the UI. */
-void warm();
+/** Kick off the one-time async pool load (idempotent, cheap no-op afterwards).
+ *  Call it the moment a Discover-manageable app's menu opens, so the imminent
+ *  "Manage in Discover" click resolves the exact component instead of racing the
+ *  load. NOT called at startup — a session that never opens such a menu never
+ *  maps the ~25 MB metadata catalogs. */
+void prefetch();
 
 /** Canonical AppStream component id for @p desktopId (e.g.
- *  "org.kde.kate.desktop"), or empty when the pool has no matching component
- *  or is still warming. */
+ *  "org.kde.kate.desktop"), or empty when the pool has no matching component or
+ *  is still loading. Triggers prefetch() itself if nothing did yet. */
 [[nodiscard]] QString resolve(const QString &desktopId);
 }
