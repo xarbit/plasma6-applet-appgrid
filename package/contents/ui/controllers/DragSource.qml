@@ -75,6 +75,22 @@ Item {
         return drag && drag.source === source
     }
 
+    // Drag-target / drag-source predicates the cells query to drive their fold
+    // halo and remove-✕ markers. Kept here, on the shared drag state, so the app
+    // and folder delegates don't each re-spell the same checks.
+    function isFoldTargetApp(storageId) {
+        return foldTargetStorageId.length > 0 && foldTargetStorageId === storageId
+    }
+    function isFoldTargetFolder(folderId) {
+        return foldTargetFolderId.length > 0 && foldTargetFolderId === folderId
+    }
+    function isSourceApp(item, storageId) {
+        return sourceItem === item || (storageId.length > 0 && sourceStorageIds.indexOf(storageId) >= 0)
+    }
+    function isSourceFolder(folderId) {
+        return sourceFolderId.length > 0 && sourceFolderId === folderId
+    }
+
     // Off-screen composite for multi-drag stack preview. Up to 3 icons drawn
     // diagonally offset (Dolphin's convention) plus a "+N" badge in the
     // bottom-right when the selection is larger. KDE doesn't expose this

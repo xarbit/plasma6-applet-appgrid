@@ -192,6 +192,14 @@ DropArea {
         return added
     }
 
+    // The grid cell index under the drag cursor (drag coords → content coords →
+    // GridView cell). Used wherever a drop position is needed; the grouped path
+    // keeps its own mapToItem because it also needs the point for _dragZone.
+    function _dragPosToIndex(drag) {
+        const p = mapToItem(gridView.contentItem, drag.x, drag.y)
+        return gridView.indexAt(p.x, p.y)
+    }
+
     onEntered: drag => {
         pendingMoves = []
         addPreviewActive = false
@@ -314,8 +322,7 @@ DropArea {
             return
         }
 
-        const pos = mapToItem(gridView.contentItem, drag.x, drag.y)
-        const target = gridView.indexAt(pos.x, pos.y)
+        const target = _dragPosToIndex(drag)
 
         // --- Add-from-other-tab: live ghost slot at the cursor position ---
         // Only when the favorites tab is actually showing; on other tabs
@@ -439,8 +446,7 @@ DropArea {
         // covers the multi-drag-within-favorites no-op case too.
         if (_isMultiDrag && _source && _source.isOwnDrag(drag)
                 && gridView.favoritesActive) {
-            const pos = mapToItem(gridView.contentItem, drag.x, drag.y)
-            let insertAt = gridView.indexAt(pos.x, pos.y)
+            let insertAt = _dragPosToIndex(drag)
             if (insertAt < 0) insertAt = gridView.sharedFavoritesModel.count
             const sids = _source.sourceStorageIds
             for (var i = 0; i < sids.length; ++i) {
@@ -465,8 +471,7 @@ DropArea {
         // External file drag (from Dolphin etc.) — add as favourite, but only
         // when the favorites tab is active; a file silently appearing in
         // Favorites from another tab is confusing.
-        const pos = mapToItem(gridView.contentItem, drag.x, drag.y)
-        if (_addExternalUrls(drag, gridView.indexAt(pos.x, pos.y)) > 0)
+        if (_addExternalUrls(drag, _dragPosToIndex(drag)) > 0)
             drag.accept(Qt.CopyAction)
     }
 }
