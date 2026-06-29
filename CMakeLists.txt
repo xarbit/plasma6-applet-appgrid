@@ -239,6 +239,8 @@ set(APPGRID_COMMON_SOURCES
     src/abstractgroupedmodel.h
     src/favoritesgroupedmodel.cpp
     src/favoritesgroupedmodel.h
+    src/menuscanner.cpp
+    src/menuscanner.h
     src/menutree.cpp
     src/menutree.h
     src/menutreemodel.cpp

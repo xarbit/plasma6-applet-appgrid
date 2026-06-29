@@ -7,12 +7,12 @@
 
 #include "appmodelassembly.h"
 #include "categorymapping.h"
+#include "menuscanner.h"
 
 #include <KIO/ApplicationLauncherJob>
 #include <KJob>
 #include <KLocalizedString>
 #include <KService>
-#include <KServiceGroup>
 #include <KSycoca>
 
 #include <QTimer>
@@ -172,102 +172,40 @@ void AppModel::setUseSystemCategories(bool enabled)
 
 void AppModel::loadApplications()
 {
-    // Traverse the XDG menu hierarchy via KServiceGroup, emitting one AppEntry
-    // per service *occurrence* (an app reachable from several menu groups
-    // yields several). The dedup/merge/sort/category-collect is pure — see
-    // AppModelAssembly::assemble — so the walk only does KService extraction.
+    // One menu walk feeds both the flat list and the folder tree — see
+    // MenuScanner. It returns an AppEntry per service occurrence (dedup/merge/
+    // sort is pure, AppModelAssembly::assemble) plus every subgroup as a
+    // RawFolder (the tree reads m_menuFolders, never re-walks).
     // In system mode: top-level group captions define categories (respects kmenuedit).
     // In simple mode: the hardcoded mapping table maps desktop categories to clean groups.
     const bool systemMode = m_useSystemCategories;
-    QVector<AppEntry> occurrences;
 
-    std::function<void(KServiceGroup::Ptr, const QString &)> walkGroup;
-    walkGroup = [&](KServiceGroup::Ptr group, const QString &category) {
-        if (!group || !group->isValid()) {
-            return;
-        }
+    MenuScanner::RawScan scan = MenuScanner::scan(systemMode);
+    m_menuFolders = std::move(scan.folders);
+    m_occurrences = std::move(scan.occurrences);
 
-        const auto entries = group->entries(true /* sorted */, true /* excludeNoDisplay */, false /* allowSeparators */, true /* sortByGenericName */);
-
-        for (const auto &entry : entries) {
-            if (entry->isType(KST_KServiceGroup)) {
-                auto subGroup = KServiceGroup::Ptr(static_cast<KServiceGroup *>(entry.data()));
-                if (!subGroup || !subGroup->isValid() || subGroup->noDisplay()) {
-                    continue;
-                }
-
-                QString subCategory = category;
-                if (systemMode && subCategory.isEmpty()) {
-                    subCategory = subGroup->caption();
-                    if (subCategory.isEmpty()) {
-                        subCategory = subGroup->name();
-                    }
-                    // Store menu path for kmenuedit (e.g. "Education/")
-                    QString relPath = subGroup->relPath();
-                    if (relPath.endsWith(QLatin1Char('/'))) {
-                        relPath.chop(1);
-                    }
-                    m_categoryMenuPaths[subCategory] = relPath;
-                    // The menu group's own .directory icon is the authoritative
-                    // KDE icon for this category; the bar uses it directly.
-                    m_categoryIcons[subCategory] = subGroup->icon();
-                }
-                walkGroup(subGroup, subCategory);
-                continue;
-            }
-
-            if (!entry->isType(KST_KService)) {
-                continue;
-            }
-
-            auto service = KService::Ptr(static_cast<KService *>(entry.data()));
-
-            if (!service->isApplication()) {
-                continue;
-            }
-            if (service->noDisplay() || service->exec().isEmpty()) {
-                continue;
-            }
-
-            const QString storageId = service->storageId();
-            if (storageId.isEmpty()) {
-                continue;
-            }
-
-            AppEntry appEntry;
-            appEntry.name = service->name();
-            appEntry.icon = service->icon();
-            appEntry.desktopFile = service->entryPath();
-            appEntry.genericName = service->genericName();
-            appEntry.storageId = storageId;
-            appEntry.keywords = service->keywords();
-            appEntry.comment = service->comment();
-
-            // Detect install source from the exec line and the installed
-            // .desktop path. entryPath() is already the resolved absolute path
-            // (KService applies XDG precedence), so no QStandardPaths::locate()
-            // stat per app is needed — it would just return entryPath() back.
-            appEntry.installSource = detectInstallSource(service->exec(), service->entryPath());
-            if (systemMode) {
-                appEntry.categories.append(category.isEmpty() ? QStringLiteral("Other") : category);
-            } else {
-                appEntry.categories = mapCategories(service->categories());
-            }
-
-            occurrences.append(appEntry);
-        }
-    };
-
-    walkGroup(KServiceGroup::root(), QString());
-
-    auto assembled = AppModelAssembly::assemble(occurrences, systemMode);
+    auto assembled = AppModelAssembly::assemble(m_occurrences, systemMode);
     m_apps = std::move(assembled.apps);
     m_categories = std::move(assembled.categories);
 
-    // Simple mode: the bar shows translated bucket names, so key the icon
-    // lookup by the same translated label. (System mode already captured each
-    // group's .directory icon during the walk above.)
-    if (!systemMode) {
+    if (systemMode) {
+        // The category label is a top-level group's caption; its menu path and
+        // .directory icon come straight from that folder. Top-level folders are
+        // the ones one segment deep ("Education/", not "Education/Science/").
+        for (const auto &folder : std::as_const(m_menuFolders)) {
+            QString relPath = folder.relPath;
+            if (relPath.endsWith(QLatin1Char('/'))) {
+                relPath.chop(1);
+            }
+            if (relPath.contains(QLatin1Char('/'))) {
+                continue; // not top level
+            }
+            m_categoryMenuPaths[folder.name] = relPath;
+            m_categoryIcons[folder.name] = folder.icon;
+        }
+    } else {
+        // Simple mode: the bar shows translated bucket names, so key the icon
+        // lookup by the same translated label.
         const auto &iconMap = bucketIconMap();
         for (auto it = iconMap.cbegin(); it != iconMap.cend(); ++it) {
             m_categoryIcons.insert(translateCategory(it.key()), it.value());

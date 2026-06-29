@@ -236,12 +236,14 @@ MenuTreeModel *AppGridController::menuTreeModel() const
 {
     // Lazy: the menu tree (and its rebuild-on-KSycoca-reset subscription) only
     // come to life the first time QML reads this — i.e. when the folders feature
-    // is actually used. The walk never runs for the default (folders off) config.
+    // is actually used. The tree is assembled from AppModel's cached menu scan,
+    // so it costs no extra KServiceGroup walk; for the default (folders off)
+    // config the tree is simply never built.
     auto *self = const_cast<AppGridController *>(this);
     if (!m_menuTreeBuilt) {
         m_menuTreeBuilt = true;
         const auto rebuild = [self]() {
-            self->m_menuTreeModel.setTree(MenuTreeSource::fromKServiceGroup());
+            self->m_menuTreeModel.setTree(MenuTreeSource::fromScan(self->m_appModel.menuFolders(), self->m_appModel.occurrences()));
         };
         rebuild();
         connect(&m_appModel, &QAbstractItemModel::modelReset, self, rebuild);

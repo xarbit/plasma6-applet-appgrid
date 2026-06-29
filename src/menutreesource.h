@@ -5,21 +5,25 @@
 
 #pragma once
 
+#include "appmodel.h" // AppEntry
 #include "menutree.h"
 
+#include <QList>
+#include <QVector>
+
 /**
- * @brief Builds a MenuTree from the live KServiceGroup hierarchy (issue #201).
+ * @brief Builds a MenuTree from an already-walked menu scan (issue #201).
  *
- * The thin KSycoca-facing half of the menu tree: walks KServiceGroup::root(),
- * emits the flat RawFolder / RawApp the pure assembler consumes, and returns the
- * assembled tree. Kept apart from MenuTree (pure, unit-tested) and MenuTreeModel
- * (navigation) so the only KSycoca dependency lives in one small place.
+ * Pure adapter between the shared MenuScanner output and the tree assembler: it
+ * maps app occurrences to RawApp and hands them, with the scanned folders, to
+ * MenuTree::build. The menu itself is walked once in MenuScanner — this no
+ * longer touches KSycoca.
  */
 namespace MenuTreeSource
 {
 
-/** Walk the system application menu into a MenuTree. Honours the same
- *  no-display / non-application filtering AppModel applies. */
-[[nodiscard]] MenuTree::Node fromKServiceGroup();
+/** Assemble the navigable tree from the scanned @p folders and app
+ *  @p occurrences (each carrying its folderRelPath). */
+[[nodiscard]] MenuTree::Node fromScan(const QList<MenuTree::RawFolder> &folders, const QVector<AppEntry> &occurrences);
 
 } // namespace MenuTreeSource
