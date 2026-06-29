@@ -50,6 +50,26 @@
 
 #include <mutex>
 
+namespace
+{
+// The Discover backend (PackageKit / Flatpak / Snap) owning the installed copy
+// of @p service, or empty if unknown. The installed .desktop path — not the
+// AppStream id — identifies the source, since one component can ship from
+// several backends.
+QString discoverBackendFor(const KService::Ptr &service)
+{
+    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
+    return DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+}
+
+// The AppStream component id the pool resolves for @p service (keyed by its
+// .desktop id), or empty when AppStream doesn't know the component.
+QString appStreamIdFor(const KService::Ptr &service)
+{
+    return AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop"));
+}
+}
+
 AppGridController::AppGridController(QObject *parent)
     : QObject(parent)
     , m_newAppsTracker(&m_usedApps)
@@ -662,15 +682,14 @@ bool AppGridController::canManageInDiscover(const QString &storageId) const
     // authoritatively identifies the backend (PackageKit / Flatpak / Snap) —
     // more reliable than the AppStream id, which on its own can't tell apart
     // multiple sources of the same component.
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    const QString backend = discoverBackendFor(service);
     if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend)) {
         return false;
     }
 
     // Only offer the menu when AppStream actually knows the component, so we
     // never open Discover on a dead appstream:// id.
-    return !AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop")).isEmpty();
+    return !appStreamIdFor(service).isEmpty();
 }
 
 void AppGridController::openInDiscover(const QString &storageId)
@@ -688,14 +707,13 @@ void AppGridController::openInDiscover(const QString &storageId)
     KDesktopFile desktopFile(service->entryPath());
     QString appId = desktopFile.desktopGroup().readEntry("X-AppStream-Component", QString());
     if (appId.isEmpty()) {
-        appId = AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop"));
+        appId = appStreamIdFor(service);
     }
     if (appId.isEmpty()) {
         return;
     }
 
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    const QString backend = discoverBackendFor(service);
 
     // Target the backend that owns the installed copy so a multi-source app
     // (e.g. Flatpak + distro) opens the right version instead of Discover's
