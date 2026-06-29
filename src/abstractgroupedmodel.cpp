@@ -96,6 +96,26 @@ QString AbstractGroupedModel::favoriteIdAt(int row) const
     return (row >= 0 && row < m_rows.size()) ? m_rows.at(row).favoriteId : QString();
 }
 
+int AbstractGroupedModel::indexOfFolder(const QString &folderId) const
+{
+    for (int i = 0; i < m_rows.size(); ++i) {
+        if (m_rows.at(i).type == Folder && m_rows.at(i).folderId == folderId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int AbstractGroupedModel::indexOfApp(const QString &favoriteId) const
+{
+    for (int i = 0; i < m_rows.size(); ++i) {
+        if (m_rows.at(i).type == App && m_rows.at(i).favoriteId == favoriteId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void AbstractGroupedModel::setRows(const QList<Row> &rows)
 {
     beginResetModel();

@@ -51,6 +51,7 @@ Flickable {
     // the context-menu "Launch" action.
     signal bulkLaunchRequested(var sids)
     signal contextMenuRequested(int proxyIndex, string storageId, string desktopFile)
+    signal categoryNavRequested(int direction)
     signal shakeAllIcons()
 
     contentWidth: width
@@ -258,13 +259,17 @@ Flickable {
         if (searchField) searchField.forceActiveFocus()
     }
 
+    GridKeyboardNav {
+        id: keyNav
+        searchField: categoryGrid.searchField
+        onCategoryNavRequested: direction => categoryGrid.categoryNavRequested(direction)
+    }
     Keys.onLeftPressed: function(event) {
-        // Alt+Left belongs to the category bar — let it bubble up.
-        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
+        if (keyNav.handleAltArrow(event, -1)) return
         _arrowMoveWithSelection(event, _moveLeft)
     }
     Keys.onRightPressed: function(event) {
-        if (event.modifiers & Qt.AltModifier) { event.accepted = false; return }
+        if (keyNav.handleAltArrow(event, 1)) return
         _arrowMoveWithSelection(event, _moveRight)
     }
     Keys.onUpPressed: function(event) {
@@ -326,12 +331,9 @@ Flickable {
             event.accepted = true
             return
         }
-        if (event.text.length > 0 && !event.modifiers && searchField) {
-            searchField.forceActiveFocus()
-            searchField.text += event.text
+        if (keyNav.forwardTyping(event)) {
             currentIndex = -1
             recentIndex = -1
-            event.accepted = true
         }
     }
 

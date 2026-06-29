@@ -239,6 +239,12 @@ set(APPGRID_COMMON_SOURCES
     src/abstractgroupedmodel.h
     src/favoritesgroupedmodel.cpp
     src/favoritesgroupedmodel.h
+    src/menutree.cpp
+    src/menutree.h
+    src/menutreemodel.cpp
+    src/menutreemodel.h
+    src/menutreesource.cpp
+    src/menutreesource.h
     src/runnerfiltermodel.cpp
     src/runnerfiltermodel.h
     src/unifiedsearchmodel.cpp

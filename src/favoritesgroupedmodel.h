@@ -27,6 +27,11 @@ class FavoritesGroupedModel : public AbstractGroupedModel
     Q_OBJECT
     Q_PROPERTY(QVariantList favoriteFolders READ favoriteFolders WRITE setFavoriteFolders NOTIFY foldersChanged)
     Q_PROPERTY(QStringList favoriteLayout READ favoriteLayout WRITE setFavoriteLayout NOTIFY layoutChanged)
+    // Drill-in-place navigation (issue #18): the visible rows are the top level
+    // (folders + loose apps) or, inside a folder, that folder's members.
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY pathChanged)
+    Q_PROPERTY(QString currentPath READ currentPath NOTIFY pathChanged)
+    Q_PROPERTY(QString currentFolderName READ currentFolderName NOTIFY pathChanged)
 
 public:
     explicit FavoritesGroupedModel(QObject *parent = nullptr);
@@ -36,6 +41,22 @@ public:
         return true;
     }
 
+    // --- Navigation (single level: top <-> one open folder) ---
+    /** Show @p folderId's members; a no-op if it isn't a folder here. */
+    Q_INVOKABLE void enterFolder(const QString &folderId);
+    /** Back to the top level; a no-op already there. */
+    Q_INVOKABLE void goBack();
+    Q_INVOKABLE void resetToRoot();
+    [[nodiscard]] bool canGoBack() const
+    {
+        return !m_openFolder.isEmpty();
+    }
+    [[nodiscard]] QString currentPath() const
+    {
+        return m_openFolder;
+    }
+    [[nodiscard]] QString currentFolderName() const;
+
     [[nodiscard]] QVariantList favoriteFolders() const;
     void setFavoriteFolders(const QVariantList &folders);
     [[nodiscard]] QStringList favoriteLayout() const;
@@ -43,6 +64,16 @@ public:
 
     /** The live, ordered favourite storageIds from KAStats. Reconciles. */
     Q_INVOKABLE void setFlatFavorites(const QStringList &flatFavorites);
+
+    /** Optimistically add @p sid as a loose favourite *now*, so a drag-into-
+     *  favourites reflows it instantly instead of waiting for the async KAStats
+     *  round-trip. @p index is the visible slot to drop it at (the cursor), so it
+     *  appears under the pointer rather than at the bottom; -1 appends. The UI
+     *  favourites it in KAStats in parallel; the next real push carries the same id
+     *  (the contains() guard makes it idempotent). #18 */
+    Q_INVOKABLE void addLooseFavorite(const QString &sid, int index = -1);
+    /** Roll back an optimistic addLooseFavorite (drag left without dropping). */
+    Q_INVOKABLE void removeLooseFavorite(const QString &sid);
 
     // Folder mutations (config only — never touch KAStats membership).
     Q_INVOKABLE QString createFolder(const QString &sidA, const QString &sidB, const QString &name = {});
@@ -66,6 +97,9 @@ public:
 Q_SIGNALS:
     void foldersChanged();
     void layoutChanged();
+    // Navigation level changed (entered/left a folder, or the open folder
+    // dissolved while inside it).
+    void pathChanged();
     // Persist signals: emitted only for LOCAL user actions, never when applying an
     // incoming store/KAStats change. The store mirror writes on these so a process
     // that merely reads an external update never echoes it back — that write-back
@@ -92,4 +126,6 @@ private:
 
     FavoritesFolderLogic::Layout m_state;
     QStringList m_flatFavorites;
+    // The folder currently drilled into; empty = top level.
+    QString m_openFolder;
 };

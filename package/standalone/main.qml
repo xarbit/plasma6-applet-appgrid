@@ -167,10 +167,11 @@ PlasmaCore.Window {
 
     Shortcut {
         sequence: "Escape"
-        // Yield to an open folder: a window-level Shortcut outranks the folder
-        // grid's Keys handler, so disable it while a folder is open. Esc then
-        // closes just the folder; the window closes on the next Esc.
-        enabled: win.visible && panel.openFolderId.length === 0
+        // Yield to an open folder: a window-level Shortcut outranks a grid's Keys
+        // handler, so disable it while a favourites folder is open or the menu
+        // folder view is inside a sub-folder. Esc then climbs out one level; the
+        // window closes only once there's nothing left to leave.
+        enabled: win.visible && !panel.drillCanGoBack
         onActivated: win.closeWindow()
     }
 

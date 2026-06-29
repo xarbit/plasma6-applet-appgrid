@@ -181,6 +181,14 @@ Kirigami.FormLayout {
         onToggled: root.configuration.useSystemCategories = checked
     }
     QQC2.CheckBox {
+        id: categoryFoldersEnabled
+        text: i18nd("dev.xarbit.appgrid", "Group categories into folders")
+        // Needs the kmenuedit hierarchy, which only exists in system categories.
+        enabled: showCategoryBar.checked && useSystemCategories.checked
+        checked: (root.revision, root.configuration.categoryFoldersEnabled)
+        onToggled: root.configuration.categoryFoldersEnabled = checked
+    }
+    QQC2.CheckBox {
         id: hideEmptyCategories
         text: i18nd("dev.xarbit.appgrid", "Hide empty categories")
         enabled: showCategoryBar.checked

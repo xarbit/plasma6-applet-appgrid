@@ -23,6 +23,9 @@ RowLayout {
     required property var editCategoryInMenu
 
     property var appsModel: null
+    // Predicate(sid)->bool injected from the boundary: is the app already a
+    // favourite? Used by the Favorites-tab drag-hover to forbid re-adding one.
+    property var isFavorite: null
     property bool favoritesActive: false
     property bool favoritesFirst: false
 
@@ -94,9 +97,12 @@ RowLayout {
 
     // Set when sort mode is By Category
     property bool isSortByCategory: false
-    // When true, selecting a category emits the signal but does not filter the model
-    property bool scrollOnlyMode: false
-    property string scrollOnlySelected: ""
+    // The single selected category (empty = All), the same in every view. The bar
+    // only tracks + navigates it; the host decides what selecting it does (filter
+    // the grid, scroll to a section, or root the folder tree). One source of truth
+    // so the tab highlight, Alt+arrow stepping and scroll-into-view behave
+    // identically regardless of sort. (#201)
+    property string selectedCategory: ""
 
     property bool hideEmptyCategories: true
 
@@ -133,7 +139,9 @@ RowLayout {
     readonly property var orderedTabs: {
         var tabs = []
         if (favoritesFirst) tabs.push(favoritesLabel)
-        if (!isSortByCategory) tabs.push(allLabel)
+        // All is a real tab in every view now — including the By Category grid,
+        // where it scrolls back to the top / clears the filter (#201).
+        tabs.push(allLabel)
         tabs = tabs.concat(categoryList)
         if (!favoritesFirst) tabs.push(favoritesLabel)
         return tabs
@@ -142,8 +150,7 @@ RowLayout {
     // Label of the currently selected tab.
     readonly property string currentTab: {
         if (favoritesActive) return favoritesLabel
-        var sel = scrollOnlyMode ? scrollOnlySelected
-                                 : (appsModel ? appsModel.filterCategory : "")
+        var sel = selectedCategory
         return sel === "" ? allLabel : sel
     }
 
@@ -194,9 +201,7 @@ RowLayout {
     function selectAll() {
         if (categoryBar.favoritesActive)
             categoryBar.favoritesToggled(false)
-        if (categoryBar.appsModel)
-            categoryBar.appsModel.filterCategory = ""
-        scrollOnlySelected = ""
+        selectedCategory = ""
         categorySelected("")
     }
 
@@ -209,19 +214,9 @@ RowLayout {
     }
 
     function selectCategory(name) {
-        if (isSortByCategory) {
-            // By Category mode: turn off favorites, never filter, scroll instead
-            if (categoryBar.favoritesActive)
-                categoryBar.favoritesToggled(false)
-            if (categoryBar.appsModel)
-                categoryBar.appsModel.filterCategory = ""
-            scrollOnlySelected = name
-        } else {
-            if (categoryBar.favoritesActive)
-                categoryBar.favoritesToggled(false)
-            if (categoryBar.appsModel)
-                categoryBar.appsModel.filterCategory = name
-        }
+        if (categoryBar.favoritesActive)
+            categoryBar.favoritesToggled(false)
+        selectedCategory = name
         categorySelected(name)
     }
 
@@ -396,7 +391,7 @@ RowLayout {
     // Scroll the flickable so the currently selected category button is visible
     function scrollToSelected() {
         Qt.callLater(function() {
-            var active = categoryBar.appsModel ? categoryBar.appsModel.filterCategory : ""
+            var active = categoryBar.selectedCategory
 
             // "All" is selected — scroll to start
             if (active === "") {
@@ -445,7 +440,8 @@ RowLayout {
     // -- "All" button (hidden in scrollOnly/ByCategory mode) --
     PlasmaComponents.ToolButton {
         id: allButton
-        visible: !categoryBar.isSortByCategory
+        // Shown in every view now, including By Category (#201).
+        visible: true
         // Keep focus on the search field so Alt+arrow nav survives a click (#174).
         focusPolicy: Qt.NoFocus
         Kirigami.MnemonicData.enabled: false
@@ -466,9 +462,7 @@ RowLayout {
         }
         checked: !categoryBar.wheelScrolling
                  && !categoryBar.favoritesActive
-                 && (scrollOnlyMode
-                     ? scrollOnlySelected === ""
-                     : (!categoryBar.appsModel || categoryBar.appsModel.filterCategory === ""))
+                 && categoryBar.selectedCategory === ""
         onClicked: {
             categoryBar.selectAll()
             catFlick.contentX = 0
@@ -697,9 +691,7 @@ RowLayout {
                             }
                             checked: !categoryBar.wheelScrolling
                                      && !categoryBar.favoritesActive
-                                     && (scrollOnlyMode
-                                         ? scrollOnlySelected === modelData
-                                         : (categoryBar.appsModel && categoryBar.appsModel.filterCategory === modelData))
+                                     && categoryBar.selectedCategory === modelData
                             onClicked: {
                                 categoryBar.selectCategory(modelData)
                                 categoryBar.scrollToSelected()

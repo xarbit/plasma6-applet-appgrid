@@ -20,6 +20,7 @@ class ResultsModel;
 #include "favoritesgroupedmodel.h"
 #include "frecencyprovider.h"
 #include "launchstatestore.h"
+#include "menutreemodel.h"
 #include "newappstracker.h"
 #include "runnerfiltermodel.h"
 #include "unifiedsearchmodel.h"
@@ -54,6 +55,7 @@ class AppGridController : public QObject
     Q_OBJECT
     Q_PROPERTY(AppFilterModel *appsModel READ appsModel CONSTANT)
     Q_PROPERTY(FavoritesGroupedModel *favoritesGroupedModel READ favoritesGroupedModel CONSTANT)
+    Q_PROPERTY(MenuTreeModel *menuTreeModel READ menuTreeModel CONSTANT)
     Q_PROPERTY(QAbstractItemModel *runnerModel READ runnerModel CONSTANT)
     // Opaque QObject* — QML uses it only via the dynamic queryString
     // property, no static KRunner type knowledge needed across the QML/C++
@@ -73,6 +75,8 @@ public:
     [[nodiscard]] AppFilterModel *appsModel() const;
     /** The favourites folder grouping model (issue #18), shared by both variants. */
     [[nodiscard]] FavoritesGroupedModel *favoritesGroupedModel() const;
+    /** The read-only kmenuedit folder tree for the By Category view (issue #201). */
+    [[nodiscard]] MenuTreeModel *menuTreeModel() const;
     /** The shared launch-state store (appgridrc); the plasmoid uses it to seed
      *  the store from its old per-applet config on upgrade. */
     [[nodiscard]] LaunchStateStore *launchState() const;
@@ -247,6 +251,9 @@ private:
     AppFilterModel m_filterModel;
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
+    MenuTreeModel m_menuTreeModel;
+    // Built on first menuTreeModel() read (folders feature in use), not at startup.
+    mutable bool m_menuTreeBuilt = false;
     // Feeds the current activity to m_launchState so folders are per-activity;
     // the store itself stays KConfig-only. Gated by m_activityScoping (opt-in):
     // off feeds an empty activity, keeping folders global.

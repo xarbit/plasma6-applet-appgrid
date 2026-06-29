@@ -32,6 +32,9 @@ class MenuTreeModel : public AbstractGroupedModel
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY pathChanged)
     Q_PROPERTY(QString currentPath READ currentPath NOTIFY pathChanged)
     Q_PROPERTY(QString currentFolderName READ currentFolderName NOTIFY pathChanged)
+    // When true, folders with no app anywhere in their subtree are dropped from
+    // the listing ("hide empty categories"). Live: toggling rebuilds the rows.
+    Q_PROPERTY(bool hideEmpty READ hideEmpty WRITE setHideEmpty NOTIFY hideEmptyChanged)
 
 public:
     explicit MenuTreeModel(QObject *parent = nullptr);
@@ -42,16 +45,30 @@ public:
     // isEditable() is left at the base default (false): authoring lives in
     // kmenuedit, so the UI's create / rename / reorder / add-to-folder stay off.
 
-    /** Descend into the folder at @p relPath (a no-op if it isn't in the tree). */
+    [[nodiscard]] bool hideEmpty() const
+    {
+        return m_hideEmpty;
+    }
+    void setHideEmpty(bool enabled);
+
+    /** Set the navigation floor and show it: the listing roots at @p relPath
+     *  (empty = all categories) and Back never climbs above it. The category bar
+     *  uses this so a selected category tab shows that category's contents flat
+     *  with its subfolders, and going back lands at the category, not all
+     *  categories (#201). Tolerates a missing trailing slash. */
+    Q_INVOKABLE void setRootPath(const QString &relPath);
+
+    /** Descend into the folder at @p relPath. Tolerates a missing trailing slash
+     *  (the category bar's menu path is stored without it). No-op if absent. */
     Q_INVOKABLE void enterFolder(const QString &relPath);
-    /** Step up one level; a no-op at the root. */
+    /** Step up one level; a no-op at the root floor. */
     Q_INVOKABLE void goBack();
-    /** Jump back to the top-level listing. */
+    /** Jump back to the root floor. */
     Q_INVOKABLE void resetToRoot();
 
     [[nodiscard]] bool canGoBack() const
     {
-        return !m_path.isEmpty();
+        return m_path != m_rootPath;
     }
     [[nodiscard]] QString currentPath() const
     {
@@ -61,6 +78,7 @@ public:
 
 Q_SIGNALS:
     void pathChanged();
+    void hideEmptyChanged();
 
 private:
     // Rebuild the visible rows from the node at m_path: child folders become
@@ -69,6 +87,8 @@ private:
 
     MenuTree::Node m_root;
     QString m_path; // current node relPath; empty = root
+    QString m_rootPath; // navigation floor; Back never climbs above it
+    bool m_hideEmpty = false;
 
     // 2x2 folder preview.
     static constexpr int kPreviewMembers = 4;

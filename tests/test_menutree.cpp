@@ -56,6 +56,9 @@ private Q_SLOTS:
     void model_lists_current_level();
     void model_navigates_in_and_out();
     void model_ignores_unknown_folder();
+    void model_rootPath_floors_navigation();
+    void model_enterFolder_tolerates_missing_slash();
+    void model_hideEmpty_drops_empty_folders();
     void model_is_not_editable();
 };
 
@@ -178,6 +181,65 @@ void TestMenuTree::model_ignores_unknown_folder()
     model.enterFolder(QStringLiteral("Does/Not/Exist/"));
     QCOMPARE(pathSpy.count(), 0);
     QCOMPARE(model.currentPath(), QString());
+    QCOMPARE(model.rowCount(), 2);
+}
+
+void TestMenuTree::model_rootPath_floors_navigation()
+{
+    MenuTreeModel model;
+    model.setTree(sampleTree());
+
+    // Floor at Education: it becomes the root, so no Back there.
+    model.setRootPath(QStringLiteral("Education")); // missing slash tolerated
+    QCOMPARE(model.currentPath(), QStringLiteral("Education/"));
+    QVERIFY(!model.canGoBack());
+    QCOMPARE(model.currentFolderName(), QStringLiteral("Education"));
+
+    // Drill into the sub-folder → Back appears.
+    model.enterFolder(QStringLiteral("Education/Science/"));
+    QVERIFY(model.canGoBack());
+    model.goBack();
+    QCOMPARE(model.currentPath(), QStringLiteral("Education/"));
+    QVERIFY(!model.canGoBack());
+    // Back at the floor is a no-op — it never climbs to all-categories.
+    model.goBack();
+    QCOMPARE(model.currentPath(), QStringLiteral("Education/"));
+
+    // Re-floor at all categories.
+    model.setRootPath(QString());
+    QCOMPARE(model.currentPath(), QString());
+}
+
+void TestMenuTree::model_enterFolder_tolerates_missing_slash()
+{
+    MenuTreeModel model;
+    model.setTree(sampleTree());
+    // The category bar hands a menu path without the trailing slash KServiceGroup
+    // uses; it must still enter the right folder.
+    model.enterFolder(QStringLiteral("Education"));
+    QCOMPARE(model.currentPath(), QStringLiteral("Education/"));
+}
+
+void TestMenuTree::model_hideEmpty_drops_empty_folders()
+{
+    // Two top-level folders: one with an app, one empty (and one empty subfolder).
+    const QList<RawFolder> folders = {
+        folder(QStringLiteral("Full/"), QStringLiteral("Full")),
+        folder(QStringLiteral("Empty/"), QStringLiteral("Empty")),
+        folder(QStringLiteral("Empty/Deep/"), QStringLiteral("Deep")),
+    };
+    const QList<RawApp> apps = {app(QStringLiteral("Full/"), QStringLiteral("a.desktop"))};
+
+    MenuTreeModel model;
+    model.setTree(build(folders, apps));
+    QCOMPARE(model.rowCount(), 2); // both folders shown by default
+
+    model.setHideEmpty(true);
+    // The empty folder (no app anywhere in its subtree) is gone; Full stays.
+    QCOMPARE(model.rowCount(), 1);
+    QCOMPARE(model.data(model.index(0), AbstractGroupedModel::FolderIdRole).toString(), QStringLiteral("Full/"));
+
+    model.setHideEmpty(false);
     QCOMPARE(model.rowCount(), 2);
 }
 

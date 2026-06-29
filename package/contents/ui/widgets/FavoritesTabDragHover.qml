@@ -38,10 +38,33 @@ DropArea {
         }
     }
 
-    onEntered: dwell.start()
-    onExited: dwell.stop()
+    // Own drag of an app that's already a favourite: re-adding it is a no-op, so
+    // forbid the drop. Don't dwell-switch, reject here, and flag the shared drag
+    // source so the #193 remove area stands down too — with nothing accepting
+    // over the tab the platform shows the forbidden cursor and the drop cancels.
+    function _blocked(drag) {
+        return drag.source && drag.source.sourceStorageId
+            && hover.target.isFavorite
+            && hover.target.isFavorite(drag.source.sourceStorageId)
+    }
 
-    // Refresh dwell on cursor movement so a stationary hover still fires
-    // even if the drag system doesn't re-emit `entered` for sub-pixel moves.
-    onPositionChanged: if (!dwell.running) dwell.restart()
+    function _sync(drag) {
+        if (_blocked(drag)) {
+            dwell.stop()
+            drag.source.blockedOnFavoritesTab = true
+            drag.source.dropWillRemove = false
+            drag.accepted = false
+        } else if (!dwell.running) {
+            // Refresh dwell on cursor movement so a stationary hover still fires
+            // even if the drag system doesn't re-emit `entered` for sub-pixel moves.
+            dwell.restart()
+        }
+    }
+
+    onEntered: hover._sync(drag)
+    onPositionChanged: hover._sync(drag)
+    onExited: {
+        dwell.stop()
+        if (drag.source) drag.source.blockedOnFavoritesTab = false
+    }
 }

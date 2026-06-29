@@ -26,6 +26,11 @@ QtObject {
     property bool isPrefixMode: false
     property bool isFavoritesActive: false
     property bool isSortByCategory: false
+    // System categories + the folders toggle: a category is shown as the kmenuedit
+    // folder tree instead of flat sections / a flat filtered grid (issue #201).
+    property bool categoryFolders: false
+    // A specific category tab is selected (not All / favourites).
+    property bool categoryFiltered: false
 
     // Mutable: lets the user pop the compact-mode grid open without
     // typing (Down arrow from the search bar, wheel-down). Falls back
@@ -48,15 +53,25 @@ QtObject {
                                           && !isPrefixMode
                                           && !emptyHidden
 
-    readonly property bool categoryGridVisible: isSortByCategory
-                                                && !isFavoritesActive
-                                                && !isSearching
-                                                && !isPrefixMode
-                                                && !emptyHidden
+    // Common gate: a grid is showable (not favourites / search / prefix / hidden).
+    readonly property bool _gridShowable: !isFavoritesActive
+                                          && !isSearching
+                                          && !isPrefixMode
+                                          && !emptyHidden
+
+    // The kmenuedit folder tree: with folders on, it covers By Category (rooted at
+    // all categories) AND any selected category tab in any sort — except All in a
+    // non-category sort, which stays a flat grid (#201).
+    readonly property bool menuFolderVisible: _gridShowable && categoryFolders
+                                              && (isSortByCategory || categoryFiltered)
+
+    // Flat category sections: By Category sort with folders off.
+    readonly property bool categorySectionsVisible: _gridShowable && isSortByCategory && !categoryFolders
 
     readonly property bool appGridVisible: !isSearching
                                            && !isPrefixMode
-                                           && !categoryGridVisible
+                                           && !menuFolderVisible
+                                           && !categorySectionsVisible
                                            && !emptyHidden
 
     readonly property bool searchResultsVisible: isSearching && !isPrefixMode

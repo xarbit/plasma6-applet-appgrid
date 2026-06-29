@@ -60,6 +60,10 @@ public:
     [[nodiscard]] Q_INVOKABLE int entryTypeAt(int row) const;
     [[nodiscard]] Q_INVOKABLE QString folderIdAt(int row) const;
     [[nodiscard]] Q_INVOKABLE QString favoriteIdAt(int row) const;
+    /** Row of the Folder @p folderId among the visible rows, or -1. */
+    [[nodiscard]] Q_INVOKABLE int indexOfFolder(const QString &folderId) const;
+    /** Row of the App with @p favoriteId among the visible rows, or -1. */
+    [[nodiscard]] Q_INVOKABLE int indexOfApp(const QString &favoriteId) const;
 
     /** Whether the UI may create/rename/reorder folders against this source. */
     [[nodiscard]] virtual bool isEditable() const

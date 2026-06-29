@@ -9,6 +9,7 @@
 #include "appgridfavoritesmodel.h"
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
+#include "menutreesource.h"
 #include "pluginhelpers.h"
 
 #include <KConfigGroup>
@@ -128,6 +129,10 @@ void AppGridController::wireLaunchState()
     };
     refreshNewApps();
     connect(&m_appModel, &QAbstractItemModel::modelReset, this, refreshNewApps);
+
+    // The kmenuedit folder tree (issue #201) is built lazily — see menuTreeModel()
+    // — so the default config (folders off) never pays the KServiceGroup walk on
+    // every KSycoca reset.
     m_filterModel.setNewApps(m_newAppsTracker.newApps());
     connect(&m_newAppsTracker, &NewAppsTracker::newAppsChanged, &m_filterModel, [this]() {
         m_filterModel.setNewApps(m_newAppsTracker.newApps());
@@ -225,6 +230,23 @@ AppFilterModel *AppGridController::appsModel() const
 FavoritesGroupedModel *AppGridController::favoritesGroupedModel() const
 {
     return const_cast<FavoritesGroupedModel *>(&m_favoritesGrouped);
+}
+
+MenuTreeModel *AppGridController::menuTreeModel() const
+{
+    // Lazy: the menu tree (and its rebuild-on-KSycoca-reset subscription) only
+    // come to life the first time QML reads this — i.e. when the folders feature
+    // is actually used. The walk never runs for the default (folders off) config.
+    auto *self = const_cast<AppGridController *>(this);
+    if (!m_menuTreeBuilt) {
+        m_menuTreeBuilt = true;
+        const auto rebuild = [self]() {
+            self->m_menuTreeModel.setTree(MenuTreeSource::fromKServiceGroup());
+        };
+        rebuild();
+        connect(&m_appModel, &QAbstractItemModel::modelReset, self, rebuild);
+    }
+    return &self->m_menuTreeModel;
 }
 
 QAbstractItemModel *AppGridController::runnerModel() const

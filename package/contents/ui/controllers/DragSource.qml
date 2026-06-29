@@ -53,6 +53,13 @@ Item {
     // swap its source cell for a remove (✕) marker, Kickoff-style.
     property bool dropWillRemove: false
 
+    // True while the cursor sits over the Favorites tab with a drag of an app
+    // that's already a favourite — the drop is forbidden (re-adding makes no
+    // sense). The tab-hover sets it; the #193 remove area reads it and stands
+    // down so nothing accepts → the platform shows the forbidden cursor and the
+    // drop cancels.
+    property bool blockedOnFavoritesTab: false
+
     // Fold target armed while a favourite hovers the centre of another favourite
     // (→ create folder) or a folder (→ add to it). The target cell watches these
     // to draw a merge highlight; cleared on drop/exit (issue #18).
@@ -169,6 +176,7 @@ Item {
         source.sourceDesktopFile = ""
         source.sourceStorageIds = []
         source.dropWillRemove = false
+        source.blockedOnFavoritesTab = false
         source.foldTargetStorageId = ""
         source.foldTargetFolderId = ""
     }
