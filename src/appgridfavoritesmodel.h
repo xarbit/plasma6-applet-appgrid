@@ -87,6 +87,11 @@ public:
     Q_INVOKABLE void initForClient(const QString &clientId);
 
     [[nodiscard]] Q_INVOKABLE bool isFavorite(const QString &id) const;
+    /** Row of the favourite matching @p storageId (bare or "applications:"-
+     *  prefixed), or -1. The drag-reorder code resolves the dragged app's live
+     *  row through this every drag event — kept in C++ so the lookup isn't an
+     *  open-coded loop in QML. */
+    [[nodiscard]] Q_INVOKABLE int rowOfFavoriteId(const QString &storageId) const;
     /** Add @p id as a favourite. @p index >= 0 places it at that row once the
      *  asynchronous link surfaces (best effort); -1 appends. */
     Q_INVOKABLE void addFavorite(const QString &id, int index = -1);

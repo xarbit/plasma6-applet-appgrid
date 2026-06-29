@@ -7,6 +7,7 @@
 
 #include "appactionid.h"
 #include "favoriteid.h"
+#include "pluginhelpers.h"
 
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/OpenUrlJob>
@@ -353,6 +354,21 @@ bool AppGridFavoritesModel::isFavorite(const QString &id) const
         }
     }
     return false;
+}
+
+int AppGridFavoritesModel::rowOfFavoriteId(const QString &storageId) const
+{
+    // Match the stored favourite id against the dragged app's id in either
+    // spelling (bare or "applications:"-prefixed), mirroring the QML helper this
+    // replaced so drag-reorder keeps resolving the same row.
+    const QString prefixed = PluginHelpers::toFavoriteId(storageId);
+    for (int row = 0, rows = rowCount(); row < rows; ++row) {
+        const QString value = data(index(row, 0), FavoriteIdRole).toString();
+        if (value == storageId || value == prefixed) {
+            return row;
+        }
+    }
+    return -1;
 }
 
 void AppGridFavoritesModel::addFavorite(const QString &id, int index)

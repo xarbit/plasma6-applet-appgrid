@@ -251,13 +251,7 @@ GridView {
     }
 
     function findFavoriteRow(storageId) {
-        if (!sharedFavoritesModel || favoriteIdRole < 0) return -1
-        const prefixed = FavoriteId.toPrefixed(storageId)
-        for (let i = 0; i < sharedFavoritesModel.count; ++i) {
-            const v = sharedFavoritesModel.data(sharedFavoritesModel.index(i, 0), favoriteIdRole)
-            if (v === storageId || v === prefixed) return i
-        }
-        return -1
+        return sharedFavoritesModel ? sharedFavoritesModel.rowOfFavoriteId(storageId) : -1
     }
     // Config toggles
     property bool showRecentApps: true
