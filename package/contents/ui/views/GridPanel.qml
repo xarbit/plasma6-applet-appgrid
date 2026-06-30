@@ -236,10 +236,10 @@ Kirigami.ShadowedRectangle {
     // surface (the daemon's window, or the applet config for the panel variant).
     signal configureRequested()
 
-    // The daemon hosts the panel in a fixed-size PlasmaWindow it sizes from the
-    // panel's implicitHeight, so the panel must report the compact-aware
-    // effectiveHeight (like the old center GridWindow). The panel-plasmoid variant
-    // leaves this off: it seeds panelHeight then lets Plasma own the popup size.
+    // Forwarded to VisibilityState: the daemon (sizeToContent) opts the grid into
+    // compact-collapse-when-empty, so its fixed PlasmaWindow shrinks to the header
+    // and grows when the grid reveals. The panel-plasmoid variant leaves it off —
+    // Plasma owns the popup size; implicitHeight only seeds it.
     property bool sizeToContent: false
 
     // Icon-based estimate avoids the circular dependency panel width →
@@ -253,13 +253,18 @@ Kirigami.ShadowedRectangle {
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
     readonly property real panelMargin: Kirigami.Units.largeSpacing
-    readonly property real headerHeight: Kirigami.Units.gridUnit * 5
     readonly property real panelWidth: estCellWidth * columns + panelMargin * 2
-    readonly property real panelHeight: estCellHeight * rows + panelMargin * 2 + headerHeight
-    // Compact mode height — snug fit around the header row (search +
-    // power buttons), no slack for a category bar or grid below.
-    readonly property real compactHeight: headerRow.implicitHeight + panelMargin * 2
-    readonly property real effectiveHeight: _emptyHiddenState ? compactHeight : panelHeight
+    // Each full-height body view carries this as Layout.preferredHeight, so the
+    // panel sizes to header(natural) + rows*cell — visible-rows honoured whatever
+    // header chrome shows (#205).
+    readonly property real bodyHeight: estCellHeight * rows
+
+    // Full (grid-shown) height — used only to position the daemon window so a
+    // start-compact reveal grows downward without drift. Real header items, no
+    // units estimate.
+    readonly property real panelHeight: panelMargin * 2 + headerRow.implicitHeight
+        + Kirigami.Units.largeSpacing + bodyHeight
+        + (showCatBar ? categoryBar.implicitHeight + Kirigami.Units.largeSpacing * 3 : 0)
 
     // Only seed the *initial* popup size via implicitWidth/Height and leave
     // width/height + preferred size unbound, so Plasma's own popup-resize
@@ -267,10 +272,10 @@ Kirigami.ShadowedRectangle {
     // on every layout pass (e.g. a monitor wake) and snapped the user's edge-drag
     // back, shrinking the popup (#146).
     implicitWidth: panelWidth
-    // sizeToContent (daemon): track the compact-aware effectiveHeight so the
-    // hosting PlasmaWindow shrinks for compact mode and grows when the grid
-    // reveals. Plain popup (panel variant): seed panelHeight only.
-    implicitHeight: sizeToContent ? effectiveHeight : panelHeight
+    // Natural content height — pixel-perfect, and compact (no body view visible)
+    // collapses to header-only on its own (#205). Daemon window reads it; panel
+    // popup seeds from it.
+    implicitHeight: contentLayout.implicitHeight + panelMargin * 2
 
     Layout.preferredWidth: -1
     Layout.preferredHeight: -1
@@ -630,6 +635,7 @@ Kirigami.ShadowedRectangle {
     }
 
     ColumnLayout {
+        id: contentLayout
         anchors.fill: parent
         anchors.margins: panel.panelMargin
         spacing: Kirigami.Units.largeSpacing
@@ -884,6 +890,7 @@ Kirigami.ShadowedRectangle {
             id: prefixModeLoader
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             active: panel.isPrefixMode
             visible: active
             sourceComponent: PrefixModeView {
@@ -913,6 +920,7 @@ Kirigami.ShadowedRectangle {
             id: searchResultsList
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showSearchResults
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             model: panel.isSearching ? panel.searchModel : null
@@ -949,6 +957,7 @@ Kirigami.ShadowedRectangle {
             id: categoryGridView
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showCategoryGrid
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             searchField: searchBar.field
@@ -987,6 +996,7 @@ Kirigami.ShadowedRectangle {
             id: menuFolderView
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showMenuFolders
             // Gated on the feature so the (lazy) menu tree is never built when
             // folders are off — reading menuTreeModel is what triggers the walk.
@@ -1020,6 +1030,7 @@ Kirigami.ShadowedRectangle {
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showAppGrid
             spacing: Kirigami.Units.smallSpacing
 
