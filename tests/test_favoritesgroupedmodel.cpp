@@ -28,6 +28,12 @@ private Q_SLOTS:
     void addToFolderAdoptsNonFavourite();
     void folderMemberSurvivesStaleFavouritesPush();
     void layoutSurvivesReloadById();
+    void enterFolderShowsMembersThenGoBack();
+    void moveRowInFolderReordersMembers();
+    void emptyingOpenFolderExitsToTop();
+    void indexOfFolderAndApp();
+    void addLooseFavoriteIsImmediateAndIdempotent();
+    void uninstalledFolderMemberHiddenButKept();
 };
 
 void TestFavoritesGroupedModel::isEditable()
@@ -162,6 +168,131 @@ void TestFavoritesGroupedModel::layoutSurvivesReloadById()
     restored.setFavoriteLayout(src.favoriteLayout());
     QCOMPARE(restored.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop")}));
     QCOMPARE(restored.data(restored.index(0), Qt::DisplayRole).toString(), QStringLiteral("Games"));
+}
+
+void TestFavoritesGroupedModel::enterFolderShowsMembersThenGoBack()
+{
+    FavoritesGroupedModel m;
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    const QString id = m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("Work"));
+
+    // Top level: the folder row + the loose app.
+    QVERIFY(!m.canGoBack());
+    QCOMPARE(m.rowCount(), 2);
+
+    QSignalSpy pathSpy(&m, &FavoritesGroupedModel::pathChanged);
+    m.enterFolder(id);
+    QCOMPARE(pathSpy.count(), 1);
+    QVERIFY(m.canGoBack());
+    QCOMPARE(m.currentFolderName(), QStringLiteral("Work"));
+    // Inside: the two members as app rows.
+    QCOMPARE(m.rowCount(), 2);
+    QCOMPARE(m.data(m.index(0), AbstractGroupedModel::EntryTypeRole).toInt(), int(AbstractGroupedModel::App));
+    QCOMPARE(m.data(m.index(0), AbstractGroupedModel::FavoriteIdRole).toString(), QStringLiteral("applications:a.desktop"));
+
+    m.goBack();
+    QVERIFY(!m.canGoBack());
+    QCOMPARE(m.rowCount(), 2); // folder + loose app again
+}
+
+void TestFavoritesGroupedModel::moveRowInFolderReordersMembers()
+{
+    FavoritesGroupedModel m;
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    const QString id = m.createFolderFromMembers({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+
+    m.enterFolder(id);
+    m.moveRow(0, 2); // a -> end
+    m.goBack(); // folderMembers reads the top-level folder row
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("b.desktop"), QStringLiteral("c.desktop"), QStringLiteral("a.desktop")}));
+}
+
+void TestFavoritesGroupedModel::emptyingOpenFolderExitsToTop()
+{
+    FavoritesGroupedModel m;
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop")});
+    const QString id = m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"));
+
+    m.enterFolder(id);
+    QVERIFY(m.canGoBack());
+    // Removing members until the folder dissolves should drop us back to the top.
+    m.removeFromFolder(id, QStringLiteral("a.desktop"));
+    m.removeFromFolder(id, QStringLiteral("b.desktop"));
+    QVERIFY(!m.canGoBack());
+    QCOMPARE(m.currentPath(), QString());
+}
+
+void TestFavoritesGroupedModel::indexOfFolderAndApp()
+{
+    // The shared lookups used by the drill views (re-select on back, reorder).
+    FavoritesGroupedModel m;
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    const QString id = m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("Work"));
+
+    // Top level: folder row + the loose app.
+    QCOMPARE(m.indexOfFolder(id), 0);
+    QCOMPARE(m.indexOfApp(QStringLiteral("applications:c.desktop")), 1);
+    QCOMPARE(m.indexOfFolder(QStringLiteral("nope")), -1);
+    QCOMPARE(m.indexOfApp(QStringLiteral("applications:a.desktop")), -1); // grouped, not loose
+}
+
+void TestFavoritesGroupedModel::addLooseFavoriteIsImmediateAndIdempotent()
+{
+    FavoritesGroupedModel m;
+    m.setFlatFavorites({QStringLiteral("a.desktop")});
+    QCOMPARE(m.rowCount(), 1);
+
+    // Optimistic add shows the row synchronously (no KAStats round-trip).
+    m.addLooseFavorite(QStringLiteral("b.desktop"));
+    QCOMPARE(m.rowCount(), 2);
+    QCOMPARE(m.indexOfApp(QStringLiteral("applications:b.desktop")), 1);
+
+    // An explicit index drops it at that slot (under the cursor), not the end.
+    m.addLooseFavorite(QStringLiteral("c.desktop"), 0);
+    QCOMPARE(m.indexOfApp(QStringLiteral("applications:c.desktop")), 0);
+    m.removeLooseFavorite(QStringLiteral("c.desktop"));
+
+    // The real KAStats push carrying the same id is a no-op (idempotent).
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop")});
+    QCOMPARE(m.rowCount(), 2);
+
+    // Rollback removes it again.
+    m.removeLooseFavorite(QStringLiteral("b.desktop"));
+    QCOMPARE(m.indexOfApp(QStringLiteral("applications:b.desktop")), -1);
+}
+
+void TestFavoritesGroupedModel::uninstalledFolderMemberHiddenButKept()
+{
+    // A folder of three installed, favourited apps.
+    FavoritesGroupedModel m;
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    const QString id = m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"));
+    m.addToFolder(id, QStringLiteral("c.desktop"));
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
+
+    // b is uninstalled: gone from the installed set and the favourites list.
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")});
+    // Hidden from the preview (the folder row's members) ...
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")}));
+    // ... and from the drilled-in rows.
+    m.enterFolder(id);
+    QCOMPARE(m.rowCount(), 2);
+    m.goBack();
+    // ... but kept persisted (so a reinstall restores it).
+    QCOMPARE(m.favoriteFolders().first().toMap().value(QStringLiteral("members")).toStringList(),
+             QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
+
+    // c is still installed but momentarily absent from this instance's flat list
+    // (a cross-process favourite change): it stays visible via the installed set.
+    m.setFlatFavorites({QStringLiteral("a.desktop")});
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")}));
+
+    // Reinstalling b restores it — the layout kept it all along.
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
 }
 
 QTEST_GUILESS_MAIN(TestFavoritesGroupedModel)

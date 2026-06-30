@@ -9,6 +9,7 @@
 #include "appgridfavoritesmodel.h"
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
+#include "menutreesource.h"
 #include "pluginhelpers.h"
 
 #include <KConfigGroup>
@@ -48,6 +49,26 @@
 #include <plasma_version.h>
 
 #include <mutex>
+
+namespace
+{
+// The Discover backend (PackageKit / Flatpak / Snap) owning the installed copy
+// of @p service, or empty if unknown. The installed .desktop path — not the
+// AppStream id — identifies the source, since one component can ship from
+// several backends.
+QString discoverBackendFor(const KService::Ptr &service)
+{
+    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
+    return DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+}
+
+// The AppStream component id the pool resolves for @p service (keyed by its
+// .desktop id), or empty when AppStream doesn't know the component.
+QString appStreamIdFor(const KService::Ptr &service)
+{
+    return AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop"));
+}
+}
 
 AppGridController::AppGridController(QObject *parent)
     : QObject(parent)
@@ -91,9 +112,10 @@ AppGridController::AppGridController(QObject *parent)
     KConfigGroup appgridGeneral = KSharedConfig::openConfig(QStringLiteral("appgridrc"))->group(QStringLiteral("General"));
     PluginHelpers::pruneObsoleteKeys(appgridGeneral);
 
-    // Warm the AppStream pool in the background now, so the first right-click
-    // "Manage in Discover" check never blocks on a synchronous metadata parse.
-    AppStreamResolver::warm();
+    // The AppStream pool is NOT warmed here. Its metadata catalogs are large
+    // (~25 MB, dominated by the Flatpak remote catalog the distro lookup leans on
+    // when the OS catalog is sparse), so a session that never opens "Manage in
+    // Discover" should never map them. It loads lazily on the first openInDiscover().
 }
 
 void AppGridController::wireLaunchState()
@@ -123,11 +145,20 @@ void AppGridController::wireLaunchState()
     // baseline (Kickoff's model) and pushes the badge set to the filter. Re-run
     // the diff whenever the app list changes (KSycoca → AppModel reset); the
     // tracker also recomputes on its own when KActivities usage changes.
-    const auto refreshNewApps = [this]() {
-        m_newAppsTracker.refresh(m_appModel.storageIds());
+    const auto onAppListChanged = [this]() {
+        const QStringList installed = m_appModel.storageIds();
+        m_newAppsTracker.refresh(installed);
+        // The favourites-folder grid hides a member whose app was uninstalled
+        // (it would otherwise linger as a dead tile / preview icon); the installed
+        // set is its "still here" test.
+        m_favoritesGrouped.setKnownApps(installed);
     };
-    refreshNewApps();
-    connect(&m_appModel, &QAbstractItemModel::modelReset, this, refreshNewApps);
+    onAppListChanged();
+    connect(&m_appModel, &QAbstractItemModel::modelReset, this, onAppListChanged);
+
+    // The kmenuedit folder tree (issue #201) is built lazily — see menuTreeModel()
+    // — so the default config (folders off) never pays the KServiceGroup walk on
+    // every KSycoca reset.
     m_filterModel.setNewApps(m_newAppsTracker.newApps());
     connect(&m_newAppsTracker, &NewAppsTracker::newAppsChanged, &m_filterModel, [this]() {
         m_filterModel.setNewApps(m_newAppsTracker.newApps());
@@ -225,6 +256,25 @@ AppFilterModel *AppGridController::appsModel() const
 FavoritesGroupedModel *AppGridController::favoritesGroupedModel() const
 {
     return const_cast<FavoritesGroupedModel *>(&m_favoritesGrouped);
+}
+
+MenuTreeModel *AppGridController::menuTreeModel() const
+{
+    // Lazy: the menu tree (and its rebuild-on-KSycoca-reset subscription) only
+    // come to life the first time QML reads this — i.e. when the folders feature
+    // is actually used. The tree is assembled from AppModel's cached menu scan,
+    // so it costs no extra KServiceGroup walk; for the default (folders off)
+    // config the tree is simply never built.
+    auto *self = const_cast<AppGridController *>(this);
+    if (!m_menuTreeBuilt) {
+        m_menuTreeBuilt = true;
+        const auto rebuild = [self]() {
+            self->m_menuTreeModel.setTree(MenuTreeSource::fromScan(self->m_appModel.menuFolders(), self->m_appModel.occurrences()));
+        };
+        rebuild();
+        connect(&m_appModel, &QAbstractItemModel::modelReset, self, rebuild);
+    }
+    return &self->m_menuTreeModel;
 }
 
 QAbstractItemModel *AppGridController::runnerModel() const
@@ -634,19 +684,14 @@ bool AppGridController::canManageInDiscover(const QString &storageId) const
         return false;
     }
 
-    // The .desktop we would launch from is the installed copy, so its location
-    // authoritatively identifies the backend (PackageKit / Flatpak / Snap) —
-    // more reliable than the AppStream id, which on its own can't tell apart
-    // multiple sources of the same component.
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
-    if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend)) {
-        return false;
-    }
-
-    // Only offer the menu when AppStream actually knows the component, so we
-    // never open Discover on a dead appstream:// id.
-    return !AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop")).isEmpty();
+    // Gate on the Discover backend owning the installed copy (PackageKit / Flatpak
+    // / Snap) — a cheap, pool-free check off the installed .desktop path, which
+    // pins the source better than the AppStream id (one component can ship from
+    // several backends). The AppStream pool is NOT touched here: the id is resolved
+    // only when the user actually clicks the action (openInDiscover), the way
+    // Kickoff defers its pool load. So a right-click never maps the metadata.
+    const QString backend = discoverBackendFor(service);
+    return !backend.isEmpty() && DiscoverBackends::isBackendInstalled(backend);
 }
 
 void AppGridController::openInDiscover(const QString &storageId)
@@ -660,18 +705,24 @@ void AppGridController::openInDiscover(const QString &storageId)
     }
 
     // X-AppStream-Component wins if the .desktop declares one; otherwise ask the
-    // AppStream pool for the canonical id.
+    // AppStream pool for the canonical id. resolve() loads the pool synchronously
+    // on this first call (kept off every session that never opens Discover), so the
+    // click resolves the exact component first try — no async race.
     KDesktopFile desktopFile(service->entryPath());
     QString appId = desktopFile.desktopGroup().readEntry("X-AppStream-Component", QString());
     if (appId.isEmpty()) {
-        appId = AppStreamResolver::resolve(service->desktopEntryName() + QLatin1String(".desktop"));
+        appId = appStreamIdFor(service);
     }
+
+    // AppStream genuinely doesn't know this app — open Discover searching its name
+    // so the action is never dead.
     if (appId.isEmpty()) {
+        auto *job = new KIO::CommandLauncherJob(QStringLiteral("plasma-discover"), {QStringLiteral("--search"), service->name()});
+        job->start();
         return;
     }
 
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    const QString backend = discoverBackendFor(service);
 
     // Target the backend that owns the installed copy so a multi-source app
     // (e.g. Flatpak + distro) opens the right version instead of Discover's

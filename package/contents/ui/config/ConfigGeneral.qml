@@ -31,6 +31,7 @@ KCM.SimpleKCM {
     property alias cfg_sortFavoritesAlphabetically: buffer.sortFavoritesAlphabetically
     property alias cfg_showRecentApps: buffer.showRecentApps
     property alias cfg_useSystemCategories: buffer.useSystemCategories
+    property alias cfg_categoryFoldersEnabled: buffer.categoryFoldersEnabled
     property alias cfg_hideEmptyCategories: buffer.hideEmptyCategories
     property alias cfg_openCategoryOnHover: buffer.openCategoryOnHover
     property alias cfg_openOnActiveScreen: buffer.openOnActiveScreen
@@ -55,6 +56,7 @@ KCM.SimpleKCM {
         property bool sortFavoritesAlphabetically
         property bool showRecentApps
         property bool useSystemCategories
+        property bool categoryFoldersEnabled
         property bool hideEmptyCategories
         property bool openCategoryOnHover
         property bool openOnActiveScreen

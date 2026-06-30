@@ -75,7 +75,8 @@ Kirigami.ApplicationWindow {
         // configured in the Plasma applet config, not here)
         "gridColumns", "gridRows", "iconSize", "sortMode", "categoryBarDisplay",
         "showCategoryBar", "startWithFavorites", "sortFavoritesAlphabetically",
-        "showRecentApps", "useSystemCategories", "hideEmptyCategories",
+        "showRecentApps", "useSystemCategories", "categoryFoldersEnabled",
+        "hideEmptyCategories",
         "openCategoryOnHover", "openOnActiveScreen", "verticalOffset",
         "terminalShell", "checkForUpdates",
         // Appearance / Animations

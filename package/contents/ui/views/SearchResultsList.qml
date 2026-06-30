@@ -184,16 +184,27 @@ ListView {
         text: listView._sectionLabel(section)
     }
 
-    component InfoChip: Kirigami.Chip {
-        checkable: false
-        closable: false
-        interactive: false
-        labelItem.font: Kirigami.Theme.smallFont
-        leftPadding: Kirigami.Units.smallSpacing
-        rightPadding: Kirigami.Units.smallSpacing
-        topPadding: 0
-        bottomPadding: 0
-        implicitHeight: labelItem.implicitHeight + Kirigami.Units.smallSpacing
+    // A small install-source tag (Flatpak/Snap/…). A plain themed pill, not
+    // Kirigami.Chip: under the Kirigami 6.27 union style the Chip dropped the
+    // labelItem alias (broke the view load), rendered oversized, and didn't
+    // follow the dark theme. Built from Kirigami.Theme colours like the shortcut
+    // badge so it stays compact and correct under every style.
+    component InfoChip: Rectangle {
+        property alias text: chipLabel.text
+        implicitWidth: chipLabel.implicitWidth + Kirigami.Units.smallSpacing * 3
+        implicitHeight: chipLabel.implicitHeight + Kirigami.Units.smallSpacing
+        radius: Kirigami.Units.cornerRadius
+        color: ThemeColors.tint(Kirigami.Theme.textColor, 0.08)
+        border.width: 1
+        border.color: ThemeColors.tint(Kirigami.Theme.textColor, 0.2)
+
+        PlasmaComponents.Label {
+            id: chipLabel
+            anchors.centerIn: parent
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.7
+            elide: Text.ElideRight
+        }
     }
 
     component ShortcutBadge: Rectangle {
@@ -380,9 +391,14 @@ ListView {
                 PlasmaComponents.ToolButton {
                     id: favoriteButton
                     // Filled star when already favourited, outline otherwise. Shown on
-                    // every favouritable row, not just the selected one.
+                    // every favouritable row, not just the selected one. Uses the
+                    // rating star (emblems) rather than starred-symbolic: some themes
+                    // (Qogir) ship starred-symbolic in the places context too — the
+                    // "Starred folder" glyph — and the lookup can resolve to that wrong
+                    // icon (#200). rating/rating-unrated is an unambiguous plain star in
+                    // Breeze + Qogir, with the Breeze fallback covering other themes.
                     visible: resultDelegate.favoritable
-                    icon.name: resultDelegate.isFavorite ? "starred-symbolic" : "non-starred-symbolic"
+                    icon.name: resultDelegate.isFavorite ? "rating" : "rating-unrated"
                     PlasmaComponents.ToolTip.text: resultDelegate.isFavorite
                         ? i18nd("dev.xarbit.appgrid", "Remove from Favorites")
                         : i18nd("dev.xarbit.appgrid", "Add to Favorites")

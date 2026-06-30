@@ -20,6 +20,7 @@ class ResultsModel;
 #include "favoritesgroupedmodel.h"
 #include "frecencyprovider.h"
 #include "launchstatestore.h"
+#include "menutreemodel.h"
 #include "newappstracker.h"
 #include "runnerfiltermodel.h"
 #include "unifiedsearchmodel.h"
@@ -54,6 +55,7 @@ class AppGridController : public QObject
     Q_OBJECT
     Q_PROPERTY(AppFilterModel *appsModel READ appsModel CONSTANT)
     Q_PROPERTY(FavoritesGroupedModel *favoritesGroupedModel READ favoritesGroupedModel CONSTANT)
+    Q_PROPERTY(MenuTreeModel *menuTreeModel READ menuTreeModel CONSTANT)
     Q_PROPERTY(QAbstractItemModel *runnerModel READ runnerModel CONSTANT)
     // Opaque QObject* — QML uses it only via the dynamic queryString
     // property, no static KRunner type knowledge needed across the QML/C++
@@ -73,6 +75,8 @@ public:
     [[nodiscard]] AppFilterModel *appsModel() const;
     /** The favourites folder grouping model (issue #18), shared by both variants. */
     [[nodiscard]] FavoritesGroupedModel *favoritesGroupedModel() const;
+    /** The read-only kmenuedit folder tree for the By Category view (issue #201). */
+    [[nodiscard]] MenuTreeModel *menuTreeModel() const;
     /** The shared launch-state store (appgridrc); the plasmoid uses it to seed
      *  the store from its old per-applet config on upgrade. */
     [[nodiscard]] LaunchStateStore *launchState() const;
@@ -177,7 +181,7 @@ public:
     Q_INVOKABLE void runCommand(const QString &command, const QString &shell = QString());
 
     /** Returns list of installed shells from /etc/shells. */
-    Q_INVOKABLE QStringList availableShells();
+    [[nodiscard]] Q_INVOKABLE QStringList availableShells();
 
     /** Run a KRunner result by model index. Returns true if the UI should close. */
     Q_INVOKABLE bool runRunnerResult(int index);
@@ -186,7 +190,7 @@ public:
     Q_INVOKABLE bool runRunnerAction(int index, int actionIndex);
 
     /** Substitution text for in-place runner results (calculator), else empty. */
-    Q_INVOKABLE QString runnerSubstitutionText(int index);
+    [[nodiscard]] Q_INVOKABLE QString runnerSubstitutionText(int index);
 
     /** The KAStats favorite id for a KRunner result that maps to an application
      *  (its "applications:<storageId>" URL — apps and System Settings modules
@@ -197,7 +201,7 @@ public:
     [[nodiscard]] Q_INVOKABLE QString runnerResultFavoriteId(int index) const;
 
     /** Returns application-defined actions (jumplist) for the given storageId. */
-    Q_INVOKABLE QVariantList appActions(const QString &storageId);
+    [[nodiscard]] Q_INVOKABLE QVariantList appActions(const QString &storageId);
 
     /** Launch a specific app action by storageId and action index. */
     Q_INVOKABLE void launchAppAction(const QString &storageId, int actionIndex);
@@ -212,13 +216,13 @@ public:
     Q_INVOKABLE void openInDiscover(const QString &storageId);
 
     /** List directory contents at @p path. Returns {name, path, isDir, icon}. */
-    Q_INVOKABLE QVariantList listDirectory(const QString &path);
+    [[nodiscard]] Q_INVOKABLE QVariantList listDirectory(const QString &path);
 
     // --- System info ---
 
     /** Returns system/environment info for issue reporting. @p variant labels
      *  the running form factor (Center/Panel/Standalone). */
-    Q_INVOKABLE QVariantMap systemInfo(const QString &variant = QStringLiteral("Center"));
+    [[nodiscard]] Q_INVOKABLE QVariantMap systemInfo(const QString &variant = QStringLiteral("Center"));
 
 Q_SIGNALS:
     /** Pin @p desktopFile to the Task Manager in-process. Emitted only when an
@@ -247,6 +251,9 @@ private:
     AppFilterModel m_filterModel;
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
+    MenuTreeModel m_menuTreeModel;
+    // Built on first menuTreeModel() read (folders feature in use), not at startup.
+    mutable bool m_menuTreeBuilt = false;
     // Feeds the current activity to m_launchState so folders are per-activity;
     // the store itself stays KConfig-only. Gated by m_activityScoping (opt-in):
     // off feeds an empty activity, keeping folders global.

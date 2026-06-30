@@ -7,6 +7,7 @@
 
 #include "appactionid.h"
 #include "favoriteid.h"
+#include "pluginhelpers.h"
 
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/OpenUrlJob>
@@ -172,10 +173,19 @@ void AppGridFavoritesModel::initForClient(const QString &clientId)
     // row (it doesn't drop on unlink), so rebuild from a fresh query — that query
     // reflects the unlink. We can't just hide the row by name: KActivities emits
     // the unlink resource WITHOUT the "applications:" scheme the model keys on, so
-    // a string match would never hit. resultsInvalidated (KActivities' "reload
-    // everything" broadcast) gets the same treatment. Coalesced via m_reloadTimer.
+    // a string match would never hit. Coalesced via m_reloadTimer.
     connect(m_watcher, &KAStats::ResultWatcher::resultUnlinked, m_reloadTimer, qOverload<>(&QTimer::start));
-    connect(m_watcher, &KAStats::ResultWatcher::resultsInvalidated, m_reloadTimer, qOverload<>(&QTimer::start));
+    // Deliberately NOT wiring resultsInvalidated → rebuild. Our own moveRow()
+    // reorder calls setResultPosition() once per cell-crossing during a drag, and
+    // each write trips that broad "reload everything" broadcast. Rebuilding on it
+    // meant a full initForClient() (new ResultModel + setSourceModel reset + a
+    // fresh kactivitymanagerd query) fired mid-drag, per move — recycling the
+    // dragged delegate and flooding the daemon until the whole panel froze hard
+    // enough to need a reboot (#200). A reorder is not a structural change:
+    // ResultModel reorders itself in place, so there is nothing to rebuild. Real
+    // link/unlink still propagate via resultUnlinked above plus the ResultModel's
+    // own live link reflection; the rare bulk-invalidate refresh is given up in
+    // exchange (currentActivityChanged and KSycoca::databaseChanged still rebuild).
 
     // When a row genuinely leaves the source (the unlink finally propagated, or an
     // external change), drop any matching optimistic-removal entry so the set stays
@@ -344,6 +354,21 @@ bool AppGridFavoritesModel::isFavorite(const QString &id) const
         }
     }
     return false;
+}
+
+int AppGridFavoritesModel::rowOfFavoriteId(const QString &storageId) const
+{
+    // Match the stored favourite id against the dragged app's id in either
+    // spelling (bare or "applications:"-prefixed), mirroring the QML helper this
+    // replaced so drag-reorder keeps resolving the same row.
+    const QString prefixed = PluginHelpers::toFavoriteId(storageId);
+    for (int row = 0, rows = rowCount(); row < rows; ++row) {
+        const QString value = data(index(row, 0), FavoriteIdRole).toString();
+        if (value == storageId || value == prefixed) {
+            return row;
+        }
+    }
+    return -1;
 }
 
 void AppGridFavoritesModel::addFavorite(const QString &id, int index)

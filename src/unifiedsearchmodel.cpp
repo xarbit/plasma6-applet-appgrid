@@ -10,7 +10,6 @@
 
 #include <KRunner/Action>
 
-#include <QFileInfo>
 #include <QUrl>
 
 namespace
@@ -168,11 +167,8 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
             if (m_runnerUrlsRole < 0) {
                 return QString();
             }
-            const QString path = PluginHelpers::desktopPathFromRunnerUrls(srcIdx.data(m_runnerUrlsRole));
-            if (path.isEmpty()) {
-                return QString();
-            }
-            return role == StorageIdRole ? QFileInfo(path).fileName() : path;
+            const QVariant urls = srcIdx.data(m_runnerUrlsRole);
+            return role == StorageIdRole ? PluginHelpers::runnerStorageId(urls) : PluginHelpers::desktopPathFromRunnerUrls(urls);
         }
         case IsNewRole:
         case IsHiddenRole:

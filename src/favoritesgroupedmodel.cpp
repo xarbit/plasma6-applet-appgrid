@@ -48,6 +48,51 @@ void FavoritesGroupedModel::setFlatFavorites(const QStringList &flatFavorites)
     }
     m_flatFavorites = flatFavorites;
     apply(reconcile(m_flatFavorites, m_state));
+    // apply() rebuilds only when the layout moved, but the shown members also
+    // depend on the flat list (a removed favourite must drop out of a folder's
+    // preview even when the token order is unchanged), so refresh regardless.
+    rebuildRows();
+}
+
+void FavoritesGroupedModel::setKnownApps(const QStringList &storageIds)
+{
+    const QSet<QString> next(storageIds.cbegin(), storageIds.cend());
+    if (next == m_knownApps) {
+        return;
+    }
+    m_knownApps = next;
+    // Only the shown rows depend on this (which members resolve); the layout is
+    // untouched, so just rebuild — no reconcile / persist.
+    rebuildRows();
+}
+
+void FavoritesGroupedModel::addLooseFavorite(const QString &sid, int index)
+{
+    if (sid.isEmpty() || m_flatFavorites.contains(sid)) {
+        return;
+    }
+    m_flatFavorites.append(sid);
+    auto next = reconcile(m_flatFavorites, m_state);
+    // reconcile appends the new favourite as a loose token at the end; drop it at
+    // the cursor slot so it appears under the pointer, not at the bottom (which
+    // would then animate up to the cursor).
+    if (index >= 0) {
+        const int from = next.tokens.indexOf(FavoritesFolderLogic::appToken(sid));
+        if (from >= 0) {
+            next.tokens.move(from, qBound(0, index, next.tokens.size() - 1));
+        }
+    }
+    // No persist: the real KAStats favourite (added in parallel by the UI) is the
+    // source of truth; a follow-up reorder persists the final layout position.
+    apply(next, false);
+}
+
+void FavoritesGroupedModel::removeLooseFavorite(const QString &sid)
+{
+    if (!m_flatFavorites.removeOne(sid)) {
+        return;
+    }
+    apply(reconcile(m_flatFavorites, m_state), false);
 }
 
 QString FavoritesGroupedModel::createFolder(const QString &sidA, const QString &sidB, const QString &name)
@@ -141,8 +186,56 @@ void FavoritesGroupedModel::moveTopLevel(int fromRow, int toRow)
     apply(reconcile(m_flatFavorites, FavoritesFolderLogic::moveTopLevel(m_state, fromRow, toRow)), true);
 }
 
+void FavoritesGroupedModel::enterFolder(const QString &folderId)
+{
+    if (folderId.isEmpty() || folderId == m_openFolder || folderIndex(folderId) < 0) {
+        return;
+    }
+    m_openFolder = folderId;
+    rebuildRows();
+    Q_EMIT pathChanged();
+}
+
+void FavoritesGroupedModel::goBack()
+{
+    if (m_openFolder.isEmpty()) {
+        return;
+    }
+    m_openFolder.clear();
+    rebuildRows();
+    Q_EMIT pathChanged();
+}
+
+void FavoritesGroupedModel::resetToRoot()
+{
+    goBack();
+}
+
+QString FavoritesGroupedModel::currentFolderName() const
+{
+    const int idx = folderIndex(m_openFolder);
+    return idx >= 0 ? m_state.folders.at(idx).name : QString();
+}
+
 void FavoritesGroupedModel::moveRow(int fromRow, int toRow)
 {
+    // Inside a folder, reorder its members (a pure move, like the top level).
+    if (!m_openFolder.isEmpty()) {
+        const int idx = folderIndex(m_openFolder);
+        if (idx < 0) {
+            return;
+        }
+        QStringList &members = m_state.folders[idx].members;
+        if (fromRow < 0 || toRow < 0 || fromRow >= members.size() || toRow >= members.size() || fromRow == toRow) {
+            return;
+        }
+        members.move(fromRow, toRow);
+        moveRowAt(fromRow, toRow);
+        Q_EMIT foldersChanged();
+        Q_EMIT foldersPersistRequested();
+        return;
+    }
+
     if (fromRow < 0 || toRow < 0 || fromRow >= m_state.tokens.size() || toRow >= m_state.tokens.size() || fromRow == toRow) {
         return;
     }
@@ -182,8 +275,45 @@ void FavoritesGroupedModel::apply(const Layout &next, bool persist)
     }
 }
 
+QStringList FavoritesGroupedModel::shownMembers(const QStringList &members) const
+{
+    if (m_knownApps.isEmpty()) {
+        return members;
+    }
+    QStringList shown;
+    shown.reserve(members.size());
+    for (const QString &sid : members) {
+        if (m_knownApps.contains(sid) || m_flatFavorites.contains(sid)) {
+            shown.append(sid);
+        }
+    }
+    return shown;
+}
+
 void FavoritesGroupedModel::rebuildRows()
 {
+    // Drilled into a folder: show its renderable members as app rows. If the
+    // folder is gone, or every member is now dead (uninstalled/unfavourited), fall
+    // back to the top level and announce it so the UI drops its back affordance.
+    if (!m_openFolder.isEmpty()) {
+        const int idx = folderIndex(m_openFolder);
+        const QStringList members = idx >= 0 ? shownMembers(m_state.folders.at(idx).members) : QStringList();
+        if (!members.isEmpty()) {
+            QList<Row> rows;
+            rows.reserve(members.size());
+            for (const QString &sid : members) {
+                Row row;
+                row.type = AbstractGroupedModel::App;
+                row.favoriteId = PluginHelpers::toFavoriteId(sid);
+                rows.append(row);
+            }
+            setRows(rows);
+            return;
+        }
+        m_openFolder.clear();
+        Q_EMIT pathChanged();
+    }
+
     QList<Row> rows;
     rows.reserve(m_state.tokens.size());
     for (const QString &token : m_state.tokens) {
@@ -191,7 +321,7 @@ void FavoritesGroupedModel::rebuildRows()
             const int idx = folderIndex(tokenPayload(token));
             if (idx >= 0) {
                 const FavoritesFolderLogic::Folder &f = m_state.folders.at(idx);
-                rows.append({AbstractGroupedModel::Folder, {}, f.id, f.name, f.members});
+                rows.append({AbstractGroupedModel::Folder, {}, f.id, f.name, shownMembers(f.members)});
             }
         } else if (isAppToken(token)) {
             Row row;

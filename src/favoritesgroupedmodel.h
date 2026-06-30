@@ -8,6 +8,7 @@
 #include "abstractgroupedmodel.h"
 #include "favoritesfolderlogic.h"
 
+#include <QSet>
 #include <QVariantList>
 
 /**
@@ -27,6 +28,11 @@ class FavoritesGroupedModel : public AbstractGroupedModel
     Q_OBJECT
     Q_PROPERTY(QVariantList favoriteFolders READ favoriteFolders WRITE setFavoriteFolders NOTIFY foldersChanged)
     Q_PROPERTY(QStringList favoriteLayout READ favoriteLayout WRITE setFavoriteLayout NOTIFY layoutChanged)
+    // Drill-in-place navigation (issue #18): the visible rows are the top level
+    // (folders + loose apps) or, inside a folder, that folder's members.
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY pathChanged)
+    Q_PROPERTY(QString currentPath READ currentPath NOTIFY pathChanged)
+    Q_PROPERTY(QString currentFolderName READ currentFolderName NOTIFY pathChanged)
 
 public:
     explicit FavoritesGroupedModel(QObject *parent = nullptr);
@@ -36,6 +42,22 @@ public:
         return true;
     }
 
+    // --- Navigation (single level: top <-> one open folder) ---
+    /** Show @p folderId's members; a no-op if it isn't a folder here. */
+    Q_INVOKABLE void enterFolder(const QString &folderId);
+    /** Back to the top level; a no-op already there. */
+    Q_INVOKABLE void goBack();
+    Q_INVOKABLE void resetToRoot();
+    [[nodiscard]] bool canGoBack() const
+    {
+        return !m_openFolder.isEmpty();
+    }
+    [[nodiscard]] QString currentPath() const
+    {
+        return m_openFolder;
+    }
+    [[nodiscard]] QString currentFolderName() const;
+
     [[nodiscard]] QVariantList favoriteFolders() const;
     void setFavoriteFolders(const QVariantList &folders);
     [[nodiscard]] QStringList favoriteLayout() const;
@@ -43,6 +65,22 @@ public:
 
     /** The live, ordered favourite storageIds from KAStats. Reconciles. */
     Q_INVOKABLE void setFlatFavorites(const QStringList &flatFavorites);
+
+    /** The storageIds of every currently installed app (AppModel). Lets a folder
+     *  hide a member whose app was uninstalled while keeping a member that's
+     *  installed but not yet in this instance's flat list (a cross-process add).
+     *  See shownMembers(). */
+    void setKnownApps(const QStringList &storageIds);
+
+    /** Optimistically add @p sid as a loose favourite *now*, so a drag-into-
+     *  favourites reflows it instantly instead of waiting for the async KAStats
+     *  round-trip. @p index is the visible slot to drop it at (the cursor), so it
+     *  appears under the pointer rather than at the bottom; -1 appends. The UI
+     *  favourites it in KAStats in parallel; the next real push carries the same id
+     *  (the contains() guard makes it idempotent). #18 */
+    Q_INVOKABLE void addLooseFavorite(const QString &sid, int index = -1);
+    /** Roll back an optimistic addLooseFavorite (drag left without dropping). */
+    Q_INVOKABLE void removeLooseFavorite(const QString &sid);
 
     // Folder mutations (config only — never touch KAStats membership).
     Q_INVOKABLE QString createFolder(const QString &sidA, const QString &sidB, const QString &name = {});
@@ -66,6 +104,9 @@ public:
 Q_SIGNALS:
     void foldersChanged();
     void layoutChanged();
+    // Navigation level changed (entered/left a folder, or the open folder
+    // dissolved while inside it).
+    void pathChanged();
     // Persist signals: emitted only for LOCAL user actions, never when applying an
     // incoming store/KAStats change. The store mirror writes on these so a process
     // that merely reads an external update never echoes it back — that write-back
@@ -87,9 +128,22 @@ private:
     // favouriting them in KAStats in the same step) so grouping survives reconcile.
     void _adoptFavorites(const QStringList &sids);
     void rebuildRows();
+    // The members of @p members to actually SHOW (drilled-in rows + 2x2 preview):
+    // keep a member that's still installed (m_knownApps — covers a cross-process
+    // favourite not yet in this instance's flat list) or still a live favourite
+    // (m_flatFavorites — covers file/document favourites, which aren't apps). A
+    // member in neither is an uninstalled app / deleted file; hide it. The layout
+    // keeps it persisted (#18), so a reinstall restores it. Until the app list has
+    // loaded (m_knownApps empty) we can't tell installed from gone, so show all
+    // rather than blank folders on a cold open.
+    [[nodiscard]] QStringList shownMembers(const QStringList &members) const;
     // Index of the folder with @p folderId in m_state, or -1.
     [[nodiscard]] int folderIndex(const QString &folderId) const;
 
     FavoritesFolderLogic::Layout m_state;
     QStringList m_flatFavorites;
+    // storageIds of every installed app; empty until AppModel loads.
+    QSet<QString> m_knownApps;
+    // The folder currently drilled into; empty = top level.
+    QString m_openFolder;
 };

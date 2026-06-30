@@ -48,6 +48,10 @@ Item {
     // Folders available at all (feature enabled + model present + editable). The
     // favourites-tab gate is applied per-action where it matters (bulk/empty/folder menus).
     readonly property bool _canFolder: foldersEnabled && favoritesGroupedModel && favoritesGroupedModel.editable
+    // Folders are single level: creating / adding to a folder is only allowed at
+    // the top level, never while drilled inside one (no nesting). "Remove from
+    // Folder" stays available inside — it uses _canFolder. (#18)
+    readonly property bool _canCreateFolder: _canFolder && !favoritesGroupedModel.canGoBack
     property bool _folderSubAdded: false
     property bool _bulkFolderSubAdded: false
     property bool _activitiesSubAdded: false
@@ -183,7 +187,7 @@ Item {
         if (!isMultiSelect) {
             // Any app can be added to a folder; a non-favourite is favourited in
             // the process (see the submenu handlers).
-            const wantFolderSub = _canFolder && popupStorageId.length > 0
+            const wantFolderSub = _canCreateFolder && popupStorageId.length > 0
             if (wantFolderSub && !_folderSubAdded) {
                 singleMenu.addMenu(addToFolderSubmenu)
                 _folderSubAdded = true
@@ -219,7 +223,7 @@ Item {
             }
         } else {
             // Bulk "Add to Folder" — any selection; non-favourites are favourited.
-            const wantBulkSub = _canFolder && popupSelectedSids.length > 0
+            const wantBulkSub = _canCreateFolder && popupSelectedSids.length > 0
             if (wantBulkSub && !_bulkFolderSubAdded) {
                 bulkMenu.addMenu(addSelectionToFolderSubmenu)
                 _bulkFolderSubAdded = true
@@ -255,7 +259,7 @@ Item {
     }
 
     function showForEmptyArea() {
-        if (!_canFolder)
+        if (!_canCreateFolder)
             return
         emptyAreaMenu.popup()
     }

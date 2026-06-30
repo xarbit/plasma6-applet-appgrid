@@ -206,6 +206,12 @@ QString desktopPathFromRunnerUrls(const QVariant &urlsData)
     return {};
 }
 
+QString runnerStorageId(const QVariant &urlsData)
+{
+    const QString path = desktopPathFromRunnerUrls(urlsData);
+    return path.isEmpty() ? QString() : QFileInfo(path).fileName();
+}
+
 QStringList parseKdeTerminalDefaults(const QString &contents)
 {
     QStringList values;

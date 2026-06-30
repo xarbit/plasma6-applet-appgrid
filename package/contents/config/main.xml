@@ -82,6 +82,10 @@
       <label>Whether favorites can be grouped into folders (issue #18).</label>
       <default>true</default>
     </entry>
+    <entry name="categoryFoldersEnabled" type="Bool">
+      <label>Whether the By Category view shows the kmenuedit folder tree instead of flat sections (issue #201). Needs system categories.</label>
+      <default>false</default>
+    </entry>
     <entry name="enableActivities" type="Bool">
       <label>Whether favorites and folders can be scoped per Plasma activity. Off (default) keeps everything global.</label>
       <default>false</default>

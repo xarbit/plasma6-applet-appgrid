@@ -11,52 +11,24 @@
 #include <AppStreamQt/pool.h>
 
 #include <QDebug>
-#include <QObject>
 
 namespace AppStreamResolver
 {
-namespace
-{
-// Shared AppStream metadata pool plus its load state, as one unit so the two
-// plasmoid variants in one plasmashell share a single warmed pool. Warmed
-// asynchronously so the UI thread never blocks parsing metadata; queries gate
-// on `ready` so we never read the pool mid-load.
-struct SharedPool {
-    AppStream::Pool pool;
-    bool ready = false;
-};
-
-SharedPool &shared()
-{
-    static SharedPool instance;
-    return instance;
-}
-}
-
-void warm()
-{
-    static bool started = false;
-    if (started) {
-        return;
-    }
-    started = true;
-    SharedPool &s = shared();
-    QObject::connect(&s.pool, &AppStream::Pool::loadFinished, &s.pool, [](bool success) {
-        shared().ready = success;
-        if (!success) {
-            qWarning() << "AppGrid: AppStream pool load failed:" << shared().pool.lastError();
-        }
-    });
-    s.pool.loadAsync();
-}
-
 QString resolve(const QString &desktopId)
 {
-    SharedPool &s = shared();
-    if (!s.ready) {
+    // A pool local to this lookup: Kicker keeps a process-global pool resident for
+    // the whole session, but AppGrid is a long-lived daemon and this action is
+    // rare, so the catalogs (~30 MB, mostly mmap of the shared .xb cache, and
+    // growing with the system's Flatpak remotes) would sit in our footprint for an
+    // app the user resolves maybe once. The pool destructs on return, dropping our
+    // mapping; the ~100 ms synchronous load runs only on the click itself and is
+    // hidden behind Discover's own launch.
+    AppStream::Pool pool;
+    if (!pool.load()) {
+        qWarning() << "AppGrid: AppStream pool load failed:" << pool.lastError();
         return {};
     }
-    const auto components = s.pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
+    const auto components = pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
     for (const AppStream::Component &component : components) {
         if (!component.id().isEmpty()) {
             return component.id();

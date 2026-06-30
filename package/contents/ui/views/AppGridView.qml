@@ -66,7 +66,10 @@ GridView {
     TapHandler {
         acceptedButtons: Qt.RightButton
         onTapped: eventPoint => {
-            if (!gridView._groupedFavoritesGrid)
+            // Create-folder on empty space: favourites-editable, and only at the
+            // top level — no nesting inside an open folder (#18).
+            if (!gridView._groupedGrid || !gridView.groupEditable
+                    || gridView.groupedModel.canGoBack)
                 return
             // Map the scene point into the content item and ask what's there —
             // a delegate under the cursor (icon/folder) raises its own menu, so
@@ -191,7 +194,16 @@ GridView {
     keyNavigationEnabled: true
     currentIndex: -1
     highlightFollowsCurrentItem: true
-    highlightMoveDuration: animateHighlight ? Kirigami.Units.shortDuration : 0
+    // Snapped (no slide) while _snapHighlight — used when a drill view re-selects
+    // the folder just left on going back, so the highlight lands on it, not slides.
+    highlightMoveDuration: (animateHighlight && !_snapHighlight) ? Kirigami.Units.shortDuration : 0
+    property bool _snapHighlight: false
+    // Set currentIndex without animating the highlight there.
+    function selectSnapped(idx) {
+        _snapHighlight = true
+        currentIndex = idx
+        Qt.callLater(function() { gridView._snapHighlight = false })
+    }
 
     property bool animateHighlight: true
 
@@ -212,6 +224,14 @@ GridView {
     // rows still resolve via favoriteId (like KAStats), and folder rows render a
     // FolderCell that opens on click.
     property var favoritesGroupedModel: null
+    // The grouped model this grid renders when `model` is bound to it — the
+    // favourites folders (favoritesGroupedModel) or the read-only menu tree
+    // (#201). Both expose the AbstractGroupedModel row API, so the delegate and
+    // selection treat them identically; only mutation differs (groupEditable).
+    property var groupedModel: null
+    // Favourites grouping is editable (reorder, drag-to-folder, create folder);
+    // the menu tree is read-only. Gates those mutations.
+    property bool groupEditable: true
     // Single source of truth for favourite mutations (add/remove/toggle with
     // folder cleanup). Injected by the boundary; see controllers/FavoritesManager.
     property var favoritesManager: null
@@ -231,13 +251,7 @@ GridView {
     }
 
     function findFavoriteRow(storageId) {
-        if (!sharedFavoritesModel || favoriteIdRole < 0) return -1
-        const prefixed = FavoriteId.toPrefixed(storageId)
-        for (let i = 0; i < sharedFavoritesModel.count; ++i) {
-            const v = sharedFavoritesModel.data(sharedFavoritesModel.index(i, 0), favoriteIdRole)
-            if (v === storageId || v === prefixed) return i
-        }
-        return -1
+        return sharedFavoritesModel ? sharedFavoritesModel.rowOfFavoriteId(storageId) : -1
     }
     // Config toggles
     property bool showRecentApps: true
@@ -307,16 +321,17 @@ GridView {
     }
     // The favourites grid drives selection whether it is the direct KAStats grid
     // or the grouped (folders) grid — both key selection by storageId.
-    readonly property bool _groupedFavoritesGrid: favoritesActive
-                                                  && favoritesGroupedModel
-                                                  && model === favoritesGroupedModel
+    // The grid is bound to a grouped model (favourites folders or the menu tree).
+    readonly property bool _groupedGrid: !!groupedModel && model === groupedModel
     readonly property bool _favoritesSelect: favoritesActive
                                              && ((sharedFavoritesModel && model === sharedFavoritesModel)
-                                                 || _groupedFavoritesGrid)
+                                                 || _groupedGrid)
     readonly property bool _otherSelect: !favoritesActive
                                          && appsModel
                                          && model === appsModel
-    readonly property bool multiSelectActive: _favoritesSelect || _otherSelect
+    // Any grouped grid is selectable too (favourites: reorder/remove; menu:
+    // drag-out / add-to-favourites).
+    readonly property bool multiSelectActive: _favoritesSelect || _otherSelect || _groupedGrid
 
     property alias selectedSids: selection.selectionSids
     property alias selectionAnchor: selection.anchor
@@ -325,12 +340,18 @@ GridView {
     function selectionContainsSid(sid) { return selection.contains(sid) }
     function selectedSidList() { return selection.sidList() }
 
+    // Row of the folder @p folderId in the current grouped level (0 if absent) —
+    // used to re-select the folder just left when a drill view goes back a level.
+    function rowOfFolder(folderId) {
+        return _groupedGrid ? Math.max(0, groupedModel.indexOfFolder(folderId)) : 0
+    }
+
     function _sidAt(idx) {
         if (!multiSelectActive || idx < 0 || idx >= count) return ""
-        if (_groupedFavoritesGrid) {
+        if (_groupedGrid) {
             // 1 === AbstractGroupedModel.Folder — folders aren't selectable.
-            if (favoritesGroupedModel.entryTypeAt(idx) === 1) return ""
-            return FavoriteId.stripPrefix(favoritesGroupedModel.favoriteIdAt(idx)) || ""
+            if (groupedModel.entryTypeAt(idx) === 1) return ""
+            return FavoriteId.stripPrefix(groupedModel.favoriteIdAt(idx)) || ""
         }
         if (_favoritesSelect) {
             const v = sharedFavoritesModel.data(
@@ -464,12 +485,12 @@ GridView {
         // In favorites view the grid is bound to KAStats directly, so the current
         // index is a favorites row, not a proxy row. Resolve to a storageId and
         // launch through launchFavorite (app → our path, else the KAStats model).
-        if (favoritesActive && favoritesGroupedModel && model === favoritesGroupedModel) {
+        if (_groupedGrid) {
             // 1 === AbstractGroupedModel.Folder
-            if (favoritesGroupedModel.entryTypeAt(currentIndex) === 1) {
-                openFolderRequested(favoritesGroupedModel.folderIdAt(currentIndex))
+            if (groupedModel.entryTypeAt(currentIndex) === 1) {
+                openFolderRequested(groupedModel.folderIdAt(currentIndex))
             } else {
-                launchFavorite(FavoriteId.stripPrefix(favoritesGroupedModel.favoriteIdAt(currentIndex)))
+                launchFavorite(FavoriteId.stripPrefix(groupedModel.favoriteIdAt(currentIndex)))
             }
         } else if (favoritesActive && sharedFavoritesModel
                 && model === sharedFavoritesModel) {
@@ -562,30 +583,59 @@ GridView {
         }
         _arrowMoveWithSelection(event, _moveUp)
     }
+    // Land on the first cell when the grid has focus but nothing is selected yet
+    // (e.g. entered without a preselect) — moving from an empty current index is
+    // unreliable, so a first arrow press should just select the start.
+    function _selectFirstIfEmpty() {
+        if (recentIndex >= 0 || currentIndex >= 0)
+            return false
+        if (showRecents && recentCount > 0)
+            recentIndex = 0
+        else if (count > 0)
+            currentIndex = 0
+        return true
+    }
     Keys.onDownPressed: function(event) {
+        if (_selectFirstIfEmpty()) {
+            event.accepted = true
+            return
+        }
         _arrowMoveWithSelection(event, _moveDown)
     }
+    GridKeyboardNav {
+        id: keyNav
+        searchField: gridView.searchField
+        onCategoryNavRequested: direction => gridView.categoryNavRequested(direction)
+    }
     Keys.onLeftPressed: function(event) {
-        if (event.modifiers & Qt.AltModifier) {
-            categoryNavRequested(-1)
+        if (keyNav.handleAltArrow(event, -1))
+            return
+        if (_selectFirstIfEmpty()) {
             event.accepted = true
             return
         }
         _arrowMoveWithSelection(event, _moveLeft)
     }
     Keys.onRightPressed: function(event) {
-        if (event.modifiers & Qt.AltModifier) {
-            categoryNavRequested(1)
+        if (keyNav.handleAltArrow(event, 1))
+            return
+        if (_selectFirstIfEmpty()) {
             event.accepted = true
             return
         }
         _arrowMoveWithSelection(event, _moveRight)
     }
 
-    // Esc clears multi-selection first; only when there's no selection do
-    // we let the event bubble (the popup window closes on bare Esc).
+    // Esc clears multi-selection first. With no selection, hand off to the host
+    // (e.g. the menu drill view goes back a level); if the host doesn't act, the
+    // event is left unaccepted so the window Shortcut can close the launcher.
+    signal escapePressed()
     Keys.onEscapePressed: function(event) {
-        if (selection.consumeEscape()) event.accepted = true
+        if (selection.consumeEscape()) {
+            event.accepted = true
+            return
+        }
+        gridView.escapePressed()
     }
     // Consume Tab to prevent it from reaching the focus chain or search bar
     Keys.onTabPressed: function(event) { event.accepted = true }
@@ -618,9 +668,7 @@ GridView {
             event.accepted = true
             return
         }
-        if (event.text.length > 0 && !event.modifiers && searchField) {
-            searchField.forceActiveFocus()
-            searchField.text += event.text
+        if (keyNav.forwardTyping(event)) {
             currentIndex = -1
             recentIndex = -1
         }
@@ -691,9 +739,7 @@ GridView {
         // Grid bound to the grouped model (issue #18): folder rows render a
         // FolderCell, app rows resolve via favoriteId exactly like the direct
         // KAStats grid does.
-        readonly property bool _fromGrouped: gridView.favoritesActive
-                                             && gridView.favoritesGroupedModel
-                                             && gridView.model === gridView.favoritesGroupedModel
+        readonly property bool _fromGrouped: gridView._groupedGrid
         readonly property bool _isFolder: _fromGrouped && model.entryType === 1
         // "Shared" = a favourite app row keyed by favoriteId — true for both the
         // direct KAStats grid and the grouped model's app rows.
@@ -870,6 +916,8 @@ GridView {
         parent: gridView
         gridView: gridView
         edgeScroller: edgeScroller
+        // Off for a read-only grouped grid (the menu tree): no reorder / fold.
+        enabled: gridView.groupEditable && gridView.sharedFavoritesModel !== null
     }
 
     EdgeAutoScroller {

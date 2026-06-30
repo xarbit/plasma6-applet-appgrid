@@ -53,6 +53,13 @@ Item {
     // swap its source cell for a remove (✕) marker, Kickoff-style.
     property bool dropWillRemove: false
 
+    // True while the cursor sits over the Favorites tab with a drag of an app
+    // that's already a favourite — the drop is forbidden (re-adding makes no
+    // sense). The tab-hover sets it; the #193 remove area reads it and stands
+    // down so nothing accepts → the platform shows the forbidden cursor and the
+    // drop cancels.
+    property bool blockedOnFavoritesTab: false
+
     // Fold target armed while a favourite hovers the centre of another favourite
     // (→ create folder) or a folder (→ add to it). The target cell watches these
     // to draw a merge highlight; cleared on drop/exit (issue #18).
@@ -66,6 +73,22 @@ Item {
 
     function isOwnDrag(drag) {
         return drag && drag.source === source
+    }
+
+    // Drag-target / drag-source predicates the cells query to drive their fold
+    // halo and remove-✕ markers. Kept here, on the shared drag state, so the app
+    // and folder delegates don't each re-spell the same checks.
+    function isFoldTargetApp(storageId) {
+        return foldTargetStorageId.length > 0 && foldTargetStorageId === storageId
+    }
+    function isFoldTargetFolder(folderId) {
+        return foldTargetFolderId.length > 0 && foldTargetFolderId === folderId
+    }
+    function isSourceApp(item, storageId) {
+        return sourceItem === item || (storageId.length > 0 && sourceStorageIds.indexOf(storageId) >= 0)
+    }
+    function isSourceFolder(folderId) {
+        return sourceFolderId.length > 0 && sourceFolderId === folderId
     }
 
     // Off-screen composite for multi-drag stack preview. Up to 3 icons drawn
@@ -169,6 +192,7 @@ Item {
         source.sourceDesktopFile = ""
         source.sourceStorageIds = []
         source.dropWillRemove = false
+        source.blockedOnFavoritesTab = false
         source.foldTargetStorageId = ""
         source.foldTargetFolderId = ""
     }

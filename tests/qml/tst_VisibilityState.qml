@@ -24,7 +24,7 @@ TestCase {
         var v = make()
         verify(!v.emptyHidden)
         verify(!v.catBarVisible)        // showCategoryBar input is false
-        verify(!v.categoryGridVisible)  // isSortByCategory input is false
+        verify(!v.categorySectionsVisible)  // isSortByCategory input is false
         verify(v.appGridVisible)
         verify(!v.searchResultsVisible)
     }
@@ -41,7 +41,7 @@ TestCase {
         var v = make({ showCategoryBar: true, isSearching: true })
         verify(!v.catBarVisible)
         verify(!v.appGridVisible)
-        verify(!v.categoryGridVisible)
+        verify(!v.categorySectionsVisible)
         verify(v.searchResultsVisible)
     }
 
@@ -58,7 +58,7 @@ TestCase {
 
     function test_categorySortShowsCategoryGrid() {
         var v = make({ isSortByCategory: true })
-        verify(v.categoryGridVisible)
+        verify(v.categorySectionsVisible)
         verify(!v.appGridVisible)
     }
 
@@ -66,23 +66,49 @@ TestCase {
         // Favorites view always uses the flat app grid even under
         // by-category sort, so the user can drag-reorder freely.
         var v = make({ isSortByCategory: true, isFavoritesActive: true })
-        verify(!v.categoryGridVisible)
+        verify(!v.categorySectionsVisible)
+        verify(v.appGridVisible)
+    }
+
+    // --- folder tree (#201): folders on swaps sections for the menu tree ---
+
+    function test_categoryFoldersSwapSectionsForTree() {
+        var v = make({ isSortByCategory: true, categoryFolders: true })
+        verify(v.menuFolderVisible)
+        verify(!v.categorySectionsVisible)
+        verify(!v.appGridVisible)
+    }
+
+    function test_selectedCategoryFoldsInAnySort() {
+        // Alpha/most-used sort, a specific category tab selected → folder tree.
+        var v = make({ isSortByCategory: false, categoryFolders: true, categoryFiltered: true })
+        verify(v.menuFolderVisible)
+        verify(!v.appGridVisible)
+    }
+
+    function test_allTabStaysFlatOutsideCategorySort() {
+        // The All tab (no category filter) in a non-category sort stays flat,
+        // even with folders on.
+        var v = make({ isSortByCategory: false, categoryFolders: true, categoryFiltered: false })
+        verify(!v.menuFolderVisible)
         verify(v.appGridVisible)
     }
 
     // --- hideGridWhenEmpty (compact mode) ---
 
     function test_compactModeHidesEverythingUntilRevealed() {
-        var v = make({ hideGridWhenEmpty: true, showCategoryBar: true })
+        // Compact collapse only applies to the daemon (sizeToContent).
+        var v = make({ sizeToContent: true, hideGridWhenEmpty: true, showCategoryBar: true })
         verify(v.emptyHidden)
         verify(!v.catBarVisible)
         verify(!v.appGridVisible)
-        verify(!v.categoryGridVisible)
+        verify(!v.categorySectionsVisible)
         verify(!v.searchResultsVisible)
     }
 
     function test_compactModeRevealedShowsGrid() {
         var v = make({
+            sizeToContent: true,
             hideGridWhenEmpty: true,
             showCategoryBar: true,
             gridRevealed: true
@@ -92,11 +118,11 @@ TestCase {
         verify(v.catBarVisible)
     }
 
-    function test_compactModeIgnoredInNativePopup() {
-        // The popup variant of the plasmoid renders its own chrome —
-        // hide-when-empty stays off there even if the user toggled it.
+    function test_compactModeIgnoredInPanelVariant() {
+        // The panel variant is owned by Plasma's popup sizing (sizeToContent off),
+        // so hide-when-empty compact collapse stays off there even if toggled.
         var v = make({
-            nativePopup: true,
+            sizeToContent: false,
             hideGridWhenEmpty: true,
             showCategoryBar: true
         })

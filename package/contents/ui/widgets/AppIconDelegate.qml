@@ -174,9 +174,7 @@ Item {
     // -- Fold target halo (#18) --
     // Another favourite is hovering this cell's centre long enough to merge into
     // a folder; a strong accent ring previews the fold.
-    readonly property bool _isFoldTarget: root.dragSource
-        && root.dragSource.foldTargetStorageId.length > 0
-        && root.dragSource.foldTargetStorageId === root.storageId
+    readonly property bool _isFoldTarget: root.dragSource && root.dragSource.isFoldTargetApp(root.storageId)
     Rectangle {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.smallSpacing
@@ -221,9 +219,7 @@ Item {
             // one the drag started from.
             readonly property bool _showRemoveMarker: root.dragSource
                 && root.dragSource.dropWillRemove
-                && (root.dragSource.sourceItem === root
-                    || (root.storageId.length > 0
-                        && root.dragSource.sourceStorageIds.indexOf(root.storageId) >= 0))
+                && root.dragSource.isSourceApp(root, root.storageId)
 
             ShadowedIcon {
                 id: delegateIcon

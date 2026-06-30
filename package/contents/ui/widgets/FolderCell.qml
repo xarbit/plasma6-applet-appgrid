@@ -64,9 +64,7 @@ Item {
     }
 
     // Fold target halo — a favourite is hovering to drop into this folder (#18).
-    readonly property bool _isFoldTarget: root.dragSource
-        && root.dragSource.foldTargetFolderId.length > 0
-        && root.dragSource.foldTargetFolderId === root.folderId
+    readonly property bool _isFoldTarget: root.dragSource && root.dragSource.isFoldTargetFolder(root.folderId)
     Rectangle {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.smallSpacing
@@ -106,14 +104,11 @@ Item {
             // Over the launcher's delete area → yield to a ✕ marker (#18/#193).
             readonly property bool _showRemoveMarker: root.dragSource
                 && root.dragSource.dropWillRemove
-                && root.dragSource.sourceFolderId.length > 0
-                && root.dragSource.sourceFolderId === root.folderId
+                && root.dragSource.isSourceFolder(root.folderId)
 
             // Another favourite is hovering this folder to add to it (#200) →
             // the preview yields to a + marker, mirroring the app-icon fold.
-            readonly property bool _showAddMarker: root.dragSource
-                && root.dragSource.foldTargetFolderId.length > 0
-                && root.dragSource.foldTargetFolderId === root.folderId
+            readonly property bool _showAddMarker: root.dragSource && root.dragSource.isFoldTargetFolder(root.folderId)
 
             GridLayout {
                 anchors.fill: parent

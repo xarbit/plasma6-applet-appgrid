@@ -12,7 +12,6 @@
 #include <KRunner/QueryMatch>
 #include <KRunner/ResultsModel>
 
-#include <QFileInfo>
 #include <QUrl>
 
 RunnerFilterModel::RunnerFilterModel(QObject *parent)
@@ -91,8 +90,7 @@ QString RunnerFilterModel::storageIdFromRow(const QModelIndex &idx) const
     if (m_urlsRole < 0) {
         return {};
     }
-    const QString path = PluginHelpers::desktopPathFromRunnerUrls(idx.data(m_urlsRole));
-    return path.isEmpty() ? QString() : QFileInfo(path).fileName();
+    return PluginHelpers::runnerStorageId(idx.data(m_urlsRole));
 }
 
 bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const

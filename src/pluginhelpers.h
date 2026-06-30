@@ -36,6 +36,14 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
     return alreadyComplete ? payload : ApplicationsUrlPrefix + payload;
 }
 
+/** @p resource with the "applications:" scheme removed if present, else
+ *  unchanged. One spelling of how the KAStats app-resource prefix is stripped,
+ *  shared by the frecency and used-apps providers. */
+[[nodiscard]] inline QString stripApplicationsPrefix(const QString &resource)
+{
+    return resource.startsWith(ApplicationsUrlPrefix) ? resource.mid(ApplicationsUrlPrefix.size()) : resource;
+}
+
 /** Candidate shells from /etc/shells contents: trimmed, non-empty,
  *  non-comment lines. The caller verifies each path actually exists. */
 [[nodiscard]] QStringList parseShells(const QString &contents);
@@ -64,6 +72,11 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  (@p urlsData holds a QList<QUrl>), or empty. Maps a services-runner result
  *  back to its desktop file; the caller takes fileName() for the storage id. */
 [[nodiscard]] QString desktopPathFromRunnerUrls(const QVariant &urlsData);
+
+/** Storage id (the .desktop basename) for a KRunner row's "urls" role value,
+ *  or empty. The fileName() of desktopPathFromRunnerUrls() — one spelling of the
+ *  "runner result → app storage id" rule shared by the runner-backed models. */
+[[nodiscard]] QString runnerStorageId(const QVariant &urlsData);
 
 /** Terminal-default values (TerminalApplication / TerminalService) from the
  *  [General] section of a kdeglobals file's @p contents. Each value is either a

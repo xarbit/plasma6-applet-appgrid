@@ -42,6 +42,11 @@ constexpr int kEtagResetEvery = 7;
 constexpr qint64 kMaxResponseBytes = qint64{16} * 1024;
 constexpr int kRequestTimeoutMs = 10 * 1000;
 
+// HTTP statuses we branch on: 304 means our ETag still matches (nothing to
+// re-parse), 200 is the only success we read a manifest from.
+constexpr int kHttpNotModified = 304;
+constexpr int kHttpOk = 200;
+
 // AppGrid ships two plasmoid variants (center + panel); both run in
 // plasmashell + write the same cache. If either wrote it within this
 // window, skip the network and reload from disk so startup double-fire
@@ -335,12 +340,12 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
 
     const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    if (status == 304) {
+    if (status == kHttpNotModified) {
         saveState();
         return;
     }
 
-    if (reply->error() != QNetworkReply::NoError || status != 200) {
+    if (reply->error() != QNetworkReply::NoError || status != kHttpOk) {
         qWarning("AppGrid update check: %s (HTTP %d)", qPrintable(reply->errorString()), status);
         saveState();
         return;

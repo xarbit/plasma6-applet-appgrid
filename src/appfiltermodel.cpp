@@ -653,7 +653,7 @@ static int searchRelevance(const QModelIndex &idx, const QString &query)
                                     query);
 }
 
-const AppFilterModel::RowScore &AppFilterModel::rowScore(const QModelIndex &sourceIndex) const
+AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex) const
 {
     // lessThan() is handed *source* indices; key by the source row, which is
     // stable across a re-sort — so sorting alone (the per-keystroke case)
@@ -686,8 +686,8 @@ void AppFilterModel::invalidateRowScoreCache()
 
 bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-    const RowScore &l = rowScore(left);
-    const RowScore &r = rowScore(right);
+    const RowScore l = rowScore(left);
+    const RowScore r = rowScore(right);
 
     // In favorites mode, sort by position in favoriteApps list — unless the
     // user opted into alphabetical ordering.

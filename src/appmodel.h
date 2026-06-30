@@ -5,7 +5,10 @@
 
 #pragma once
 
+#include "menutree.h" // MenuTree::RawFolder
+
 #include <QAbstractListModel>
+#include <QList>
 #include <QString>
 #include <QVector>
 
@@ -20,6 +23,7 @@ struct AppEntry {
     QStringList keywords;
     QString comment;
     QString installSource;
+    QString folderRelPath; ///< menu path of the group this occurrence sits in (#201)
 };
 
 /**
@@ -62,6 +66,19 @@ public:
      *  new-app tracker diffs this against its stored baseline. */
     [[nodiscard]] QStringList storageIds() const;
 
+    /** The cached menu scan behind this model — every subgroup and every app
+     *  *occurrence* (pre-dedup, each with its folderRelPath). The folder tree
+     *  (#201) is built from this, so the menu is walked once for both views.
+     *  Refreshed on each reload(); read after the model's first load. */
+    [[nodiscard]] const QList<MenuTree::RawFolder> &menuFolders() const
+    {
+        return m_menuFolders;
+    }
+    [[nodiscard]] const QVector<AppEntry> &occurrences() const
+    {
+        return m_occurrences;
+    }
+
     // Pure helpers — testable without constructing the model.
     [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
     [[nodiscard]] static QStringList mapCategories(const QStringList &categories);
@@ -82,5 +99,9 @@ private:
     QStringList m_categories;
     QHash<QString, QString> m_categoryMenuPaths;
     QHash<QString, QString> m_categoryIcons;
+    // Cached menu scan (see menuFolders()/occurrences()): the folder tree reads
+    // these so the KServiceGroup walk runs once, not once per view.
+    QList<MenuTree::RawFolder> m_menuFolders;
+    QVector<AppEntry> m_occurrences;
     bool m_useSystemCategories = false;
 };

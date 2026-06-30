@@ -63,6 +63,7 @@ QtObject {
     readonly property bool sortFavoritesAlphabetically: source.sortFavoritesAlphabetically
     readonly property bool hideLabelsOnFavorites: source.hideLabelsOnFavorites
     readonly property bool favoriteFoldersEnabled: source.favoriteFoldersEnabled
+    readonly property bool categoryFoldersEnabled: source.categoryFoldersEnabled
     readonly property bool enableActivities: source.enableActivities
 
     // Hidden / recent apps and launch counts are no longer here: that

@@ -9,12 +9,11 @@
 
 namespace
 {
+// Only app resources score (a file/document favourite has no storage id here);
+// non-app resources return empty and are skipped by the caller.
 QString storageIdFromResource(const QString &resource)
 {
-    if (resource.startsWith(PluginHelpers::ApplicationsUrlPrefix)) {
-        return resource.mid(PluginHelpers::ApplicationsUrlPrefix.size());
-    }
-    return {};
+    return resource.startsWith(PluginHelpers::ApplicationsUrlPrefix) ? PluginHelpers::stripApplicationsPrefix(resource) : QString();
 }
 }
 

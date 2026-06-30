@@ -42,10 +42,7 @@ void UsedAppsProvider::rebuild()
     const int rows = m_model->rowCount();
     next.reserve(rows);
     for (int r = 0; r < rows; ++r) {
-        QString resource = m_model->index(r, 0).data(KAStats::ResultModel::ResourceRole).toString();
-        if (resource.startsWith(PluginHelpers::ApplicationsUrlPrefix)) {
-            resource = resource.mid(PluginHelpers::ApplicationsUrlPrefix.size());
-        }
+        QString resource = PluginHelpers::stripApplicationsPrefix(m_model->index(r, 0).data(KAStats::ResultModel::ResourceRole).toString());
         // An action launch (foo.desktop?action=x) still counts the base app as used.
         const int query = resource.indexOf(QLatin1Char('?'));
         if (query >= 0) {

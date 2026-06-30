@@ -5,9 +5,12 @@
 
 #include "newappstracker.h"
 
+#include "keyvaluelist.h"
 #include "usedappsprovider.h"
 
 #include <KConfigGroup>
+
+#include <optional>
 
 namespace
 {
@@ -30,27 +33,17 @@ bool withinWindow(const QDate &firstSeen, const QDate &today)
 // launch-count on-disk form; convert at the file boundary.
 QHash<QString, QDate> firstSeenFromList(const QStringList &list)
 {
-    QHash<QString, QDate> map;
-    for (const QString &entry : list) {
-        const int eq = entry.lastIndexOf(QLatin1Char('='));
-        if (eq <= 0) {
-            continue;
-        }
-        const QDate date = QDate::fromString(entry.mid(eq + 1), Qt::ISODate);
-        if (date.isValid()) {
-            map.insert(entry.left(eq), date);
-        }
-    }
-    return map;
+    return KeyValueList::fromList<QHash<QString, QDate>>(list, [](const QString &value) -> std::optional<QDate> {
+        const QDate date = QDate::fromString(value, Qt::ISODate);
+        return date.isValid() ? std::optional(date) : std::nullopt;
+    });
 }
 
 QStringList firstSeenToList(const QHash<QString, QDate> &map)
 {
-    QStringList list;
-    list.reserve(map.size());
-    for (auto it = map.cbegin(); it != map.cend(); ++it) {
-        list.append(it.key() + QLatin1Char('=') + it.value().toString(Qt::ISODate));
-    }
+    QStringList list = KeyValueList::toList(map, [](const QDate &date) {
+        return date.toString(Qt::ISODate);
+    });
     list.sort(); // stable on-disk order, so an unchanged set never rewrites
     return list;
 }

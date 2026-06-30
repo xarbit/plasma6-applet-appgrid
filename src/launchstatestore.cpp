@@ -6,9 +6,12 @@
 #include "launchstatestore.h"
 
 #include "favoritesfolderlogic.h"
+#include "keyvaluelist.h"
 
 #include <KConfigGroup>
 #include <QTimer>
+
+#include <optional>
 
 namespace
 {
@@ -341,23 +344,14 @@ void LaunchStateStore::reloadFromExternalChange()
 
 QVariantMap LaunchStateStore::countsFromList(const QStringList &list)
 {
-    QVariantMap map;
-    for (const QString &entry : list) {
-        const int sep = entry.lastIndexOf(QLatin1Char('='));
-        if (sep <= 0) {
-            continue;
-        }
-        map.insert(entry.left(sep), entry.mid(sep + 1).toInt());
-    }
-    return map;
+    return KeyValueList::fromList<QVariantMap>(list, [](const QString &value) {
+        return std::optional<int>(value.toInt());
+    });
 }
 
 QStringList LaunchStateStore::countsToList(const QVariantMap &map)
 {
-    QStringList list;
-    list.reserve(map.size());
-    for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
-        list << it.key() + QLatin1Char('=') + QString::number(it.value().toInt());
-    }
-    return list;
+    return KeyValueList::toList(map, [](const QVariant &value) {
+        return QString::number(value.toInt());
+    });
 }

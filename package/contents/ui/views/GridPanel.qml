@@ -2,10 +2,10 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Reusable grid panel content. Always hosted inside a Plasma surface that
-    draws its own themed background, blur and shadow: a native Plasma popup
-    (Panel variant) or the standalone daemon's PlasmaWindow. The panel itself
-    is therefore transparent and chromeless.
+    Grid panel content shared by the two AppGrid hosts — the Panel applet and the
+    standalone daemon. Always hosted inside a Plasma surface that draws its own
+    themed background, blur and shadow, so the panel itself is a plain transparent,
+    chromeless Item.
 */
 
 import QtQuick
@@ -22,7 +22,7 @@ import "../js/gridmetrics.js" as GridMetrics
 import "../js/prefixmodes.js" as PrefixModes
 import "../js/scale.js" as Scale
 
-Kirigami.ShadowedRectangle {
+Item {
     id: panel
 
     signal closeRequested()
@@ -107,7 +107,6 @@ Kirigami.ShadowedRectangle {
 
     VisibilityState {
         id: visibility
-        nativePopup: true
         sizeToContent: panel.sizeToContent
         hideGridWhenEmpty: panel.effectiveHideGridWhenEmpty
         showCategoryBar: panel.cfgShowCategoryBar
@@ -115,13 +114,32 @@ Kirigami.ShadowedRectangle {
         isPrefixMode: panel.isPrefixMode
         isFavoritesActive: panel.isFavoritesActive
         isSortByCategory: panel.isSortByCategory
+        categoryFolders: panel.categoryFolders
+        // A specific category tab is selected → fold that category in any sort.
+        categoryFiltered: categoryBar.selectedCategory.length > 0
     }
+
+    // Folder tree needs the kmenuedit hierarchy, which only exists in system
+    // categories mode (#201).
+    readonly property bool categoryFolders: cfg.useSystemCategories && cfg.categoryFoldersEnabled
 
     property alias _gridRevealed: visibility.gridRevealed
     readonly property alias _emptyHiddenState: visibility.emptyHidden
     readonly property alias showCatBar: visibility.catBarVisible
-    readonly property alias showCategoryGrid: visibility.categoryGridVisible
+    // The flat category-section grid (its many consumers keep this name); the
+    // folder-tree variant is showMenuFolders.
+    readonly property alias showCategoryGrid: visibility.categorySectionsVisible
+    readonly property alias showMenuFolders: visibility.menuFolderVisible
     readonly property alias showAppGrid: visibility.appGridVisible
+
+    // True while the menu folder view is inside a sub-folder — the variants' Esc
+    // Shortcut yields to it so Esc climbs out a level instead of closing (#201),
+    // just like favFolderOpen does for a favourites folder.
+    readonly property bool menuFolderCanGoBack: showMenuFolders && menuFolderView.canGoBack
+    // A drill folder (favourites or menu) is open, so Esc should climb out a level
+    // rather than close — the variants' Escape Shortcut yields to this. One property
+    // so a new drill context only touches GridPanel, not the window code.
+    readonly property bool drillCanGoBack: favFolderOpen || menuFolderCanGoBack
     readonly property alias showSearchResults: visibility.searchResultsVisible
 
     readonly property string currentResultIcon: {
@@ -217,10 +235,10 @@ Kirigami.ShadowedRectangle {
     // surface (the daemon's window, or the applet config for the panel variant).
     signal configureRequested()
 
-    // The daemon hosts the panel in a fixed-size PlasmaWindow it sizes from the
-    // panel's implicitHeight, so the panel must report the compact-aware
-    // effectiveHeight (like the old center GridWindow). The panel-plasmoid variant
-    // leaves this off: it seeds panelHeight then lets Plasma own the popup size.
+    // Forwarded to VisibilityState: the daemon (sizeToContent) opts the grid into
+    // compact-collapse-when-empty, so its fixed PlasmaWindow shrinks to the header
+    // and grows when the grid reveals. The panel-plasmoid variant leaves it off —
+    // Plasma owns the popup size; implicitHeight only seeds it.
     property bool sizeToContent: false
 
     // Icon-based estimate avoids the circular dependency panel width →
@@ -234,13 +252,18 @@ Kirigami.ShadowedRectangle {
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
     readonly property real panelMargin: Kirigami.Units.largeSpacing
-    readonly property real headerHeight: Kirigami.Units.gridUnit * 5
     readonly property real panelWidth: estCellWidth * columns + panelMargin * 2
-    readonly property real panelHeight: estCellHeight * rows + panelMargin * 2 + headerHeight
-    // Compact mode height — snug fit around the header row (search +
-    // power buttons), no slack for a category bar or grid below.
-    readonly property real compactHeight: headerRow.implicitHeight + panelMargin * 2
-    readonly property real effectiveHeight: _emptyHiddenState ? compactHeight : panelHeight
+    // Each full-height body view carries this as Layout.preferredHeight, so the
+    // panel sizes to header(natural) + rows*cell — visible-rows honoured whatever
+    // header chrome shows (#205).
+    readonly property real bodyHeight: estCellHeight * rows
+
+    // Full (grid-shown) height — used only to position the daemon window so a
+    // start-compact reveal grows downward without drift. Real header items, no
+    // units estimate.
+    readonly property real panelHeight: panelMargin * 2 + headerRow.implicitHeight
+        + Kirigami.Units.largeSpacing + bodyHeight
+        + (showCatBar ? categoryBar.implicitHeight + Kirigami.Units.largeSpacing * 3 : 0)
 
     // Only seed the *initial* popup size via implicitWidth/Height and leave
     // width/height + preferred size unbound, so Plasma's own popup-resize
@@ -248,23 +271,15 @@ Kirigami.ShadowedRectangle {
     // on every layout pass (e.g. a monitor wake) and snapped the user's edge-drag
     // back, shrinking the popup (#146).
     implicitWidth: panelWidth
-    // sizeToContent (daemon): track the compact-aware effectiveHeight so the
-    // hosting PlasmaWindow shrinks for compact mode and grows when the grid
-    // reveals. Plain popup (panel variant): seed panelHeight only.
-    implicitHeight: sizeToContent ? effectiveHeight : panelHeight
+    // Natural content height — pixel-perfect, and compact (no body view visible)
+    // collapses to header-only on its own (#205). Daemon window reads it; panel
+    // popup seeds from it.
+    implicitHeight: contentLayout.implicitHeight + panelMargin * 2
 
     Layout.preferredWidth: -1
     Layout.preferredHeight: -1
     Layout.minimumWidth: Kirigami.Units.gridUnit * 12
     Layout.minimumHeight: Kirigami.Units.gridUnit * 12
-    // The launcher always renders inside a Plasma popup / PlasmaWindow, which draws
-    // the themed background, blur, contrast and shadow itself (the theme owns the
-    // corner), so the panel rect is transparent, chromeless and square.
-    radius: 0
-
-    color: "transparent"
-    border.width: 0
-    shadow.size: 0
 
     Kirigami.Theme.colorSet: Kirigami.Theme.View
     Kirigami.Theme.inherit: false
@@ -339,38 +354,24 @@ Kirigami.ShadowedRectangle {
     readonly property var gridModel: !isFavoritesActive ? appsModel
         : (useFolderGrid ? favoritesGroupedModel
            : (sharedFavoritesModel && !cfg.sortFavoritesAlphabetically ? sharedFavoritesModel : appsModel))
-    // Folder currently open (empty = none); the open-mode host watches this.
-    property string openFolderId: ""
-    // Bumped when the grouped model reconciles, so an open folder re-reads its
-    // live name/members; closes the overlay if the folder is gone (ungrouped).
-    property int _foldersRevision: 0
+    // Favourites drills in place (#18): the same DrillNavigator the menu view uses,
+    // so the back-focus / canGoBack behaviour is identical. favFolderOpen feeds the
+    // variants' Escape Shortcut (it yields while inside a favourites folder).
+    readonly property bool favFolderOpen: isFavoritesActive && favDrillNav.canGoBack
+    DrillNavigator {
+        id: favDrillNav
+        model: panel.favoritesGroupedModel
+        grid: appGrid
+        active: panel.isFavoritesActive
+    }
     Connections {
         target: panel.favoritesGroupedModel
         ignoreUnknownSignals: true
-        function onFoldersChanged() {
-            panel._foldersRevision++
-            if (panel.openFolderId.length > 0
-                    && panel.favoritesGroupedModel.folderMembers(panel.openFolderId).length === 0)
-                panel.openFolderId = ""
-        }
-        function onLayoutChanged() { panel._foldersRevision++ }
         // Prompt for a name as soon as a folder is created (drag-fold, menu, empty).
         function onFolderCreated(folderId) { renameFolderDialog.openFor(folderId) }
     }
-    // Leaving the favourites tab closes any open folder.
-    onIsFavoritesActiveChanged: if (!isFavoritesActive) openFolderId = ""
-    // The open folder's grid holds keyboard focus; on close, hand it back to the
-    // grid tile the folder was entered from (currentIndex still points there) so
-    // arrow nav resumes where the user left off. Off the favourites tab there is
-    // no tile, so fall back to the search field.
-    onOpenFolderIdChanged: {
-        if (openFolderId.length > 0)
-            return
-        if (isFavoritesActive)
-            appGrid.forceActiveFocus()
-        else
-            searchBar.field.forceActiveFocus()
-    }
+    // Leaving the favourites tab drops back to the folder top level.
+    onIsFavoritesActiveChanged: if (!isFavoritesActive && favoritesGroupedModel) favoritesGroupedModel.resetToRoot()
 
     // #193: drop a favorite into the launcher's empty space (anywhere that isn't
     // the favorites grid, but inside the window) to remove it. Lowest z, so the
@@ -381,14 +382,18 @@ Kirigami.ShadowedRectangle {
         id: favoriteRemoveArea
         anchors.fill: parent
         z: -10
-        enabled: panel.sharedFavoritesModel !== null
+        // Drag-OUT removal only makes sense while the favourites grid is on
+        // screen (its whole purpose). In any other view dragging an app that
+        // happens to be a favourite must not arm a red ✕ across the grid (the
+        // forbidden-over-tab case is handled by the tab hover instead).
+        enabled: panel.sharedFavoritesModel !== null && panel.isFavoritesActive
 
         // The dragged sids that are actually favorites (empty unless this is an
         // own drag with at least one favorite source). Drives both the ✕ marker
         // and the drop removal.
         function _favoriteSids(drag) {
             const src = panel.dragSource
-            if (!src || !src.isOwnDrag(drag) || !panel.sharedFavoritesModel) {
+            if (!src || src.blockedOnFavoritesTab || !src.isOwnDrag(drag) || !panel.sharedFavoritesModel) {
                 return []
             }
             const all = src.sourceStorageIds.length > 0 ? src.sourceStorageIds : [src.sourceStorageId]
@@ -398,9 +403,11 @@ Kirigami.ShadowedRectangle {
         // The dragged folder's id, if a folder cell is being dragged here (#18).
         function _folderId(drag) {
             const src = panel.dragSource
-            return (src && src.isOwnDrag(drag)) ? (src.sourceFolderId || "") : ""
+            return (src && !src.blockedOnFavoritesTab && src.isOwnDrag(drag)) ? (src.sourceFolderId || "") : ""
         }
 
+        // Both helpers above return empty while blockedOnFavoritesTab is set, so
+        // nothing here arms or removes — the drop over the Favorites tab cancels.
         function _removable(drag) {
             return _favoriteSids(drag).length > 0 || _folderId(drag).length > 0
         }
@@ -412,11 +419,18 @@ Kirigami.ShadowedRectangle {
             if (favoriteRemoveArea._removable(drag)) {
                 panel.dragSource.dropWillRemove = true
                 drag.accept(Qt.MoveAction)
+            } else {
+                // Not a removable drag (e.g. blocked over the Favorites tab):
+                // reject so the platform shows the forbidden indicator instead
+                // of a droppable cursor.
+                drag.accepted = false
             }
         }
         onPositionChanged: drag => {
             if (favoriteRemoveArea._removable(drag))
                 drag.accept(Qt.MoveAction)
+            else
+                drag.accepted = false
         }
         onExited: { if (panel.dragSource) panel.dragSource.dropWillRemove = false }
 
@@ -460,7 +474,7 @@ Kirigami.ShadowedRectangle {
         categoryBar.resetScroll()
         _resetSearchSession()
         // Don't reopen the last folder on the next launch (#18).
-        openFolderId = ""
+        if (favoritesGroupedModel) favoritesGroupedModel.resetToRoot()
         // The visible state reset happens HERE, while the popup is hidden behind
         // the fade-out, so the next open shows a clean grid instead of flashing
         // the refresh as it appears.
@@ -474,6 +488,7 @@ Kirigami.ShadowedRectangle {
     function _applyStartState() {
         const startFav = cfgShowCategoryBar && cfgStartWithFavorites
         categoryBar.favoritesActive = startFav
+        categoryBar.selectedCategory = ""
         if (appsModel) {
             appsModel.searchText = ""
             appsModel.filterCategory = ""
@@ -485,7 +500,7 @@ Kirigami.ShadowedRectangle {
     // it on open would visibly jump the grid as the popup appears.
     function _resetGridUiState() {
         categoryBar.altHeld = false
-        categoryBar.scrollOnlySelected = ""
+        categoryBar.selectedCategory = ""
         appGrid.clearShuffles()
         appGrid.clearSelection()
         appGrid.contentY = appGrid.originY
@@ -494,6 +509,19 @@ Kirigami.ShadowedRectangle {
         searchResultsList.contentY = searchResultsList.originY
         searchResultsList.currentIndex = 0
         categoryGridView.resetView()
+        // Clear all navigation so the next open starts clean: category filter back
+        // to All, the menu tree back to all-categories, and any open favourites
+        // folder closed.
+        if (appsModel)
+            appsModel.filterCategory = ""
+        if (categoryFolders && plasmoidBridge && plasmoidBridge.menuTreeModel)
+            plasmoidBridge.menuTreeModel.setRootPath("")
+        if (favoritesGroupedModel)
+            favoritesGroupedModel.resetToRoot()
+        // Clear the drill views' scroll + nav memory so the next open doesn't flash
+        // the last folder before snapping back.
+        favDrillNav.reset()
+        menuFolderView.reset()
         _needsScrollToTop = true
     }
 
@@ -598,11 +626,11 @@ Kirigami.ShadowedRectangle {
     }
 
     ColumnLayout {
+        id: contentLayout
         anchors.fill: parent
         anchors.margins: panel.panelMargin
         spacing: Kirigami.Units.largeSpacing
 
-        // -- Header --
         RowLayout {
             id: headerRow
             Layout.fillWidth: true
@@ -711,6 +739,8 @@ Kirigami.ShadowedRectangle {
                         } else {
                             categoryGridView.ensureVisible()
                         }
+                    } else if (panel.showMenuFolders) {
+                        menuFolderView.focusGrid()
                     } else if (!panel.isSearching) {
                         appGrid.forceActiveFocus()
                         if (appGrid.showRecents) {
@@ -774,7 +804,6 @@ Kirigami.ShadowedRectangle {
             }
         }
 
-        // -- Category bar --
         HorizontalDivider {
             Layout.fillWidth: true
             visible: panel.showCatBar
@@ -786,40 +815,52 @@ Kirigami.ShadowedRectangle {
             visible: panel.showCatBar
             Layout.leftMargin: Kirigami.Units.smallSpacing
             appsModel: panel.appsModel
+            isFavorite: sid => panel.sharedFavoritesModel
+                               && panel.sharedFavoritesModel.isFavorite(FavoriteId.toPrefixed(sid))
             editCategoryInMenu: launcherActions.editMenuItem
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
             fontScale: panel.densityScale
             displayMode: cfg.categoryBarDisplay
-            scrollOnlyMode: panel.showCategoryGrid
             hideEmptyCategories: cfg.hideEmptyCategories
             openOnHover: cfg.openCategoryOnHover
             onFavoritesToggled: function(active) {
                 // Update model state BEFORE UI state so bindings see the
-                // correct proxy data when showCategoryGrid re-evaluates.
+                // correct proxy data when showCategoryGrid re-evaluates. Leaving
+                // favourites is always paired with a categorySelected (All or a
+                // category), so the scroll/reset of the sections grid happens once
+                // there — no resetView here, which would scroll to the top first.
                 if (panel.appsModel) {
                     panel.appsModel.showFavoritesOnly = active
                     panel.appsModel.filterCategory = ""
                 }
                 categoryBar.favoritesActive = active
-                if (!active) {
-                    if (panel.isSortByCategory) {
-                        categoryBar.scrollOnlySelected = ""
-                        categoryGridView.resetView()
-                    }
-                }
                 searchBar.field.forceActiveFocus()
             }
+            // The bar tracks the selection (categoryBar.selectedCategory); the view
+            // reacts to it here — one feature across all sorts: folders root the
+            // tree, By Category scrolls to the section, flat sorts filter the grid.
             onCategorySelected: function(name) {
                 searchBar.field.forceActiveFocus()
-                if (panel.isSortByCategory) {
-                    if (name !== "") {
-                        Qt.callLater(function() {
-                            categoryGridView.scrollToCategory(name)
-                        })
-                    } else {
+                if (panel.categoryFolders) {
+                    const menuModel = panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
+                    if (menuModel)
+                        menuModel.setRootPath(name !== "" && panel.appsModel
+                                              ? panel.appsModel.categoryMenuPath(name) : "")
+                    if (panel.appsModel)
+                        panel.appsModel.filterCategory = ""
+                } else if (panel.isSortByCategory) {
+                    // Sections: scroll to the category, never filter (the grid shows
+                    // every section).
+                    if (panel.appsModel)
+                        panel.appsModel.filterCategory = ""
+                    if (name !== "")
+                        Qt.callLater(function() { categoryGridView.scrollToCategory(name) })
+                    else
                         categoryGridView.resetView()
-                    }
+                } else if (panel.appsModel) {
+                    // Flat sort: filter the grid to the selected category.
+                    panel.appsModel.filterCategory = name
                 }
             }
         }
@@ -838,6 +879,7 @@ Kirigami.ShadowedRectangle {
             id: prefixModeLoader
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             active: panel.isPrefixMode
             visible: active
             sourceComponent: PrefixModeView {
@@ -862,11 +904,11 @@ Kirigami.ShadowedRectangle {
             iconSize: panel.gridIconSize
         }
 
-        // -- Unified search results --
         SearchResultsList {
             id: searchResultsList
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showSearchResults
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             model: panel.isSearching ? panel.searchModel : null
@@ -898,11 +940,12 @@ Kirigami.ShadowedRectangle {
             }
         }
 
-        // -- Category grid (By Category sort) --
+        // Flat category sections (the By Category sort).
         CategoryGridView {
             id: categoryGridView
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showCategoryGrid
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             searchField: searchBar.field
@@ -928,6 +971,7 @@ Kirigami.ShadowedRectangle {
                          && !panel.cfgStartWithFavorites
             onLaunched: function(proxyIndex) { panel.launchApp(proxyIndex) }
             onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
+            onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
             onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
             onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
                 contextMenu.showForApp(storageId, desktopFile,
@@ -935,11 +979,66 @@ Kirigami.ShadowedRectangle {
             }
         }
 
-        // -- App grid --
-        Item {
+        // -- Menu folder tree (By Category + group into folders, #201) --
+        MenuFolderView {
+            id: menuFolderView
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
+            visible: panel.showMenuFolders
+            // Gated on the feature so the (lazy) menu tree is never built when
+            // folders are off — reading menuTreeModel is what triggers the walk.
+            menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
+            appsModel: panel.appsModel
+            sharedFavoritesModel: panel.sharedFavoritesModel
+            favoritesManager: favorites
+            favoriteIdRole: panel.favoriteIdRole
+            dragSource: panel.dragSource
+            columns: panel.columns
+            iconSize: panel.gridIconSize
+            fontScale: panel.densityScale
+            reduceGridSpacing: cfg.reduceGridSpacing
+            shadowEnabled: cfg.iconShadow
+            hoverAnimation: cfg.hoverAnimation
+            hoverHighlight: cfg.hoverHighlight
+            showScrollbars: cfg.showScrollbars
+            hideEmpty: cfg.hideEmptyCategories
+            searchField: searchBar.field
+            onLaunched: function(sid) { panel.launchAppByStorageId(sid) }
+            onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
+            onFolderContextRequested: function(menuPath) { menuFolderContextMenu.openFor(menuPath) }
+            onAppContextRequested: function(sid, desktopFile, selectedSids) {
+                contextMenu.showForApp(sid, desktopFile, selectedSids)
+            }
+            onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
+        }
+
+        // -- App grid (favourites / all / category). Favourites folders drill in
+        // place via the shared DrillBar instead of a popup overlay (#18). --
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredHeight: panel.bodyHeight
             visible: panel.showAppGrid
+            spacing: Kirigami.Units.smallSpacing
+
+            // Back + breadcrumb while inside a favourites folder; drag a member
+            // onto it to remove it from the folder.
+            DrillBar {
+                Layout.fillWidth: true
+                model: panel.favoritesGroupedModel
+                dragSource: panel.dragSource
+                editable: true
+                visible: panel.isFavoritesActive && panel.favFolderOpen
+                onRemoveMemberRequested: function(sid) {
+                    if (panel.favoritesGroupedModel)
+                        panel.favoritesGroupedModel.removeFromFolder(panel.favoritesGroupedModel.currentPath, sid)
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
             // Favourites come from KActivities, which may still be starting on a
             // cold boot; show a loading state instead of an empty grid until the
@@ -959,8 +1058,16 @@ Kirigami.ShadowedRectangle {
                 appsModel: panel.appsModel
                 sharedFavoritesModel: panel.sharedFavoritesModel
                 favoritesGroupedModel: panel.favoritesGroupedModel
+                // Editable here (unlike the read-only menu tree).
+                groupedModel: panel.favoritesGroupedModel
                 favoritesManager: favorites
-                onOpenFolderRequested: folderId => panel.openFolderId = folderId
+                // Folders drill in place; Esc climbs back out (the window Shortcut
+                // yields via favFolderOpen, like the menu view).
+                onOpenFolderRequested: function(folderId) {
+                    if (panel.favoritesGroupedModel)
+                        panel.favoritesGroupedModel.enterFolder(folderId)
+                }
+                onEscapePressed: favDrillNav.goBack()
                 onFolderContextMenuRequested: folderId => contextMenu.showForFolder(folderId)
                 onEmptyAreaContextMenuRequested: contextMenu.showForEmptyArea()
                 favoriteIdRole: panel.favoriteIdRole
@@ -1016,62 +1123,30 @@ Kirigami.ShadowedRectangle {
                     appGrid.applySwap(fromIndex, toIndex, fromIcon, toIcon)
                 }
             }
-
-            // The folder popup overlays the grid. _foldersRevision re-reads the
-            // live name/members when the model reconciles while it's open (#18).
-            Loader {
-                anchors.fill: parent
-                z: 20
-                active: panel.openFolderId.length > 0 && panel.favoritesGroupedModel
-                sourceComponent: FolderOpenHost {
-                    readonly property int _rev: panel._foldersRevision
-                    folderName: panel.favoritesGroupedModel.folderName(panel.openFolderId)
-                    members: { _rev; return panel.favoritesGroupedModel.folderMembers(panel.openFolderId) }
-                    appsModel: panel.appsModel
-                    sharedFavoritesModel: panel.sharedFavoritesModel
-                    favoriteIdRole: panel.favoriteIdRole
-                    dragSource: panel.dragSource
-                    columns: appGrid.effectiveColumns
-                    cellWidth: appGrid.cellWidth
-                    cellHeight: appGrid.cellHeight
-                    iconSize: panel.gridIconSize
-                    fontScale: panel.densityScale
-                    shadowEnabled: cfg.iconShadow
-                    reduceGridSpacing: cfg.reduceGridSpacing
-                    hoverAnimation: cfg.hoverAnimation
-                    hoverHighlight: cfg.hoverHighlight
-                    showScrollbars: cfg.showScrollbars
-                    onCloseRequested: panel.openFolderId = ""
-                    onMemberRemoveRequested: sid => {
-                        if (panel.favoritesGroupedModel)
-                            panel.favoritesGroupedModel.removeFromFolder(panel.openFolderId, sid)
-                    }
-                    onMemberReorderRequested: (from, to) => {
-                        if (panel.favoritesGroupedModel)
-                            panel.favoritesGroupedModel.reorderInFolder(panel.openFolderId, from, to)
-                    }
-                    onMemberContextRequested: (sid, df) => contextMenu.showForApp(sid, df, [])
-                    onMemberLaunched: sid => {
-                        panel.openFolderId = ""
-                        // launchFavorite handles both apps and KCMs (which need
-                        // KAStats trigger, not the app launcher); then close.
-                        appGrid.launchFavorite(sid)
-                        panel.closeRequested()
-                    }
-                }
             }
-
         }
     }
 
 
-    // -----------------------------------------------------------------------
-    // Context menu
-    // -----------------------------------------------------------------------
-
     LauncherActions {
         id: launcherActions
         actions: panel.plasmoidBridge
+    }
+
+    // Right-click menu for a menu-tree folder (#201): edit it in kmenuedit, the
+    // same action the category bar offers per category.
+    AppGridMenu {
+        id: menuFolderContextMenu
+        property string menuPath: ""
+        function openFor(path) {
+            menuFolderContextMenu.menuPath = path
+            menuFolderContextMenu.popup()
+        }
+        AppGridMenuItem {
+            text: i18nd("dev.xarbit.appgrid", "Edit in Menu Editor…")
+            icon.name: "kmenuedit"
+            onClicked: launcherActions.editMenuItem(menuFolderContextMenu.menuPath)
+        }
     }
 
     SessionActions { id: sessionActions }
@@ -1096,7 +1171,7 @@ Kirigami.ShadowedRectangle {
         enableActivities: cfg.enableActivities
         favoritesActive: panel.isFavoritesActive
         appletInterface: panel.appletInterface
-        onOpenFolderRequested: folderId => panel.openFolderId = folderId
+        onOpenFolderRequested: folderId => { if (panel.favoritesGroupedModel) panel.favoritesGroupedModel.enterFolder(folderId) }
         onRenameFolderRequested: folderId => renameFolderDialog.openFor(folderId)
         onLaunchFolderRequested: folderId => panel.launchFolder(folderId)
 
