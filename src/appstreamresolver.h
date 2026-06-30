@@ -9,21 +9,21 @@
 
 /**
  * Resolves a .desktop id to its canonical AppStream component id via the
- * shared AppStream::Pool that Kicker and Discover also use — it indexes
- * metainfo from every backend (distro/PackageKit, Flatpak, Snap), so one
- * lookup works regardless of where the app came from.
+ * AppStream::Pool that Kicker and Discover also use — it indexes metainfo from
+ * every backend (distro/PackageKit, Flatpak, Snap), so one lookup works
+ * regardless of where the app came from.
  *
- * The pool is process-global (a function-local static) so the two plasmoid
- * variants running in one plasmashell share one pool. It loads synchronously on
- * the first resolve() and never before — exactly Kickoff/Kicker's pattern, where
- * the pool is built only when the user invokes "Manage in Discover". A session
- * that never opens that action never maps the ~25 MB metadata catalogs.
+ * The pool is built per-call and freed on return, so it never sits resident: a
+ * session that never opens "Manage in Discover" maps nothing, and one that does
+ * holds the ~30 MB catalogs only for the duration of the lookup. Unlike Kicker,
+ * which keeps a process-global pool alive for the whole session — fine inside
+ * plasmashell, wasteful for AppGrid's long-lived daemon and a rare action.
  */
 namespace AppStreamResolver
 {
 /** Canonical AppStream component id for @p desktopId (e.g.
- *  "org.kde.kate.desktop"), or empty when the pool has no matching component.
- *  Loads the pool synchronously on the first call (one brief parse), so the very
- *  first "Manage in Discover" click resolves the exact component with no race. */
+ *  "org.kde.kate.desktop"), or empty when no component matches. Loads the pool
+ *  synchronously (~100 ms, hidden behind Discover's launch) and frees it on
+ *  return, so the click resolves the exact component with no race. */
 [[nodiscard]] QString resolve(const QString &desktopId);
 }

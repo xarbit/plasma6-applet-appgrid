@@ -14,29 +14,21 @@
 
 namespace AppStreamResolver
 {
-namespace
-{
-// The process-wide AppStream pool, loaded synchronously the first time it's
-// asked for and never before — the way Kickoff/Kicker build theirs only when
-// the user invokes "Manage in Discover". The load() blocks once while it parses
-// the catalogs; the user has just clicked the action, so that's the right moment
-// to pay it (and it resolves on the first try, with no async race).
-AppStream::Pool &pool()
-{
-    static AppStream::Pool instance;
-    [[maybe_unused]] static const bool loaded = [] {
-        if (!instance.load()) {
-            qWarning() << "AppGrid: AppStream pool load failed:" << instance.lastError();
-        }
-        return true;
-    }();
-    return instance;
-}
-}
-
 QString resolve(const QString &desktopId)
 {
-    const auto components = pool().componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
+    // A pool local to this lookup: Kicker keeps a process-global pool resident for
+    // the whole session, but AppGrid is a long-lived daemon and this action is
+    // rare, so the catalogs (~30 MB, mostly mmap of the shared .xb cache, and
+    // growing with the system's Flatpak remotes) would sit in our footprint for an
+    // app the user resolves maybe once. The pool destructs on return, dropping our
+    // mapping; the ~100 ms synchronous load runs only on the click itself and is
+    // hidden behind Discover's own launch.
+    AppStream::Pool pool;
+    if (!pool.load()) {
+        qWarning() << "AppGrid: AppStream pool load failed:" << pool.lastError();
+        return {};
+    }
+    const auto components = pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
     for (const AppStream::Component &component : components) {
         if (!component.id().isEmpty()) {
             return component.id();
