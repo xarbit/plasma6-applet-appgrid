@@ -93,8 +93,9 @@ Layout reconcile(const QStringList &flatFavorites, const Layout &in)
 
     // Folders are persistent, user-managed containers: keep every folder at any
     // size (empty or single included) so create-empty + add-to-folder work and
-    // building a folder up doesn't dissolve it. Only members that are no longer
-    // favourites are dropped; explicit ungroup is the way to delete a folder.
+    // building a folder up doesn't dissolve it. Members are kept regardless of
+    // favourite status (cross-process add safety, #18) — the grouped model hides
+    // dead ones at render; explicit ungroup is the way to delete a folder.
     QList<Folder> folders;
     QSet<QString> inFolder;
     QSet<QString> folderIds;

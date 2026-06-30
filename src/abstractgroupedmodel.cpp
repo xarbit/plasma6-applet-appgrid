@@ -118,6 +118,11 @@ int AbstractGroupedModel::indexOfApp(const QString &favoriteId) const
 
 void AbstractGroupedModel::setRows(const QList<Row> &rows)
 {
+    // A reset tears down every delegate, so skip it when nothing changed — a
+    // KAStats push that doesn't move the visible rows must not flash the grid.
+    if (rows == m_rows) {
+        return;
+    }
     beginResetModel();
     m_rows = rows;
     endResetModel();

@@ -145,11 +145,16 @@ void AppGridController::wireLaunchState()
     // baseline (Kickoff's model) and pushes the badge set to the filter. Re-run
     // the diff whenever the app list changes (KSycoca → AppModel reset); the
     // tracker also recomputes on its own when KActivities usage changes.
-    const auto refreshNewApps = [this]() {
-        m_newAppsTracker.refresh(m_appModel.storageIds());
+    const auto onAppListChanged = [this]() {
+        const QStringList installed = m_appModel.storageIds();
+        m_newAppsTracker.refresh(installed);
+        // The favourites-folder grid hides a member whose app was uninstalled
+        // (it would otherwise linger as a dead tile / preview icon); the installed
+        // set is its "still here" test.
+        m_favoritesGrouped.setKnownApps(installed);
     };
-    refreshNewApps();
-    connect(&m_appModel, &QAbstractItemModel::modelReset, this, refreshNewApps);
+    onAppListChanged();
+    connect(&m_appModel, &QAbstractItemModel::modelReset, this, onAppListChanged);
 
     // The kmenuedit folder tree (issue #201) is built lazily — see menuTreeModel()
     // — so the default config (folders off) never pays the KServiceGroup walk on

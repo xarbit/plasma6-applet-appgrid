@@ -8,6 +8,7 @@
 #include "abstractgroupedmodel.h"
 #include "favoritesfolderlogic.h"
 
+#include <QSet>
 #include <QVariantList>
 
 /**
@@ -65,6 +66,12 @@ public:
     /** The live, ordered favourite storageIds from KAStats. Reconciles. */
     Q_INVOKABLE void setFlatFavorites(const QStringList &flatFavorites);
 
+    /** The storageIds of every currently installed app (AppModel). Lets a folder
+     *  hide a member whose app was uninstalled while keeping a member that's
+     *  installed but not yet in this instance's flat list (a cross-process add).
+     *  See shownMembers(). */
+    void setKnownApps(const QStringList &storageIds);
+
     /** Optimistically add @p sid as a loose favourite *now*, so a drag-into-
      *  favourites reflows it instantly instead of waiting for the async KAStats
      *  round-trip. @p index is the visible slot to drop it at (the cursor), so it
@@ -121,11 +128,22 @@ private:
     // favouriting them in KAStats in the same step) so grouping survives reconcile.
     void _adoptFavorites(const QStringList &sids);
     void rebuildRows();
+    // The members of @p members to actually SHOW (drilled-in rows + 2x2 preview):
+    // keep a member that's still installed (m_knownApps — covers a cross-process
+    // favourite not yet in this instance's flat list) or still a live favourite
+    // (m_flatFavorites — covers file/document favourites, which aren't apps). A
+    // member in neither is an uninstalled app / deleted file; hide it. The layout
+    // keeps it persisted (#18), so a reinstall restores it. Until the app list has
+    // loaded (m_knownApps empty) we can't tell installed from gone, so show all
+    // rather than blank folders on a cold open.
+    [[nodiscard]] QStringList shownMembers(const QStringList &members) const;
     // Index of the folder with @p folderId in m_state, or -1.
     [[nodiscard]] int folderIndex(const QString &folderId) const;
 
     FavoritesFolderLogic::Layout m_state;
     QStringList m_flatFavorites;
+    // storageIds of every installed app; empty until AppModel loads.
+    QSet<QString> m_knownApps;
     // The folder currently drilled into; empty = top level.
     QString m_openFolder;
 };

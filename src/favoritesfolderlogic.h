@@ -54,9 +54,14 @@ struct Layout {
 /**
  * Reconcile @p in against the live flat favourite list @p flatFavorites
  * (KAStats order). Pure; returns a normalised layout where:
- *  - folder members not in @p flatFavorites are dropped (cleans externally
+ *  - folder members are KEPT regardless of favourite status, so a member added on
+ *    another instance survives a reconcile against this instance's stale flat list
+ *    (#18). Dead members (uninstalled app, deleted file) are hidden at render by
+ *    FavoritesGroupedModel::shownMembers, not dropped here,
+ *  - folders are kept at any size (empty or single included); only an explicit
+ *    ungroup removes one,
+ *  - loose favourites not in @p flatFavorites are dropped (cleans externally
  *    removed favourites),
- *  - folders left with one member auto-ungroup, with zero members auto-delete,
  *  - every favourite appears in exactly one place (folder membership wins),
  *  - favourites absent from the layout are appended in @p flatFavorites order.
  */

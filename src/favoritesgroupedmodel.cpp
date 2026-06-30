@@ -48,6 +48,22 @@ void FavoritesGroupedModel::setFlatFavorites(const QStringList &flatFavorites)
     }
     m_flatFavorites = flatFavorites;
     apply(reconcile(m_flatFavorites, m_state));
+    // apply() rebuilds only when the layout moved, but the shown members also
+    // depend on the flat list (a removed favourite must drop out of a folder's
+    // preview even when the token order is unchanged), so refresh regardless.
+    rebuildRows();
+}
+
+void FavoritesGroupedModel::setKnownApps(const QStringList &storageIds)
+{
+    const QSet<QString> next(storageIds.cbegin(), storageIds.cend());
+    if (next == m_knownApps) {
+        return;
+    }
+    m_knownApps = next;
+    // Only the shown rows depend on this (which members resolve); the layout is
+    // untouched, so just rebuild — no reconcile / persist.
+    rebuildRows();
 }
 
 void FavoritesGroupedModel::addLooseFavorite(const QString &sid, int index)
@@ -259,20 +275,33 @@ void FavoritesGroupedModel::apply(const Layout &next, bool persist)
     }
 }
 
+QStringList FavoritesGroupedModel::shownMembers(const QStringList &members) const
+{
+    if (m_knownApps.isEmpty()) {
+        return members;
+    }
+    QStringList shown;
+    shown.reserve(members.size());
+    for (const QString &sid : members) {
+        if (m_knownApps.contains(sid) || m_flatFavorites.contains(sid)) {
+            shown.append(sid);
+        }
+    }
+    return shown;
+}
+
 void FavoritesGroupedModel::rebuildRows()
 {
-    // Drilled into a folder: show its members as app rows. If the folder is gone
-    // (dissolved/removed while open — e.g. its last member was unfavourited), fall
+    // Drilled into a folder: show its renderable members as app rows. If the
+    // folder is gone, or every member is now dead (uninstalled/unfavourited), fall
     // back to the top level and announce it so the UI drops its back affordance.
     if (!m_openFolder.isEmpty()) {
         const int idx = folderIndex(m_openFolder);
-        // Stay only while the folder still exists and has members; an emptied or
-        // dissolved folder drops us back to the top.
-        if (idx >= 0 && !m_state.folders.at(idx).members.isEmpty()) {
-            const FavoritesFolderLogic::Folder &f = m_state.folders.at(idx);
+        const QStringList members = idx >= 0 ? shownMembers(m_state.folders.at(idx).members) : QStringList();
+        if (!members.isEmpty()) {
             QList<Row> rows;
-            rows.reserve(f.members.size());
-            for (const QString &sid : f.members) {
+            rows.reserve(members.size());
+            for (const QString &sid : members) {
                 Row row;
                 row.type = AbstractGroupedModel::App;
                 row.favoriteId = PluginHelpers::toFavoriteId(sid);
@@ -292,7 +321,7 @@ void FavoritesGroupedModel::rebuildRows()
             const int idx = folderIndex(tokenPayload(token));
             if (idx >= 0) {
                 const FavoritesFolderLogic::Folder &f = m_state.folders.at(idx);
-                rows.append({AbstractGroupedModel::Folder, {}, f.id, f.name, f.members});
+                rows.append({AbstractGroupedModel::Folder, {}, f.id, f.name, shownMembers(f.members)});
             }
         } else if (isAppToken(token)) {
             Row row;

@@ -78,6 +78,11 @@ protected:
         QString folderId; // Folder
         QString name; // Folder name (App rows resolve their own name in QML)
         QStringList members; // Folder members
+
+        bool operator==(const Row &o) const
+        {
+            return type == o.type && favoriteId == o.favoriteId && folderId == o.folderId && name == o.name && members == o.members;
+        }
     };
 
     /** Replace the visible rows. Subclasses call this after rebuilding. */

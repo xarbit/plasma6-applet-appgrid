@@ -33,6 +33,7 @@ private Q_SLOTS:
     void emptyingOpenFolderExitsToTop();
     void indexOfFolderAndApp();
     void addLooseFavoriteIsImmediateAndIdempotent();
+    void uninstalledFolderMemberHiddenButKept();
 };
 
 void TestFavoritesGroupedModel::isEditable()
@@ -258,6 +259,40 @@ void TestFavoritesGroupedModel::addLooseFavoriteIsImmediateAndIdempotent()
     // Rollback removes it again.
     m.removeLooseFavorite(QStringLiteral("b.desktop"));
     QCOMPARE(m.indexOfApp(QStringLiteral("applications:b.desktop")), -1);
+}
+
+void TestFavoritesGroupedModel::uninstalledFolderMemberHiddenButKept()
+{
+    // A folder of three installed, favourited apps.
+    FavoritesGroupedModel m;
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    const QString id = m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"));
+    m.addToFolder(id, QStringLiteral("c.desktop"));
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
+
+    // b is uninstalled: gone from the installed set and the favourites list.
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")});
+    // Hidden from the preview (the folder row's members) ...
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")}));
+    // ... and from the drilled-in rows.
+    m.enterFolder(id);
+    QCOMPARE(m.rowCount(), 2);
+    m.goBack();
+    // ... but kept persisted (so a reinstall restores it).
+    QCOMPARE(m.favoriteFolders().first().toMap().value(QStringLiteral("members")).toStringList(),
+             QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
+
+    // c is still installed but momentarily absent from this instance's flat list
+    // (a cross-process favourite change): it stays visible via the installed set.
+    m.setFlatFavorites({QStringLiteral("a.desktop")});
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")}));
+
+    // Reinstalling b restores it — the layout kept it all along.
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
 }
 
 QTEST_GUILESS_MAIN(TestFavoritesGroupedModel)
