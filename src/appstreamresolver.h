@@ -14,21 +14,16 @@
  * lookup works regardless of where the app came from.
  *
  * The pool is process-global (a function-local static) so the two plasmoid
- * variants running in one plasmashell share a single warmed pool. Extracted
- * from AppGridPlugin so that global state lives in one focused unit instead
- * of hidden behind file-static functions in the applet.
+ * variants running in one plasmashell share one pool. It loads synchronously on
+ * the first resolve() and never before — exactly Kickoff/Kicker's pattern, where
+ * the pool is built only when the user invokes "Manage in Discover". A session
+ * that never opens that action never maps the ~25 MB metadata catalogs.
  */
 namespace AppStreamResolver
 {
-/** Kick off the one-time async pool load (idempotent, cheap no-op afterwards).
- *  Call it the moment a Discover-manageable app's menu opens, so the imminent
- *  "Manage in Discover" click resolves the exact component instead of racing the
- *  load. NOT called at startup — a session that never opens such a menu never
- *  maps the ~25 MB metadata catalogs. */
-void prefetch();
-
 /** Canonical AppStream component id for @p desktopId (e.g.
- *  "org.kde.kate.desktop"), or empty when the pool has no matching component or
- *  is still loading. Triggers prefetch() itself if nothing did yet. */
+ *  "org.kde.kate.desktop"), or empty when the pool has no matching component.
+ *  Loads the pool synchronously on the first call (one brief parse), so the very
+ *  first "Manage in Discover" click resolves the exact component with no race. */
 [[nodiscard]] QString resolve(const QString &desktopId);
 }

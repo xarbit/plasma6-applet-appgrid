@@ -11,54 +11,32 @@
 #include <AppStreamQt/pool.h>
 
 #include <QDebug>
-#include <QObject>
 
 namespace AppStreamResolver
 {
 namespace
 {
-// Shared AppStream metadata pool plus its load state, as one unit so the two
-// plasmoid variants in one plasmashell share a single warmed pool. Warmed
-// asynchronously so the UI thread never blocks parsing metadata; queries gate
-// on `ready` so we never read the pool mid-load.
-struct SharedPool {
-    AppStream::Pool pool;
-    bool ready = false;
-};
-
-SharedPool &shared()
+// The process-wide AppStream pool, loaded synchronously the first time it's
+// asked for and never before — the way Kickoff/Kicker build theirs only when
+// the user invokes "Manage in Discover". The load() blocks once while it parses
+// the catalogs; the user has just clicked the action, so that's the right moment
+// to pay it (and it resolves on the first try, with no async race).
+AppStream::Pool &pool()
 {
-    static SharedPool instance;
+    static AppStream::Pool instance;
+    [[maybe_unused]] static const bool loaded = [] {
+        if (!instance.load()) {
+            qWarning() << "AppGrid: AppStream pool load failed:" << instance.lastError();
+        }
+        return true;
+    }();
     return instance;
 }
 }
 
-void prefetch()
-{
-    static bool started = false;
-    if (started) {
-        return;
-    }
-    started = true;
-    SharedPool &s = shared();
-    QObject::connect(&s.pool, &AppStream::Pool::loadFinished, &s.pool, [](bool success) {
-        shared().ready = success;
-        if (!success) {
-            qWarning() << "AppGrid: AppStream pool load failed:" << shared().pool.lastError();
-        }
-    });
-    // Asynchronous so opening the menu never blocks on parsing metadata.
-    s.pool.loadAsync();
-}
-
 QString resolve(const QString &desktopId)
 {
-    SharedPool &s = shared();
-    if (!s.ready) {
-        prefetch();
-        return {};
-    }
-    const auto components = s.pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
+    const auto components = pool().componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);
     for (const AppStream::Component &component : components) {
         if (!component.id().isEmpty()) {
             return component.id();
