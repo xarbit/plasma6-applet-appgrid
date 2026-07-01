@@ -341,19 +341,25 @@ Item {
 
     // Favourites folders (issue #18). The C++ grouped model (shared by both
     // variants via the bridge) composes KAStats favourites with the folder layout.
-    // The folder grid is used only on the favourites tab, with folders enabled and
-    // alpha-sort off (KAStats order is authoritative there, not the folder layout).
+    // One model owns the favourites tab (alpha-sort off): the grouped model in
+    // both grouping states. Its groupingEnabled flag (bound below from
+    // favoriteFoldersEnabled) folds folders into tiles or expands them inline, so
+    // toggling grouping keeps a single layout and order (issue #200).
     readonly property var favoritesGroupedModel: panel.plasmoidBridge
         ? panel.plasmoidBridge.favoritesGroupedModel : null
-    readonly property bool useFolderGrid: cfg.favoriteFoldersEnabled
-                                          && favoritesGroupedModel
-                                          && !cfg.sortFavoritesAlphabetically
-    // The model that drives the main grid: the grouped folders model on the
-    // favourites tab, else the flat KAStats favourites (manual order), else the
-    // filtered app model (All / categories / alpha-sorted favourites).
+    readonly property bool useFavoritesGrouped: favoritesGroupedModel && !cfg.sortFavoritesAlphabetically
+    Binding {
+        target: panel.favoritesGroupedModel
+        property: "groupingEnabled"
+        value: cfg.favoriteFoldersEnabled
+        when: panel.favoritesGroupedModel
+        restoreMode: Binding.RestoreNone
+    }
+    // The model that drives the main grid: the grouped favourites model on the
+    // favourites tab, else the filtered app model (All / categories / alpha-sorted
+    // favourites).
     readonly property var gridModel: !isFavoritesActive ? appsModel
-        : (useFolderGrid ? favoritesGroupedModel
-           : (sharedFavoritesModel && !cfg.sortFavoritesAlphabetically ? sharedFavoritesModel : appsModel))
+        : (useFavoritesGrouped ? favoritesGroupedModel : appsModel)
     // Favourites drills in place (#18): the same DrillNavigator the menu view uses,
     // so the back-focus / canGoBack behaviour is identical. favFolderOpen feeds the
     // variants' Escape Shortcut (it yields while inside a favourites folder).

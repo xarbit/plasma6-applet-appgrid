@@ -28,6 +28,11 @@ class FavoritesGroupedModel : public AbstractGroupedModel
     Q_OBJECT
     Q_PROPERTY(QVariantList favoriteFolders READ favoriteFolders WRITE setFavoriteFolders NOTIFY foldersChanged)
     Q_PROPERTY(QStringList favoriteLayout READ favoriteLayout WRITE setFavoriteLayout NOTIFY layoutChanged)
+    // Whether folders render as tiles (true) or fold out into their members in
+    // place (false). The favourites tab drives both states from this one model
+    // and layout, so toggling grouping only collapses/expands folders where they
+    // sit — it never reorders the favourites (issue #200).
+    Q_PROPERTY(bool groupingEnabled READ groupingEnabled WRITE setGroupingEnabled NOTIFY groupingEnabledChanged)
     // Drill-in-place navigation (issue #18): the visible rows are the top level
     // (folders + loose apps) or, inside a folder, that folder's members.
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY pathChanged)
@@ -62,6 +67,12 @@ public:
     void setFavoriteFolders(const QVariantList &folders);
     [[nodiscard]] QStringList favoriteLayout() const;
     void setFavoriteLayout(const QStringList &layout);
+
+    [[nodiscard]] bool groupingEnabled() const
+    {
+        return m_groupingEnabled;
+    }
+    void setGroupingEnabled(bool enabled);
 
     /** The live, ordered favourite storageIds from KAStats. Reconciles. */
     Q_INVOKABLE void setFlatFavorites(const QStringList &flatFavorites);
@@ -116,6 +127,7 @@ Q_SIGNALS:
     // A new folder was just created (drag-fold, menu, or empty) — the UI prompts
     // for its name.
     void folderCreated(const QString &folderId);
+    void groupingEnabledChanged();
 
 private:
     // Reconcile against the flat favourites, rebuild the visible rows, and emit
@@ -139,6 +151,9 @@ private:
     [[nodiscard]] QStringList shownMembers(const QStringList &members) const;
     // Index of the folder with @p folderId in m_state, or -1.
     [[nodiscard]] int folderIndex(const QString &folderId) const;
+    // Build an App leaf row for @p sid — the one place a favourite storageId
+    // becomes a row, shared by the drilled-in, folded-out, and loose paths.
+    [[nodiscard]] Row appRow(const QString &sid) const;
 
     FavoritesFolderLogic::Layout m_state;
     QStringList m_flatFavorites;
@@ -146,4 +161,6 @@ private:
     QSet<QString> m_knownApps;
     // The folder currently drilled into; empty = top level.
     QString m_openFolder;
+    // Folders as tiles (true) or folded out into their members in place (false).
+    bool m_groupingEnabled = true;
 };

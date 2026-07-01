@@ -34,6 +34,7 @@ private Q_SLOTS:
     void indexOfFolderAndApp();
     void addLooseFavoriteIsImmediateAndIdempotent();
     void uninstalledFolderMemberHiddenButKept();
+    void groupingOffFoldsFoldersInPlace();
 };
 
 void TestFavoritesGroupedModel::isEditable()
@@ -293,6 +294,38 @@ void TestFavoritesGroupedModel::uninstalledFolderMemberHiddenButKept()
     m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
     m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
     QCOMPARE(m.folderMembers(id), QStringList({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
+}
+
+void TestFavoritesGroupedModel::groupingOffFoldsFoldersInPlace()
+{
+    // Layout: a folder of a+b (anchored at a's slot), then loose c and d.
+    FavoritesGroupedModel m;
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop"), QStringLiteral("d.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop"), QStringLiteral("d.desktop")});
+    m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"));
+
+    // Grouping on (default): folder tile + c + d.
+    QVERIFY(m.groupingEnabled());
+    QCOMPARE(m.rowCount(), 3);
+    QCOMPARE(m.data(m.index(0), AbstractGroupedModel::EntryTypeRole).toInt(), int(AbstractGroupedModel::Folder));
+
+    // Grouping off: the folder folds out where it sits — a, b, c, d as app rows,
+    // same order, no reshuffle.
+    m.setGroupingEnabled(false);
+    QCOMPARE(m.rowCount(), 4);
+    const QStringList expected{QStringLiteral("applications:a.desktop"),
+                               QStringLiteral("applications:b.desktop"),
+                               QStringLiteral("applications:c.desktop"),
+                               QStringLiteral("applications:d.desktop")};
+    for (int i = 0; i < 4; ++i) {
+        QCOMPARE(m.data(m.index(i), AbstractGroupedModel::EntryTypeRole).toInt(), int(AbstractGroupedModel::App));
+        QCOMPARE(m.data(m.index(i), AbstractGroupedModel::FavoriteIdRole).toString(), expected.at(i));
+    }
+
+    // Toggling back collapses the folder in place again.
+    m.setGroupingEnabled(true);
+    QCOMPARE(m.rowCount(), 3);
+    QCOMPARE(m.data(m.index(0), AbstractGroupedModel::EntryTypeRole).toInt(), int(AbstractGroupedModel::Folder));
 }
 
 QTEST_GUILESS_MAIN(TestFavoritesGroupedModel)
