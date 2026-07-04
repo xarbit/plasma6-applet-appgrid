@@ -26,7 +26,7 @@ Built, signed, and published by the AppGrid maintainer. These are the channels s
 | **Arch Linux + derivatives** (AUR) | `yay -S plasma6-applets-appgrid` |
 | **Ubuntu 25.10+** (Launchpad PPA) | `sudo add-apt-repository ppa:xarbit/plasma-applet-appgrid && sudo apt install plasma-applet-appgrid` |
 | **Fedora** (Copr) | `sudo dnf copr enable scujas/plasma-applet-appgrid && sudo dnf install plasma-applet-appgrid` |
-| **Immutable distros** (KDE Linux, Kinoite, Bazzite, Aurora, Kalpa, SteamOS) | Universal `~/.local/` tarball — see [INSTALL.TXT](packaging/universal/INSTALL.TXT) |
+| **Immutable distros** (KDE Linux, Kinoite, Bazzite, Aurora, Kalpa, SteamOS) | Universal `~/.local/` tarball — see [INSTALL.TXT](packaging/universal/INSTALL.TXT) or `curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/xarbit/plasma6-applet-appgrid/refs/heads/main/universal_install.sh && bash universal_install.sh` |
 | **Nix / NixOS** | Flake — see [packaging/nix/README.md](packaging/nix/README.md) |
 
 After install: right-click the panel launcher → **Show Alternatives** → **AppGrid**.
