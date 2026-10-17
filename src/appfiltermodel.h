@@ -206,6 +206,7 @@ private:
         int launchCount = 0;
         bool isDefault = false; // a mimeapps.list default for some type
         bool isPreferred = false; // a role default (browser/mail/file-mgr/terminal) — ranks above isDefault
+        bool isFavorite = false; // starred in AppGrid's favourites — ranks above isPreferred
     };
     // Returns by value, not by reference: the cache is a QHash and a later
     // insert can rehash it, so a reference into it can't be promised to outlive

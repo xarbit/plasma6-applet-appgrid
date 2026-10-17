@@ -47,4 +47,29 @@ inline constexpr int TierNoMatch = 5; // filtered out
  *  its original casing; empty if none. Drives the search field's inline
  *  completion ("te" against "Terminal emulator" → "Terminal"). */
 [[nodiscard]] QString completionWord(const QString &text, const QString &query);
+
+/** What orders two results of the same search, apart from their names. */
+struct ResultRank {
+    int relevance = TierNoMatch;
+    // Launch count, or the frecency score when that ranking is enabled.
+    int usage = 0;
+    // Starred in AppGrid's favourites.
+    bool isFavorite = false;
+    // A role default (browser / mail / file manager / terminal).
+    bool isPreferred = false;
+    // A mimeapps.list default for some type.
+    bool isDefault = false;
+};
+
+/** Order two results of the same search: <0 when @p a ranks first, >0 when
+ *  @p b does, 0 when they tie (the caller then orders them by name).
+ *
+ *  Within a tier, a starred favourite wins, then a role default (the default
+ *  terminal, browser, ...), then usage, then a mime default. Across tiers the
+ *  better tier wins, except that between the name word-boundary and
+ *  generic-name tiers the same comparison may lift a result exactly one tier
+ *  — so typing "terminal" puts your favourite, else default, else most used
+ *  terminal first. Promotion and the in-tier order use one key, which keeps this a
+ *  strict weak ordering (a sort over it is well defined). */
+[[nodiscard]] int compare(const ResultRank &a, const ResultRank &b);
 }

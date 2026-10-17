@@ -5,6 +5,8 @@
 
 #include "searchranking.h"
 
+#include <cstdlib>
+
 namespace SearchRanking
 {
 QString singularize(const QString &query)
@@ -113,5 +115,51 @@ QString completionWord(const QString &text, const QString &query)
         }
     }
     return {};
+}
+
+namespace
+{
+// The in-tier order: starred favourite, role default, usage, mime default.
+int compareInTier(const ResultRank &a, const ResultRank &b)
+{
+    if (a.isFavorite != b.isFavorite) {
+        return a.isFavorite ? -1 : 1;
+    }
+    if (a.isPreferred != b.isPreferred) {
+        return a.isPreferred ? -1 : 1;
+    }
+    if (a.usage != b.usage) {
+        return a.usage > b.usage ? -1 : 1;
+    }
+    if (a.isDefault != b.isDefault) {
+        return a.isDefault ? -1 : 1;
+    }
+    return 0;
+}
+}
+
+int compare(const ResultRank &a, const ResultRank &b)
+{
+    if (a.relevance == b.relevance) {
+        return compareInTier(a, b);
+    }
+    // Promotion: a result may climb exactly one tier when it beats the other
+    // on the in-tier key (so a frequently used generic-name match outranks a
+    // never-launched name match). Endpoint tiers are inviolate:
+    //   TierNamePrefix — must always win
+    //   TierNameMidword — must always lose
+    // and the generic<->keyword boundary is never crossed: keywords are a
+    // marketing tag bag, generic/Comment text is a semantic signal. That
+    // leaves only the name word-boundary <-> generic-name pair.
+    const bool endpointInvolved =
+        a.relevance == TierNamePrefix || b.relevance == TierNamePrefix || a.relevance == TierNameMidword || b.relevance == TierNameMidword;
+    const bool keywordVsGenericBoundary =
+        (a.relevance == TierGeneric && b.relevance == TierKeyword) || (a.relevance == TierKeyword && b.relevance == TierGeneric);
+    if (!endpointInvolved && !keywordVsGenericBoundary && std::abs(a.relevance - b.relevance) <= 1) {
+        if (const int inTier = compareInTier(a, b); inTier != 0) {
+            return inTier;
+        }
+    }
+    return a.relevance < b.relevance ? -1 : 1;
 }
 }

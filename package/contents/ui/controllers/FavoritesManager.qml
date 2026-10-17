@@ -43,11 +43,6 @@ Item {
     property int favoriteIdRole: -1
     readonly property var sharedFavoritesModel: sharedFavoritesLoader.item
 
-    // Drives whether the live model gets mirrored into AppFilterModel.
-    // Only alpha-sort needs that; drag-reorder reads the shared model
-    // directly.
-    readonly property bool mirrorRequired: manager.sortFavoritesAlphabetically
-
     // No layout; pure controller.
     visible: false
 
@@ -167,22 +162,16 @@ Item {
 
     // Coalesce the burst of model signals (insert/remove/move/reset/
     // layoutChanged/dataChanged often fire back-to-back) into one mirror per
-    // event-loop turn. The mirror only runs in alpha-sort mode; drag-reorder
-    // reads the shared model directly.
+    // event-loop turn. The filter model always needs the current favourites:
+    // alpha-sorted favourites read them, and search ranks favourites first.
     Timer {
         id: mirrorCoalesce
         interval: 0
         repeat: false
         onTriggered: {
-            if (manager.mirrorRequired)
-                manager._mirrorFavorites()
+            manager._mirrorFavorites()
             manager._pushGrouped()
         }
-    }
-
-    // Catch up the proxy when the user enables alpha-sort mid-session.
-    onMirrorRequiredChanged: {
-        if (mirrorRequired) mirrorCoalesce.restart()
     }
 
     Connections {

@@ -331,7 +331,10 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
     if (!m_book.setFavorites(list)) {
         return;
     }
-    if (m_showFavoritesOnly) {
+    // Favourite order drives the favourites-only view, and being a favourite
+    // ranks search results (cached per row).
+    invalidateRowScoreCache();
+    if (m_showFavoritesOnly || !m_searchText.isEmpty()) {
         invalidate();
     }
     Q_EMIT favoriteAppsChanged();
@@ -691,6 +694,7 @@ AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex
     s.launchCount = m_book.launchCount(s.sid);
     s.isDefault = m_defaultAppsSet.contains(s.sid);
     s.isPreferred = m_preferredAppsSet.contains(s.sid);
+    s.isFavorite = m_book.isFavorite(s.sid);
     // Relevance only matters while searching; skip its role reads + case-folds
     // in the alphabetical / most-used / by-category sort modes.
     if (!m_searchText.isEmpty()) {
@@ -722,53 +726,23 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
         return m_book.favoritePosition(l.sid, kSortToEnd) < m_book.favoritePosition(r.sid, kSortToEnd);
     }
 
-    // When searching, rank by match relevance first
+    // When searching, rank by match relevance first (SearchRanking::compare);
+    // a tie falls through to the name below.
     if (!m_searchText.isEmpty()) {
-        const int leftRel = l.relevance;
-        const int rightRel = r.relevance;
         // Frecency (when opted in via ConfigSearch) substitutes the raw
-        // launchCount everywhere the search tiebreak / tier-promotion looks it
-        // up — same paths, time-weighted input. O(1) hash by the cached sid,
-        // so it stays live without caching frecency itself.
+        // launchCount everywhere the search ranking looks it up — same paths,
+        // time-weighted input. O(1) hash by the cached sid, so it stays live
+        // without caching frecency itself.
         const bool useFrecency = m_searchUsesFrecency && !m_frecencyScores.isEmpty();
-        const int leftCount = useFrecency ? m_frecencyScores.value(l.sid, 0) : l.launchCount;
-        const int rightCount = useFrecency ? m_frecencyScores.value(r.sid, 0) : r.launchCount;
-
-        if (leftRel != rightRel) {
-            // Promotion: a heavily used app may jump up exactly one tier (so a
-            // frequent keyword-match outranks a never-launched generic-match).
-            // Endpoint tiers are inviolate, never crossed by launch count:
-            //   TierNamePrefix — must always win
-            //   TierNameMidword — must always lose
-            const bool endpointInvolved = leftRel == SearchRanking::TierNamePrefix || rightRel == SearchRanking::TierNamePrefix
-                || leftRel == SearchRanking::TierNameMidword || rightRel == SearchRanking::TierNameMidword;
-            // Also block the generic↔keyword boundary so a heavy *keyword*
-            // match can't leap past a generic-name / Comment match. Keywords
-            // are a marketing tag bag; generic/Comment text is a semantic
-            // signal. The promotions that motivated the rule (name-substring
-            // vs generic, keyword vs mid-word) still fire.
-            const bool keywordVsGenericBoundary = (leftRel == SearchRanking::TierGeneric && rightRel == SearchRanking::TierKeyword)
-                || (leftRel == SearchRanking::TierKeyword && rightRel == SearchRanking::TierGeneric);
-            if (!endpointInvolved && !keywordVsGenericBoundary && std::abs(leftRel - rightRel) <= 1 && leftCount != rightCount) {
-                return leftCount > rightCount;
-            }
-            return leftRel < rightRel;
-        }
-
-        // Within the same relevance tier, the user's role defaults (default
-        // browser / mail / file manager / terminal) outrank everything —
-        // including other mime defaults and launch count / frecency.
-        if (l.isPreferred != r.isPreferred) {
-            return l.isPreferred; // true sorts before false
-        }
-
-        // Then any other mime default (e.g. the text editor for text/plain).
-        if (l.isDefault != r.isDefault) {
-            return l.isDefault;
-        }
-
-        if (leftCount != rightCount) {
-            return leftCount > rightCount;
+        const auto rank = [&](const RowScore &s) {
+            return SearchRanking::ResultRank{s.relevance,
+                                             useFrecency ? m_frecencyScores.value(s.sid, 0) : s.launchCount,
+                                             s.isFavorite,
+                                             s.isPreferred,
+                                             s.isDefault};
+        };
+        if (const int order = SearchRanking::compare(rank(l), rank(r)); order != 0) {
+            return order < 0;
         }
     } else if (m_sortMode == MostUsed) {
         if (l.launchCount != r.launchCount) {

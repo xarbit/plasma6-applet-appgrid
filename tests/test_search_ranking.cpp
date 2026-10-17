@@ -7,6 +7,8 @@
 
 #include <QTest>
 
+#include <algorithm>
+
 #include "appfiltermodel.h"
 #include "searchranking.h"
 #include "stubappmodel.h"
@@ -41,6 +43,12 @@ private Q_SLOTS:
     void singularize_rules();
     void containsAtWordBoundary_rules();
     void completionWord_rules();
+    void compare_rules();
+    void compare_isStrictWeakOrdering();
+    void compare_terminalSearch_data();
+    void compare_terminalSearch();
+    void favoriteRanksFirstInTier();
+    void usageBeatsMimeDefaultInSameTier();
 
 private:
     QString nameAt(int proxyRow) const;
@@ -458,6 +466,173 @@ void TestSearchRanking::completionWord_rules()
     QVERIFY(completionWord(QStringLiteral("Terminal"), QStringLiteral("terminal")).isEmpty());
     QVERIFY(completionWord(QString(), QStringLiteral("te")).isEmpty());
     QVERIFY(completionWord(QStringLiteral("Terminal"), QString()).isEmpty());
+}
+
+void TestSearchRanking::compare_rules()
+{
+    using namespace SearchRanking;
+    struct R {
+        int relevance;
+        int usage = 0;
+        bool favorite = false;
+        bool preferred = false;
+        bool isDefault = false;
+    };
+    const auto rank = [](R r) {
+        return ResultRank{r.relevance, r.usage, r.favorite, r.preferred, r.isDefault};
+    };
+    const auto cmp = [&](R a, R b) {
+        return compare(rank(a), rank(b));
+    };
+    // A better tier wins.
+    QVERIFY(cmp({TierNamePrefix}, {TierNameWordBoundary}) < 0);
+    QVERIFY(cmp({TierKeyword}, {TierGeneric}) > 0);
+    // A result may climb one tier, name word-boundary <-> generic only ...
+    QVERIFY(cmp({TierGeneric, 10}, {TierNameWordBoundary, 0}) < 0);
+    QVERIFY(cmp({TierKeyword, 10}, {TierGeneric, 0}) > 0); // keyword vs generic: blocked
+    // ... never two tiers, never across the endpoint tiers.
+    QVERIFY(cmp({TierKeyword, 10}, {TierNameWordBoundary, 0}) > 0);
+    QVERIFY(cmp({TierNameWordBoundary, 10}, {TierNamePrefix, 0}) > 0);
+    QVERIFY(cmp({TierNameMidword, 10}, {TierKeyword, 0}) > 0);
+    // In a tier: starred favourite, then role default, then usage, then mime default.
+    QVERIFY(cmp({TierGeneric, 0, true}, {TierGeneric, 99, false, true, true}) < 0);
+    QVERIFY(cmp({TierGeneric, 0, false, true}, {TierGeneric, 99, false, false, true}) < 0);
+    QVERIFY(cmp({TierGeneric, 5}, {TierGeneric, 2, false, false, true}) < 0);
+    QVERIFY(cmp({TierGeneric, 2, false, false, true}, {TierGeneric, 2}) < 0);
+    // A full tie is left to the name.
+    QCOMPARE(cmp({TierGeneric, 3, true, true}, {TierGeneric, 3, true, true}), 0);
+}
+
+// std::stable_sort (used by QSortFilterProxyModel) needs a strict weak
+// ordering; the one-tier promotion is exactly the kind of rule that could
+// make it cyclic. Check every combination on a grid of ranks.
+void TestSearchRanking::compare_isStrictWeakOrdering()
+{
+    using namespace SearchRanking;
+    QList<ResultRank> ranks;
+    for (int relevance = TierNamePrefix; relevance <= TierNameMidword; ++relevance) {
+        for (int usage : {0, 1, 5}) {
+            for (int flags = 0; flags < 8; ++flags) {
+                ranks.append({relevance, usage, (flags & 1) != 0, (flags & 2) != 0, (flags & 4) != 0});
+            }
+        }
+    }
+    const auto less = [](const ResultRank &a, const ResultRank &b) {
+        return compare(a, b) < 0;
+    };
+    const auto equivalent = [&](const ResultRank &a, const ResultRank &b) {
+        return !less(a, b) && !less(b, a);
+    };
+    for (const ResultRank &a : ranks) {
+        QVERIFY(!less(a, a));
+        for (const ResultRank &b : ranks) {
+            QCOMPARE(compare(a, b) < 0, compare(b, a) > 0);
+            for (const ResultRank &c : ranks) {
+                if (less(a, b) && less(b, c)) {
+                    QVERIFY2(less(a, c), "less is not transitive");
+                }
+                if (equivalent(a, b) && equivalent(b, c)) {
+                    QVERIFY2(equivalent(a, c), "equivalence is not transitive");
+                }
+            }
+        }
+    }
+}
+
+// Typing "terminal" with real-world names: the tiers come from relevance(),
+// the order from compare() with the name as tiebreak, as in AppFilterModel.
+void TestSearchRanking::compare_terminalSearch_data()
+{
+    QTest::addColumn<QString>("starred");
+    QTest::addColumn<QString>("roleDefault");
+    QTest::addColumn<QStringList>("expected");
+    // Ghostty is starred, the default terminal and the most used.
+    QTest::newRow("favourite, default and most used")
+        << QStringLiteral("Ghostty") << QStringLiteral("Ghostty")
+        << QStringList{QStringLiteral("Ghostty"), QStringLiteral("Konsole"), QStringLiteral("Alacritty"), QStringLiteral("COSMIC Terminal")};
+    // A starred terminal beats the default and the most used one.
+    QTest::newRow("starred beats default and usage")
+        << QStringLiteral("Alacritty") << QStringLiteral("Ghostty")
+        << QStringList{QStringLiteral("Alacritty"), QStringLiteral("Ghostty"), QStringLiteral("Konsole"), QStringLiteral("COSMIC Terminal")};
+    // Nothing starred: the default terminal beats the more used one.
+    QTest::newRow("default beats usage")
+        << QString() << QStringLiteral("Konsole")
+        << QStringList{QStringLiteral("Konsole"), QStringLiteral("Ghostty"), QStringLiteral("Alacritty"), QStringLiteral("COSMIC Terminal")};
+}
+
+void TestSearchRanking::compare_terminalSearch()
+{
+    QFETCH(QString, starred);
+    QFETCH(QString, roleDefault);
+    QFETCH(QStringList, expected);
+    using namespace SearchRanking;
+    struct App {
+        QString name;
+        QString genericName;
+        int launches;
+    };
+    const QList<App> apps{
+        {QStringLiteral("COSMIC Terminal"), QStringLiteral("Terminal Emulator"), 1},
+        {QStringLiteral("Alacritty"), QStringLiteral("Terminal"), 3},
+        {QStringLiteral("Konsole"), QStringLiteral("Terminal Emulator"), 12},
+        {QStringLiteral("Ghostty"), QStringLiteral("Terminal Emulator"), 72},
+    };
+    const QString query = QStringLiteral("terminal");
+    const auto rankOf = [&](const App &app) {
+        return ResultRank{relevance(app.name, app.genericName, {}, {}, {}, query), app.launches, app.name == starred, app.name == roleDefault, false};
+    };
+    QList<App> sorted = apps;
+    std::stable_sort(sorted.begin(), sorted.end(), [&](const App &a, const App &b) {
+        if (const int order = compare(rankOf(a), rankOf(b)); order != 0) {
+            return order < 0;
+        }
+        return QString::localeAwareCompare(a.name, b.name) < 0;
+    });
+    QStringList names;
+    for (const App &app : sorted) {
+        names.append(app.name);
+    }
+    QCOMPARE(names, expected);
+}
+
+// Through the model: a starred favourite ranks first in its tier, and the
+// ranking follows the favourites when they change.
+void TestSearchRanking::favoriteRanksFirstInTier()
+{
+    m_source.setApps({
+        {QStringLiteral("Editor A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("Editor B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+    });
+    QVariantMap counts;
+    counts[QStringLiteral("b")] = 50;
+    m_filter.setLaunchCountsMap(counts);
+    m_filter.setSearchText(QStringLiteral("editor"));
+    QCOMPARE(nameAt(0), QStringLiteral("Editor B")); // most used
+
+    m_filter.setFavoriteApps({QStringLiteral("a")});
+    QCOMPARE(nameAt(0), QStringLiteral("Editor A")); // starred beats usage
+    m_filter.setFavoriteApps({});
+    QCOMPARE(nameAt(0), QStringLiteral("Editor B"));
+    m_filter.setSearchText(QString());
+    m_filter.setLaunchCountsMap({});
+}
+
+// Usage beats a mime default in the same tier (the default only breaks ties).
+void TestSearchRanking::usageBeatsMimeDefaultInSameTier()
+{
+    m_source.setApps({
+        {QStringLiteral("FireFly"), {}, {}, {}, {}, QStringLiteral("firefly.desktop"), {}, {}, {}},
+        {QStringLiteral("Firefox"), {}, {}, {}, {}, QStringLiteral("firefox.desktop"), {}, {}, {}},
+    });
+    QVariantMap counts;
+    counts[QStringLiteral("firefly.desktop")] = 5;
+    m_filter.setLaunchCountsMap(counts);
+    m_filter.setDefaultApps({QStringLiteral("firefox.desktop")});
+    m_filter.setSearchText(QStringLiteral("fire"));
+    QCOMPARE(nameAt(0), QStringLiteral("FireFly"));
+    m_filter.setSearchText(QString());
+    m_filter.setLaunchCountsMap({});
+    m_filter.setDefaultApps({});
 }
 
 QTEST_MAIN(TestSearchRanking)

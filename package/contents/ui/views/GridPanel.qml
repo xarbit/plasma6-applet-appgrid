@@ -345,7 +345,6 @@ Item {
     }
     readonly property alias favoriteIdRole: favorites.favoriteIdRole
     readonly property alias sharedFavoritesModel: favorites.sharedFavoritesModel
-    readonly property alias mirrorRequired: favorites.mirrorRequired
 
     // Favourites folders (issue #18). The C++ grouped model (shared by both
     // variants via the bridge) composes KAStats favourites with the folder layout.
