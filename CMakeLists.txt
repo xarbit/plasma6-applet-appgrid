@@ -118,13 +118,9 @@ set(KF6_MIN_VERSION 6.30)
 set(PLASMA_MIN_VERSION 6.8)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Gui DBus)
-# Widgets + QuickControls2 are needed only by the standalone executable (KDE
-# platform palette + the org.kde.desktop Controls style); the plasmoid gets
-# both from the Plasma shell.
-find_package(Qt6 REQUIRED COMPONENTS Widgets QuickControls2)
-# KColorSchemeManager (standalone only): track the system color scheme so the
-# app follows the user's dark/light choice live, like every other KDE app.
-find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS ColorScheme)
+# Widgets is needed only by the standalone executable: a QApplication gets the
+# KDE platform style and palette. The plasmoid runs inside the Plasma shell.
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 if(APPGRID_UNIVERSAL_BUILD)
     find_package(Qt6 REQUIRED COMPONENTS Network)
 endif()
@@ -136,7 +132,6 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     KIO
     Runner
     Service
-    Svg
     WindowSystem
 )
 # LayerShellQt is versioned with Plasma.
@@ -170,7 +165,6 @@ set(APPGRID_COMMON_LIBS
     KF6::KIOWidgets
     KF6::WindowSystem
     KF6::IconThemes
-    KF6::Svg
     LayerShellQt::Interface
     Plasma::PlasmaQuick
     KF6::Runner
@@ -410,8 +404,8 @@ add_executable(appgrid ${APPGRID_STANDALONE_SOURCES})
 kconfig_add_kcfg_files(appgrid GENERATE_MOC ${CMAKE_BINARY_DIR}/appgridconfig.kcfgc)
 target_include_directories(appgrid PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
 # KF6::ConfigGui supplies KConfigSkeleton (the generated AppGridConfig base);
-# Widgets gives the KDE platform palette, QuickControls2 the org.kde.desktop style.
-target_link_libraries(appgrid PRIVATE ${APPGRID_COMMON_LIBS} KF6::ConfigGui Qt6::Widgets Qt6::QuickControls2 KF6::ColorScheme KF6::I18nQml)
+# Widgets gives the KDE platform style and palette (QApplication).
+target_link_libraries(appgrid PRIVATE ${APPGRID_COMMON_LIBS} KF6::ConfigGui Qt6::Widgets KF6::I18nQml)
 target_compile_definitions(appgrid PRIVATE
     "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\""
     "TRANSLATION_DOMAIN=\"${APPGRID_APP_ID}\""
