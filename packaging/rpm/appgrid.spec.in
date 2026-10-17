@@ -44,6 +44,8 @@ BuildRequires:  plasma-activities-devel
 BuildRequires:  plasma-activities-stats-devel
 BuildRequires:  plasma-workspace-devel
 BuildRequires:  appstream-qt-devel
+# Provides the _userunitdir macro used for the systemd user unit below.
+BuildRequires:  systemd-rpm-macros
 
 Requires:       plasma-workspace
 Requires:       plasma-desktop
