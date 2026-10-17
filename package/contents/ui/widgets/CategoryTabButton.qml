@@ -38,15 +38,15 @@ PlasmaComponents.ToolButton {
         iconSource: root.bar.appsModel
             ? root.bar.appsModel.categoryIcon(modelData) : ""
     }
-    checked: !root.bar.wheelScrolling
+    checked: !root.bar.hover.wheelScrolling
              && !root.bar.favoritesActive
              && root.bar.selectedCategory === modelData
     onClicked: {
         root.bar.selectCategory(modelData)
         root.bar.scrollToSelected()
     }
-    onHoveredChanged: hovered ? root.bar.hoverEnter(modelData)
-                              : root.bar.hoverLeave(modelData)
+    onHoveredChanged: hovered ? root.bar.hover.enter(modelData)
+                              : root.bar.hover.leave(modelData)
 
     // Icon-only hides the label, so surface the category name
     // on hover; redundant when the label is already shown.

@@ -91,4 +91,14 @@ TestCase {
         compare(categorySpy.signalArguments[1][0], "All", "Alt+L is the category")
         compare(bar.mnemonicRichText("All"), "A<u>l</u>l")
     }
+
+    // The tab strip scrolls a picked tab into view and back to the start.
+    function test_stripScrollsWithoutErrors() {
+        var bar = make()
+        bar.selectedCategory = "Games"
+        bar.scrollToSelected()
+        wait(50)
+        bar.resetScroll()
+        compare(bar.hoveredTab(), "", "nothing under the pointer")
+    }
 }

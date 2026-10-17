@@ -58,7 +58,7 @@ RowLayout {
     // icons stay reachable. Row geometry lives in CategoryScroll (tested).
     readonly property real tabMinWidth: buttonIconSize + Kirigami.Units.smallSpacing * 2
     readonly property real iconRowMinWidth: CategoryScroll.iconRowMinWidth(
-        catRepeater.count, tabMinWidth, Kirigami.Units.smallSpacing)
+        categoryList.length, tabMinWidth, Kirigami.Units.smallSpacing)
 
     // -- Shared button geometry (#171) --
     // Every button in the bar — favorites, "All", the scroll arrows and the
@@ -208,7 +208,7 @@ RowLayout {
     // -- Category action helpers --
 
     function closeCategoryMenu() { catContextMenu.close() }
-    function resetScroll() { _setContentX(0) }
+    function resetScroll() { tabStrip.setContentX(0) }
 
     function selectAll() {
         categorySelected("")
@@ -227,106 +227,20 @@ RowLayout {
     }
 
     // -- Open-on-hover (#176) --
-    // When enabled, dwelling on a tab for hoverActivationDelay selects it
-    // without a click. HoverActivation owns the armed-tab state (and the
-    // enter-before-leave race); this side just drives the dwell timer.
     property bool openOnHover: false
-    readonly property int hoverActivationDelay: 5
-    // Dwell before a hovered scroll arrow pages, so merely sweeping the cursor
-    // across it doesn't page; floored at 150ms so it still works with animations
-    // off.
-    readonly property int hoverPageDwell: Math.max(Kirigami.Units.shortDuration * 3, 150)
-    // While the cursor rests on a scroll arrow it keeps paging hands-free, but
-    // only this often — slow enough that a resting cursor doesn't race to the
-    // end. A deliberate UX cadence, not a theme duration.
-    readonly property int hoverRetriggerInterval: 800
-    // One window governs the whole wheel interaction: hover-select stays
-    // suppressed and the highlight stays cleared until this long after the
-    // last wheel event, then the scroll counts as stopped and the tab under
-    // the cursor is selected once. Must exceed the gap between wheel notches
-    // so a multi-notch scroll doesn't settle (and re-select) mid-way.
-    readonly property int wheelGrace: Math.max(Kirigami.Units.longDuration, 300)
-    // True while a wheel scroll is in progress: drops the tab highlight until
-    // the scroll settles and the tab under the cursor is reselected. Purely
-    // visual — the grid filter is left untouched so it doesn't flash.
-    property bool wheelScrolling: false
-
-    HoverActivation {
-        id: hoverActivation
+    // The tabs and arrows report hover to it; it selects a dwelled-on tab.
+    readonly property alias hover: hoverSelect
+    CategoryHoverSelect {
+        id: hoverSelect
         enabled: categoryBar.openOnHover
-        wheelGraceMs: categoryBar.wheelGrace
+        tabUnderPointer: categoryBar.hoveredTab
+        onSelectRequested: tabId => categoryBar.selectTab(tabId)
     }
 
     // Tracks the pointer crossing the bar's outer bounds, to guard against a
     // cursor merely passing through activating a tab on the way past.
     HoverHandler {
-        id: barHover
-        onHoveredChanged: categoryBar.hoverBar(hovered)
-    }
-
-    Timer {
-        id: hoverActivateTimer
-        interval: categoryBar.hoverActivationDelay
-        onTriggered: if (hoverActivation.pending !== "")
-            categoryBar.selectTab(hoverActivation.pending)
-    }
-
-    // Fires once a suppression window (wheel scroll or bar entry) elapses with
-    // the cursor stationary, so hovered never changes and nothing re-arms —
-    // activate whatever tab now sits under the pointer.
-    Timer {
-        id: wheelSettleTimer
-        interval: categoryBar.wheelGrace
-        onTriggered: {
-            // Restore the highlight first, then reselect the tab now under
-            // the cursor (if any) so it ends up the single highlighted one.
-            categoryBar.wheelScrolling = false
-            if (!categoryBar.openOnHover)
-                return
-            const name = categoryBar.hoveredTab()
-            if (name !== "")
-                categoryBar.selectTab(name)
-        }
-    }
-
-    function hoverEnter(name) {
-        if (hoverActivation.enter(name))
-            hoverActivateTimer.restart()
-    }
-
-    function hoverLeave(name) {
-        if (hoverActivation.leave(name))
-            hoverActivateTimer.stop()
-    }
-
-    // A wheel scroll moves categories under a stationary cursor; suppress
-    // hover-select for the grace window so the tab sliding under the pointer
-    // isn't auto-selected, drop any dwell in flight, and arm the settle timer
-    // so the final tab under the cursor activates once scrolling stops.
-    function hoverWheel() {
-        hoverActivation.suppress()
-        hoverActivateTimer.stop()
-        if (!categoryBar.openOnHover)
-            return
-        categoryBar.wheelScrolling = true
-        wheelSettleTimer.restart()
-    }
-
-    // Entering the bar from outside: guard against the cursor merely crossing
-    // it. Suppress the instant dwell and arm the settle window so a tab fires
-    // only if the pointer lingers; a quick pass-through leaves before it does.
-    // Leaving the bar cancels everything in flight.
-    function hoverBar(inside) {
-        if (!categoryBar.openOnHover)
-            return
-        if (inside) {
-            hoverActivation.suppress()
-            wheelSettleTimer.restart()
-        } else {
-            hoverActivation.clear()
-            hoverActivateTimer.stop()
-            wheelSettleTimer.stop()
-        }
+        onHoveredChanged: hoverSelect.crossBar(hovered)
     }
 
     // The selectable tab currently under the cursor, or "" if none.
@@ -337,90 +251,12 @@ RowLayout {
             return favoritesTab
         if (allButton.visible && allButton.hovered)
             return allTab
-        for (var i = 0; i < catRepeater.count; i++) {
-            var it = catRepeater.itemAt(i)
-            if (it && it.hovered && i < categoryList.length)
-                return categoryList[i]
-        }
-        return ""
+        return tabStrip.hoveredCategory()
     }
 
-    // Effective viewport width for rightward-scroll math — see
-    // CategoryScroll.viewportAfterRightScroll for the why.
-    function _viewportWidthAfterRightScroll() {
-        return CategoryScroll.viewportAfterRightScroll(catFlick.width, catFlick.contentX, scrollArrowWidth)
-    }
-
-    // Live delegate rects in visual order, for the page-target math (null for
-    // a not-yet-realised delegate; CategoryScroll skips those).
-    function _itemRects() {
-        var rects = []
-        for (var i = 0; i < catRepeater.count; i++) {
-            var it = catRepeater.itemAt(i)
-            rects.push(it ? { x: it.x, width: it.width } : null)
-        }
-        return rects
-    }
-
-    // Furthest valid offset for `target`, clamped against the viewport it will land
-    // in (CategoryScroll.clampToReserve) — not the current one — so an animated move
-    // can't overshoot once a reserve collapses mid-glide and the contentX animation
-    // outruns the re-clamp (#172).
-    function _clampTarget(target) {
-        return CategoryScroll.clampToReserve(target, catArea.width, catRow.implicitWidth, scrollArrowWidth)
-    }
-
-    // Single landing-point for wheel, arrow clicks, alt+arrow, reset. Lands in-frame
-    // (contentX Behavior suppressed) so categories track every input source snappily.
-    function _setContentX(target) {
-        catFlick._suppressContentXAnim = true
-        catFlick.contentX = _clampTarget(target)
-        catFlick._suppressContentXAnim = false
-    }
-
-    // Page by ~one viewport per click; CategoryScroll.pageTarget gives one
-    // tab-boundary-aligned rule for both directions (right lands the last tab flush,
-    // left the first). _pageTo animates the move (no suppressed jump) so the page and
-    // the arrow inset ease in together.
-    function _pageTo(target) {
-        catFlick.contentX = _clampTarget(target)
-    }
-    function pageRight() {
-        _pageTo(CategoryScroll.pageTarget(_itemRects(), catFlick.contentX,
-            _viewportWidthAfterRightScroll(), catFlick.contentWidth, 1))
-    }
-    function pageLeft() {
-        _pageTo(CategoryScroll.pageTarget(_itemRects(), catFlick.contentX,
-            catFlick.width, catFlick.contentWidth, -1))
-    }
-
-    // Scroll the flickable so the currently selected category button is visible
+    // Scroll the selected category's tab into view.
     function scrollToSelected() {
-        Qt.callLater(function() {
-            var active = categoryBar.selectedCategory
-
-            // "All" is selected — scroll to start
-            if (active === "") {
-                _setContentX(0)
-                return
-            }
-
-            // Find the matching repeater item, then defer the in/out-of-view
-            // decision to CategoryScroll.ensureVisibleTarget.
-            for (var i = 0; i < catRepeater.count; i++) {
-                var item = catRepeater.itemAt(i)
-                if (!item) continue
-                var cats = categoryList
-                if (i < cats.length && cats[i] === active) {
-                    var target = CategoryScroll.ensureVisibleTarget(item.x, item.width,
-                        catFlick.contentX, catFlick.width, _viewportWidthAfterRightScroll(),
-                        Kirigami.Units.smallSpacing)
-                    if (target !== null)
-                        _setContentX(target)
-                    return
-                }
-            }
-        })
+        Qt.callLater(() => tabStrip.scrollToTab(categoryBar.selectedCategory))
     }
 
     Component.onCompleted: refreshCategories()
@@ -466,15 +302,15 @@ RowLayout {
             mnemonic: false
             iconSize: categoryBar.anchorIconSize
         }
-        checked: !categoryBar.wheelScrolling
+        checked: !categoryBar.hover.wheelScrolling
                  && !categoryBar.favoritesActive
                  && categoryBar.selectedCategory === ""
         onClicked: {
             categoryBar.selectAll()
-            catFlick.contentX = 0
+            tabStrip.scrollToStart()
         }
-        onHoveredChanged: hovered ? categoryBar.hoverEnter(categoryBar.allTab)
-                                  : categoryBar.hoverLeave(categoryBar.allTab)
+        onHoveredChanged: hovered ? categoryBar.hover.enter(categoryBar.allTab)
+                                  : categoryBar.hover.leave(categoryBar.allTab)
 
         // Always icon-only, so it needs a tooltip like Favorites.
         PlasmaComponents.ToolTip.text: categoryBar.allLabel
@@ -485,146 +321,14 @@ RowLayout {
         Accessible.role: Accessible.Button
     }
 
-    // -- Scrollable category buttons, with a scroll arrow reserved at each edge.
-    // catArea is the single fillWidth slot; the Flickable and the two arrows live
-    // inside it, so catArea's width tracks only the bar / All / favorites geometry.
-    Item {
-        id: catArea
+    // -- Scrollable category tabs --
+    CategoryTabStrip {
+        id: tabStrip
+        bar: categoryBar
         Layout.fillWidth: true
-        implicitHeight: categoryBar.buttonHeight
-
-        // A plain Item carries the strip's geometry; the Flickable fills it. The
-        // arrows reserve their width by insetting this Item (x for the left, a
-        // narrower width for the right), NOT by insetting the Flickable directly —
-        // a width bound on the Flickable is clobbered by its own internal geometry,
-        // leaving x and width disagreeing on the reserve, the strip overrunning
-        // catArea over the favorites / off the edge. The whole geometry comes from
-        // ONE CategoryScroll.reserveGeometry call (leaf inputs only — contentX,
-        // catArea.width, natural content width), so the two reserves are always
-        // consistent; a split across separate bindings can land half-stale on a
-        // jump and strand the strip short of the edge (#172).
-        Item {
-            id: catViewport
-            readonly property var geom: CategoryScroll.reserveGeometry(
-                catFlick.contentX, catArea.width, catRow.implicitWidth, categoryBar.scrollArrowWidth)
-
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            x: geom.leftReserve
-            width: geom.viewport
-
-            Flickable {
-                id: catFlick
-                anchors.fill: parent
-
-                contentWidth: catRow.width
-                contentHeight: categoryBar.buttonHeight
-                clip: true
-                flickableDirection: Flickable.HorizontalFlick
-                boundsBehavior: Flickable.StopAtBounds
-
-                // A reserve appearing narrows the viewport, which can leave contentX past
-                // the new maxX. Clamp only that overscroll — like the left edge self-correcting
-                // at 0, never an unconditional re-anchor (writing contentX from width every
-                // change is the feedback that froze / looped the bar). Deferred on purpose:
-                // the left and right margins update in separate binding passes, so one
-                // contentX change flickers through a transient full-width frame (both margins
-                // briefly 0) whose tiny maxX would clamp contentX short. Run after the cascade
-                // settles, against the final width (#172).
-                property bool _suppressContentXAnim: false
-                onWidthChanged: Qt.callLater(_clampToBounds)
-                function _clampToBounds() {
-                    const maxX = CategoryScroll.maxContentX(contentWidth, width)
-                    if (contentX > maxX) {
-                        _suppressContentXAnim = true
-                        contentX = maxX
-                        _suppressContentXAnim = false
-                    }
-                }
-
-                // Edge-settling guard for #113: once a wheel lands on either edge,
-                // swallow follow-up wheels for a short window so rapid scrolling
-                // can't re-target the contentX animation and overshoot past max.
-                property bool _wheelEdgeSettling: false
-                Timer {
-                    id: wheelEdgeSettlingTimer
-                    interval: Math.max(Kirigami.Units.shortDuration, 120)
-                    onTriggered: catFlick._wheelEdgeSettling = false
-                }
-
-                Kirigami.WheelHandler {
-                    target: catFlick
-                    onWheel: function(wheel) {
-                        wheel.accepted = true
-                        categoryBar.hoverWheel()
-                        if (catFlick._wheelEdgeSettling)
-                            return
-                        const raw = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                        const delta = CategoryScroll.clampWheelDelta(raw, catFlick.width,
-                            categoryBar.scrollArrowWidth * 4)
-                        categoryBar._setContentX(catFlick.contentX - delta)
-                        const maxX = CategoryScroll.maxContentX(catFlick.contentWidth, catFlick.width)
-                        if (catFlick.contentX === 0 || catFlick.contentX === maxX) {
-                            catFlick._wheelEdgeSettling = true
-                            wheelEdgeSettlingTimer.restart()
-                        }
-                    }
-                }
-
-                Behavior on contentX {
-                    enabled: !catFlick._suppressContentXAnim && Kirigami.Units.longDuration > 0
-                    NumberAnimation {
-                        duration: Kirigami.Units.longDuration
-                        easing.type: Easing.OutCubic
-                    }
-                }
-
-                RowLayout {
-                    id: catRow
-                    // Icon-only: fill the viewport (the fillWidth buttons trim their
-                    // padding to absorb a slightly-wider icon instead of flipping to a
-                    // scroll), but never below iconRowMinWidth — past that the row
-                    // overflows so the icons scroll instead of overlapping. Other modes
-                    // grow with their content and scroll as before.
-                    width: categoryBar.tabsIconOnly
-                           ? Math.max(catFlick.width, categoryBar.iconRowMinWidth)
-                           : Math.max(implicitWidth, catFlick.width)
-                    height: parent.height
-                    spacing: Kirigami.Units.smallSpacing
-
-                    Repeater {
-                        id: catRepeater
-                        model: categoryBar.categoryList
-                        delegate: CategoryTabButton {
-                            bar: categoryBar
-                            onContextMenuRequested: name => {
-                                catContextMenu.categoryName = name
-                                catContextMenu.popup()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // -- Scroll arrows, in the reserved margin at each catFlick edge --
-        CategoryScrollArrow {
-            id: scrollLeftBtn
-            bar: categoryBar
-            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
-            scrollable: catViewport.geom.leftReserve > 0
-            icon.name: "arrow-left"
-            pageAction: () => categoryBar.pageLeft()
-            Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
-        }
-        CategoryScrollArrow {
-            id: scrollRightBtn
-            bar: categoryBar
-            anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
-            scrollable: catViewport.geom.rightShown
-            icon.name: "arrow-right"
-            pageAction: () => categoryBar.pageRight()
-            Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories right")
+        onContextMenuRequested: name => {
+            catContextMenu.categoryName = name
+            catContextMenu.popup()
         }
     }
 

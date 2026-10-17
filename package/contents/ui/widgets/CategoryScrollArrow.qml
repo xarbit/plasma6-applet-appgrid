@@ -76,7 +76,7 @@ PlasmaComponents.ToolButton {
     Timer {
         running: root.bar.openOnHover && root.hovered && root._hoverArmed
             && root.scrollable && root.pageAction !== null
-        interval: root.bar.hoverPageDwell
+        interval: root.bar.hover.pageDwell
         repeat: false
         onTriggered: root._page()
     }
@@ -86,7 +86,7 @@ PlasmaComponents.ToolButton {
     // continues hands-free without racing to the end.
     Timer {
         id: retriggerTimer
-        interval: root.bar.hoverRetriggerInterval
+        interval: root.bar.hover.pageRepeat
         repeat: false
         onTriggered: if (root.bar.openOnHover && root.hovered && root.scrollable)
             root._hoverArmed = true
