@@ -23,7 +23,6 @@
 #include <KLocalizedContext>
 #endif
 #include <KLocalizedString>
-#include <PlasmaQuick/SharedQmlEngine>
 
 #include <QApplication>
 #include <QEvent>
@@ -32,11 +31,14 @@
 #include <QMetaMethod>
 #include <QMetaProperty>
 #include <QQmlApplicationEngine>
+#include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickWindow>
 #include <QThread>
 #include <QTimer>
+
+#include <memory>
 
 namespace
 {
@@ -167,7 +169,7 @@ int main(int argc, char *argv[])
     // Match KRunner exactly: it forces no QtQuick style, no platform theme and
     // no palette. In a KDE session (XDG_CURRENT_DESKTOP=KDE) Qt auto-loads the
     // KDE platform theme and the org.kde.desktop Controls style, and the Plasma
-    // theme + colours come from PlasmaWindow + SharedQmlEngine. Forcing any of
+    // theme + colours come from PlasmaWindow + the engine setup below. Forcing any of
     // those here only fights that setup. QApplication (not QGui) so the KDE
     // platform style/palette apply.
     // Use the fractional device-pixel ratio as-is, the same as plasmashell and
@@ -350,15 +352,17 @@ int main(int argc, char *argv[])
     constexpr int kModelScanBudgetMs = 500;
     QCoreApplication::processEvents(QEventLoop::AllEvents, kModelScanBudgetMs);
 
-    // Load the QML through PlasmaQuick::SharedQmlEngine — the same engine
-    // KRunner uses. Unlike a bare QQmlApplicationEngine it wires up everything a
-    // plasmoid normally gets from the shell: the KLocalizedContext for i18n, the
-    // Plasma theme + color scheme, and the Kirigami platform. Without it the
-    // reused plasmoid QML renders unthemed and half-broken. rootContext() is a
-    // child context, so our context properties don't leak into the shared engine.
-    PlasmaQuick::SharedQmlEngine engine;
-    engine.setTranslationDomain(QStringLiteral(APPGRID_APP_ID));
-    engine.setInitializationDelayed(true);
+    // Set the engine up the way PlasmaQuick::SharedQmlEngine did through
+    // Plasma 6.7 (6.8 removed it, #229): a plain QQmlEngine with a
+    // KLocalizedContext root context object for i18n, plus the Kirigami theme
+    // property below. Without these the reused plasmoid QML renders unthemed
+    // and half-broken. Same pattern as SettingsWindow, so no Plasma version gate.
+    QQmlEngine engine;
+#ifdef HAVE_KLOCALIZEDQMLCONTEXT
+    KLocalization::setupLocalizedContext(&engine);
+#else
+    engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
+#endif
     // Make Kirigami.Theme source its colours from Plasma::Theme (the active
     // Plasma Style), so text follows the Plasma desktop theme like the plasmoid
     // and KRunner — not the kdeglobals colour scheme (which may be a light scheme
@@ -367,12 +371,12 @@ int main(int argc, char *argv[])
     // (PlatformTheme::qmlAttachedProperties → findPlugin), and "Plasma" matches
     // the KirigamiPlasmaStyle plugin. This is what the Plasma QML stack sets up
     // for in-shell QML; a standalone binary must set it itself.
-    engine.engine()->setProperty("_kirigamiTheme", QStringLiteral("Plasma"));
+    engine.setProperty("_kirigamiTheme", QStringLiteral("Plasma"));
     // Inject the C++ dependencies as the entry root's *initial properties* (not
     // loose context properties): Main.qml declares each one `required`, so a
     // forgotten or renamed injection fails loudly at QML load instead of
     // silently resolving to undefined and half-breaking the launcher (#6).
-    const QVariantHash entryProperties{
+    const QVariantMap entryProperties{
         {QStringLiteral("appGridController"), QVariant::fromValue(&controller)},
         {QStringLiteral("appGridConfig"), QVariant::fromValue(&config)},
         {QStringLiteral("appGridStandalone"), QVariant::fromValue(&standalone)},
@@ -381,10 +385,10 @@ int main(int argc, char *argv[])
     };
     // Bundled at this qrc path by qt_add_resources (see CMakeLists). The root is
     // a PlasmaCore.Window (PlasmaWindow) hosting GridPanel as its mainItem.
-    engine.setSource(QUrl(QStringLiteral("qrc:/qt/qml/appgrid/Main.qml")));
-    engine.completeInitialization(entryProperties);
-    if (!engine.rootObject()) {
-        qWarning("AppGrid: failed to load standalone entry QML");
+    QQmlComponent component(&engine, QUrl(QStringLiteral("qrc:/qt/qml/appgrid/Main.qml")));
+    const std::unique_ptr<QObject> rootObject(component.createWithInitialProperties(entryProperties));
+    if (!rootObject) {
+        qWarning("AppGrid: failed to load standalone entry QML: %s", qPrintable(component.errorString()));
         return 1;
     }
 
