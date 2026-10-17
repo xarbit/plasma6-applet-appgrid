@@ -77,12 +77,8 @@ PlasmaCore.Window {
         // loads in its own desktop-themed engine, not this Plasma-themed one.
         onConfigureRequested: appGridStandalone.openSettings()
         appletInterface: win.appletInterface
-        appsModel: appGridController.appsModel
-        searchModel: appGridController.searchModel
-        runnerSourceModel: appGridController.runnerSourceModel
         configuration: appGridConfig
         plasmoidBridge: appGridController
-        updateChecker: appGridController.isUniversalBuild ? appGridController.updateChecker : null
         sysInfoProvider: () => appGridController.systemActions.systemInfo("Standalone")
         onCloseRequested: win.closeWindow()
 

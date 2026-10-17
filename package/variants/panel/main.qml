@@ -68,12 +68,8 @@ PlasmoidItem {
         Views.GridPanel {
             id: panel
             appletInterface: appgrid
-            appsModel: Plasmoid.controller.appsModel
-            searchModel: Plasmoid.controller.searchModel
-            runnerSourceModel: Plasmoid.controller.runnerSourceModel
             configuration: Plasmoid.configuration
             plasmoidBridge: Plasmoid.controller
-            updateChecker: Plasmoid.controller.updateChecker
             sysInfoProvider: () => Plasmoid.systemInfo()
             opacity: 1.0
             onCloseRequested: appgrid.expanded = false

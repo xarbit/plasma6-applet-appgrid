@@ -40,27 +40,23 @@ Item {
         categoryGridView.shakeAllIcons()
     }
 
-    // C++ models supplied by the owning plasmoid root. Injected here
-    // rather than reached through Plasmoid.* so the panel doesn't grab
-    // its dependencies from a global and so tests can pass stubs.
-    required property var appsModel
-    required property var searchModel
-    required property var runnerSourceModel
+    // The launcher controller (AppGridController): its models and services.
+    // Both hosts inject theirs (the panel applet's Plasmoid.controller, the
+    // daemon's own); tests inject a plain object with the same names. Injected
+    // rather than reached through Plasmoid.* so the panel doesn't grab its
+    // dependencies from a global.
+    required property var plasmoidBridge
+    readonly property var appsModel: plasmoidBridge ? plasmoidBridge.appsModel : null
+    readonly property var searchModel: plasmoidBridge ? plasmoidBridge.searchModel : null
+    readonly property var runnerSourceModel: plasmoidBridge ? plasmoidBridge.runnerSourceModel : null
+    // Null on distro packages, which have no update checker.
+    readonly property var updateChecker: plasmoidBridge && plasmoidBridge.isUniversalBuild ? plasmoidBridge.updateChecker : null
 
     // Read-write handle to Plasmoid.configuration. Reads route through
     // ConfigCache (`cfg`) below; writes still target this handle directly
     // for the launch-bookkeeping flush (recents / launchCounts /
     // hiddenApps).
     required property var configuration
-
-    // The plasmoid-callback surface (methods + favoritesGroupedModel).
-    // Panel injects the applet (Plasmoid), standalone injects its controller; both
-    // implement the same Q_PROPERTY / Q_INVOKABLE interface. Tests inject a plain
-    // QtObject stub with the same names.
-    required property var plasmoidBridge
-
-    // Update-checker handle (null on distro packages); forwarded to HeaderActionStrip.
-    required property var updateChecker
 
     // Supplied by the plasmoid root, forwarded to the prefix views (`i:`). A
     // function returning the system-info map, not the map itself, so the

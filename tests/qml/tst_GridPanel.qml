@@ -138,17 +138,17 @@ TestCase {
                 listDirectory: function(path) { return [] }
             }),
             appActions: function(sid) { return [] },
-            launchAppAction: function(sid, actionName) {}
+            launchAppAction: function(sid, actionName) {},
+            appsModel: appsModelStub,
+            searchModel: searchModelStub,
+            runnerSourceModel: runnerStub,
+            isUniversalBuild: false
         })
         var obj = c.createObject(null, {
             width: 600,
             height: 800,
-            appsModel: appsModelStub,
-            searchModel: searchModelStub,
-            runnerSourceModel: runnerStub,
             configuration: configStub,
             plasmoidBridge: bridgeStub,
-            updateChecker: null,
             sysInfoProvider: () => ({})
         })
         verify(obj !== null, "GridPanel create returned null")
