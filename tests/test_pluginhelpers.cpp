@@ -186,6 +186,25 @@ private Q_SLOTS:
         QVERIFY(mimeAppsDefaults(KConfig(path, KConfig::SimpleConfig)).isEmpty());
     }
 
+    void mimeAppsListPaths_followsTheSpec()
+    {
+        const QStringList paths = mimeAppsListPaths({QStringLiteral("/home/u/.config"), QStringLiteral("/etc/xdg")},
+                                                    {QStringLiteral("/home/u/.local/share"), QStringLiteral("/usr/share")},
+                                                    {QStringLiteral("KDE")});
+        QCOMPARE(paths,
+                 QStringList({
+                     QStringLiteral("/home/u/.config/kde-mimeapps.list"),
+                     QStringLiteral("/home/u/.config/mimeapps.list"),
+                     QStringLiteral("/etc/xdg/kde-mimeapps.list"),
+                     QStringLiteral("/etc/xdg/mimeapps.list"),
+                     QStringLiteral("/home/u/.local/share/applications/kde-mimeapps.list"),
+                     QStringLiteral("/home/u/.local/share/applications/mimeapps.list"),
+                     QStringLiteral("/usr/share/applications/kde-mimeapps.list"),
+                     QStringLiteral("/usr/share/applications/mimeapps.list"),
+                 }));
+        QCOMPARE(mimeAppsListPaths({QStringLiteral("/c")}, {}, {}), QStringList{QStringLiteral("/c/mimeapps.list")});
+    }
+
     void desktopPathFromRunnerUrls_findsFirstDesktop()
     {
         const QList<QUrl> urls{QUrl::fromLocalFile(QStringLiteral("/tmp/note.txt")),

@@ -18,6 +18,8 @@
 #include <QUrl>
 #include <QVariantMap>
 
+#include <utility>
+
 namespace
 {
 // Cap the prefix-mode file browser listing so a huge directory can't stall the
@@ -114,13 +116,35 @@ QStringList mimeAppsDefaults(const KConfig &mimeApps)
     return QStringList(result.cbegin(), result.cend());
 }
 
+QStringList mimeAppsListPaths(const QStringList &configDirs, const QStringList &dataDirs, const QStringList &desktops)
+{
+    QStringList names;
+    for (const QString &desktop : desktops) {
+        names.append(desktop.toLower() + QStringLiteral("-mimeapps.list"));
+    }
+    names.append(QStringLiteral("mimeapps.list"));
+
+    QStringList dirs = configDirs;
+    for (const QString &dataDir : dataDirs) {
+        dirs.append(dataDir + QStringLiteral("/applications"));
+    }
+    QStringList paths;
+    for (const QString &dir : std::as_const(dirs)) {
+        for (const QString &name : std::as_const(names)) {
+            paths.append(dir + QLatin1Char('/') + name);
+        }
+    }
+    return paths;
+}
+
 QStringList loadMimeAppsDefaults()
 {
-    // The mimeapps.list files in XDG precedence (user first, then system).
-    const QStringList paths{
-        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
-        QStringLiteral("/usr/share/applications/mimeapps.list"),
-    };
+    // Plasma writes the user's choices to kde-mimeapps.list as well as
+    // mimeapps.list, and Flatpak and the distribution ship theirs under the
+    // other XDG dirs; a missing file reads as empty.
+    const QStringList paths = mimeAppsListPaths(QStandardPaths::standardLocations(QStandardPaths::GenericConfigLocation),
+                                                QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation),
+                                                qEnvironmentVariable("XDG_CURRENT_DESKTOP").split(QLatin1Char(':'), Qt::SkipEmptyParts));
     QSet<QString> all;
     for (const QString &path : paths) {
         const auto ids = mimeAppsDefaults(KConfig(path, KConfig::SimpleConfig));

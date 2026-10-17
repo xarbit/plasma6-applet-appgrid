@@ -62,8 +62,14 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  file. Order is unspecified; empty on no matches. */
 [[nodiscard]] QStringList mimeAppsDefaults(const KConfig &mimeApps);
 
-/** Merged default-app desktop ids from the user and system mimeapps.list
- *  files. */
+/** The mimeapps.list files of the XDG mime-apps spec, most important
+ *  first: in each of @p configDirs, then in "applications" under each of
+ *  @p dataDirs, the "<desktop>-mimeapps.list" of each of @p desktops
+ *  (XDG_CURRENT_DESKTOP, lowercased) before the plain "mimeapps.list". */
+[[nodiscard]] QStringList mimeAppsListPaths(const QStringList &configDirs, const QStringList &dataDirs, const QStringList &desktops);
+
+/** Merged default-app desktop ids from every mimeapps.list of this
+ *  session (see mimeAppsListPaths). */
 [[nodiscard]] QStringList loadMimeAppsDefaults();
 
 /** First .desktop local-file path from a KRunner row's "urls" role value
