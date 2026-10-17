@@ -179,6 +179,8 @@ set(APPGRID_COMMON_LIBS
 # Everything except the per-variant plugin register (appgridplugin_register.cpp
 # for center, appgridpanelplugin.* for panel), which the calls add inline.
 set(APPGRID_COMMON_SOURCES
+    src/activityscope.cpp
+    src/activityscope.h
     src/appactionid.cpp
     src/applauncher.cpp
     src/applauncher.h

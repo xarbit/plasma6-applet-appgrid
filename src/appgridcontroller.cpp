@@ -11,7 +11,6 @@
 
 #include <KConfigGroup>
 #include <KRunner/ResultsModel>
-#include <PlasmaActivities/Consumer>
 #include <QQuickWindow>
 #include <QWindow>
 
@@ -89,36 +88,13 @@ void AppGridController::wireLaunchState()
         m_filterModel.setNewApps(m_newAppsTracker.newApps());
     });
 
-    // Per-activity folders: feed the current activity to the store before the
-    // initial push below, and re-scope on every switch. The store re-reads that
-    // activity's layout (or the shared one until it diverges) and emits the
-    // folders/layout-changed signals the grouped-model wiring below already handles.
-    m_activities = new KActivities::Consumer(this);
-    // A just-constructed Consumer has NOT synced with the activity manager yet:
-    // activities()/currentActivity() return bootstrap values (empty or the null
-    // UUID), not the real state. Acting on those would prune the current
-    // activity's [Folders] group (wiping its favourites order) and scope to the
-    // wrong activity. So apply the initial state only once the service is Running;
-    // the *Changed signals then carry real data on every later switch.
-    const auto applyActivityState = [this]() {
-        m_launchState.setActivity(m_activityScoping ? m_activities->currentActivity() : QString());
-        // Drop per-activity folder layouts for activities removed in Plasma.
-        m_launchState.pruneActivities(m_activities->activities());
-    };
-    if (m_activities->serviceStatus() == KActivities::Consumer::Running) {
-        applyActivityState();
-    }
-    connect(m_activities, &KActivities::Consumer::serviceStatusChanged, &m_launchState, [applyActivityState](KActivities::Consumer::ServiceStatus status) {
-        if (status == KActivities::Consumer::Running) {
-            applyActivityState();
-        }
-    });
-    connect(m_activities, &KActivities::Consumer::currentActivityChanged, &m_launchState, [this](const QString &id) {
-        m_launchState.setActivity(m_activityScoping ? id : QString());
-    });
-    connect(m_activities, &KActivities::Consumer::activitiesChanged, &m_launchState, [this](const QStringList &activities) {
-        m_launchState.pruneActivities(activities);
-    });
+    // Per-activity folders: the store scopes them to the activity ActivityScope
+    // reports (none while per-activity favourites are off) and drops the layouts
+    // of activities removed in Plasma. It re-reads that activity's layout and
+    // emits the folders/layout-changed signals the grouped-model wiring below
+    // handles.
+    connect(&m_activityScope, &ActivityScope::activityChanged, &m_launchState, &LaunchStateStore::setActivity);
+    connect(&m_activityScope, &ActivityScope::activitiesChanged, &m_launchState, &LaunchStateStore::pruneActivities);
 
     // The By Category view groups the filtered apps itself, while it is shown.
     m_categoryRows.setSourceModel(&m_filterModel);
@@ -279,10 +255,5 @@ void AppGridController::setSearchShowsHidden(bool enabled)
 
 void AppGridController::setActivityScopingEnabled(bool enabled)
 {
-    if (m_activityScoping == enabled) {
-        return;
-    }
-    m_activityScoping = enabled;
-    // Re-scope the store: the current activity when on, empty (global) when off.
-    m_launchState.setActivity(enabled ? m_activities->currentActivity() : QString());
+    m_activityScope.setEnabled(enabled);
 }

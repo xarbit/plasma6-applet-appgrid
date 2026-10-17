@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QRect>
 
+#include "activityscope.h"
 #include "appfiltermodel.h"
 #include "appgridfavoritesmodel.h"
 #include "appmodel.h"
@@ -30,11 +31,6 @@
 #endif
 
 class QWindow;
-
-namespace KActivities
-{
-class Consumer;
-}
 
 /**
  * @brief Applet-independent core of the AppGrid launcher.
@@ -128,11 +124,9 @@ private:
     MenuTreeModel m_menuTreeModel;
     // Built on first menuTreeModel() read (folders feature in use), not at startup.
     mutable bool m_menuTreeBuilt = false;
-    // Feeds the current activity to m_launchState so folders are per-activity;
-    // the store itself stays KConfig-only. Gated by m_activityScoping (opt-in):
-    // off feeds an empty activity, keeping folders global.
-    KActivities::Consumer *m_activities = nullptr;
-    bool m_activityScoping = false;
+    // The activity the store scopes the folders to (none unless per-activity
+    // favourites are on); the store itself stays KConfig-only.
+    ActivityScope m_activityScope;
     RunnerService m_runner;
     UnifiedSearchModel m_searchModel;
     FrecencyProvider m_frecencyProvider;

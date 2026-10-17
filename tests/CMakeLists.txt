@@ -10,6 +10,7 @@ target_link_libraries(appgrid_teststubs PUBLIC appgrid_core)
 
 # Each test is one source file linked against the launcher core.
 ecm_add_tests(
+    test_activityscope.cpp
     test_appactionid.cpp
     test_appfiltermodel.cpp
     test_appletmigration.cpp
