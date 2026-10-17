@@ -52,7 +52,7 @@ Item {
     // hiddenApps).
     required property var configuration
 
-    // The plasmoid-callback surface (methods + favoritesGroupedModel / isWayland).
+    // The plasmoid-callback surface (methods + favoritesGroupedModel).
     // Panel injects the applet (Plasmoid), standalone injects its controller; both
     // implement the same Q_PROPERTY / Q_INVOKABLE interface. Tests inject a plain
     // QtObject stub with the same names.

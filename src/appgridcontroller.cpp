@@ -300,11 +300,6 @@ UnifiedSearchModel *AppGridController::searchModel() const
     return const_cast<UnifiedSearchModel *>(&m_searchModel);
 }
 
-bool AppGridController::isWayland() const
-{
-    return KWindowSystem::isPlatformWayland();
-}
-
 bool AppGridController::isUniversalBuild() const
 {
 #ifdef APPGRID_UNIVERSAL_BUILD

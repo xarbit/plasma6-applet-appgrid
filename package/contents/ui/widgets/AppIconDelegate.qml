@@ -253,10 +253,8 @@ Item {
                 source: "folder-new"
             }
 
-            // "New" badge — Plasma's standard pill (Kirigami.Badge, Frameworks
-            // 6.25+). Behind a Loader so older Plasma 6 (Kirigami < 6.25, no Badge
-            // type) errors the Loader and falls back to the plain dot below
-            // instead of failing the whole delegate to load.
+            // "New" badge — Plasma's standard pill (Kirigami.Badge). Behind a
+            // Loader so it is only created for icons that are actually new.
             Loader {
                 id: newBadgeLoader
                 active: root.isNew
@@ -272,19 +270,6 @@ Item {
                 // labels (fontScale squared): Large stays full size, Medium and
                 // Small shrink more so the pill never crowds a small icon.
                 onLoaded: item.fontScale = Qt.binding(() => root.fontScale * root.fontScale)
-            }
-
-            // Fallback dot for Kirigami < 6.25, where the badge Loader errors.
-            Rectangle {
-                visible: root.isNew && newBadgeLoader.status === Loader.Error
-                width: Kirigami.Units.smallSpacing * 3
-                height: width
-                radius: width / 2
-                color: Kirigami.Theme.positiveTextColor
-                anchors.top: parent.top
-                anchors.right: parent.right
-
-                Accessible.ignored: true
             }
 
         }

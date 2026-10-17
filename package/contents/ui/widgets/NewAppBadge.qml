@@ -2,9 +2,8 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Plasma's standard "new app" badge (Kirigami.Badge, KDE Frameworks 6.25+).
-    Loaded behind a Loader in AppIconDelegate so older Plasma 6 — whose Kirigami
-    has no Badge type — fails that Loader cleanly and falls back to a plain dot.
+    Plasma's standard "new app" badge (Kirigami.Badge). Loaded behind a Loader
+    in AppIconDelegate so it is only created for icons that are actually new.
     The delegate already announces "new" to a screen reader, so the badge is
     decorative here.
 */

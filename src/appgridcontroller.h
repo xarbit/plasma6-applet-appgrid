@@ -62,7 +62,6 @@ class AppGridController : public QObject
     // boundary; keeps <KRunner/ResultsModel> out of this header.
     Q_PROPERTY(QObject *runnerSourceModel READ runnerSourceModel CONSTANT)
     Q_PROPERTY(UnifiedSearchModel *searchModel READ searchModel CONSTANT)
-    Q_PROPERTY(bool isWayland READ isWayland CONSTANT)
     // Drives QML's "Check for updates" visibility + i: view "Install" row.
     Q_PROPERTY(bool isUniversalBuild READ isUniversalBuild CONSTANT)
 #ifdef APPGRID_UNIVERSAL_BUILD
@@ -87,7 +86,6 @@ public:
 #ifdef APPGRID_UNIVERSAL_BUILD
     [[nodiscard]] UpdateChecker *updateChecker() const;
 #endif
-    [[nodiscard]] bool isWayland() const;
 
     /**
      * Layer-shell scope the next configurePanelWindow() applies. The standalone
