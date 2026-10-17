@@ -90,6 +90,7 @@ fi
 %{_userunitdir}/appgrid.service
 %{_datadir}/applications/dev.xarbit.appgrid.desktop
 %{_datadir}/kglobalaccel/dev.xarbit.appgrid.launcher.desktop
+%{_sysconfdir}/xdg/autostart/dev.xarbit.appgrid.autostart.desktop
 %{_metainfodir}/dev.xarbit.appgrid.metainfo.xml
 %{_datadir}/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
 
