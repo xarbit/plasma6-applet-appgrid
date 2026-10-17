@@ -20,6 +20,7 @@ private Q_SLOTS:
     void isEditable();
     void flatFavouritesBecomeAppRows();
     void appRowExposesFavoriteId();
+    void rowsServeTheirAppFields();
     void createFolderProducesFolderRow();
     void folderRowExposesMembers();
     void removeFromFolderEmitsAndUngroups();
@@ -78,6 +79,30 @@ void TestFavoritesGroupedModel::appRowExposesFavoriteId()
     FavoritesGroupedModel m;
     m.setFlatFavorites({QStringLiteral("a.desktop")});
     QCOMPARE(m.data(m.index(0), AbstractGroupedModel::FavoriteIdRole).toString(), QStringLiteral("applications:a.desktop"));
+}
+
+// App rows serve the app's fields under the app model's role names, and a
+// folder row its members' icons; an id nothing resolves to gives empty fields.
+void TestFavoritesGroupedModel::rowsServeTheirAppFields()
+{
+    FavoritesGroupedModel m;
+    m.setFlatFavorites({QStringLiteral("appgrid-test-missing.desktop")});
+    const QModelIndex app = m.index(0);
+    QCOMPARE(m.data(app, AbstractGroupedModel::StorageIdRole).toString(), QStringLiteral("appgrid-test-missing.desktop"));
+    QVERIFY(m.data(app, AbstractGroupedModel::NameRole).toString().isEmpty());
+    QVERIFY(m.data(app, AbstractGroupedModel::MemberIconsRole).toStringList().isEmpty());
+    const auto roles = m.roleNames();
+    for (const char *name : {"name", "iconName", "genericName", "comment", "desktopFile", "storageId", "installSource", "memberIcons"}) {
+        QVERIFY2(roles.values().contains(QByteArray(name)), name);
+    }
+
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop")});
+    const int folderRow = m.indexOfFolder(m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop")));
+    QVERIFY(folderRow >= 0);
+    const QModelIndex folder = m.index(folderRow);
+    QCOMPARE(m.data(folder, AbstractGroupedModel::MemberIconsRole).toStringList().size(), 2);
+    QVERIFY(m.data(folder, AbstractGroupedModel::StorageIdRole).toString().isEmpty());
+    QVERIFY(m.data(folder, AbstractGroupedModel::NameRole).isNull());
 }
 
 void TestFavoritesGroupedModel::createFolderProducesFolderRow()
