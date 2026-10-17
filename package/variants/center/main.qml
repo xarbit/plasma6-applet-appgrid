@@ -84,5 +84,5 @@ PlasmoidItem {
 
     // Runs the daemon's "Pin to Task Manager" in this applet's process (it has the
     // corona Kicker needs); the daemon reaches us via the plasmoid D-Bus helper.
-    TaskManagerPinner { applet: appgrid; controller: Plasmoid.controller }
+    TaskManagerPinner { applet: appgrid; source: Plasmoid }
 }

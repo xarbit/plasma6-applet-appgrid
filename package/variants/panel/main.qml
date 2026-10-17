@@ -41,7 +41,7 @@ PlasmoidItem {
     }
 
     // "Pin to Task Manager" runs in-process via Kicker (needs this applet/corona).
-    TaskManagerPinner { applet: appgrid; controller: Plasmoid.controller }
+    TaskManagerPinner { applet: appgrid; source: Plasmoid }
 
     Component.onCompleted: {
         // Move this applet's old per-applet hidden/recent/launch-count

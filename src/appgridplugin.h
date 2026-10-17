@@ -69,8 +69,11 @@ public:
     AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
     ~AppGridPlugin() override;
 
-    /** The launcher controller QML drives (models + every Q_INVOKABLE). The applet
-     *  pins the Task Manager in-process, so it marks the controller on construction. */
+    /** The launcher controller QML drives (models + every Q_INVOKABLE), created
+     *  on first use. Only the panel variant hosts the launcher and so reads it;
+     *  the center variant never does, which keeps the app scan, KRunner, KAStats
+     *  and the launch-state store out of plasmashell for it. The applet pins the
+     *  Task Manager in-process, so it marks the controller when creating it. */
     [[nodiscard]] AppGridController *controller();
 
     /** Name of the screen this applet's containment (the panel) is on — the
@@ -117,6 +120,11 @@ Q_SIGNALS:
      *  appearance; the center variant QML writes it into Plasmoid.configuration. */
     void setButtonAppearanceRequested(const QVariantMap &values);
 
+    /** Pin @p desktopFile to the Task Manager, which needs this live applet's
+     *  corona: requested by the daemon over D-Bus, or by the panel variant's own
+     *  context menu (through the controller). TaskManagerPinner runs it. */
+    void addToTaskManagerRequested(const QString &desktopFile);
+
 protected:
     bool m_useNativeActivation = false;
 
@@ -132,7 +140,7 @@ private:
      *  center plasmoid owns the launcher session / settings it opens (#191). */
     void triggerStandaloneAsOwner(const QString &dbusMethod, const QStringList &extraFlags = {});
 
-    AppGridController m_controller;
+    AppGridController *m_controller = nullptr; // see controller()
     AppGridPlasmoidService *m_plasmoidService = nullptr;
     QVariantMap m_buttonAppearance;
     // Cached result of the running daemon's version probe (see triggerStandalone).

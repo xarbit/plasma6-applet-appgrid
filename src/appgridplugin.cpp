@@ -23,13 +23,7 @@
 
 AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
     : Plasma::Applet(parent, data, args)
-    , m_controller(this)
 {
-    // A live applet hosts the controller, so the Task Manager pin runs in-process
-    // (Kicker's ContainmentInterface needs a corona); the controller emits a
-    // request the variant's QML handles. The standalone daemon leaves this off.
-    m_controller.setInProcessTaskManagerPin(true);
-
     // Do NOT prune/sync this applet's config here: config() is plasmashell's
     // appletsrc, and writing+syncing it from the constructor (before the shell
     // finishes restoring its containments) persists a partial file and resets
@@ -99,9 +93,13 @@ QVariantMap AppGridPlugin::buttonAppearance() const
 void AppGridPlugin::registerPlasmoidService()
 {
     m_plasmoidService = new AppGridPlasmoidService(this, this);
-    // The daemon's pin request reaches the controller, which (in-process) emits
-    // addToTaskManagerRequested for this center plasmoid's QML to run the real pin.
-    connect(m_plasmoidService, &AppGridPlasmoidService::addToTaskManagerRequested, &m_controller, &AppGridController::addToTaskManager);
+    // The daemon's pin request goes straight to this applet's QML, which runs the
+    // real pin (no controller needed for that).
+    connect(m_plasmoidService, &AppGridPlasmoidService::addToTaskManagerRequested, this, [this](const QString &desktopFile) {
+        if (!desktopFile.isEmpty()) {
+            Q_EMIT addToTaskManagerRequested(desktopFile);
+        }
+    });
     connect(m_plasmoidService, &AppGridPlasmoidService::setButtonAppearanceRequested, this, &AppGridPlugin::setButtonAppearanceRequested);
 
     auto bus = QDBusConnection::sessionBus();
@@ -119,7 +117,16 @@ void AppGridPlugin::registerPlasmoidService()
 
 AppGridController *AppGridPlugin::controller()
 {
-    return &m_controller;
+    if (!m_controller) {
+        m_controller = new AppGridController(this);
+        // A live applet hosts the controller, so the Task Manager pin runs
+        // in-process (Kicker's ContainmentInterface needs a corona): the
+        // controller emits a request this applet forwards to its QML. The
+        // standalone daemon leaves this off.
+        m_controller->setInProcessTaskManagerPin(true);
+        connect(m_controller, &AppGridController::addToTaskManagerRequested, this, &AppGridPlugin::addToTaskManagerRequested);
+    }
+    return m_controller;
 }
 
 QString AppGridPlugin::panelScreenName() const
@@ -136,7 +143,7 @@ QString AppGridPlugin::panelScreenName() const
 
 QVariantMap AppGridPlugin::systemInfo()
 {
-    return m_controller.systemInfo(m_useNativeActivation ? QStringLiteral("Panel") : QStringLiteral("Center"));
+    return controller()->systemInfo(m_useNativeActivation ? QStringLiteral("Panel") : QStringLiteral("Center"));
 }
 
 void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringList &launchArgs, const QVariantList &dbusArgs)
@@ -234,9 +241,9 @@ void AppGridPlugin::migrateLaunchState()
     // (the same keys, even though the schema no longer maps them). Hand them to
     // the store, which seeds only the lists it doesn't already hold.
     const KConfigGroup src = config().group(QStringLiteral("General"));
-    m_controller.launchState()->migrateFrom(src.readEntry("hiddenApps", QStringList()),
-                                            src.readEntry("recentApps", QStringList()),
-                                            src.readEntry("launchCounts", QStringList()));
+    controller()->launchState()->migrateFrom(src.readEntry("hiddenApps", QStringList()),
+                                             src.readEntry("recentApps", QStringList()),
+                                             src.readEntry("launchCounts", QStringList()));
 }
 
 void AppGridPlugin::toggleStandaloneWindow()
