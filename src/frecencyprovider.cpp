@@ -7,8 +7,8 @@
 
 #include "appgrid_frecency_debug.h"
 
+#include "appurl.h"
 #include "frecencyscoring.h"
-#include "pluginhelpers.h"
 
 #include <PlasmaActivities/Stats/Query>
 #include <PlasmaActivities/Stats/ResultModel>
@@ -47,7 +47,7 @@ void FrecencyProvider::setEnabled(bool enabled)
     // Seed the chain with an explicit Query — the `Select | Order` overload
     // is not provided, so we cannot start the chain with two bare enums.
     const auto query = KAStats::Query(KASTerms::UsedResources) | KASTerms::HighScoredFirst | KASTerms::Agent::any() | KASTerms::Type::any()
-        | KASTerms::Activity::any() | KASTerms::Url::startsWith(PluginHelpers::ApplicationsUrlPrefix) | KASTerms::Limit(kFrecencyLimit);
+        | KASTerms::Activity::any() | KASTerms::Url::startsWith(AppUrl::Scheme) | KASTerms::Limit(kFrecencyLimit);
 
     m_model = new KAStats::ResultModel(query, this);
     connect(m_model, &QAbstractItemModel::modelReset, this, &FrecencyProvider::rebuildScores);

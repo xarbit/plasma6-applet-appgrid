@@ -6,7 +6,7 @@
 #include "unifiedsearchmodel.h"
 
 #include "appmodel.h"
-#include "pluginhelpers.h"
+#include "runnerresults.h"
 
 #include <KRunner/Action>
 
@@ -178,7 +178,7 @@ QVariant UnifiedSearchModel::data(const QModelIndex &index, int role) const
                 return QString();
             }
             const QVariant urls = srcIdx.data(m_runnerUrlsRole);
-            return role == StorageIdRole ? PluginHelpers::runnerStorageId(urls) : PluginHelpers::desktopPathFromRunnerUrls(urls);
+            return role == StorageIdRole ? RunnerResults::runnerStorageId(urls) : RunnerResults::desktopPathFromRunnerUrls(urls);
         }
         case IsNewRole:
         case IsHiddenRole:

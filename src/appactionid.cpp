@@ -5,7 +5,7 @@
 
 #include "appactionid.h"
 
-#include "pluginhelpers.h"
+#include "appurl.h"
 
 #include <QUrlQuery>
 
@@ -19,8 +19,8 @@ namespace AppActionId
 Parsed parse(const QString &id)
 {
     QString rest = id;
-    if (rest.startsWith(PluginHelpers::ApplicationsUrlPrefix)) {
-        rest = rest.mid(PluginHelpers::ApplicationsUrlPrefix.size());
+    if (rest.startsWith(AppUrl::Scheme)) {
+        rest = rest.mid(AppUrl::Scheme.size());
     }
 
     const int q = rest.indexOf(QLatin1Char('?'));

@@ -6,7 +6,7 @@
 #include "frecencyscoring.h"
 
 #include "appactionid.h"
-#include "pluginhelpers.h"
+#include "appurl.h"
 
 namespace
 {
@@ -16,7 +16,7 @@ namespace
 // ranks are apps, never actions.
 QString storageIdFromResource(const QString &resource)
 {
-    return resource.startsWith(PluginHelpers::ApplicationsUrlPrefix) ? AppActionId::parse(resource).storageId : QString();
+    return resource.startsWith(AppUrl::Scheme) ? AppActionId::parse(resource).storageId : QString();
 }
 }
 

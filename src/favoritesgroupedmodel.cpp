@@ -5,7 +5,7 @@
 
 #include "favoritesgroupedmodel.h"
 
-#include "pluginhelpers.h"
+#include "appurl.h"
 
 #include <utility>
 
@@ -320,7 +320,7 @@ AbstractGroupedModel::Row FavoritesGroupedModel::appRow(const QString &sid)
 {
     Row row;
     row.type = AbstractGroupedModel::App;
-    row.favoriteId = PluginHelpers::toFavoriteId(sid);
+    row.favoriteId = AppUrl::toFavoriteId(sid);
     return row;
 }
 

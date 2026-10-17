@@ -6,8 +6,8 @@
 #include "appgridcontroller.h"
 
 #include "appgridconstants.h"
+#include "configcleanup.h"
 #include "menutreesource.h"
-#include "pluginhelpers.h"
 
 #include <KConfigGroup>
 #include <KRunner/ResultsModel>
@@ -51,7 +51,7 @@ AppGridController::AppGridController(QObject *parent)
     // One-time tidy of stale appgridrc keys older versions left behind (same
     // shared instance LaunchStateStore uses).
     KConfigGroup appgridGeneral = KSharedConfig::openConfig(QStringLiteral("appgridrc"))->group(QStringLiteral("General"));
-    PluginHelpers::pruneObsoleteKeys(appgridGeneral);
+    ConfigCleanup::pruneObsoleteKeys(appgridGeneral);
 
     // The AppStream pool is NOT warmed here. Its metadata catalogs are large
     // (~25 MB, dominated by the Flatpak remote catalog the distro lookup leans on

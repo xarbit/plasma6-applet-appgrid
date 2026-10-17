@@ -12,7 +12,7 @@
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
 #include "installsource.h"
-#include "pluginhelpers.h"
+#include "localsystem.h"
 
 #include <KConfigGroup>
 #include <KDesktopFile>
@@ -64,7 +64,7 @@ QString validatedShell(const QString &shell)
     QFile file(QStringLiteral("/etc/shells"));
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QString contents = QString::fromUtf8(file.readAll());
-        if (PluginHelpers::parseShells(contents).contains(shell)) {
+        if (LocalSystem::parseShells(contents).contains(shell)) {
             return shell;
         }
     }
@@ -157,7 +157,7 @@ QStringList SystemActions::availableShells() const
     const QString contents = QString::fromUtf8(file.readAll());
 
     QStringList shells;
-    const auto candidates = PluginHelpers::parseShells(contents);
+    const auto candidates = LocalSystem::parseShells(contents);
     for (const QString &shell : candidates) {
         if (QFile::exists(shell)) {
             shells.append(shell);
@@ -239,7 +239,7 @@ void SystemActions::openInDiscover(const QString &storageId)
 
 QVariantList SystemActions::listDirectory(const QString &path) const
 {
-    return PluginHelpers::listDirectoryAt(path);
+    return LocalSystem::listDirectoryAt(path);
 }
 
 QVariantMap SystemActions::systemInfo(const QString &variant) const

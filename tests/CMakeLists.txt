@@ -14,6 +14,7 @@ ecm_add_tests(
     test_appfiltermodel.cpp
     test_appmodel.cpp
     test_appranking.cpp
+    test_appurl.cpp
     test_appsearch.cpp
     test_appmodel_assembly.cpp
     test_appmodel_helpers.cpp
@@ -32,10 +33,13 @@ ecm_add_tests(
     test_menutree.cpp
     test_newappstracker.cpp
     test_installsource.cpp
+    test_configcleanup.cpp
+    test_defaultappsresolver.cpp
     test_launchservice.cpp
+    test_localsystem.cpp
     test_plasmoidclient.cpp
-    test_pluginhelpers.cpp
     test_runner_filter.cpp
+    test_runnerresults.cpp
     test_search_ranking.cpp
     test_sort.cpp
     test_systemactions.cpp

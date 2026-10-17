@@ -5,7 +5,7 @@
 
 #include "runnerservice.h"
 
-#include "pluginhelpers.h"
+#include "runnerresults.h"
 
 #include <KConfigGroup>
 #include <KRunner/AbstractRunner>
@@ -48,7 +48,7 @@ RunnerFilterModel *RunnerService::filterModel()
 
 void RunnerService::applyRunnerFavorites()
 {
-    m_results->setFavoriteIds(PluginHelpers::readRunnerFavorites(m_krunnerConfig));
+    m_results->setFavoriteIds(RunnerResults::readRunnerFavorites(m_krunnerConfig));
 }
 
 QModelIndex RunnerService::sourceIndex(int row) const

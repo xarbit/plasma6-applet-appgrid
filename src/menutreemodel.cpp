@@ -5,7 +5,7 @@
 
 #include "menutreemodel.h"
 
-#include "pluginhelpers.h"
+#include "appurl.h"
 
 #include <utility>
 
@@ -146,7 +146,7 @@ void MenuTreeModel::rebuildRows()
     for (const MenuTree::AppLeaf &app : node->apps) {
         Row row;
         row.type = App;
-        row.favoriteId = PluginHelpers::toFavoriteId(app.storageId);
+        row.favoriteId = AppUrl::toFavoriteId(app.storageId);
         row.name = app.name;
         rows.append(row);
     }

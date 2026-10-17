@@ -5,7 +5,7 @@
 
 #include "usedappsprovider.h"
 
-#include "pluginhelpers.h"
+#include "appurl.h"
 
 #include <PlasmaActivities/Stats/Query>
 #include <PlasmaActivities/Stats/ResultModel>
@@ -27,7 +27,7 @@ UsedAppsProvider::UsedAppsProvider(QObject *parent)
     : QObject(parent)
 {
     const auto query = KAStats::Query(KASTerms::UsedResources) | KASTerms::Agent::any() | KASTerms::Type::any() | KASTerms::Activity::any()
-        | KASTerms::Url::startsWith(PluginHelpers::ApplicationsUrlPrefix) | KASTerms::Limit(kUsedAppsLimit);
+        | KASTerms::Url::startsWith(AppUrl::Scheme) | KASTerms::Limit(kUsedAppsLimit);
 
     m_model = new KAStats::ResultModel(query, this);
     connect(m_model, &QAbstractItemModel::modelReset, this, &UsedAppsProvider::rebuild);
@@ -44,7 +44,7 @@ void UsedAppsProvider::rebuild()
     const int rows = m_model->rowCount();
     next.reserve(rows);
     for (int r = 0; r < rows; ++r) {
-        QString resource = PluginHelpers::stripApplicationsPrefix(m_model->index(r, 0).data(KAStats::ResultModel::ResourceRole).toString());
+        QString resource = AppUrl::stripScheme(m_model->index(r, 0).data(KAStats::ResultModel::ResourceRole).toString());
         // An action launch (foo.desktop?action=x) still counts the base app as used.
         const int query = resource.indexOf(QLatin1Char('?'));
         if (query >= 0) {

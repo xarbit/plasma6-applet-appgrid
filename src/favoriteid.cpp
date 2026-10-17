@@ -6,7 +6,7 @@
 #include "favoriteid.h"
 
 #include "appactionid.h"
-#include "pluginhelpers.h"
+#include "appurl.h"
 
 #include <QUrl>
 
@@ -20,7 +20,7 @@ QString FavoriteId::normalized(const QString &id, const std::function<QString(co
     }
     const QString menuId = menuIdResolver(AppActionId::parse(id).storageId);
     if (!menuId.isEmpty()) {
-        return PluginHelpers::ApplicationsUrlPrefix + menuId;
+        return AppUrl::Scheme + menuId;
     }
     return id;
 }
@@ -58,7 +58,7 @@ QStringList FavoriteId::plainIds(const QStringList &stored)
     ids.reserve(stored.size());
     for (const QString &entry : stored) {
         if (!entry.isEmpty()) {
-            ids.append(PluginHelpers::stripApplicationsPrefix(entry));
+            ids.append(AppUrl::stripScheme(entry));
         }
     }
     return ids;

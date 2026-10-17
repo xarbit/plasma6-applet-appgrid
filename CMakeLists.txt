@@ -223,8 +223,13 @@ set(APPGRID_COMMON_SOURCES
     src/discoverbackends.h
     src/installsource.cpp
     src/installsource.h
-    src/pluginhelpers.cpp
-    src/pluginhelpers.h
+    src/appurl.h
+    src/configcleanup.cpp
+    src/configcleanup.h
+    src/localsystem.cpp
+    src/localsystem.h
+    src/runnerresults.cpp
+    src/runnerresults.h
     src/searchranking.cpp
     src/searchranking.h
     src/launchbookkeeping.cpp

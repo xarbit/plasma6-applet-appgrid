@@ -7,7 +7,7 @@
 
 #include "appactionid.h"
 #include "appmodel.h"
-#include "pluginhelpers.h"
+#include "runnerresults.h"
 
 #include <KRunner/QueryMatch>
 #include <KRunner/ResultsModel>
@@ -90,7 +90,7 @@ QString RunnerFilterModel::storageIdFromRow(const QModelIndex &idx) const
     if (m_urlsRole < 0) {
         return {};
     }
-    return PluginHelpers::runnerStorageId(idx.data(m_urlsRole));
+    return RunnerResults::runnerStorageId(idx.data(m_urlsRole));
 }
 
 bool RunnerFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const

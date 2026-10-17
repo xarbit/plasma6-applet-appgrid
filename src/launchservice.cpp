@@ -9,8 +9,8 @@
 #include "appgridconstants.h"
 #include "applauncher.h"
 #include "appresolver.h"
+#include "appurl.h"
 #include "favoriteid.h"
-#include "pluginhelpers.h"
 
 #include <PlasmaActivities/ResourceInstance>
 #include <QUrl>
@@ -49,7 +49,7 @@ bool LaunchService::launch(const QString &id)
     // The convention Kicker, Kickoff and friends use: the resource is
     // "applications:<id>", tagged with our agent so tools can attribute the
     // launch to AppGrid.
-    KActivities::ResourceInstance::notifyAccessed(QUrl(PluginHelpers::ApplicationsUrlPrefix + key), QString(AppGrid::ApplicationId));
+    KActivities::ResourceInstance::notifyAccessed(QUrl(AppUrl::Scheme + key), QString(AppGrid::ApplicationId));
     Q_EMIT appLaunched(key);
     return true;
 }
