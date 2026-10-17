@@ -17,9 +17,8 @@ AppIconDelegate {
     // The grid this cell belongs to. Both grids expose the same names:
     // appsModel, iconSize, fontScale, hoverAnimation, shadowEnabled,
     // hoverHighlight, showTooltips, showNewAppBadge, dragSource, and the
-    // selection (multiSelectActive, selectedSids, selectionAnchor,
-    // selectionCount, selectedSidList(), selectedDesktopFileUrls(),
-    // selectedIconNames()), plus _newAppsRevision for the badge.
+    // selection (multiSelectActive, and a GridSelection as `selection`), plus
+    // _newAppsRevision for the badge.
     required property var view
     // The index the grid's selection anchor is compared against.
     property int cellIndex: -1
@@ -46,13 +45,13 @@ AppIconDelegate {
     // Selection visuals: `selected` reads the grid's selection map, so toggling
     // any item re-evaluates every cell in one pass; `selectionAnchor` marks the
     // pivot of Shift+click / Shift+Arrow range selection.
-    selected: view.multiSelectActive && !!view.selectedSids[storageId]
+    selected: view.multiSelectActive && !!view.selection.selectionSids[storageId]
     selectionAnchor: view.multiSelectActive
-                     && view.selectionAnchor === cellIndex
-                     && view.selectionCount > 0
+                     && view.selection.anchor === cellIndex
+                     && view.selection.selectionCount > 0
     // The whole selection rides along when a selected cell is dragged, so the
     // drag-out carries every selected app.
-    multiSelectionSids: selected ? view.selectedSidList() : []
-    multiSelectionUrls: selected ? view.selectedDesktopFileUrls() : []
-    multiSelectionIcons: selected ? view.selectedIconNames() : []
+    multiSelectionSids: selected ? view.selection.sidList() : []
+    multiSelectionUrls: selected ? view.selection.selectedDesktopFileUrls() : []
+    multiSelectionIcons: selected ? view.selection.selectedIconNames() : []
 }

@@ -429,7 +429,7 @@ Item {
     function _resetGridUiState() {
         categoryBar.altHeld = false
         appGrid.clearShuffles()
-        appGrid.clearSelection()
+        appGrid.selection.clear()
         appGrid.contentY = appGrid.originY
         appGrid.currentIndex = -1
         appGrid.recentIndex = -1
@@ -857,7 +857,7 @@ Item {
             onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
             onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
                 contextMenu.showForApp(storageId, desktopFile,
-                                       categoryGridView.selectedSidList())
+                                       categoryGridView.selection.sidList())
             }
         }
 
@@ -990,7 +990,7 @@ Item {
                     // bulk-mode counts from it. Empty when nothing is
                     // selected.
                     contextMenu.showForApp(storageId, desktopFile,
-                                           appGrid.selectedSidList())
+                                           appGrid.selection.sidList())
                 }
                 onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
                     shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
@@ -1081,11 +1081,11 @@ Item {
         // resolve to null, so the toggle silently no-ops there.
         onToggleSelectionRequested: function(sid) {
             const v = panel.activeMultiSelectView
-            if (v && sid) v.toggleSelectionBySid(sid)
+            if (v && sid) v.selection.toggleSelectionBySid(sid)
         }
         onClearSelectionRequested: {
             const v = panel.activeMultiSelectView
-            if (v) v.clearSelection()
+            if (v) v.selection.clear()
         }
     }
 

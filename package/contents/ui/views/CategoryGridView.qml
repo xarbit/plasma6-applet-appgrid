@@ -91,78 +91,35 @@ ListView {
     // -- Multi-select --
     // Always active in this view (no favorites/non-favorites split): the
     // user can select any visible app and drag it out, or drag a multi-
-    // selection onto the Favorites tab to batch-add. See AppGridView for
-    // the analogous favorites-aware variant.
-    // SelectionState operates in a unified index space that spans the
-    // recents row (0 .. recentCount-1) and the flat category grid
-    // (recentCount .. end) so Shift+Arrow extends a range across the
-    // boundary just like it does within either section.
-    SelectionState {
-        id: selection
-        sidAt: function(idx) { return categoryGrid._unifiedSidAt(idx) }
-        gridCount: categoryGrid.recentCount + categoryGrid.appCount
-    }
-    readonly property int virtualIndex:
-        recentIndex >= 0 ? recentIndex
-        : appIndex >= 0 ? recentCount + appIndex
-        : -1
-
-    function _unifiedSidAt(virtualIdx) {
-        if (virtualIdx < 0) return ""
-        if (virtualIdx < recentCount)
-            return appsModel ? (appsModel.recentApps[virtualIdx] || "") : ""
-        const gridIdx = virtualIdx - recentCount
-        return rowsModel ? rowsModel.storageIdAt(gridIdx) : ""
-    }
+    // selection onto the Favorites tab to batch-add. Spans the recents row
+    // and the flat category grid (see GridSelection).
     readonly property bool multiSelectActive: appCount > 0
+    GridSelection {
+        id: gridSelection
+        active: categoryGrid.multiSelectActive
+        appsModel: categoryGrid.appsModel
+        recentCount: categoryGrid.recentCount
+        itemCount: categoryGrid.appCount
+        recentIndex: categoryGrid.recentIndex
+        currentIndex: categoryGrid.appIndex
+        gridSidAt: function(index) { return categoryGrid.rowsModel ? categoryGrid.rowsModel.storageIdAt(index) : "" }
+    }
+    readonly property alias selection: gridSelection
 
-    property alias selectedSids: selection.selectionSids
-    property alias selectionAnchor: selection.anchor
-    readonly property alias selectionCount: selection.selectionCount
-
-    function selectionContainsSid(sid) { return selection.contains(sid) }
-    function selectedSidList() { return selection.sidList() }
-
-    // Public accessors take a flat-grid index; selection runs in the
-    // unified (recents + grid) space, so translate at the boundary.
-    function toggleSelectionAt(gridIdx) {
-        if (multiSelectActive) selection.toggleAt(recentCount + gridIdx)
-    }
-    function toggleSelectionBySid(sid) {
-        if (multiSelectActive) selection.toggleSid(sid, -1)
-    }
-    function rangeSelectTo(gridIdx) {
-        if (multiSelectActive) selection.rangeTo(recentCount + gridIdx)
-    }
-    function applyClickModifiers(mouse, gridIdx) {
-        return multiSelectActive
-            ? selection.applyModClick(mouse, recentCount + gridIdx) : false
-    }
-    // Recents already sit at virtual indices 0 .. recentCount-1, no offset.
-    function applyRecentClickModifiers(mouse, recentIdx) {
-        return multiSelectActive
-            ? selection.applyModClick(mouse, recentIdx) : false
-    }
-    function selectAllVisible() {
-        if (multiSelectActive) selection.selectAll(virtualIndex)
-    }
-    function clearSelection() { selection.clear() }
     // Reset to a clean, unselected, scrolled-to-top state. Used after
     // search/filter changes and before re-showing the panel.
     function resetView() {
         positionViewAtBeginning()
-        clearSelection()
+        selection.clear()
         appIndex = -1
         recentIndex = -1
     }
-    function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
-    function selectedIconNames() { return selection.iconNames(appsModel) }
 
     // Clear selection whenever the grouped model is rebuilt (search, category
     // pick) so the user doesn't carry ghost selections across filter changes.
     Connections {
         target: categoryGrid.rowsModel
-        function onSectionsChanged() { categoryGrid.clearSelection() }
+        function onSectionsChanged() { categoryGrid.selection.clear() }
     }
 
     // Bumped on newAppsChanged so each cell's isNew binding re-evaluates
@@ -176,14 +133,14 @@ ListView {
     function _arrowMoveWithSelection(event, moveFn) {
         GridNav.arrowMoveWithSelection(selection, multiSelectActive,
                                         event, moveFn,
-                                        function() { return virtualIndex })
+                                        function() { return selection.virtualIndex })
     }
 
     Shortcut {
         sequence: StandardKey.SelectAll
         enabled: categoryGrid.multiSelectActive && categoryGrid.activeFocus
                  && categoryGrid.appCount > 0
-        onActivated: categoryGrid.selectAllVisible()
+        onActivated: categoryGrid.selection.selectAllVisible()
     }
 
     function selectFirst() {
@@ -297,13 +254,13 @@ ListView {
             recentLaunched(appsModel.recentApps[recentIndex])
         else if (appIndex >= 0 && appIndex < appCount)
             launched(rowsModel.proxyIndexAt(appIndex))
-        clearSelection()
+        selection.clear()
     }
     function activateCurrent() {
-        const sids = selectedSidList()
+        const sids = selection.sidList()
         if (sids.length > 1) {
             bulkLaunchRequested(sids)
-            clearSelection()
+            selection.clear()
         } else {
             _launchCurrent()
         }
@@ -323,7 +280,7 @@ ListView {
         // swallow the printable " ".
         if (event.key === Qt.Key_Space && multiSelectActive
                 && appIndex >= 0 && recentIndex < 0) {
-            toggleSelectionAt(appIndex)
+            selection.toggleSelectionAt(appIndex)
             event.accepted = true
             return
         }
@@ -366,15 +323,15 @@ ListView {
         showTooltips: categoryGrid.showTooltips
         dragSource: categoryGrid.dragSource
         multiSelectActive: categoryGrid.multiSelectActive
-        selectionSids: categoryGrid.selectedSids
-        multiSelectionUrls: categoryGrid.selectedDesktopFileUrls()
-        multiSelectionIcons: categoryGrid.selectedIconNames()
+        selectionSids: categoryGrid.selection.selectionSids
+        multiSelectionUrls: categoryGrid.selection.selectedDesktopFileUrls()
+        multiSelectionIcons: categoryGrid.selection.selectedIconNames()
         onRecentLaunched: function(storageId) { categoryGrid.recentLaunched(storageId) }
         onContextMenuRequested: function(storageId, desktopFile) {
             categoryGrid.contextMenuRequested(-1, storageId, desktopFile)
         }
         tryModifierClick: function(recentIdx, mouse) {
-            if (!categoryGrid.applyRecentClickModifiers(mouse, recentIdx)) return false
+            if (!categoryGrid.selection.applyRecentClickModifiers(mouse, recentIdx)) return false
             categoryGrid.recentIndex = recentIdx
             categoryGrid.appIndex = -1
             categoryGrid.forceActiveFocus()
@@ -475,9 +432,9 @@ ListView {
                             }
                             if (categoryGrid.multiSelectActive) {
                                 categoryGrid.appIndex = cell.flatIndex
-                                if (categoryGrid.applyClickModifiers(mouse, cell.flatIndex)) return
+                                if (categoryGrid.selection.applyClickModifiers(mouse, cell.flatIndex)) return
                             }
-                            categoryGrid.clearSelection()
+                            categoryGrid.selection.clear()
                             categoryGrid.launched(cell.appData.proxyIndex)
                         }
                     }

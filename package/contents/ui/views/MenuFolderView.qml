@@ -135,7 +135,7 @@ Item {
             onCategoryNavRequested: direction => root.categoryNavRequested(direction)
             onBulkLaunchRequested: sids => root.bulkLaunchRequested(sids)
             onContextMenuRequested: (index, sid, desktopFile) =>
-                root.appContextRequested(sid, desktopFile, menuGrid.selectedSidList())
+                root.appContextRequested(sid, desktopFile, menuGrid.selection.sidList())
         }
     }
 }

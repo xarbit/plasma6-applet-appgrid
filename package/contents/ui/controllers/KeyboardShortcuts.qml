@@ -75,7 +75,7 @@ Item {
         sequence: StandardKey.SelectAll
         enabled: gridView.multiSelectActive && gridView.activeFocus
                  && gridView.count > 0
-        onActivated: gridView.selectAllVisible()
+        onActivated: gridView.selection.selectAllVisible()
     }
     // Delete removes the selected favorites, gated to the favorites view — the
     // All / category views have nothing to remove (apps are listed, not owned),
@@ -83,17 +83,17 @@ Item {
     Shortcut {
         sequence: "Delete"
         enabled: gridView.favoritesActive && gridView.multiSelectActive
-                 && gridView.activeFocus && gridView.selectionCount > 0
+                 && gridView.activeFocus && gridView.selection.selectionCount > 0
         onActivated: gridView.removeSelectedFromFavorites()
     }
     // Ctrl+D toggles the favourite state of the highlighted app, or the whole
     // selection — browser-style bookmark, in any view (#193). Gated on grid
     // focus so it never fires while typing in the search field; needs either a
-    // selection or a highlighted row (virtualIndex covers recents + grid).
+    // selection or a highlighted row (the selection's virtualIndex covers recents + grid).
     Shortcut {
         sequence: "Ctrl+D"
         enabled: gridView.activeFocus
-                 && (gridView.selectionCount > 0 || gridView.virtualIndex >= 0)
+                 && (gridView.selection.selectionCount > 0 || gridView.selection.virtualIndex >= 0)
         onActivated: gridView.toggleFavoritesForSelectionOrCurrent()
     }
 }

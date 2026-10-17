@@ -297,31 +297,21 @@ GridView {
     readonly property int recentCount: showRecents ? appsModel.recentApps.length : 0
 
     // -- Multi-select --
-    // Enabled in Favorites view (drives reorder/remove flows against
-    // KAStats) and in All / category-filtered view (drag-out + add to
-    // favorites). Source of truth lives on the SelectionState child; the
-    // accessors below preserve the older AppGridView API so consumers
-    // (GridPanel, KeyboardShortcuts, the delegate) keep working unchanged.
-    // SelectionState operates in a unified index space that spans the
-    // recents row (0 .. recentCount-1) and the grid (recentCount .. end)
-    // so Shift+Arrow extends a range across the boundary just like it
-    // does within either section.
-    SelectionState {
-        id: selection
-        sidAt: function(idx) { return gridView._unifiedSidAt(idx) }
-        gridCount: gridView.recentCount + gridView.count
+    // Multi-selection, enabled in the Favorites view (reorder/remove against
+    // KAStats) and in the All / category-filtered view (drag-out + add to
+    // favorites). Spans the recents row and the grid (see GridSelection).
+    GridSelection {
+        id: gridSelection
+        active: gridView.multiSelectActive
+        appsModel: gridView.appsModel
+        recentCount: gridView.recentCount
+        itemCount: gridView.count
+        recentIndex: gridView.recentIndex
+        currentIndex: gridView.currentIndex
+        gridSidAt: function(index) { return gridView._sidAt(index) }
     }
-    readonly property int virtualIndex:
-        recentIndex >= 0 ? recentIndex
-        : currentIndex >= 0 ? recentCount + currentIndex
-        : -1
+    readonly property alias selection: gridSelection
 
-    function _unifiedSidAt(virtualIdx) {
-        if (virtualIdx < 0) return ""
-        if (virtualIdx < recentCount)
-            return appsModel ? (appsModel.recentApps[virtualIdx] || "") : ""
-        return _sidAt(virtualIdx - recentCount)
-    }
     // The favourites grid drives selection whether it is the direct KAStats grid
     // or the grouped (folders) grid — both key selection by storageId.
     // The grid is bound to a grouped model (favourites folders or the menu tree).
@@ -336,13 +326,6 @@ GridView {
     // drag-out / add-to-favourites).
     readonly property bool multiSelectActive: _favoritesSelect || _otherSelect || _groupedGrid
 
-    property alias selectedSids: selection.selectionSids
-    property alias selectionAnchor: selection.anchor
-    readonly property alias selectionCount: selection.selectionCount
-
-    function selectionContainsSid(sid) { return selection.contains(sid) }
-    function selectedSidList() { return selection.sidList() }
-
     // Row of the folder @p folderId in the current grouped level (0 if absent) —
     // used to re-select the folder just left when a drill view goes back a level.
     function rowOfFolder(folderId) {
@@ -352,7 +335,7 @@ GridView {
     function _sidAt(idx) {
         if (!multiSelectActive || idx < 0 || idx >= count) return ""
         if (_groupedGrid) {
-            // 1 === AbstractGroupedModel.Folder — folders aren't selectable.
+            // Folders aren't selectable.
             if (groupedModel.entryTypeAt(idx) === AbstractGroupedModel.Folder) return ""
             return FavoriteId.stripPrefix(groupedModel.favoriteIdAt(idx)) || ""
         }
@@ -367,50 +350,23 @@ GridView {
         return row && row.storageId ? row.storageId : ""
     }
 
-    // Public accessors take a grid-local index; selection runs in the
-    // unified (recents + grid) space, so translate at the boundary.
-    function toggleSelectionAt(gridIdx) {
-        if (multiSelectActive) selection.toggleAt(recentCount + gridIdx)
-    }
-    function toggleSelectionBySid(sid) {
-        if (multiSelectActive) selection.toggleSid(sid, -1)
-    }
-    function rangeSelectTo(gridIdx) {
-        if (multiSelectActive) selection.rangeTo(recentCount + gridIdx)
-    }
-    function applyClickModifiers(mouse, gridIdx) {
-        return multiSelectActive
-            ? selection.applyModClick(mouse, recentCount + gridIdx) : false
-    }
-    // Recents already sit at virtual indices 0 .. recentCount-1, no offset.
-    function applyRecentClickModifiers(mouse, recentIdx) {
-        return multiSelectActive
-            ? selection.applyModClick(mouse, recentIdx) : false
-    }
-    function selectAllVisible() {
-        if (multiSelectActive) selection.selectAll(virtualIndex)
-    }
-    function clearSelection() { selection.clear() }
-    function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
-    function selectedIconNames() { return selection.iconNames(appsModel) }
-
     function removeSelectedFromFavorites() {
-        if (!_favoritesSelect || selectionCount === 0 || !favoritesManager) return
-        const sids = selectedSidList()
+        if (!_favoritesSelect || selection.selectionCount === 0 || !favoritesManager) return
+        const sids = selection.sidList()
         for (var i = 0; i < sids.length; ++i)
             favoritesManager.removeFavorite(sids[i])
-        clearSelection()
+        selection.clear()
     }
 
     // Ctrl+D (#193): browser-style toggle of the selected apps, or the single
     // highlighted one when nothing is multi-selected. Works in every view (All,
-    // category, recents, favourites) — `_unifiedSidAt` resolves the row to a
+    // category, recents, favourites) — `selection.sidAt` resolves the row to a
     // storageId, returning "" for folders so they're skipped. Add-all-if-any-
     // missing, else remove-all, so a mixed selection has one predictable result.
     function toggleFavoritesForSelectionOrCurrent() {
         if (!favoritesManager) return
-        const sids = selectionCount > 0 ? selectedSidList()
-                                        : [_unifiedSidAt(virtualIndex)]
+        const sids = selection.selectionCount > 0 ? selection.sidList()
+                                                  : [selection.sidAt(selection.virtualIndex)]
         const entries = sids.map(s => ({ sid: s, isFavorite: favoritesManager.isFavorite(s) }))
         const plan = FavoriteToggle.plan(entries)
         for (const s of plan.add)
@@ -418,7 +374,7 @@ GridView {
         for (const s of plan.remove)
             favoritesManager.removeFavorite(s)
         _bounceSids(plan.add.concat(plan.remove))
-        clearSelection()
+        selection.clear()
     }
 
     // Bounce every currently-visible delegate whose app was just toggled. One
@@ -438,8 +394,8 @@ GridView {
     // Drop selection whenever the favorites tab is left or the underlying
     // model changes. Keeps state scoped to the active view and prevents
     // ghost selections from re-appearing after a tab toggle.
-    onFavoritesActiveChanged: clearSelection()
-    onModelChanged: clearSelection()
+    onFavoritesActiveChanged: selection.clear()
+    onModelChanged: selection.clear()
 
     function launchRecentByIndex(idx) {
         if (idx >= 0 && idx < recentCount)
@@ -505,13 +461,13 @@ GridView {
         }
     }
     function activateCurrent() {
-        const sids = selectedSidList()
+        const sids = selection.sidList()
         if (sids.length > 1) {
             bulkLaunchRequested(sids)
         } else {
             _launchCurrent()
         }
-        clearSelection()
+        selection.clear()
     }
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()
@@ -522,7 +478,7 @@ GridView {
     function _arrowMoveWithSelection(event, moveFn) {
         GridNav.arrowMoveWithSelection(selection, multiSelectActive,
                                         event, moveFn,
-                                        function() { return virtualIndex })
+                                        function() { return selection.virtualIndex })
     }
 
     // Direction movers — encode the cursor-transition rules between
@@ -667,7 +623,7 @@ GridView {
         // fall through to the search-bar redirect below.
         if (event.key === Qt.Key_Space && multiSelectActive
                 && currentIndex >= 0 && recentIndex < 0) {
-            toggleSelectionAt(currentIndex)
+            selection.toggleSelectionAt(currentIndex)
             event.accepted = true
             return
         }
@@ -700,15 +656,15 @@ GridView {
         showTooltips: gridView.showTooltips
         dragSource: gridView.dragSource
         multiSelectActive: gridView.multiSelectActive
-        selectionSids: gridView.selectedSids
-        multiSelectionUrls: gridView.selectedDesktopFileUrls()
-        multiSelectionIcons: gridView.selectedIconNames()
+        selectionSids: gridView.selection.selectionSids
+        multiSelectionUrls: gridView.selection.selectedDesktopFileUrls()
+        multiSelectionIcons: gridView.selection.selectedIconNames()
         onRecentLaunched: function(storageId) { gridView.recentLaunched(storageId) }
         onContextMenuRequested: function(storageId, desktopFile) {
             gridView.contextMenuRequested(-1, storageId, desktopFile)
         }
         tryModifierClick: function(recentIdx, mouse) {
-            if (!gridView.applyRecentClickModifiers(mouse, recentIdx)) return false
+            if (!gridView.selection.applyRecentClickModifiers(mouse, recentIdx)) return false
             gridView.recentIndex = recentIdx
             gridView.currentIndex = -1
             gridView.forceActiveFocus()
@@ -865,9 +821,9 @@ GridView {
                 }
                 if (gridView.multiSelectActive) {
                     gridView.currentIndex = model.index
-                    if (gridView.applyClickModifiers(mouse, model.index)) return
+                    if (gridView.selection.applyClickModifiers(mouse, model.index)) return
                 }
-                gridView.clearSelection()
+                gridView.selection.clear()
                 if (delegateRoot._fromShared) {
                     gridView.launchFavorite(delegateRoot._sid)
                 } else {
