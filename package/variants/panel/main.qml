@@ -10,6 +10,7 @@ import QtQuick
 import org.kde.plasma.plasmoid
 
 import "controllers"
+import "widgets"
 import "views" as Views
 
 PlasmoidItem {

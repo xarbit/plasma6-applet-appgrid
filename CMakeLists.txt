@@ -351,12 +351,10 @@ function(appgrid_add_compiled_applet)
     string(REPLACE "." "/" _idpath ${A_TARGET})
     set(_prefix "/qt/qml/plasma/applet/${_idpath}")
     set(_files)
-    # Entry + compact rep from the variant → qrc root.
-    foreach(_f main.qml CompactRepresentation.qml)
-        set(_s ${CMAKE_CURRENT_SOURCE_DIR}/package/variants/${A_VARIANT}/${_f})
-        set_source_files_properties(${_s} PROPERTIES QT_RESOURCE_ALIAS ${_f})
-        list(APPEND _files ${_s})
-    endforeach()
+    # The variant's entry → qrc root.
+    set(_s ${CMAKE_CURRENT_SOURCE_DIR}/package/variants/${A_VARIANT}/main.qml)
+    set_source_files_properties(${_s} PROPERTIES QT_RESOURCE_ALIAS main.qml)
+    list(APPEND _files ${_s})
     # Plasma config entry + KConfigXT schema → qrc root (the flat layout Plasma's
     # compiled applets use; config.qml's "config/Foo.qml" sources resolve under it).
     # The config model is per-variant: config-<variant>.qml aliased to config.qml

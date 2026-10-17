@@ -13,6 +13,7 @@ import QtQuick
 import org.kde.plasma.plasmoid
 
 import "controllers"
+import "widgets"
 
 PlasmoidItem {
     id: appgrid
@@ -73,6 +74,7 @@ PlasmoidItem {
             formFactor: Plasmoid.formFactor
             title: Plasmoid.title
             configuration: Plasmoid.configuration
+            preloadOnHover: true
             onActivated: Plasmoid.toggleStandaloneWindow()
         }
     }

@@ -200,8 +200,7 @@ jobs:
             d="build/lint-$v"
             rm -rf "$d"
             cp -r package/contents/ui "$d"
-            cp package/variants/"$v"/main.qml \
-               package/variants/"$v"/CompactRepresentation.qml "$d"/
+            cp package/variants/"$v"/main.qml "$d"/
             $qmllint "$d"/main.qml "$d"/iconanims/*.qml "$d"/prefix/*.qml
           done
 

@@ -2,11 +2,10 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Shared panel icon representation: custom image support, optional text
-    label, and size hints. Both variants (center, panel) instantiate this
-    and feed it the resolved configuration values; the only behavioural
-    difference is the centre variant's hover preload, gated by
-    preloadOnHover.
+    The panel icon of both variants (center, panel): custom image support,
+    optional text label, and size hints, read from the plasmoid
+    configuration through ConfigCache. The only behavioural difference is
+    the centre variant's hover preload, gated by preloadOnHover.
 */
 
 import QtQuick
@@ -16,19 +15,22 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
 
+import "../controllers"
+
 Item {
     id: root
 
     required property int formFactor
     required property string title
 
-    // Resolved configuration values — each variant binds these from its
-    // own config source (ConfigCache for centre, raw configuration for
-    // panel) so this component never depends on the config plumbing.
-    property string iconSource: ""
-    property bool customButtonImageEnabled: false
-    property string customButtonImageSource: ""
-    property string menuLabel: ""
+    // The plasmoid configuration (Plasmoid.configuration).
+    required property var configuration
+    ConfigCache { id: cfg; source: root.configuration }
+
+    readonly property string iconSource: cfg.icon
+    readonly property bool customButtonImageEnabled: cfg.useCustomButtonImage
+    readonly property string customButtonImageSource: cfg.customButtonImage.toString()
+    readonly property string menuLabel: cfg.menuLabel
 
     // Centre variant warms its window on hover; panel has no such window.
     property bool preloadOnHover: false
