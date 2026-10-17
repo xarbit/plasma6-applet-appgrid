@@ -59,25 +59,15 @@ Item {
         dragSource.beginDrag(root, tile, ({}), handler, [], [])
     }
 
-    // Soft hover / keyboard-current highlight — same treatment as AppIconDelegate.
-    Rectangle {
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.cornerRadius
-        color: ThemeColors.tint(Kirigami.Theme.textColor, 0.06)
-        visible: (root.hoverHighlight && hoverHandler.hovered) || root.isCurrentItem
+    // Hover / keyboard-current highlight, like an app's.
+    CellHighlight {
+        kind: CellHighlight.Hover
+        shown: (root.hoverHighlight && hoverHandler.hovered) || root.isCurrentItem
     }
-
-    // Fold target halo — a favourite is hovering to drop into this folder (#18).
-    readonly property bool _isFoldTarget: root.dragSource && root.dragSource.isFoldTargetFolder(root.folderId)
-    Rectangle {
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.cornerRadius
-        color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.3)
-        border.width: 2
-        border.color: Kirigami.Theme.highlightColor
-        visible: root._isFoldTarget
+    // A favourite is hovering to drop into this folder (#18).
+    CellHighlight {
+        kind: CellHighlight.FoldTarget
+        shown: !!root.dragSource && root.dragSource.isFoldTargetFolder(root.folderId)
     }
 
     // The folder tile's rect in this cell's coordinates — the drag-to-folder

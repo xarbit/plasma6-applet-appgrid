@@ -11,7 +11,6 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
-import "../js/themecolors.js" as ThemeColors
 import "../js/constants.js" as Const
 
 Item {
@@ -149,50 +148,25 @@ Item {
         }
     }
 
-    // Soft hover / keyboard-current highlight — neutral grey fill, no border,
-    // matching Dolphin's icon-view hover (KItemListWidget draws an unselected
-    // hover as QPalette::Text at alpha 0.06, rounded, borderless). Mouse hover
-    // is gated by hoverHighlight; keyboard navigation always shows it so the
-    // current item stays visible. Multi-selection uses the accent halo below.
-    Rectangle {
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.cornerRadius
-        color: ThemeColors.tint(Kirigami.Theme.textColor, 0.06)
-        visible: ((root.hoverHighlight && delegateMouse.containsMouse) || root.isCurrentItem)
-                 && !root.selected && !(pointerDrag.active || touchDrag.active)
+    // Hover / keyboard-current highlight. Mouse hover is gated by
+    // hoverHighlight; keyboard navigation always shows it so the current item
+    // stays visible. A selected cell shows the selection halo instead. Both
+    // sit below the content so the icon and label stay legible.
+    CellHighlight {
+        kind: CellHighlight.Hover
+        shown: ((root.hoverHighlight && delegateMouse.containsMouse) || root.isCurrentItem)
+               && !root.selected && !(pointerDrag.active || touchDrag.active)
     }
-
-    // -- Multi-select halo --
-    // Persistent accent fill+border for items in the selection. Sits below
-    // the content (z is default) so the icon and label stay legible.
-    Loader {
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
-        active: root.selected && !(pointerDrag.active || touchDrag.active)
-        sourceComponent: Rectangle {
-            radius: Kirigami.Units.cornerRadius
-            color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.18)
-            border.width: root.selectionAnchor ? 2 : 1
-            border.color: ThemeColors.tint(Kirigami.Theme.highlightColor,
-                                           root.selectionAnchor ? 0.9 : 0.55)
-        }
+    CellHighlight {
+        kind: root.selectionAnchor ? CellHighlight.Anchor : CellHighlight.Selected
+        shown: root.selected && !(pointerDrag.active || touchDrag.active)
     }
-
-    // -- Fold target halo (#18) --
-    // Another favourite is hovering this cell's centre long enough to merge into
-    // a folder; a strong accent ring previews the fold.
-    readonly property bool _isFoldTarget: root.dragSource && root.dragSource.isFoldTargetApp(root.storageId)
-    Loader {
-        anchors.fill: parent
-        anchors.margins: Kirigami.Units.smallSpacing
-        active: root._isFoldTarget
-        sourceComponent: Rectangle {
-            radius: Kirigami.Units.cornerRadius
-            color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.3)
-            border.width: 2
-            border.color: Kirigami.Theme.highlightColor
-        }
+    // Another favourite is hovering this cell's centre long enough to merge
+    // into a folder (#18).
+    readonly property bool _isFoldTarget: !!root.dragSource && root.dragSource.isFoldTargetApp(root.storageId)
+    CellHighlight {
+        kind: CellHighlight.FoldTarget
+        shown: root._isFoldTarget
     }
 
     // The app icon's rect in this delegate's coordinates — the fold target zone
