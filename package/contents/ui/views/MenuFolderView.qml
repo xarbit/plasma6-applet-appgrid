@@ -27,27 +27,14 @@ Item {
     // MenuTreeModel: AbstractGroupedModel rows for the current path, plus
     // enterFolder / goBack / canGoBack / currentFolderName.
     property var menuModel: null
-    property var appsModel: null
-    property var favoritesManager: null
-    property var dragSource: null
-    property var searchField: null
-
-    property int columns: 5
-    property real cellWidth: 100
-    property real cellHeight: 100
-    // How the cells draw (CellStyle).
-    required property CellStyle cellStyle
+    // The panel this view lives in (GridHost), handed to its grid.
+    required property GridHost host
     // Drop folders with no app anywhere in their subtree ("hide empty categories").
     property bool hideEmpty: false
 
-    signal launched(string sid)
-    signal categoryNavRequested(int direction)
     // Right-click on a folder → edit it in the menu editor (menuPath = kmenuedit
     // relPath, trailing slash stripped).
     signal folderContextRequested(string menuPath)
-    // Right-click on an app → the shared app context menu (host owns it).
-    signal appContextRequested(string sid, string desktopFile, var selectedSids)
-    signal bulkLaunchRequested(var sids)
 
     // Drill selection + the canGoBack mirror, shared with the favourites grid.
     readonly property alias canGoBack: nav.canGoBack
@@ -95,14 +82,8 @@ Item {
             showRecentApps: false
             hideLabelsOnFavorites: false
 
-            appsModel: root.appsModel
-            favoritesManager: root.favoritesManager
-            dragSource: root.dragSource
-            searchField: root.searchField
-
-            columns: root.columns
+            host: root.host
             adaptiveColumns: true
-            cellStyle: root.cellStyle
             sortFavoritesAlphabetically: false
 
             // Esc with no selection to clear → climb out one folder level. At the
@@ -114,12 +95,6 @@ Item {
                     root.menuModel.enterFolder(folderId)
             }
             onFolderContextMenuRequested: folderId => root.folderContextRequested(folderId.replace(/\/$/, ""))
-            // App rows launch via launchFavorite → recentLaunched (sid in hand).
-            onRecentLaunched: sid => root.launched(sid)
-            onCategoryNavRequested: direction => root.categoryNavRequested(direction)
-            onBulkLaunchRequested: sids => root.bulkLaunchRequested(sids)
-            onContextMenuRequested: (index, sid, desktopFile) =>
-                root.appContextRequested(sid, desktopFile, menuGrid.selection.sidList())
         }
     }
 }

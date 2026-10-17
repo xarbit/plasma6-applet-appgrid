@@ -26,32 +26,26 @@ ListView {
 
     WheelScroller { target: categoryGrid }
 
-    property var appsModel: null
+    // The panel this grid lives in (GridHost): the models and objects it reads,
+    // and where its launches and menus go.
+    required property GridHost host
+    readonly property var appsModel: host.appsModel
     // CategoryRowsModel from the controller: the apps grouped by category, as
     // rows. null leaves the view empty (e.g. tests without the C++ plugin).
     property var rowsModel: null
     // Columns of app cells per row; the cells take the view's width.
-    property int columns: 5
+    property int columns: host.columns
     readonly property real cellWidth: Math.floor(width / columns)
     readonly property real cellHeight: GridMetrics.labelledCellHeight(cellStyle.iconSize,
         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, cellStyle.fontScale)
     // How the cells draw (CellStyle).
-    required property CellStyle cellStyle
+    readonly property CellStyle cellStyle: host.cellStyle
     PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: categoryGrid.cellStyle.showScrollbars }
     property bool showRecents: false
-    property Item searchField: null
+    readonly property Item searchField: host.searchField
     // Shared with AppGridView so drag-out targets work from this view too.
-    property DragSource dragSource: null
+    readonly property DragSource dragSource: host.dragSource
 
-    signal launched(int proxyIndex)
-    signal recentLaunched(string storageId)
-
-    // Fired when Enter is pressed with more than one item selected —
-    // GridPanel routes through the same threshold + confirm dialog as
-    // the context-menu "Launch" action.
-    signal bulkLaunchRequested(var sids)
-    signal contextMenuRequested(int proxyIndex, string storageId, string desktopFile)
-    signal categoryNavRequested(int direction)
     signal shakeAllIcons()
 
     model: rowsModel
@@ -222,7 +216,7 @@ ListView {
     GridKeyboardNav {
         id: keyNav
         searchField: categoryGrid.searchField
-        onCategoryNavRequested: direction => categoryGrid.categoryNavRequested(direction)
+        onCategoryNavRequested: direction => categoryGrid.host.categoryNavRequested(direction)
     }
     Keys.onLeftPressed: function(event) {
         if (keyNav.handleAltArrow(event, -1)) return
@@ -258,12 +252,12 @@ ListView {
     }
     function _launchCurrent() {
         if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
-            recentLaunched(appsModel.recentApps[recentIndex])
+            host.launchRequested(appsModel.recentApps[recentIndex])
         else if (appIndex >= 0 && appIndex < appCount)
-            launched(rowsModel.proxyIndexAt(appIndex))
+            host.launchAppRequested(rowsModel.proxyIndexAt(appIndex))
     }
     function activateCurrent() {
-        selection.activate(sids => bulkLaunchRequested(sids), _launchCurrent)
+        selection.activate(sids => host.bulkLaunchRequested(sids), _launchCurrent)
     }
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()
@@ -321,9 +315,9 @@ ListView {
         selectionSids: categoryGrid.selection.selectionSids
         multiSelectionUrls: categoryGrid.selection.selectedDesktopFileUrls()
         multiSelectionIcons: categoryGrid.selection.selectedIconNames()
-        onRecentLaunched: function(storageId) { categoryGrid.recentLaunched(storageId) }
+        onRecentLaunched: function(storageId) { categoryGrid.host.launchRequested(storageId) }
         onContextMenuRequested: function(storageId, desktopFile) {
-            categoryGrid.contextMenuRequested(-1, storageId, desktopFile)
+            categoryGrid.host.appMenuRequested(storageId, desktopFile, categoryGrid.selection.sidList())
         }
         tryModifierClick: function(recentIdx, mouse) {
             if (!categoryGrid.selection.applyRecentClickModifiers(mouse, recentIdx)) return false
@@ -422,7 +416,7 @@ ListView {
                                 // Selection persists — menu shows
                                 // "Add to selection" / "Remove from
                                 // selection" based on popup item.
-                                categoryGrid.contextMenuRequested(cell.appData.proxyIndex, sid, cell.appData.desktopFile || "")
+                                categoryGrid.host.appMenuRequested(sid, cell.appData.desktopFile || "", categoryGrid.selection.sidList())
                                 return
                             }
                             if (categoryGrid.multiSelectActive) {
@@ -430,7 +424,7 @@ ListView {
                                 if (categoryGrid.selection.applyClickModifiers(mouse, cell.flatIndex)) return
                             }
                             categoryGrid.selection.clear()
-                            categoryGrid.launched(cell.appData.proxyIndex)
+                            categoryGrid.host.launchAppRequested(cell.appData.proxyIndex)
                         }
                     }
 

@@ -22,27 +22,16 @@ ColumnLayout {
     required property var cfg
     // The model the grid shows: the grouped favourites, or the app model.
     property var model: null
-    property var appsModel: null
-    // FavoritesManager: favourites and their folders.
-    property var favoritesManager: null
-    readonly property var sharedFavoritesModel: favoritesManager ? favoritesManager.sharedFavoritesModel : null
-    readonly property var favoritesGroupedModel: favoritesManager ? favoritesManager.favoritesGroupedModel : null
-    property var dragSource: null
-    property var searchField: null
+    // The panel this pane lives in (GridHost), handed to its grid.
+    required property GridHost host
+    readonly property var sharedFavoritesModel: host.favoritesManager ? host.favoritesManager.sharedFavoritesModel : null
+    readonly property var favoritesGroupedModel: host.favoritesManager ? host.favoritesManager.favoritesGroupedModel : null
     property bool favoritesActive: false
-    property int columns: 5
-    // How the cells draw (CellStyle).
-    required property CellStyle cellStyle
 
     readonly property alias grid: appGrid
     // Inside a favourites folder: Esc climbs out rather than closing.
     readonly property bool folderOpen: favoritesActive && nav.canGoBack
 
-    signal launched(int index)
-    signal recentLaunched(string storageId)
-    signal bulkLaunchRequested(var sids)
-    signal categoryNavRequested(int direction)
-    signal contextMenuRequested(string storageId, string desktopFile, var selectedSids)
     signal folderContextMenuRequested(string folderId)
     signal emptyAreaContextMenuRequested()
 
@@ -69,7 +58,7 @@ ColumnLayout {
     DrillBar {
         Layout.fillWidth: true
         model: pane.favoritesGroupedModel
-        dragSource: pane.dragSource
+        dragSource: pane.host.dragSource
         editable: true
         visible: pane.folderOpen
         onRemoveMemberRequested: function(sid) {
@@ -95,16 +84,11 @@ ColumnLayout {
         AppGridView {
             id: appGrid
             anchors.fill: parent
+            host: pane.host
             model: pane.model
-            appsModel: pane.appsModel
             // Editable here (unlike the read-only menu tree).
             groupedModel: pane.favoritesGroupedModel
-            favoritesManager: pane.favoritesManager
-            dragSource: pane.dragSource
-            searchField: pane.searchField
-            columns: pane.columns
             adaptiveColumns: true
-            cellStyle: pane.cellStyle
             sortFavoritesAlphabetically: pane.cfg.sortFavoritesAlphabetically
             showRecentApps: pane.cfg.showRecentApps
             startWithFavorites: pane.cfg.startWithFavorites
@@ -121,14 +105,6 @@ ColumnLayout {
             onEscapePressed: nav.goBack()
             onFolderContextMenuRequested: folderId => pane.folderContextMenuRequested(folderId)
             onEmptyAreaContextMenuRequested: pane.emptyAreaContextMenuRequested()
-            onLaunched: index => pane.launched(index)
-            onRecentLaunched: storageId => pane.recentLaunched(storageId)
-            onBulkLaunchRequested: sids => pane.bulkLaunchRequested(sids)
-            onCategoryNavRequested: direction => pane.categoryNavRequested(direction)
-            // The whole live selection goes along: the menu derives both its
-            // selection toggle and its bulk counts from it.
-            onContextMenuRequested: (index, storageId, desktopFile) =>
-                pane.contextMenuRequested(storageId, desktopFile, appGrid.selection.sidList())
             onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
                 shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
             }
@@ -138,7 +114,7 @@ ColumnLayout {
             id: shuffleOverlay
             anchors.fill: parent
             z: 10
-            iconSize: pane.cellStyle.iconSize
+            iconSize: pane.host.cellStyle.iconSize
             onSwapFinished: function(fromIndex, toIndex, fromIcon, toIcon) {
                 appGrid.applySwap(fromIndex, toIndex, fromIcon, toIcon)
             }

@@ -22,8 +22,12 @@ import "../js/constants.js" as Const
 GridView {
     id: gridView
 
+    // The panel this grid lives in (GridHost): the models and objects it reads,
+    // and where its launches and menus go.
+    required property GridHost host
+
     // Number of columns to display. If adaptiveColumns is true, computed from width.
-    property int columns: 6
+    property int columns: host.columns
     property bool adaptiveColumns: false
     readonly property int effectiveColumns: adaptiveColumns
         ? GridMetrics.columnsForWidth(width, GridMetrics.labelledCellWidth(
@@ -33,7 +37,7 @@ GridView {
 
     // How the cells draw (CellStyle). Its icon size and label scale also set
     // the cell size, so cells stay proportional across the size presets.
-    required property CellStyle cellStyle
+    readonly property CellStyle cellStyle: host.cellStyle
     PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: gridView.cellStyle.showScrollbars }
 
     // Disables Ctrl+Shift+Arrow favorite reordering (KAStats can't persist a
@@ -43,11 +47,6 @@ GridView {
     // Emitted when a shake-all-icons trigger fires (e.g. on grid open).
     signal shakeAllIcons()
 
-    // Emitted when an app is launched by proxy index.
-    signal launched(int index)
-
-    // Emitted when a recent app is launched by storageId.
-    signal recentLaunched(string storageId)
     signal openFolderRequested(string folderId)
     signal folderContextMenuRequested(string folderId)
     signal emptyAreaContextMenuRequested()
@@ -72,19 +71,6 @@ GridView {
                 gridView.emptyAreaContextMenuRequested()
         }
     }
-
-    // Fired when Enter is pressed with more than one item selected —
-    // GridPanel routes this through the same threshold + confirm
-    // dialog as the context-menu "Launch" action so keyboard parity
-    // matches the menu.
-    signal bulkLaunchRequested(var sids)
-
-    // Emitted when the user right-clicks an app.
-    signal contextMenuRequested(int index, string storageId, string desktopFile)
-
-    // Alt+Left/Right while the grid has focus — keyNavigationEnabled would
-    // otherwise eat the arrows, so route category paging out explicitly.
-    signal categoryNavRequested(int direction)
 
     // --- Shuffle animation state ---
     // Maps proxy index -> icon name override for visual-only icon swaps.
@@ -225,12 +211,12 @@ GridView {
     }
 
     // Search field to return focus to when typing text
-    property Item searchField: null
+    readonly property Item searchField: host.searchField
     // The apps model for section queries
-    property var appsModel: null
+    readonly property var appsModel: host.appsModel
     // Single source of truth for favourites (controllers/FavoritesManager):
     // the mutations, and the models read below.
-    property var favoritesManager: null
+    readonly property var favoritesManager: host.favoritesManager
     readonly property var sharedFavoritesModel: favoritesManager ? favoritesManager.sharedFavoritesModel : null
     // C++ grouped model (issue #18). When the grid is bound to it, favourite app
     // rows still resolve via favoriteId (like KAStats), and folder rows render a
@@ -246,8 +232,8 @@ GridView {
     // Favourites grouping is editable (reorder, drag-to-folder, create folder);
     // the menu tree is read-only. Gates those mutations.
     property bool groupEditable: true
-    // Shared DragSource from the plasmoid root; set by GridPanel.
-    property DragSource dragSource: null
+    // Shared DragSource from the plasmoid root.
+    readonly property DragSource dragSource: host.dragSource
 
     // Name + icon for a favourite that has no row in the app model (a System
     // Settings module favourited via #64), read from KAStats. The grouped model
@@ -400,7 +386,7 @@ GridView {
 
     function launchRecentByIndex(idx) {
         if (idx >= 0 && idx < recentCount)
-            recentLaunched(appsModel.recentApps[idx])
+            host.launchRequested(appsModel.recentApps[idx])
     }
 
     // Launch the favourite @p sid (its bare id: an app, a jump-list action, a
@@ -408,7 +394,7 @@ GridView {
     // them and records an app launch, wherever it came from.
     function launchFavorite(sid) {
         if (sid)
-            recentLaunched(sid)
+            host.launchRequested(sid)
     }
 
     function _launchCurrent() {
@@ -426,11 +412,11 @@ GridView {
                 launchFavorite(FavoriteId.stripPrefix(groupedModel.favoriteIdAt(currentIndex)))
             }
         } else {
-            launched(currentIndex)
+            host.launchAppRequested(currentIndex)
         }
     }
     function activateCurrent() {
-        selection.activate(sids => bulkLaunchRequested(sids), _launchCurrent)
+        selection.activate(sids => host.bulkLaunchRequested(sids), _launchCurrent)
     }
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()
@@ -539,7 +525,7 @@ GridView {
     GridKeyboardNav {
         id: keyNav
         searchField: gridView.searchField
-        onCategoryNavRequested: direction => gridView.categoryNavRequested(direction)
+        onCategoryNavRequested: direction => gridView.host.categoryNavRequested(direction)
     }
     Keys.onLeftPressed: function(event) {
         if (keyNav.handleAltArrow(event, -1))
@@ -628,9 +614,9 @@ GridView {
         selectionSids: gridView.selection.selectionSids
         multiSelectionUrls: gridView.selection.selectedDesktopFileUrls()
         multiSelectionIcons: gridView.selection.selectedIconNames()
-        onRecentLaunched: function(storageId) { gridView.recentLaunched(storageId) }
+        onRecentLaunched: function(storageId) { gridView.host.launchRequested(storageId) }
         onContextMenuRequested: function(storageId, desktopFile) {
-            gridView.contextMenuRequested(-1, storageId, desktopFile)
+            gridView.host.appMenuRequested(storageId, desktopFile, gridView.selection.sidList())
         }
         tryModifierClick: function(recentIdx, mouse) {
             if (!gridView.selection.applyRecentClickModifiers(mouse, recentIdx)) return false
@@ -783,7 +769,7 @@ GridView {
                 if (mouse.button === Qt.RightButton) {
                     // Selection persists across right-click so the menu can
                     // surface "Add to selection" / "Remove from selection".
-                    gridView.contextMenuRequested(model.index, delegateRoot._sid, desktopFile)
+                    gridView.host.appMenuRequested(delegateRoot._sid, desktopFile, gridView.selection.sidList())
                     return
                 }
                 if (gridView.multiSelectActive) {
@@ -794,7 +780,7 @@ GridView {
                 if (delegateRoot._fromShared) {
                     gridView.launchFavorite(delegateRoot._sid)
                 } else {
-                    gridView.launched(model.index)
+                    gridView.host.launchAppRequested(model.index)
                 }
             }
             onShuffleRequested: {

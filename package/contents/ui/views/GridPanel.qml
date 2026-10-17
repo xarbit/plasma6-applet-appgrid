@@ -219,6 +219,23 @@ Item {
     // the #167 gate live in Scale.textScale (single, tested policy).
     readonly property real densityScale: Scale.textScale(cfg.iconSize, cfg.independentTextSize)
 
+    // What every grid reads from the panel, and where its requests go.
+    GridHost {
+        id: gridHost
+        appsModel: panel.appsModel
+        favoritesManager: favorites
+        dragSource: panel.dragSource
+        searchField: searchBar.field
+        cellStyle: cellStyle
+        columns: panel.columns
+        onLaunchAppRequested: index => panel.launchApp(index)
+        onLaunchRequested: storageId => panel.launchAppByStorageId(storageId)
+        onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)
+        onCategoryNavRequested: direction => panel.navigateCategory(direction)
+        onAppMenuRequested: (storageId, desktopFile, selectedSids) =>
+            menus.showForApp(storageId, desktopFile, selectedSids)
+    }
+
     // How every view draws its cells and rows, from the settings.
     CellStyle {
         id: cellStyle
@@ -738,25 +755,13 @@ Item {
             Layout.fillHeight: true
             Layout.preferredHeight: panel.bodyHeight
             visible: panel.showCategoryGrid
-            searchField: searchBar.field
-            appsModel: panel.appsModel
+            host: gridHost
             rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
-            columns: panel.columns
-            cellStyle: cellStyle
-            dragSource: panel.dragSource
             showRecents: panel.cfgShowRecentApps
                          && panel.appsModel
                          && panel.appsModel.recentApps.length > 0
                          && !panel.isFavoritesActive
                          && !panel.cfgStartWithFavorites
-            onLaunched: function(proxyIndex) { panel.launchApp(proxyIndex) }
-            onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
-            onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
-            onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
-            onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
-                menus.showForApp(storageId, desktopFile,
-                                       categoryGridView.selection.sidList())
-            }
         }
 
         // -- Menu folder tree (By Category + group into folders, #201) --
@@ -769,20 +774,9 @@ Item {
             // Gated on the feature so the (lazy) menu tree is never built when
             // folders are off — reading menuTreeModel is what triggers the walk.
             menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
-            appsModel: panel.appsModel
-            favoritesManager: favorites
-            dragSource: panel.dragSource
-            columns: panel.columns
-            cellStyle: cellStyle
+            host: gridHost
             hideEmpty: cfg.hideEmptyCategories
-            searchField: searchBar.field
-            onLaunched: function(sid) { panel.launchAppByStorageId(sid) }
-            onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
             onFolderContextRequested: function(menuPath) { menus.showForMenuFolder(menuPath) }
-            onAppContextRequested: function(sid, desktopFile, selectedSids) {
-                menus.showForApp(sid, desktopFile, selectedSids)
-            }
-            onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
         }
 
         // -- App grid (favourites / all / category) --
@@ -793,20 +787,9 @@ Item {
             Layout.preferredHeight: panel.bodyHeight
             visible: panel.showAppGrid
             cfg: cfg
+            host: gridHost
             model: panel._searchApplied ? null : panel.gridModel
-            appsModel: panel.appsModel
-            favoritesManager: favorites
-            dragSource: panel.dragSource
-            searchField: searchBar.field
             favoritesActive: panel.isFavoritesActive
-            columns: panel.columns
-            cellStyle: cellStyle
-            onLaunched: index => panel.launchApp(index)
-            onRecentLaunched: storageId => panel.launchAppByStorageId(storageId)
-            onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)
-            onCategoryNavRequested: direction => panel.navigateCategory(direction)
-            onContextMenuRequested: (storageId, desktopFile, selectedSids) =>
-                menus.showForApp(storageId, desktopFile, selectedSids)
             onFolderContextMenuRequested: folderId => menus.showForFolder(folderId)
             onEmptyAreaContextMenuRequested: menus.showForEmptyArea()
         }
