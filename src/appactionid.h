@@ -31,6 +31,10 @@ struct Parsed {
  *  "applications:" scheme or not. Pure (no KService), so it is unit-testable. */
 [[nodiscard]] Parsed parse(const QString &id);
 
+/** The bare id of @p actionName of @p storageId ("<storageId>?action=<name>"),
+ *  or @p storageId alone for an empty @p actionName. The inverse of parse(). */
+[[nodiscard]] QString compose(const QString &storageId, const QString &actionName);
+
 /** True when @p id carries an "?action=" jump-list action. */
 [[nodiscard]] bool hasAction(const QString &id);
 

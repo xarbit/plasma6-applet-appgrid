@@ -58,6 +58,16 @@ private Q_SLOTS:
         QVERIFY(!AppActionId::hasAction(QStringLiteral("org.kde.spectacle.desktop?foo=bar")));
     }
 
+    void composeIsTheInverseOfParse()
+    {
+        const QString id = AppActionId::compose(QStringLiteral("org.kde.kate.desktop"), QStringLiteral("newWindow"));
+        QCOMPARE(id, QStringLiteral("org.kde.kate.desktop?action=newWindow"));
+        const AppActionId::Parsed parsed = AppActionId::parse(id);
+        QCOMPARE(parsed.storageId, QStringLiteral("org.kde.kate.desktop"));
+        QCOMPARE(parsed.actionName, QStringLiteral("newWindow"));
+        QCOMPARE(AppActionId::compose(QStringLiteral("org.kde.kate.desktop"), QString()), QStringLiteral("org.kde.kate.desktop"));
+    }
+
     void emptyId()
     {
         const auto p = AppActionId::parse(QString());

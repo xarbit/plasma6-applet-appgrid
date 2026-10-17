@@ -33,6 +33,11 @@ Parsed parse(const QString &id)
     return {storageId, query.queryItemValue(kActionKey)};
 }
 
+QString compose(const QString &storageId, const QString &actionName)
+{
+    return actionName.isEmpty() ? storageId : storageId + QLatin1Char('?') + kActionKey + QLatin1Char('=') + actionName;
+}
+
 bool hasAction(const QString &id)
 {
     return !parse(id).actionName.isEmpty();

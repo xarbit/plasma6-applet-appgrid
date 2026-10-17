@@ -27,7 +27,7 @@ QString LaunchService::launchKey(const QString &id)
         return {};
     }
     const AppActionId::Parsed parsed = AppActionId::parse(id);
-    return parsed.actionName.isEmpty() ? parsed.storageId : parsed.storageId + QLatin1String("?action=") + parsed.actionName;
+    return AppActionId::compose(parsed.storageId, parsed.actionName);
 }
 
 bool LaunchService::launch(const QString &id)
@@ -59,7 +59,7 @@ bool LaunchService::launchAction(const QString &storageId, const QString &action
     if (storageId.isEmpty() || actionName.isEmpty()) {
         return false;
     }
-    return launch(AppActionId::parse(storageId).storageId + QLatin1String("?action=") + actionName);
+    return launch(AppActionId::compose(AppActionId::parse(storageId).storageId, actionName));
 }
 
 QVariantList LaunchService::appActions(const QString &storageId) const
