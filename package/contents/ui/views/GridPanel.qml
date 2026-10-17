@@ -551,8 +551,13 @@ Item {
         syncModelFromConfig()
         _applyStartState()
 
-        searchBar.field.forceActiveFocus()
+        focusSearchField()
         _perfMark("resetState", _t0)
+    }
+
+    // Give the search field keyboard focus so typing searches right away.
+    function focusSearchField() {
+        searchBar.field.forceActiveFocus()
     }
 
     // Launch routing (single + bulk, the KActivities broadcast, the bulk
