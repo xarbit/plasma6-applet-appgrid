@@ -17,10 +17,8 @@ import dev.xarbit.appgrid.models
 import "../controllers"
 import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
-import "../js/searchresultnav.js" as SearchResultNav
 import "../js/constants.js" as Const
 import "../js/gridmetrics.js" as GridMetrics
-import "../js/prefixmodes.js" as PrefixModes
 import "../js/scale.js" as Scale
 
 Item {
@@ -224,6 +222,31 @@ Item {
     // changes only the app icons, not text/spacing (#167). The curve and
     // the #167 gate live in Scale.textScale (single, tested policy).
     readonly property real densityScale: Scale.textScale(cfg.iconSize, cfg.independentTextSize)
+
+    // The keys pressed in the search field, to the results, the shown grid
+    // or the prefix mode's view.
+    SearchKeyRouter {
+        id: searchKeys
+        results: searchResultsList
+        keyView: panel.activeKeyView
+        prefixView: prefixModeLoader.item
+        prefixMode: panel.prefixMode
+        resultsShown: panel.showSearchResults
+        searching: panel.isSearching
+        collapsible: panel.cfgHideGridWhenEmpty
+        collapsed: panel._emptyHiddenState
+        revealed: panel._gridRevealed
+        onLaunchResultRequested: index => panel.launchSearchResult(index)
+        onRunRequested: function(inTerminal) {
+            const actions = panel.plasmoidBridge.systemActions
+            if (inTerminal)
+                actions.runInTerminal(panel.prefixArgument, cfg.terminalShell)
+            else
+                actions.runCommand(panel.prefixArgument, cfg.terminalShell)
+            panel.closeRequested()
+        }
+        onRevealRequested: revealed => panel._gridRevealed = revealed
+    }
 
     // -- Prefix mode detection --
     PrefixDetector { id: prefixDetector; input: searchBar.text }
@@ -558,75 +581,15 @@ Item {
                     if (categoryBar.visible)
                         categoryBar.selectByMnemonic(key)
                 }
-            onAltNumberPressed: function(number) {
-                    if (!panel.isSearching || panel.isPrefixMode) return
-                    if (number >= 1 && number <= searchResultsList.count)
-                        panel.launchSearchResult(number - 1)
-                }
-                onAccepted: {
-                    if (panel.prefixMode === PrefixModes.TERMINAL) {
-                        panel.plasmoidBridge.systemActions.runInTerminal(panel.prefixArgument, cfg.terminalShell)
-                        panel.closeRequested()
-                    } else if (panel.prefixMode === PrefixModes.COMMAND) {
-                        panel.plasmoidBridge.systemActions.runCommand(panel.prefixArgument, cfg.terminalShell)
-                        panel.closeRequested()
-                    } else if (panel.prefixMode === PrefixModes.FILES) {
-                        prefixModeLoader.item?.activateFileCurrent()
-                    } else if (!panel.isPrefixMode) {
-                        if (panel.isSearching) {
-                            var idx = searchResultsList.currentIndex >= 0 ? searchResultsList.currentIndex : 0
-                            if (searchResultsList.count > 0) panel.launchSearchResult(idx)
-                        } else if (panel.activeKeyView) {
-                            // SearchBar holds focus by default, so Enter goes
-                            // to the view that owns the cursor and selection.
-                            panel.activeKeyView.activateCurrent()
-                        }
-                    }
-                }
-                readonly property int resultNavPrevious: -1
-                readonly property int resultNavNext: 1
-                function navigateToResults(step, wrap) {
-                    if (panel.isSearching && !panel.isPrefixMode) {
-                        const next = SearchResultNav.nextIndex(
-                            searchResultsList.currentIndex,
-                            searchResultsList.count,
-                            step,
-                            wrap === true)
-                        if (next !== searchResultsList.currentIndex)
-                            searchResultsList.currentIndex = next
-                    } else if (panel.activeKeyView) {
-                        panel.activeKeyView.enterFromSearch()
-                    }
-                }
-
-                onMoveDown: {
-                    if (panel.prefixMode === PrefixModes.FILES) {
-                        prefixModeLoader.item?.focusFileList()
-                        return
-                    }
-                    // Compact mode: first Down reveals the grid and
-                    // keeps focus in the search bar; the next Down then
-                    // takes the normal navigateToResults path.
-                    if (panel._emptyHiddenState) {
-                        panel._gridRevealed = true
-                        return
-                    }
-                    navigateToResults(resultNavNext)
-                }
-                onMoveUp: {
-                    if (panel.isSearching && !panel.isPrefixMode) {
-                        navigateToResults(resultNavPrevious)
-                        return
-                    }
-                    if (panel.cfgHideGridWhenEmpty && panel._gridRevealed
-                        && !panel.isSearching)
-                        panel._gridRevealed = false
-                }
-                onTabPressed: navigateToResults(resultNavNext, true)
-                onPageUp: if (panel.showSearchResults) searchResultsList.pageUp()
-                onPageDown: if (panel.showSearchResults) searchResultsList.pageDown()
-                onHome: if (panel.showSearchResults) searchResultsList.goHome()
-                onEnd: if (panel.showSearchResults) searchResultsList.goEnd()
+                onAltNumberPressed: number => searchKeys.altNumber(number)
+                onAccepted: searchKeys.accept()
+                onMoveDown: searchKeys.moveDown()
+                onMoveUp: searchKeys.moveUp()
+                onTabPressed: searchKeys.tab()
+                onPageUp: searchKeys.pageUp()
+                onPageDown: searchKeys.pageDown()
+                onHome: searchKeys.home()
+                onEnd: searchKeys.end()
             }
 
             HeaderActions {
