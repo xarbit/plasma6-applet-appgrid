@@ -30,9 +30,9 @@ struct Query {
     {
         return text.isEmpty();
     }
-    /** Whether a row with @p haystack (see haystack()) matches. An empty
+    /** Whether a row with @p rowText (see haystack()) matches. An empty
      *  query matches every row. */
-    [[nodiscard]] bool matches(const QString &haystack) const;
+    [[nodiscard]] bool matches(const QString &rowText) const;
 };
 
 /** The folded text a query is matched against: the name, generic name,

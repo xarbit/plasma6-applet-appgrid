@@ -21,10 +21,10 @@ Query Query::of(const QString &text)
     return query;
 }
 
-bool Query::matches(const QString &haystack) const
+bool Query::matches(const QString &rowText) const
 {
-    // The haystack is folded already, so a case-sensitive contains() does.
-    return folded.isEmpty() || haystack.contains(folded) || (!foldedSingular.isEmpty() && haystack.contains(foldedSingular));
+    // The row text is folded already, so a case-sensitive contains() does.
+    return folded.isEmpty() || rowText.contains(folded) || (!foldedSingular.isEmpty() && rowText.contains(foldedSingular));
 }
 
 QString haystack(const QModelIndex &index)
