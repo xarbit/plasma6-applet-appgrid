@@ -99,10 +99,10 @@ Item {
     readonly property bool isSearching: searchBar.text.length > 0
     // The views switch between grid and search list on the search the model
     // has actually been filtered with, not the live field text: the filter
-    // pass is deferred (see _applySearchText), and switching early showed the
+    // pass is deferred (see SearchPipeline), and switching early showed the
     // search list on the unfiltered apps, or rebuilt the grid from the stale
     // search results before the restored filter landed.
-    readonly property bool _searchApplied: _appliedSearchText.length > 0
+    readonly property bool _searchApplied: viewState.searchText.length > 0
     readonly property bool isFavoritesActive: viewState.favorites
 
     // The selected tab and the applied search; the apps model's filter
@@ -181,29 +181,13 @@ Item {
         return word.length > q.length ? word.substring(q.length) : ""
     }
 
-    // The grid filter + ranking is the heavy per-keystroke work. Coalesce it
-    // through Qt.callLater so a burst of fast keystrokes triggers a single
-    // filter pass after input settles, never blocking the text field itself.
-    property string _pendingSearchText: ""
-    property string _appliedSearchText: ""
-    function _applySearchText() {
-        viewState.setSearchText(panel._pendingSearchText)
-        panel._appliedSearchText = panel._pendingSearchText
-    }
-
-    // Trailing-debounce window for continued typing into KRunner. Short enough to
-    // feel live, long enough to collapse a fast-typed query into a single runner
-    // query (ResultsModel runs every enabled runner in-process per query).
-    readonly property int _runnerDebounceMs: 50
-
-    // Push the current field text to KRunner (or clear it). Shared by the
-    // leading-edge fire and the trailing debounce.
-    function _applyRunnerQuery() {
-        if (!panel.runnerSourceModel)
-            return
-        const q = searchBar.text
-        const searching = q.length > 0 && !panel.isPrefixMode && panel.cfgUseExtraRunners
-        panel.runnerSourceModel.queryString = searching ? q : ""
+    // The field text to the grid filter (deferred) and KRunner (debounced).
+    SearchPipeline {
+        id: searchPipeline
+        viewState: viewState
+        runnerSourceModel: panel.runnerSourceModel
+        useExtraRunners: panel.cfgUseExtraRunners
+        isPrefixMode: panel.isPrefixMode
     }
 
     // Whichever grid view currently owns a SelectionState — used to route
@@ -662,40 +646,7 @@ Item {
                 fontScale: panel.densityScale
                 completion: panel.searchCompletion
 
-                // Trailing debounce for continued typing: collapses a fast-typed
-                // query's keystrokes into one runner query.
-                Timer {
-                    id: runnerDebounce
-                    interval: panel._runnerDebounceMs
-                    onTriggered: panel._applyRunnerQuery()
-                }
-
-                onTextChanged: {
-                    // Defer the grid filter/ranking so the field never blocks on
-                    // it; rapid keystrokes coalesce into one pass (Qt.callLater
-                    // collapses repeat calls within an event-loop iteration).
-                    panel._pendingSearchText = text
-                    Qt.callLater(panel._applySearchText)
-
-                    var searching = text.length > 0 && !panel.isPrefixMode
-
-                    // KRunner query (expensive: runs every enabled runner
-                    // in-process) only runs with extra runners on.
-                    if (searching && panel.cfgUseExtraRunners) {
-                        // Leading edge: the first char of a fresh query (KRunner
-                        // still idle) fires immediately so results start landing at
-                        // once; subsequent keystrokes ride the trailing debounce.
-                        if (panel.runnerSourceModel && panel.runnerSourceModel.queryString.length === 0) {
-                            runnerDebounce.stop()
-                            panel._applyRunnerQuery()
-                        } else {
-                            runnerDebounce.restart()
-                        }
-                    } else if (panel.runnerSourceModel) {
-                        runnerDebounce.stop()
-                        panel.runnerSourceModel.queryString = ""
-                    }
-                }
+                onTextChanged: searchPipeline.setText(text)
                 onAltLetterPressed: function(key) {
                     if (categoryBar.visible)
                         categoryBar.selectByMnemonic(key)
