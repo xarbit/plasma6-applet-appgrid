@@ -6,35 +6,58 @@
 
 All notable changes to AppGrid are documented here.
 
-## [Unreleased]
-
-### Added
-
-- *(categories)* Open-on-hover for the category bar (#176)
-- *(grid)* Default to a 5x4 grid (#177)
-- *(grid)* Scale grid labels with the size preset (Medium/Small) (#177)
-- *(categories)* Optional category-bar icons (#176)
-- *(category)* Slow hands-free re-trigger on hover-paging arrows (#176)
-- *(grid)* Add "Reduce grid spacing" option for a tighter layout
-- *(config)* Add "Configure Animation Speed…" button under Animations
+## [1.9.4] - 2026-10-17
 
 ### Fixed
 
-- *(categories)* Guard open-on-hover against cursor crossing the bar
-- *(grid)* Square labelled cells so long app names stop orphaning (#177)
-- *(grid)* Centre the icon+label block in its cell (Kickoff-style)
-- *(window)* Stop full-screen blur leak from an empty effect region
-- *(config)* Move Category tab style below Sort order
-- *(window)* Size the centred panel off the window, not QScreen (#)
-- Stale search counts + dangling activated lambda
-- *(search)* Respect KRunner plugin arrangement in results (#180)
-- *(categories)* Reserve scroll-arrow space via anchor (#172)margins, not a layout slot
+- *(panel)* Replace Applet::globalConfig() removed in Plasma 6.8 (#229)
+
+
+## [1.9.3] - 2026-06-28
+
+### Fixed
+
+- *(sort)* Copy RowScore in lessThan to dodge QHash rehash crash (#202)
+
+
+## [1.9.2] - 2026-06-20
+
+### Fixed
+
+- *(center)* Align the theme-background blur to the panel under fractional scaling (#188)
+- *(qml)* Render QIcon-valued result icons instead of erroring to blank
+
+
+## [1.9.1] - 2026-06-15
+
+### Added
+
+- *(theme)* Render the Plasma theme background and shadow for the center variant (#188)
+
+### Fixed
+
+- *(theme)* Match center chrome corners to the Plasma theme background (#188)
+- *(theme)* Draw the theme's dialog shadow under native chrome (#188)
+- *(metainfo)* Drop rc pre-releases from the release list
+- *(icons)* Refresh grid icons on a system icon-theme change
+
+
+## [1.9.0] - 2026-06-14
+
+### Added
+
+- *(config)* Add "Configure Animation Speed…" button under Animations
+- *(search)* Wrap long result text, expand the selected row (#183)
+
+### Fixed
+
 - *(categories)* Quicken open-on-hover arrow re-arm to 800ms (#176)
 - *(categories)* Rebuild scroll-arrow reserves so the strip always lands flush (#172)
+- *(search)* Default search result names to 2 lines, not 3 (#183)
 
-### Packaging
+### I18n
 
-- Post-upgrade notice to restart Plasma after binary swap
+- Complete the maintainer-owned translations for recent strings
 
 
 ## [1.8.5] - 2026-05-29
