@@ -74,6 +74,47 @@ public:
     }
 };
 
+// Compare two dot-separated pre-release tags by SemVer precedence (§11):
+// identifier by identifier, numeric ones as numbers and below alphanumeric
+// ones, and a tag that is a prefix of the other ranks lower. Alphanumeric
+// identifiers that share a prefix and end in a number ("rc9" / "rc10", the
+// dot-less tags older releases used) compare that number numerically too.
+// Returns <0, 0 or >0.
+int comparePrerelease(const QString &a, const QString &b)
+{
+    static const QRegularExpression trailingNumber(QStringLiteral("^(\\D*)(\\d+)$"));
+    const QStringList ia = a.split(QLatin1Char('.'));
+    const QStringList ib = b.split(QLatin1Char('.'));
+    for (int i = 0; i < qMin(ia.size(), ib.size()); ++i) {
+        bool aNumeric = false;
+        bool bNumeric = false;
+        const qulonglong na = ia.at(i).toULongLong(&aNumeric);
+        const qulonglong nb = ib.at(i).toULongLong(&bNumeric);
+        if (aNumeric && bNumeric) {
+            if (na != nb) {
+                return na < nb ? -1 : 1;
+            }
+            continue;
+        }
+        if (aNumeric != bNumeric) {
+            return aNumeric ? -1 : 1;
+        }
+        const auto ma = trailingNumber.match(ia.at(i));
+        const auto mb = trailingNumber.match(ib.at(i));
+        if (ma.hasMatch() && mb.hasMatch() && ma.captured(1) == mb.captured(1)) {
+            const qulonglong ta = ma.captured(2).toULongLong();
+            const qulonglong tb = mb.captured(2).toULongLong();
+            if (ta != tb) {
+                return ta < tb ? -1 : 1;
+            }
+            continue;
+        }
+        if (const int c = QString::compare(ia.at(i), ib.at(i)); c != 0) {
+            return c;
+        }
+    }
+    return ia.size() == ib.size() ? 0 : (ia.size() < ib.size() ? -1 : 1);
+}
 } // namespace
 
 // http / https only — treat the release URL as untrusted on every code
@@ -505,5 +546,5 @@ bool UpdateChecker::isNewer(const QString &candidate, const QString &current)
     if (!aPre.isEmpty() && bPre.isEmpty()) {
         return false;
     }
-    return QString::compare(aPre, bPre) > 0;
+    return comparePrerelease(aPre, bPre) > 0;
 }

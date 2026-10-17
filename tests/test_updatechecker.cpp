@@ -76,6 +76,25 @@ private Q_SLOTS:
             << "1.8.0-rc2" << "1.8.0-rc1" << true;
         QTest::newRow("git-describe style")
             << "1.8.1" << "1.8.0-5-g1a2b3c4" << true;
+
+        // --- Pre-release identifiers compare per SemVer: numeric parts as
+        //     numbers, not text ("rc.10" used to rank below "rc.9") ---
+        QTest::newRow("rc.10 > rc.9")
+            << "2.0.0-rc.10" << "2.0.0-rc.9" << true;
+        QTest::newRow("rc.9 < rc.10")
+            << "2.0.0-rc.9" << "2.0.0-rc.10" << false;
+        QTest::newRow("dev.100 > dev.99")
+            << "2.0.0-dev.100+g1a2b3c4" << "2.0.0-dev.99+gabcdefg" << true;
+        QTest::newRow("rc10 > rc9 (no dot)")
+            << "2.0.0-rc10" << "2.0.0-rc9" << true;
+        QTest::newRow("rc > beta > alpha")
+            << "2.0.0-rc.1" << "2.0.0-beta.5" << true;
+        QTest::newRow("numeric < alphanumeric")
+            << "2.0.0-alpha" << "2.0.0-1" << true;
+        QTest::newRow("more identifiers is newer")
+            << "2.0.0-rc.1.1" << "2.0.0-rc.1" << true;
+        QTest::newRow("equal pre-release")
+            << "2.0.0-rc.3" << "2.0.0-rc.3" << false;
     }
 
     void isNewer()
