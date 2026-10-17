@@ -1022,7 +1022,7 @@ Item {
     FolderContextMenu {
         id: menuFolderContextMenu
         readonly property var _menuModel: panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
-        canLaunchAll: _menuModel !== null && _menuModel.folderAppIds(folderId).length > 0
+        appIdsOf: id => _menuModel ? _menuModel.folderAppIds(id) : []
         onOpenRequested: folderId => { if (_menuModel) _menuModel.enterFolder(folderId) }
         onLaunchAllRequested: folderId => {
             if (_menuModel)

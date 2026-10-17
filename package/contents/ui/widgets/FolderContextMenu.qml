@@ -15,7 +15,10 @@ AppGridMenu {
     id: folderMenu
 
     property string folderId: ""
-    // Whether the folder has apps to launch.
+    // (folderId) -> the ids "Launch All" would start; null: nothing to launch.
+    property var appIdsOf: null
+    // Read when the menu opens: a binding over appIdsOf(folderId) only re-runs
+    // when folderId changes, so it went stale once the folder's apps changed.
     property bool canLaunchAll: false
 
     signal openRequested(string folderId)
@@ -23,6 +26,7 @@ AppGridMenu {
 
     function showFor(id) {
         folderId = id
+        canLaunchAll = !!appIdsOf && appIdsOf(id).length > 0
         popup()
     }
 

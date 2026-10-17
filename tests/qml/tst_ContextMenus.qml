@@ -59,13 +59,26 @@ TestCase {
         compare(openSpy.signalArguments[0][0], "f1")
     }
 
-    function test_launchAllFollowsCanLaunchAll() {
-        var m = load("FolderContextMenu.qml", { canLaunchAll: false })
+    // "Launch All" reads the folder's apps each time the menu opens, so it
+    // follows a folder whose apps changed since the last time.
+    property var folderApps: ({})
+    function test_launchAllReadsTheFolderOnOpen() {
+        folderApps = { f1: ["a"] }
+        var m = load("FolderContextMenu.qml", { appIdsOf: id => testCase.folderApps[id] || [] })
         m.showFor("f1")
-        verify(!m.itemAt(1).enabled)
-        m.canLaunchAll = true
         verify(m.itemAt(1).enabled)
         m.close()
+        folderApps = { f1: [] }
+        m.showFor("f1")
+        verify(!m.itemAt(1).enabled, "emptied folder")
+        m.close()
+        m.showFor("f2")
+        verify(!m.itemAt(1).enabled, "unknown folder")
+        m.close()
+        var none = load("FolderContextMenu.qml", {})
+        none.showFor("f1")
+        verify(!none.itemAt(1).enabled, "no appIdsOf")
+        none.close()
     }
 
     function test_runnerMenuFavouriteAndActions() {

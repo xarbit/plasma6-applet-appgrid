@@ -106,6 +106,8 @@ Item {
                                           && popupSelectedSids.length >= 2
     property int popupNonFavCount: 0
     property int popupFavCount: 0
+    // Whether the app is in a favourites folder ("Remove from Folder").
+    property bool popupInFolder: false
 
     // Favorites-mutation rows lock out while a drag-reorder is in flight
     // to avoid clobbering KAStats state mid-move.
@@ -149,6 +151,8 @@ Item {
         popupIsSelected = popupSelectedSids.indexOf(storageId) >= 0
         popupCanSelect = canSelect
         popupIsHidden = appsModel ? appsModel.isHidden(storageId) : false
+        popupInFolder = !!storageId && !!_canFolder
+                        && favoritesGroupedModel.folderOfMember(storageId).length > 0
         const prefixed = FavoriteId.toPrefixed(storageId)
         popupIsFavorite = sharedFavoritesModel
                           ? sharedFavoritesModel.isFavorite(prefixed)
@@ -363,8 +367,7 @@ Item {
         // when it is currently in one. Instantiator + active rather than
         // visible:false, which leaves a blank ghost row (see header) (#18).
         Instantiator {
-            active: contextMenu._canFolder && contextMenu.favoritesGroupedModel
-                    && contextMenu.favoritesGroupedModel.folderOfMember(contextMenu.popupStorageId).length > 0
+            active: contextMenu.popupInFolder
             delegate: AppGridMenuItem {
                 icon.name: "folder-remove"
                 text: i18nd("dev.xarbit.appgrid", "Remove from Folder")
@@ -545,8 +548,7 @@ Item {
         id: folderMenu
         // Whether the folder shows in every activity.
         property bool folderGlobal: false
-        canLaunchAll: contextMenu.favoritesGroupedModel
-                      && contextMenu.favoritesGroupedModel.folderMembers(folderId).length > 0
+        appIdsOf: id => contextMenu.favoritesGroupedModel ? contextMenu.favoritesGroupedModel.folderMembers(id) : []
         onOpenRequested: folderId => contextMenu.openFolderRequested(folderId)
         onLaunchAllRequested: folderId => contextMenu.launchFolderRequested(folderId)
 
