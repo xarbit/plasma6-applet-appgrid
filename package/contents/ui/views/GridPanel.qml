@@ -888,7 +888,7 @@ Item {
             searchField: searchBar.field
             onLaunched: function(sid) { panel.launchAppByStorageId(sid) }
             onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
-            onFolderContextRequested: function(menuPath) { menuFolderContextMenu.openFor(menuPath) }
+            onFolderContextRequested: function(menuPath) { menuFolderContextMenu.showFor(menuPath) }
             onAppContextRequested: function(sid, desktopFile, selectedSids) {
                 contextMenu.showForApp(sid, desktopFile, selectedSids)
             }
@@ -1017,19 +1017,23 @@ Item {
         desktop: panel.plasmoidBridge ? panel.plasmoidBridge.systemActions : null
     }
 
-    // Right-click menu for a menu-tree folder (#201): edit it in kmenuedit, the
-    // same action the category bar offers per category.
-    AppGridMenu {
+    // Right-click menu for a menu-tree folder (#201): open it, launch the apps
+    // directly in it (not its subfolders'), or edit it in kmenuedit, the same
+    // action the category bar offers per category.
+    FolderContextMenu {
         id: menuFolderContextMenu
-        property string menuPath: ""
-        function openFor(path) {
-            menuFolderContextMenu.menuPath = path
-            menuFolderContextMenu.popup()
+        readonly property var _menuModel: panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
+        canLaunchAll: _menuModel !== null && _menuModel.folderAppIds(folderId).length > 0
+        onOpenRequested: folderId => { if (_menuModel) _menuModel.enterFolder(folderId) }
+        onLaunchAllRequested: folderId => {
+            if (_menuModel)
+                panel._requestBulkLaunch(_menuModel.folderAppIds(folderId))
         }
+
         AppGridMenuItem {
             text: i18nd("dev.xarbit.appgrid", "Edit in Menu Editor…")
             icon.name: "kmenuedit"
-            onClicked: launcherActions.editMenuItem(menuFolderContextMenu.menuPath)
+            onClicked: launcherActions.editMenuItem(menuFolderContextMenu.folderId)
         }
     }
 

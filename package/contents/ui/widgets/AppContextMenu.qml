@@ -238,6 +238,7 @@ Item {
     function showForFolder(folderId) {
         if (!_canFolder || !folderId)
             return
+        folderMenu.folderGlobal = favoritesGroupedModel.isFolderGlobal(folderId)
         folderMenu.showFor(folderId)
     }
 
@@ -538,14 +539,47 @@ Item {
         }
     }
 
-    // Folder cell actions (issue #18).
+    // A favourites folder (#18): rename, activities, ungroup (which returns
+    // its members to loose favourites) after the shared Open / Launch All.
     FolderContextMenu {
         id: folderMenu
-        foldersModel: contextMenu.favoritesGroupedModel
-        enableActivities: contextMenu.enableActivities
+        // Whether the folder shows in every activity.
+        property bool folderGlobal: false
+        canLaunchAll: contextMenu.favoritesGroupedModel
+                      && contextMenu.favoritesGroupedModel.folderMembers(folderId).length > 0
         onOpenRequested: folderId => contextMenu.openFolderRequested(folderId)
         onLaunchAllRequested: folderId => contextMenu.launchFolderRequested(folderId)
-        onRenameRequested: folderId => contextMenu.renameFolderRequested(folderId)
+
+        AppGridMenuItem {
+            icon.name: "edit-rename"
+            text: i18nd("dev.xarbit.appgrid", "Rename Folder…")
+            onClicked: {
+                contextMenu.renameFolderRequested(folderMenu.folderId)
+                folderMenu.close()
+            }
+        }
+        // Per-activity opt-in only: otherwise every folder is global anyway.
+        AppGridMenuItem {
+            visible: contextMenu.enableActivities
+            checkable: true
+            checked: folderMenu.folderGlobal
+            text: i18nd("dev.xarbit.appgrid", "Show in all activities")
+            onClicked: {
+                if (contextMenu.favoritesGroupedModel)
+                    contextMenu.favoritesGroupedModel.setFolderGlobal(folderMenu.folderId, !folderMenu.folderGlobal)
+                folderMenu.close()
+            }
+        }
+        PlasmaComponents.MenuSeparator {}
+        AppGridMenuItem {
+            icon.name: "folder-remove"
+            text: i18nd("dev.xarbit.appgrid", "Ungroup Folder")
+            enabled: contextMenu.favoritesGroupedModel
+            onClicked: {
+                contextMenu.favoritesGroupedModel.ungroupFolder(folderMenu.folderId)
+                folderMenu.close()
+            }
+        }
     }
 
     // "Show in Favorites" submenu — attached to the single menu only for a

@@ -69,6 +69,24 @@ void MenuTreeModel::enterFolder(const QString &relPath)
     Q_EMIT pathChanged();
 }
 
+QStringList MenuTreeModel::folderAppIds(const QString &relPath) const
+{
+    if (relPath.isEmpty()) {
+        return {};
+    }
+    const QString path = relPath.endsWith(QLatin1Char('/')) ? relPath : relPath + QLatin1Char('/');
+    const MenuTree::Node *node = MenuTree::findNode(m_root, path);
+    if (!node) {
+        return {};
+    }
+    QStringList ids;
+    ids.reserve(int(node->apps.size()));
+    for (const MenuTree::AppLeaf &app : node->apps) {
+        ids.append(app.storageId);
+    }
+    return ids;
+}
+
 void MenuTreeModel::goBack()
 {
     if (m_path == m_rootPath) {

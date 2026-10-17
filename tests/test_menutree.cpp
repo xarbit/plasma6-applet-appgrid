@@ -58,6 +58,7 @@ private Q_SLOTS:
     void model_ignores_unknown_folder();
     void model_rootPath_floors_navigation();
     void model_enterFolder_tolerates_missing_slash();
+    void model_folderAppIds_lists_direct_apps();
     void model_hideEmpty_drops_empty_folders();
     void model_is_not_editable();
 };
@@ -218,6 +219,17 @@ void TestMenuTree::model_enterFolder_tolerates_missing_slash()
     // uses; it must still enter the right folder.
     model.enterFolder(QStringLiteral("Education"));
     QCOMPARE(model.currentPath(), QStringLiteral("Education/"));
+}
+
+void TestMenuTree::model_folderAppIds_lists_direct_apps()
+{
+    MenuTreeModel model;
+    model.setTree(sampleTree());
+    // Direct apps only: Education's subfolder apps are not part of it.
+    QCOMPARE(model.folderAppIds(QStringLiteral("Education/")), QStringList{QStringLiteral("edu.desktop")});
+    QCOMPARE(model.folderAppIds(QStringLiteral("Education/Science")), (QStringList{QStringLiteral("sci1.desktop"), QStringLiteral("sci2.desktop")}));
+    QVERIFY(model.folderAppIds(QStringLiteral("Missing/")).isEmpty());
+    QVERIFY(model.folderAppIds(QString()).isEmpty());
 }
 
 void TestMenuTree::model_hideEmpty_drops_empty_folders()

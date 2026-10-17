@@ -61,6 +61,11 @@ public:
     /** Descend into the folder at @p relPath. Tolerates a missing trailing slash
      *  (the category bar's menu path is stored without it). No-op if absent. */
     Q_INVOKABLE void enterFolder(const QString &relPath);
+    /** Storage ids of the apps directly in the folder at @p relPath (not in its
+     *  subfolders), for its "Launch All". Tolerates a missing trailing slash;
+     *  empty if the folder is absent. */
+    [[nodiscard]] Q_INVOKABLE QStringList folderAppIds(const QString &relPath) const;
+
     /** Step up one level; a no-op at the root floor. */
     Q_INVOKABLE void goBack();
     /** Jump back to the root floor. */
