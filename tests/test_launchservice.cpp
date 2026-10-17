@@ -61,6 +61,8 @@ private Q_SLOTS:
         QVERIFY(!AppResolver::resolve(QStringLiteral("appgrid-test-nonexistent.desktop")).isValid());
         QVERIFY(!AppResolver::resolve(QStringLiteral("applications:appgrid-test-nonexistent.desktop?action=x")).isValid());
         QVERIFY(AppResolver::actions(KService::Ptr()).isEmpty());
+        QVERIFY(AppResolver::actionData(QStringLiteral("appgrid-test-nonexistent.desktop?action=x")).isEmpty());
+        QVERIFY(AppResolver::actionData(QStringLiteral("/nonexistent/appgrid-test/notes.txt")).isEmpty());
     }
 
     void unresolvableLaunchRecordsNothing()

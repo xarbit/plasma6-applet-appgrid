@@ -598,24 +598,9 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
 
 QStringList AppFilterModel::nonEmptyCategories() const
 {
-    auto *src = sourceModel();
-    if (!src) {
-        return {};
-    }
-
-    QSet<QString> cats;
-    for (int i = 0; i < src->rowCount(); ++i) {
-        const auto idx = src->index(i, 0);
-        const auto sid = idx.data(AppModel::StorageIdRole).toString();
-        if (book().isHidden(sid)) {
-            continue;
-        }
-        const auto appCats = idx.data(AppModel::CategoriesRole).toStringList();
-        for (const auto &c : appCats) {
-            cats.insert(c);
-        }
-    }
-    return cats.values();
+    return CategoryQueries::nonEmptyCategories(sourceModel(), [this](const QString &sid) {
+        return book().isHidden(sid);
+    });
 }
 
 QStringList AppFilterModel::categories() const
@@ -643,22 +628,11 @@ QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
         return map;
     }
 
-    // Jump-list action favourite (applications:<id>?action=<name>, #64): resolve the
-    // action from KService so the tile shows the action's own name/icon on every
-    // Plasma, not only where Kicker's AppEntry understands the url. The parent app's
-    // desktop file rides along so the launch path treats it as launchable.
+    // Jump-list action favourite (applications:<id>?action=<name>, #64): the
+    // action's own name and icon on every Plasma, not only where Kicker's
+    // AppEntry understands the url.
     if (AppActionId::hasAction(storageId)) {
-        const AppResolver::Target target = AppResolver::resolve(storageId);
-        if (target.action) {
-            map[QStringLiteral("name")] = target.name;
-            map[QStringLiteral("iconName")] = target.icon;
-            map[QStringLiteral("desktopFile")] = target.service->entryPath();
-            map[QStringLiteral("storageId")] = storageId;
-            map[QStringLiteral("genericName")] = target.service->genericName();
-            map[QStringLiteral("comment")] = target.service->comment();
-            map[QStringLiteral("installSource")] = QString();
-        }
-        return map;
+        return AppResolver::actionData(storageId);
     }
 
     auto *src = sourceModel();

@@ -76,4 +76,21 @@ QList<KServiceAction> actions(const KService::Ptr &service)
     }
     return labelled;
 }
+
+QVariantMap actionData(const QString &id)
+{
+    const Target target = resolve(id);
+    if (!target.action) {
+        return {};
+    }
+    return {
+        {QStringLiteral("name"), target.name},
+        {QStringLiteral("iconName"), target.icon},
+        {QStringLiteral("desktopFile"), target.service->entryPath()},
+        {QStringLiteral("storageId"), id},
+        {QStringLiteral("genericName"), target.service->genericName()},
+        {QStringLiteral("comment"), target.service->comment()},
+        {QStringLiteral("installSource"), QString()},
+    };
+}
 }

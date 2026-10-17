@@ -11,6 +11,7 @@
 #include <QList>
 #include <QString>
 #include <QUrl>
+#include <QVariantMap>
 
 #include <optional>
 
@@ -44,4 +45,10 @@ struct Target {
 
 /** The jump-list actions of @p service that have a label. */
 [[nodiscard]] QList<KServiceAction> actions(const KService::Ptr &service);
+
+/** For a jump-list action @p id, the fields a tile shows for it, under the
+ *  keys the app model's rows give an app (name, iconName, desktopFile — the
+ *  parent app's, so it launches —, storageId, genericName, comment,
+ *  installSource). Empty when @p id is not an installed app's action. */
+[[nodiscard]] QVariantMap actionData(const QString &id);
 }

@@ -18,6 +18,7 @@ private Q_SLOTS:
     void appDataMapExposesSharedFields();
     void groupByCategorySectionsSortedWithProxyIndex();
     void groupByCategoryNullModelIsEmpty();
+    void nonEmptyCategoriesSkipHiddenApps();
 };
 
 void TestCategoryQueries::appDataMapExposesSharedFields()
@@ -68,6 +69,23 @@ void TestCategoryQueries::groupByCategorySectionsSortedWithProxyIndex()
 
     const QVariantList netApps = sections.at(1).toMap().value(QStringLiteral("apps")).toList();
     QCOMPARE(netApps.size(), 2); // B (multi-category) and C
+}
+
+void TestCategoryQueries::nonEmptyCategoriesSkipHiddenApps()
+{
+    StubAppModel model;
+    model.setApps({
+        {QStringLiteral("A"), {}, {}, {QStringLiteral("X"), QStringLiteral("Y")}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {QStringLiteral("Z")}, {}, QStringLiteral("b"), {}, {}, {}},
+    });
+    QStringList categories = CategoryQueries::nonEmptyCategories(&model, [](const QString &sid) {
+        return sid == QLatin1String("b");
+    });
+    categories.sort();
+    QCOMPARE(categories, QStringList({QStringLiteral("X"), QStringLiteral("Y")}));
+    QVERIFY(CategoryQueries::nonEmptyCategories(nullptr, [](const QString &) {
+                return false;
+            }).isEmpty());
 }
 
 void TestCategoryQueries::groupByCategoryNullModelIsEmpty()

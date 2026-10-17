@@ -9,6 +9,7 @@
 
 #include <QAbstractItemModel>
 #include <QMap>
+#include <QSet>
 
 namespace CategoryQueries
 {
@@ -22,6 +23,25 @@ QVariantMap appDataMap(const QModelIndex &index)
     map[QStringLiteral("comment")] = index.data(AppModel::CommentRole);
     map[QStringLiteral("installSource")] = index.data(AppModel::InstallSourceRole);
     return map;
+}
+
+QStringList nonEmptyCategories(const QAbstractItemModel *model, const std::function<bool(const QString &)> &isHidden)
+{
+    if (!model) {
+        return {};
+    }
+    QSet<QString> categories;
+    for (int row = 0; row < model->rowCount(); ++row) {
+        const auto index = model->index(row, 0);
+        if (isHidden(index.data(AppModel::StorageIdRole).toString())) {
+            continue;
+        }
+        const auto appCategories = index.data(AppModel::CategoriesRole).toStringList();
+        for (const auto &category : appCategories) {
+            categories.insert(category);
+        }
+    }
+    return categories.values();
 }
 
 QVariantList groupByCategory(const QAbstractItemModel *model)
