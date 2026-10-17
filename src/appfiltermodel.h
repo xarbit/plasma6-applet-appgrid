@@ -6,14 +6,17 @@
 #pragma once
 
 #include <QHash>
+#include <QPointer>
 #include <QSet>
 #include <QStringList>
 #include <QVariantMap>
 
+#include <memory>
+
 #include "approwindex.h"
 #include "appsearch.h"
+#include "favoriteorder.h"
 #include "filterproxymodel.h"
-#include "launchbookkeeping.h"
 #include "searchranking.h"
 
 /**
@@ -23,6 +26,9 @@
  * Also hides/unhides by storageId and returns row data as a QVariantMap.
  * Launching is LaunchService's; recordRecentLaunch() takes its reports.
  */
+class LaunchBookkeeping;
+class LaunchStateStore;
+
 class AppFilterModel : public FilterProxyModel
 {
     Q_OBJECT
@@ -59,6 +65,12 @@ public:
     Q_ENUM(SortMode)
 
     explicit AppFilterModel(QObject *parent = nullptr);
+    ~AppFilterModel() override;
+
+    /** Read and change the hidden apps, recents and launch counts in @p state
+     *  (not owned). Until one is set the model keeps them in a store of its
+     *  own, in memory. */
+    void setLaunchState(LaunchStateStore *state);
 
     [[nodiscard]] QString filterCategory() const;
     void setFilterCategory(const QString &category);
@@ -180,7 +192,6 @@ protected:
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
-    void recordLaunch(const QString &storageId);
     // Drop recents whose app left the database (uninstalled); keeps the recents
     // row from showing dead entries. Runs on every KSycoca reload.
     void pruneRecentsToExisting();
@@ -226,10 +237,13 @@ private:
     // broader mimeapps defaults in the search tiebreak.
     QSet<QString> m_preferredAppsSet;
 
-    // Hidden / favorite / recent lists, launch counts, and the
-    // derived membership sets + favorite-position index consulted by
-    // filterAcceptsRow / lessThan.
-    LaunchBookkeeping m_book;
+    // The hidden apps, recents and launch counts live in the launch state
+    // store; the filter and sort read its lookups through book().
+    [[nodiscard]] const LaunchBookkeeping &book() const;
+    std::unique_ptr<LaunchStateStore> m_ownState;
+    QPointer<LaunchStateStore> m_state;
+    // The favourites in order, for the favourites view and search ranking.
+    FavoriteOrder m_favorites;
 
     // The source rows by storage id, and their search haystacks.
     AppRowIndex m_index;

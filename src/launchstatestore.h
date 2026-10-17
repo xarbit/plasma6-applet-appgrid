@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "launchbookkeeping.h"
+
 #include <KConfigWatcher>
 #include <KSharedConfig>
 #include <QObject>
@@ -58,6 +60,19 @@ public:
     void setHiddenApps(const QStringList &list);
     void setRecentApps(const QStringList &list);
     void setLaunchCounts(const QVariantMap &counts);
+
+    /** The hidden / recent / launch-count state with its fast lookups, for
+     *  the filter and sort hot paths. */
+    [[nodiscard]] const LaunchBookkeeping &book() const
+    {
+        return m_book;
+    }
+    /** Hide @p storageId; no-op if empty or already hidden. */
+    void hide(const QString &storageId);
+    void unhide(const QString &storageId);
+    /** @p key (an app, or one of its actions) was launched: it goes to the
+     *  front of the recents, capped at @p maxRecent, and its count goes up. */
+    void recordLaunch(const QString &key, int maxRecent);
     void setFavoriteFolders(const QVariantList &folders);
     void setFavoriteLayout(const QStringList &layout);
 
@@ -110,9 +125,7 @@ private:
     // Coalesces the per-group configChanged burst into a single reparse+reload.
     QTimer *m_reloadTimer = nullptr;
 
-    QStringList m_hidden;
-    QStringList m_recent;
-    QVariantMap m_launchCounts;
+    LaunchBookkeeping m_book;
     QVariantList m_favoriteFolders;
     QStringList m_favoriteLayout;
     // Current activity id; folders/layout are scoped to it. Empty = the shared

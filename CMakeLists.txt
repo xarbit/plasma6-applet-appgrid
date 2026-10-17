@@ -227,6 +227,7 @@ set(APPGRID_COMMON_SOURCES
     src/searchranking.h
     src/launchbookkeeping.cpp
     src/launchbookkeeping.h
+    src/favoriteorder.h
     src/launchstatestore.cpp
     src/launchstatestore.h
     src/keyvaluelist.h

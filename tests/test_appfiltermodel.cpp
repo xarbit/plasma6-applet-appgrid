@@ -13,6 +13,7 @@
 
 #include "appfiltermodel.h"
 #include "categoryqueries.h"
+#include "launchstatestore.h"
 #include "stubappmodel.h"
 
 class TestAppFilterModel : public QObject
@@ -26,6 +27,7 @@ private Q_SLOTS:
     void sortModeChangeEmitsSignal();
     void favoritesToggleRoundtrip();
     void hiddenAppsRoundtrip();
+    void readsAndChangesTheGivenStore();
     void launchCountsMapRoundtrip();
     void maxRecentAppsSetterEmitsSignal();
     void getByStorageIdReturnsMatchingMap();
@@ -96,6 +98,35 @@ private:
 void TestAppFilterModel::initTestCase()
 {
     m_filter.setSourceModel(&m_source);
+}
+
+// The model keeps no copy of the launch state: it reads the store it is
+// given, follows the store's changes, and changes the store.
+void TestAppFilterModel::readsAndChangesTheGivenStore()
+{
+    LaunchStateStore store(KSharedConfig::openConfig(QString(), KConfig::SimpleConfig));
+    store.setHiddenApps({QStringLiteral("b")});
+    AppFilterModel filter;
+    StubAppModel source;
+    source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+    });
+    filter.setSourceModel(&source);
+    filter.setLaunchState(&store);
+    QCOMPARE(filter.rowCount(), 1);
+    QVERIFY(filter.isHidden(QStringLiteral("b")));
+
+    QSignalSpy hidden(&filter, &AppFilterModel::hiddenAppsChanged);
+    store.unhide(QStringLiteral("b"));
+    QCOMPARE(hidden.count(), 1);
+    QCOMPARE(filter.rowCount(), 2);
+
+    filter.hideByStorageId(QStringLiteral("a"));
+    QCOMPARE(store.hiddenApps(), QStringList{QStringLiteral("a")});
+    filter.recordRecentLaunch(QStringLiteral("b"));
+    QCOMPARE(store.recentApps(), QStringList{QStringLiteral("b")});
+    QCOMPARE(store.book().launchCount(QStringLiteral("b")), 1);
 }
 
 void TestAppFilterModel::init()

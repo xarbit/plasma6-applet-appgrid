@@ -8,6 +8,7 @@
 
 #include <QTest>
 
+#include "favoriteorder.h"
 #include "launchbookkeeping.h"
 
 class TestLaunchBookkeeping : public QObject
@@ -54,12 +55,13 @@ void TestLaunchBookkeeping::setHidden_detectsNoChange()
 
 void TestLaunchBookkeeping::favorites_trackPositions()
 {
-    LaunchBookkeeping b;
-    b.setFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
-    QVERIFY(b.isFavorite(QStringLiteral("b.desktop")));
-    QCOMPARE(b.favoritePosition(QStringLiteral("a.desktop"), -1), 0);
-    QCOMPARE(b.favoritePosition(QStringLiteral("c.desktop"), -1), 2);
-    QCOMPARE(b.favoritePosition(QStringLiteral("missing"), 999), 999);
+    FavoriteOrder f;
+    QVERIFY(f.set({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")}));
+    QVERIFY(!f.set(f.list()));
+    QVERIFY(f.contains(QStringLiteral("b.desktop")));
+    QCOMPARE(f.position(QStringLiteral("a.desktop"), -1), 0);
+    QCOMPARE(f.position(QStringLiteral("c.desktop"), -1), 2);
+    QCOMPARE(f.position(QStringLiteral("missing"), 999), 999);
 }
 
 void TestLaunchBookkeeping::recent_prependsCapsDedups()

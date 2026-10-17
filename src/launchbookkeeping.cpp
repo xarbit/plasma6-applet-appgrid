@@ -12,16 +12,6 @@ void LaunchBookkeeping::rebuildHiddenSet()
     m_hiddenSet = QSet<QString>(m_hidden.cbegin(), m_hidden.cend());
 }
 
-void LaunchBookkeeping::rebuildFavoriteSet()
-{
-    m_favoriteSet = QSet<QString>(m_favorites.cbegin(), m_favorites.cend());
-    m_favoritePositions.clear();
-    m_favoritePositions.reserve(m_favorites.size());
-    for (int i = 0; i < m_favorites.size(); ++i) {
-        m_favoritePositions.insert(m_favorites.at(i), i);
-    }
-}
-
 void LaunchBookkeeping::rebuildRecentSet()
 {
     m_recentSet = QSet<QString>(m_recent.cbegin(), m_recent.cend());
@@ -53,16 +43,6 @@ bool LaunchBookkeeping::unhide(const QString &sid)
         return false;
     }
     m_hidden.removeOne(sid); // the set keeps m_hidden unique, so one is enough
-    return true;
-}
-
-bool LaunchBookkeeping::setFavorites(const QStringList &list)
-{
-    if (m_favorites == list) {
-        return false;
-    }
-    m_favorites = list;
-    rebuildFavoriteSet();
     return true;
 }
 

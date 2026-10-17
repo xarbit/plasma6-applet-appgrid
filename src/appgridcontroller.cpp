@@ -61,26 +61,10 @@ AppGridController::AppGridController(QObject *parent)
 
 void AppGridController::wireLaunchState()
 {
-    // The store is the single source of truth (appgridrc, shared by every
-    // variant + the daemon). Mirror it into the model on load and whenever
-    // another process/instance changes the file; mirror the model's own launch
-    // bookkeeping (hide, launch counts, recents) back. The equality guards in
-    // both the model's LaunchBookkeeping and the store's setters break the loop.
-    const auto pull = [this]() {
-        m_filterModel.setHiddenApps(m_launchState.hiddenApps());
-        m_filterModel.setRecentApps(m_launchState.recentApps());
-        m_filterModel.setLaunchCountsMap(m_launchState.launchCounts());
-    };
-    pull();
-    connect(&m_launchState, &LaunchStateStore::hiddenAppsChanged, &m_filterModel, [this]() {
-        m_filterModel.setHiddenApps(m_launchState.hiddenApps());
-    });
-    connect(&m_launchState, &LaunchStateStore::recentAppsChanged, &m_filterModel, [this]() {
-        m_filterModel.setRecentApps(m_launchState.recentApps());
-    });
-    connect(&m_launchState, &LaunchStateStore::launchCountsChanged, &m_filterModel, [this]() {
-        m_filterModel.setLaunchCountsMap(m_launchState.launchCounts());
-    });
+    // The store is the one owner of the hidden apps, recents and launch counts
+    // (appgridrc, shared by every variant + the daemon, re-read when another
+    // process changes it). The model reads and changes them there.
+    m_filterModel.setLaunchState(&m_launchState);
 
     // New-app badge: NewAppsTracker diffs the installed set against its persisted
     // baseline (Kickoff's model) and pushes the badge set to the filter. Re-run
@@ -103,16 +87,6 @@ void AppGridController::wireLaunchState()
     m_filterModel.setNewApps(m_newAppsTracker.newApps());
     connect(&m_newAppsTracker, &NewAppsTracker::newAppsChanged, &m_filterModel, [this]() {
         m_filterModel.setNewApps(m_newAppsTracker.newApps());
-    });
-
-    connect(&m_filterModel, &AppFilterModel::hiddenAppsChanged, &m_launchState, [this]() {
-        m_launchState.setHiddenApps(m_filterModel.hiddenApps());
-    });
-    connect(&m_filterModel, &AppFilterModel::recentAppsChanged, &m_launchState, [this]() {
-        m_launchState.setRecentApps(m_filterModel.recentApps());
-    });
-    connect(&m_filterModel, &AppFilterModel::launchCountsChanged, &m_launchState, [this]() {
-        m_launchState.setLaunchCounts(m_filterModel.launchCountsMap());
     });
 
     // Per-activity folders: feed the current activity to the store before the

@@ -22,6 +22,7 @@ private Q_SLOTS:
     void initTestCase();
     void init();
     void setters_emitAndDedup();
+    void hideUnhideAndRecordLaunch();
     void launchCounts_roundtripThroughFile();
     void persists_acrossInstances();
     void migrateFrom_seedsOnlyAbsentKeys();
@@ -71,6 +72,42 @@ void TestLaunchStateStore::setters_emitAndDedup()
     // Same value → no signal, no spurious save.
     store.setHiddenApps({QStringLiteral("a.desktop")});
     QCOMPARE(spy.count(), 1);
+}
+
+void TestLaunchStateStore::hideUnhideAndRecordLaunch()
+{
+    auto cfg = freshConfig();
+    {
+        LaunchStateStore store(cfg);
+        QSignalSpy hidden(&store, &LaunchStateStore::hiddenAppsChanged);
+        QSignalSpy recent(&store, &LaunchStateStore::recentAppsChanged);
+        QSignalSpy counts(&store, &LaunchStateStore::launchCountsChanged);
+
+        store.hide(QStringLiteral("a.desktop"));
+        store.hide(QStringLiteral("a.desktop"));
+        store.hide(QString());
+        QCOMPARE(hidden.count(), 1);
+        QVERIFY(store.book().isHidden(QStringLiteral("a.desktop")));
+        store.unhide(QStringLiteral("a.desktop"));
+        store.unhide(QStringLiteral("a.desktop"));
+        QCOMPARE(hidden.count(), 2);
+        store.hide(QStringLiteral("b.desktop"));
+
+        store.recordLaunch(QStringLiteral("x.desktop"), 2);
+        store.recordLaunch(QStringLiteral("y.desktop"), 2);
+        store.recordLaunch(QStringLiteral("x.desktop"), 2);
+        store.recordLaunch(QStringLiteral("z.desktop"), 2);
+        QCOMPARE(store.recentApps(), QStringList({QStringLiteral("z.desktop"), QStringLiteral("x.desktop")}));
+        QCOMPARE(store.book().launchCount(QStringLiteral("x.desktop")), 2);
+        QCOMPARE(recent.count(), 4);
+        QCOMPARE(counts.count(), 4);
+        store.recordLaunch(QString(), 2);
+        QCOMPARE(counts.count(), 4);
+        QTest::qWait(700); // the debounced save
+    }
+    LaunchStateStore reread(cfg);
+    QCOMPARE(reread.hiddenApps(), QStringList{QStringLiteral("b.desktop")});
+    QCOMPARE(reread.book().launchCount(QStringLiteral("x.desktop")), 2);
 }
 
 void TestLaunchStateStore::launchCounts_roundtripThroughFile()

@@ -9,8 +9,10 @@
 #include "appmodel.h"
 #include "appresolver.h"
 #include "categoryqueries.h"
+#include "launchstatestore.h"
 
 #include <KIconLoader>
+#include <KSharedConfig>
 
 #include <cstdlib>
 #include <limits>
@@ -27,7 +29,10 @@ constexpr int kCompletionScanLimit = 25;
 
 AppFilterModel::AppFilterModel(QObject *parent)
     : FilterProxyModel(parent)
+    // In memory (no file) until the controller hands over the shared store.
+    , m_ownState(std::make_unique<LaunchStateStore>(KSharedConfig::openConfig(QString(), KConfig::SimpleConfig)))
 {
+    setLaunchState(m_ownState.get());
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setFilterCaseSensitivity(Qt::CaseInsensitive);
     sort(0);
@@ -86,9 +91,48 @@ AppFilterModel::AppFilterModel(QObject *parent)
     });
 }
 
+AppFilterModel::~AppFilterModel() = default;
+
+void AppFilterModel::setLaunchState(LaunchStateStore *state)
+{
+    if (!state || state == m_state) {
+        return;
+    }
+    if (m_state) {
+        disconnect(m_state, nullptr, this, nullptr);
+    }
+    m_state = state;
+    connect(state, &LaunchStateStore::hiddenAppsChanged, this, [this]() {
+        refilter();
+        Q_EMIT hiddenAppsChanged();
+    });
+    connect(state, &LaunchStateStore::recentAppsChanged, this, [this]() {
+        // Recents leave the All grid (see filterAcceptsRow).
+        invalidate();
+        Q_EMIT recentAppsChanged();
+    });
+    connect(state, &LaunchStateStore::launchCountsChanged, this, [this]() {
+        invalidateRowScoreCache(); // cached launchCount changed
+        if (m_sortMode == MostUsed) {
+            invalidate();
+        }
+        Q_EMIT launchCountsChanged();
+    });
+    invalidateRowScoreCache();
+    invalidate();
+    Q_EMIT hiddenAppsChanged();
+    Q_EMIT recentAppsChanged();
+    Q_EMIT launchCountsChanged();
+}
+
+const LaunchBookkeeping &AppFilterModel::book() const
+{
+    return m_state->book();
+}
+
 void AppFilterModel::pruneRecentsToExisting()
 {
-    const QStringList current = m_book.recent();
+    const QStringList current = book().recent();
     QStringList kept;
     kept.reserve(current.size());
     for (const auto &sid : current) {
@@ -97,8 +141,7 @@ void AppFilterModel::pruneRecentsToExisting()
         }
     }
     if (kept.size() != current.size()) {
-        // setRecentApps emits recentAppsChanged, which the controller mirrors back
-        // into the persisted launch-state store.
+        // The store persists the shorter list and re-sorts us.
         setRecentApps(kept);
     }
 }
@@ -179,54 +222,40 @@ void AppFilterModel::setSearchState(const QString &text, const QString &category
 
 QStringList AppFilterModel::hiddenApps() const
 {
-    return m_book.hidden();
+    return book().hidden();
 }
 
 void AppFilterModel::setHiddenApps(const QStringList &list)
 {
-    if (!m_book.setHidden(list)) {
-        return;
-    }
-    refilter();
-    Q_EMIT hiddenAppsChanged();
+    m_state->setHiddenApps(list);
 }
 
 void AppFilterModel::hideApp(int proxyIndex)
 {
     const auto idx = index(proxyIndex, 0);
-    if (!idx.isValid()) {
-        return;
-    }
-    if (m_book.hide(idx.data(AppModel::StorageIdRole).toString())) {
-        refilter();
-        Q_EMIT hiddenAppsChanged();
+    if (idx.isValid()) {
+        m_state->hide(idx.data(AppModel::StorageIdRole).toString());
     }
 }
 
 void AppFilterModel::hideByStorageId(const QString &storageId)
 {
-    if (m_book.hide(storageId)) {
-        refilter();
-        Q_EMIT hiddenAppsChanged();
-    }
+    m_state->hide(storageId);
 }
 
 void AppFilterModel::unhideApp(const QString &storageId)
 {
-    if (m_book.unhide(storageId)) {
-        refilter();
-        Q_EMIT hiddenAppsChanged();
-    }
+    m_state->unhide(storageId);
 }
 
 QStringList AppFilterModel::favoriteApps() const
 {
-    return m_book.favorites();
+    return m_favorites.list();
 }
 
 void AppFilterModel::setFavoriteApps(const QStringList &list)
 {
-    if (!m_book.setFavorites(list)) {
+    if (!m_favorites.set(list)) {
         return;
     }
     // Favourite order drives the favourites-only view, and being a favourite
@@ -240,21 +269,17 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
 
 bool AppFilterModel::isFavorite(const QString &storageId) const
 {
-    return m_book.isFavorite(storageId);
+    return m_favorites.contains(storageId);
 }
 
 QStringList AppFilterModel::recentApps() const
 {
-    return m_book.recent();
+    return book().recent();
 }
 
 void AppFilterModel::setRecentApps(const QStringList &list)
 {
-    if (!m_book.setRecent(list)) {
-        return;
-    }
-    invalidate();
-    Q_EMIT recentAppsChanged();
+    m_state->setRecentApps(list);
 }
 
 int AppFilterModel::maxRecentApps() const
@@ -273,7 +298,7 @@ void AppFilterModel::setMaxRecentApps(int max)
 
 bool AppFilterModel::isRecent(const QString &storageId) const
 {
-    return m_book.isRecent(storageId);
+    return book().isRecent(storageId);
 }
 
 int AppFilterModel::sortMode() const
@@ -293,19 +318,12 @@ void AppFilterModel::setSortMode(int mode)
 
 QVariantMap AppFilterModel::launchCountsMap() const
 {
-    return m_book.launchCountsMap();
+    return book().launchCountsMap();
 }
 
 void AppFilterModel::setLaunchCountsMap(const QVariantMap &map)
 {
-    if (!m_book.setLaunchCountsFromMap(map)) {
-        return; // no change — skip the emit/writeback/re-sort (e.g. re-sync on every open)
-    }
-    invalidateRowScoreCache(); // cached launchCount changed
-    if (m_sortMode == MostUsed) {
-        invalidate();
-    }
-    Q_EMIT launchCountsChanged();
+    m_state->setLaunchCounts(map);
 }
 
 void AppFilterModel::setFrecencyScores(const QHash<QString, int> &scores)
@@ -349,7 +367,7 @@ void AppFilterModel::setSearchShowsHidden(bool enabled)
 
 bool AppFilterModel::isHidden(const QString &storageId) const
 {
-    return m_book.isHidden(storageId);
+    return book().isHidden(storageId);
 }
 
 void AppFilterModel::setNewApps(const QSet<QString> &newApps)
@@ -410,7 +428,7 @@ void AppFilterModel::setUseSystemCategories(bool enabled)
 
 int AppFilterModel::getLaunchCount(const QString &storageId) const
 {
-    return m_book.launchCount(storageId);
+    return book().launchCount(storageId);
 }
 
 QString AppFilterModel::completionFor(const QString &query) const
@@ -447,18 +465,6 @@ void AppFilterModel::setPreferredApps(const QSet<QString> &apps)
     invalidate(); // search ranking depends on this
 }
 
-void AppFilterModel::recordLaunch(const QString &storageId)
-{
-    if (storageId.isEmpty()) {
-        return;
-    }
-    m_book.bumpLaunch(storageId);
-    invalidateRowScoreCache(); // cached launchCount changed
-    Q_EMIT launchCountsChanged();
-    // The launch also reached KActivities (notifyAccessed); UsedAppsProvider
-    // picks it up and clears the new-app badge.
-}
-
 // --- Filtering ---
 
 bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
@@ -470,7 +476,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     // deliberately hidden tool stay findable by name (when the user
     // chooses) without un-hiding it from the grid.
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
-    if (m_book.isHidden(sid)) {
+    if (book().isHidden(sid)) {
         if (m_query.isEmpty() || !m_searchShowsHidden) {
             return false;
         }
@@ -478,7 +484,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 
     // Favorites-only filter
     if (m_showFavoritesOnly) {
-        if (sid.isEmpty() || !m_book.isFavorite(sid)) {
+        if (sid.isEmpty() || !m_favorites.contains(sid)) {
             return false;
         }
     }
@@ -497,7 +503,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     // In "All" view (no category, no search), hide recents from the main grid
     // (they are shown in the header section instead).
     // Skip when: sorting by most-used, showing favorites, or filtering by category/search.
-    if (m_sortMode == Alphabetical && !m_showFavoritesOnly && m_filterCategory.isEmpty() && m_query.isEmpty() && m_book.hasRecent() && m_book.isRecent(sid)) {
+    if (m_sortMode == Alphabetical && !m_showFavoritesOnly && m_filterCategory.isEmpty() && m_query.isEmpty() && book().hasRecent() && book().isRecent(sid)) {
         return false;
     }
 
@@ -521,10 +527,10 @@ AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex
     s.sid = sourceIndex.data(AppModel::StorageIdRole).toString();
     s.name = sourceIndex.data(AppModel::NameRole).toString();
     s.category = sourceIndex.data(AppModel::CategoryRole).toString();
-    s.launchCount = m_book.launchCount(s.sid);
+    s.launchCount = book().launchCount(s.sid);
     s.isDefault = m_defaultAppsSet.contains(s.sid);
     s.isPreferred = m_preferredAppsSet.contains(s.sid);
-    s.isFavorite = m_book.isFavorite(s.sid);
+    s.isFavorite = m_favorites.contains(s.sid);
     // Relevance only matters while searching; skip its role reads + case-folds
     // in the alphabetical / most-used / by-category sort modes.
     if (!m_query.isEmpty()) {
@@ -549,11 +555,11 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
         if (m_sortFavoritesAlphabetically) {
             return QString::localeAwareCompare(l.name, r.name) < 0;
         }
-        // O(1) position lookup via LaunchBookkeeping. A sid missing from the
+        // O(1) position lookup via FavoriteOrder. A sid missing from the
         // favorites gets the sentinel position so it sorts after every real
         // entry.
         constexpr int kSortToEnd = std::numeric_limits<int>::max();
-        return m_book.favoritePosition(l.sid, kSortToEnd) < m_book.favoritePosition(r.sid, kSortToEnd);
+        return m_favorites.position(l.sid, kSortToEnd) < m_favorites.position(r.sid, kSortToEnd);
     }
 
     // When searching, rank by match relevance first (SearchRanking::compare);
@@ -601,7 +607,7 @@ QStringList AppFilterModel::nonEmptyCategories() const
     for (int i = 0; i < src->rowCount(); ++i) {
         const auto idx = src->index(i, 0);
         const auto sid = idx.data(AppModel::StorageIdRole).toString();
-        if (m_book.isHidden(sid)) {
+        if (book().isHidden(sid)) {
             continue;
         }
         const auto appCats = idx.data(AppModel::CategoriesRole).toStringList();
@@ -704,12 +710,8 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
     if (storageId.isEmpty()) {
         return;
     }
-    m_book.recordRecent(storageId, m_maxRecentApps);
-    // Bump the launch count before re-sorting so Most Used reflects this launch
-    // on the first click, not the next. recordLaunch clears the row-score cache
-    // but does not itself re-sort; the invalidate() below does, now reading the
-    // incremented count.
-    recordLaunch(storageId);
-    invalidate();
-    Q_EMIT recentAppsChanged();
+    // The store re-sorts us through its change signals. The launch also
+    // reached KActivities (notifyAccessed); UsedAppsProvider picks it up and
+    // clears the new-app badge.
+    m_state->recordLaunch(storageId, m_maxRecentApps);
 }

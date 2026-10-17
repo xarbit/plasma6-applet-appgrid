@@ -85,47 +85,76 @@ LaunchStateStore::LaunchStateStore(const KSharedConfig::Ptr &config, QObject *pa
 
 QStringList LaunchStateStore::hiddenApps() const
 {
-    return m_hidden;
+    return m_book.hidden();
 }
 
 QStringList LaunchStateStore::recentApps() const
 {
-    return m_recent;
+    return m_book.recent();
 }
 
 QVariantMap LaunchStateStore::launchCounts() const
 {
-    return m_launchCounts;
+    return m_book.launchCountsMap();
 }
 
 void LaunchStateStore::setHiddenApps(const QStringList &list)
 {
-    if (m_hidden == list) {
+    if (!m_book.setHidden(list)) {
         return;
     }
-    m_hidden = list;
     scheduleSave();
     Q_EMIT hiddenAppsChanged();
 }
 
 void LaunchStateStore::setRecentApps(const QStringList &list)
 {
-    if (m_recent == list) {
+    if (!m_book.setRecent(list)) {
         return;
     }
-    m_recent = list;
     scheduleSave();
     Q_EMIT recentAppsChanged();
 }
 
 void LaunchStateStore::setLaunchCounts(const QVariantMap &counts)
 {
-    if (m_launchCounts == counts) {
+    if (!m_book.setLaunchCountsFromMap(counts)) {
         return;
     }
-    m_launchCounts = counts;
     scheduleSave();
     Q_EMIT launchCountsChanged();
+}
+
+void LaunchStateStore::hide(const QString &storageId)
+{
+    if (!m_book.hide(storageId)) {
+        return;
+    }
+    scheduleSave();
+    Q_EMIT hiddenAppsChanged();
+}
+
+void LaunchStateStore::unhide(const QString &storageId)
+{
+    if (!m_book.unhide(storageId)) {
+        return;
+    }
+    scheduleSave();
+    Q_EMIT hiddenAppsChanged();
+}
+
+void LaunchStateStore::recordLaunch(const QString &key, int maxRecent)
+{
+    if (key.isEmpty()) {
+        return;
+    }
+    // The count first, so a "Most used" sort reacting to the recents change
+    // already sees this launch.
+    m_book.bumpLaunch(key);
+    m_book.recordRecent(key, maxRecent);
+    scheduleSave();
+    Q_EMIT launchCountsChanged();
+    Q_EMIT recentAppsChanged();
 }
 
 QVariantList LaunchStateStore::favoriteFolders() const
@@ -173,11 +202,15 @@ bool LaunchStateStore::migrateFrom(const QStringList &hidden, const QStringList 
         current = incoming;
         migrated = true;
     };
-    seed(kHiddenKey, m_hidden, hidden);
-    seed(kRecentKey, m_recent, recent);
-    if (!counts.isEmpty() && m_launchCounts.isEmpty()) {
+    QStringList currentHidden = m_book.hidden();
+    QStringList currentRecent = m_book.recent();
+    seed(kHiddenKey, currentHidden, hidden);
+    seed(kRecentKey, currentRecent, recent);
+    m_book.setHidden(currentHidden);
+    m_book.setRecent(currentRecent);
+    if (!counts.isEmpty() && m_book.launchCounts().isEmpty()) {
         group.writeEntry(kLaunchCountsKey, counts, flags);
-        m_launchCounts = countsFromList(counts);
+        m_book.setLaunchCountsFromMap(countsFromList(counts));
         migrated = true;
     }
 
@@ -193,9 +226,9 @@ bool LaunchStateStore::migrateFrom(const QStringList &hidden, const QStringList 
 void LaunchStateStore::load()
 {
     const KConfigGroup group = m_config->group(kGroup);
-    m_hidden = group.readEntry(kHiddenKey, QStringList());
-    m_recent = group.readEntry(kRecentKey, QStringList());
-    m_launchCounts = countsFromList(group.readEntry(kLaunchCountsKey, QStringList()));
+    m_book.setHidden(group.readEntry(kHiddenKey, QStringList()));
+    m_book.setRecent(group.readEntry(kRecentKey, QStringList()));
+    m_book.setLaunchCountsFromMap(countsFromList(group.readEntry(kLaunchCountsKey, QStringList())));
     loadFolders();
 }
 
@@ -296,9 +329,9 @@ void LaunchStateStore::save()
     // the change on its next restart.
     const auto flags = KConfigBase::Persistent | KConfigBase::Notify;
     KConfigGroup group = m_config->group(kGroup);
-    group.writeEntry(kHiddenKey, m_hidden, flags);
-    group.writeEntry(kRecentKey, m_recent, flags);
-    group.writeEntry(kLaunchCountsKey, countsToList(m_launchCounts), flags);
+    group.writeEntry(kHiddenKey, m_book.hidden(), flags);
+    group.writeEntry(kRecentKey, m_book.recent(), flags);
+    group.writeEntry(kLaunchCountsKey, countsToList(m_book.launchCountsMap()), flags);
     saveFolders();
     group.sync();
 }
@@ -314,9 +347,9 @@ void LaunchStateStore::reloadFromExternalChange()
         save();
     }
 
-    const QStringList hidden = m_hidden;
-    const QStringList recent = m_recent;
-    const QVariantMap counts = m_launchCounts;
+    const QStringList hidden = m_book.hidden();
+    const QStringList recent = m_book.recent();
+    const QHash<QString, int> counts = m_book.launchCounts();
     const QVariantList folders = m_favoriteFolders;
     const QStringList layout = m_favoriteLayout;
 
@@ -325,13 +358,13 @@ void LaunchStateStore::reloadFromExternalChange()
     m_config->reparseConfiguration();
     load();
 
-    if (m_hidden != hidden) {
+    if (m_book.hidden() != hidden) {
         Q_EMIT hiddenAppsChanged();
     }
-    if (m_recent != recent) {
+    if (m_book.recent() != recent) {
         Q_EMIT recentAppsChanged();
     }
-    if (m_launchCounts != counts) {
+    if (m_book.launchCounts() != counts) {
         Q_EMIT launchCountsChanged();
     }
     if (m_favoriteFolders != folders) {

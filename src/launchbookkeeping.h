@@ -12,14 +12,13 @@
 #include <QVariantMap>
 
 /**
- * Per-user launch state for AppFilterModel: the hidden / favorite / recent
- * app lists plus their launch counts, and the derived membership sets
- * and favorite-position index that the filter and sort hot paths consult.
- * Owns the rebuild-on-write of those caches.
+ * Per-user launch state, held by LaunchStateStore: the hidden and recent app
+ * lists plus the launch counts, and the membership sets the filter and sort
+ * hot paths consult. Owns the rebuild-on-write of those sets.
  *
  * Plain value type — no Qt model or signal coupling — so it's unit-testable
  * on its own. Mutating methods return whether state actually changed so the
- * model can decide when to invalidate and which Q_PROPERTY signal to emit.
+ * store can decide whether to save and which signal to emit.
  */
 class LaunchBookkeeping
 {
@@ -35,21 +34,6 @@ public:
     [[nodiscard]] bool isHidden(const QString &sid) const
     {
         return !sid.isEmpty() && m_hiddenSet.contains(sid);
-    }
-
-    // -- Favorites --
-    [[nodiscard]] const QStringList &favorites() const
-    {
-        return m_favorites;
-    }
-    bool setFavorites(const QStringList &list);
-    [[nodiscard]] bool isFavorite(const QString &sid) const
-    {
-        return m_favoriteSet.contains(sid);
-    }
-    [[nodiscard]] int favoritePosition(const QString &sid, int fallback) const
-    {
-        return m_favoritePositions.value(sid, fallback);
     }
 
     // -- Recent --
@@ -86,20 +70,14 @@ public:
 
 private:
     void rebuildHiddenSet();
-    void rebuildFavoriteSet();
     void rebuildRecentSet();
 
     QStringList m_hidden;
-    QStringList m_favorites;
     QStringList m_recent;
     QHash<QString, int> m_launchCounts;
 
     // Parallel-set lookups for the membership tests that hit every
     // filterAcceptsRow / lessThan call. Kept in sync on every write.
     QSet<QString> m_hiddenSet;
-    QSet<QString> m_favoriteSet;
     QSet<QString> m_recentSet;
-    // Position lookup for favorites sort — O(1) replacement for QStringList
-    // indexOf that made lessThan O(N²) per comparison.
-    QHash<QString, int> m_favoritePositions;
 };
