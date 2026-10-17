@@ -6,7 +6,21 @@
 
 All notable changes to AppGrid are documented here.
 
-## [1.9.4] - 2026.10.17
+## [1.9.5] - 2026-10-17
+
+### Added
+
+- *(universal)* Ship Plasma 6.4-6.7 and 6.8+ builds in one tarball (#217)
+
+### Fixed
+
+- *(search)* Themed compact install-source pill that survives the Kirigami union style (#203)
+- Replace Kirigami.PlaceholderMessage with a plain empty state (#218)
+- *(panel)* Focus the search field once the popup is active (#213)
+- *(launch)* Give app launch jobs a UI delegate, resolve by menu id (#226)
+
+
+## [1.9.4] - 2026-10-17
 
 ### Fixed
 
