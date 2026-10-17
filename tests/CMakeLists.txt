@@ -205,6 +205,33 @@ target_include_directories(test_standalone PRIVATE ${CMAKE_SOURCE_DIR}/src/stand
 target_link_libraries(test_standalone PRIVATE Qt6::Test Qt6::Core Qt6::DBus)
 add_test(NAME test_standalone COMMAND test_standalone)
 
+# PlasmoidClient — in-process pin and the settings' button target. The
+# D-Bus proxy is generated from the same XML the plasmoid exports.
+set(TEST_PLASMOID_DBUS_SOURCES)
+set_source_files_properties(${APPGRID_DBUS_PLASMOID_XML} PROPERTIES CLASSNAME PlasmoidInterface NO_NAMESPACE ON)
+qt_add_dbus_interface(TEST_PLASMOID_DBUS_SOURCES ${APPGRID_DBUS_PLASMOID_XML} plasmoidinterface)
+add_executable(test_plasmoidclient
+    test_plasmoidclient.cpp
+    ${CMAKE_SOURCE_DIR}/src/plasmoidclient.cpp
+    ${CMAKE_SOURCE_DIR}/src/plasmoidclient.h
+    ${TEST_PLASMOID_DBUS_SOURCES}
+)
+target_compile_definitions(test_plasmoidclient PRIVATE "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
+target_include_directories(test_plasmoidclient PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(test_plasmoidclient PRIVATE Qt6::Test Qt6::Core Qt6::DBus)
+add_test(NAME test_plasmoidclient COMMAND test_plasmoidclient)
+
+# SystemActions — shells, empty commands, directory listing, system info.
+appgrid_add_test(test_systemactions
+    ${CMAKE_SOURCE_DIR}/src/systemactions.cpp
+    ${CMAKE_SOURCE_DIR}/src/systemactions.h
+    ${CMAKE_SOURCE_DIR}/src/appstreamresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/discoverbackends.cpp)
+target_compile_definitions(test_systemactions PRIVATE
+    "APPGRID_APP_ID=\"${APPGRID_APP_ID}\""
+    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
+target_link_libraries(test_systemactions PRIVATE KF6::WindowSystem Plasma::Plasma AppStreamQt)
+
 # DiscoverBackends — Plasma-free string/filesystem mapping (QtCore only).
 add_executable(test_discoverbackends
     test_discoverbackends.cpp
