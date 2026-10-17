@@ -18,6 +18,8 @@ QtObject {
     property var appsModel: null
     // FavoritesManager: favourites and their folders.
     property var favoritesManager: null
+    // The controller's LaunchStateStore: recents, hidden apps, launch counts.
+    property var launchState: null
     // The DragSource of the launcher's own drags; null disables dragging.
     property var dragSource: null
     // The search field, where focus returns when the user starts typing.

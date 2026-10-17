@@ -6,6 +6,7 @@
 */
 
 import QtQuick
+import dev.xarbit.appgrid.models
 import org.kde.kirigami as Kirigami
 
 import "../controllers"
@@ -15,6 +16,8 @@ Column {
     id: recentHeader
 
     property var appsModel: null
+    // The controller's LaunchStateStore: the recents come from it.
+    property var launchState: null
     property real cellWidth: 100
     property real cellHeight: 100
     // How the cells draw (CellStyle).
@@ -60,15 +63,23 @@ Column {
         width: parent.width
 
         Repeater {
-            model: recentHeader.appsModel ? recentHeader.appsModel.recentApps : []
+            model: RecentAppsModel {
+                launchState: recentHeader.launchState
+            }
             delegate: Item {
                 id: recentDelegate
-                required property string modelData
                 required property int index
-                readonly property var appData: recentHeader.appsModel ? recentHeader.appsModel.getByStorageId(modelData) : ({})
+                required property string storageId
+                required property string name
+                required property string iconName
+                required property string genericName
+                required property string comment
+                required property string installSource
+                required property string desktopFile
                 width: recentHeader.cellWidth
                 height: recentHeader.cellHeight
-                visible: appData.name !== undefined
+                // An app that is no longer installed keeps its place, unseen.
+                visible: name !== ""
 
                 GridHighlight {
                     cellWidth: recentHeader.cellWidth
@@ -79,19 +90,19 @@ Column {
                 AppIconDelegate {
                     id: recentIcon
                     anchors.fill: parent
-                    appName: recentDelegate.appData.name || ""
-                    appIcon: recentDelegate.appData.iconName || Const.DEFAULT_ICON
+                    appName: recentDelegate.name
+                    appIcon: recentDelegate.iconName || Const.DEFAULT_ICON
                     iconGeneration: recentHeader.appsModel ? recentHeader.appsModel.iconGeneration : 0
-                    appGenericName: recentDelegate.appData.genericName || ""
-                    appComment: recentDelegate.appData.comment || ""
-                    installSource: recentDelegate.appData.installSource || ""
+                    appGenericName: recentDelegate.genericName
+                    appComment: recentDelegate.comment
+                    installSource: recentDelegate.installSource
                     isCurrentItem: recentHeader.currentRecentIndex === recentDelegate.index
                     cellStyle: recentHeader.cellStyle
-                    storageId: recentDelegate.modelData
-                    desktopFile: recentDelegate.appData.desktopFile || ""
+                    storageId: recentDelegate.storageId
+                    desktopFile: recentDelegate.desktopFile
                     dragSource: recentHeader.dragSource
                     selected: recentHeader.multiSelectActive
-                              && !!recentHeader.selectionSids[recentDelegate.modelData]
+                              && !!recentHeader.selectionSids[recentDelegate.storageId]
                     multiSelectionSids: selected
                         ? Object.keys(recentHeader.selectionSids).filter(function(k) {
                               return recentHeader.selectionSids[k]
@@ -101,12 +112,12 @@ Column {
                     multiSelectionIcons: selected ? recentHeader.multiSelectionIcons : []
                     onClicked: function(mouse) {
                         if (mouse.button === Qt.RightButton) {
-                            recentHeader.contextMenuRequested(recentDelegate.modelData, recentDelegate.appData.desktopFile || "")
+                            recentHeader.contextMenuRequested(recentDelegate.storageId, recentDelegate.desktopFile)
                             return
                         }
                         if (recentHeader.tryModifierClick(recentDelegate.index, mouse))
                             return
-                        recentHeader.recentLaunched(recentDelegate.modelData)
+                        recentHeader.recentLaunched(recentDelegate.storageId)
                     }
                 }
 

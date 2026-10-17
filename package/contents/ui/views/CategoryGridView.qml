@@ -249,6 +249,7 @@ ListView {
         height: categoryGrid.showRecents ? implicitHeight : 0
         visible: categoryGrid.showRecents
         appsModel: categoryGrid.appsModel
+        launchState: categoryGrid.host.launchState
         cellWidth: categoryGrid.cellWidth
         cellHeight: categoryGrid.cellHeight
         cellStyle: categoryGrid.cellStyle

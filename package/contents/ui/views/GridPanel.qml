@@ -203,6 +203,7 @@ Item {
         id: gridHost
         appsModel: panel.appsModel
         favoritesManager: favorites
+        launchState: panel.plasmoidBridge ? panel.plasmoidBridge.launchState : null
         dragSource: panel.dragSource
         searchField: searchBar.field
         cellStyle: look

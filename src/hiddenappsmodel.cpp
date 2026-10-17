@@ -5,17 +5,9 @@
 
 #include "hiddenappsmodel.h"
 
-#include "launchstatestore.h"
-
-#include <KSycoca>
-
 HiddenAppsModel::HiddenAppsModel(QObject *parent)
-    : QAbstractListModel(parent)
+    : AppIdsModel(parent)
 {
-    connect(KSycoca::self(), &KSycoca::databaseChanged, this, [this]() {
-        m_fields.clear();
-        rebuild();
-    });
 }
 
 void HiddenAppsModel::setLaunchState(LaunchStateStore *state)
@@ -34,50 +26,22 @@ void HiddenAppsModel::setLaunchState(LaunchStateStore *state)
     Q_EMIT launchStateChanged();
 }
 
-int HiddenAppsModel::rowCount(const QModelIndex &parent) const
-{
-    return parent.isValid() ? 0 : int(m_rows.size());
-}
-
 QVariant HiddenAppsModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() >= m_rows.size()) {
-        return {};
-    }
-    const QString &sid = m_rows.at(index.row());
-    switch (role) {
-    case StorageIdRole:
-        return sid;
-    case NameRole: {
+    if (role == NameRole) {
         // An uninstalled app has no name left; show its id.
-        const QString name = m_fields.fields(sid).name;
-        return name.isEmpty() ? sid : name;
+        const QString name = AppIdsModel::data(index, NameRole).toString();
+        return name.isEmpty() ? AppIdsModel::data(index, StorageIdRole) : name;
     }
-    case IconNameRole:
-        return m_fields.fields(sid).icon;
-    case GenericNameRole:
-        return m_fields.fields(sid).genericName;
-    default:
-        return {};
-    }
+    return AppIdsModel::data(index, role);
 }
 
-QHash<int, QByteArray> HiddenAppsModel::roleNames() const
+void HiddenAppsModel::setFilter(const QString &text)
 {
-    return {
-        {StorageIdRole, "storageId"},
-        {NameRole, "name"},
-        {IconNameRole, "iconName"},
-        {GenericNameRole, "genericName"},
-    };
-}
-
-void HiddenAppsModel::setFilter(const QString &filter)
-{
-    if (m_filter == filter) {
+    if (m_filter == text) {
         return;
     }
-    m_filter = filter;
+    m_filter = text;
     rebuild();
     Q_EMIT filterChanged();
 }
@@ -101,20 +65,21 @@ void HiddenAppsModel::unhideAll()
     }
 }
 
+void HiddenAppsModel::appsChanged()
+{
+    // A filter by name may now match differently.
+    rebuild();
+    AppIdsModel::appsChanged();
+}
+
 void HiddenAppsModel::rebuild()
 {
-    QStringList rows;
+    QStringList ids;
     const QStringList hidden = m_state ? m_state->hiddenApps() : QStringList();
     for (const QString &sid : hidden) {
-        if (m_filter.isEmpty() || sid.contains(m_filter, Qt::CaseInsensitive) || m_fields.fields(sid).name.contains(m_filter, Qt::CaseInsensitive)) {
-            rows.append(sid);
+        if (m_filter.isEmpty() || sid.contains(m_filter, Qt::CaseInsensitive) || fields().fields(sid).name.contains(m_filter, Qt::CaseInsensitive)) {
+            ids.append(sid);
         }
     }
-    if (rows != m_rows) {
-        beginResetModel();
-        m_rows = rows;
-        endResetModel();
-    }
-    // Also when only filtered-out apps changed: empty may have.
-    Q_EMIT countChanged();
+    setIds(ids);
 }

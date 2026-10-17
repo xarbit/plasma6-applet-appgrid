@@ -435,6 +435,7 @@ GridView {
         height: gridView.showRecents ? implicitHeight : 0
         visible: gridView.showRecents
         appsModel: gridView.appsModel
+        launchState: gridView.host.launchState
         cellWidth: gridView.cellWidth
         cellHeight: gridView.cellHeight
         cellStyle: gridView.cellStyle

@@ -13,6 +13,7 @@ ecm_add_tests(
     test_activityscope.cpp
     test_appactionid.cpp
     test_appfiltermodel.cpp
+    test_appidsmodels.cpp
     test_appletmigration.cpp
     test_appmodel.cpp
     test_appranking.cpp
@@ -30,7 +31,6 @@ ecm_add_tests(
     test_favoritesgroupedmodel.cpp
     test_filter.cpp
     test_frecency_scoring.cpp
-    test_hiddenappsmodel.cpp
     test_launchbookkeeping.cpp
     test_launchstatestore.cpp
     test_menutree.cpp
