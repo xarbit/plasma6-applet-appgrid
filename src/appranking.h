@@ -44,7 +44,7 @@ public:
 
     // The inputs. Each returns whether it changed; a change that affects the
     // cached row inputs drops them.
-    bool setFavorites(const QStringList &favorites);
+    bool setFavorites(const QStringList &sids);
     [[nodiscard]] const FavoriteOrder &favorites() const
     {
         return m_favorites;

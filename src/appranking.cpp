@@ -11,9 +11,9 @@
 
 #include <limits>
 
-bool AppRanking::setFavorites(const QStringList &favorites)
+bool AppRanking::setFavorites(const QStringList &sids)
 {
-    if (!m_favorites.set(favorites)) {
+    if (!m_favorites.set(sids)) {
         return false;
     }
     invalidate();
