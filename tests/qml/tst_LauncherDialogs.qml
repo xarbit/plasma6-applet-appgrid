@@ -25,15 +25,14 @@ TestCase {
     }
 
     SignalSpy { id: launchSpy; signalName: "bulkLaunchAccepted" }
-    SignalSpy { id: folderSpy; signalName: "folderLaunchAccepted" }
     SignalSpy { id: hideSpy; signalName: "bulkHideAccepted" }
 
     function make() {
         var c = Qt.createComponent("../../package/contents/ui/widgets/LauncherDialogs.qml")
         verify(c.status === Component.Ready, "load error: " + c.errorString())
         var d = createTemporaryObject(c, testCase, { width: 400, height: 400, favoritesGroupedModel: foldersStub })
-        launchSpy.target = d; folderSpy.target = d; hideSpy.target = d
-        launchSpy.clear(); folderSpy.clear(); hideSpy.clear()
+        launchSpy.target = d; hideSpy.target = d
+        launchSpy.clear(); hideSpy.clear()
         return d
     }
 
@@ -53,10 +52,15 @@ TestCase {
         compare(launchSpy.count, 1)
         compare(launchSpy.signalArguments[0][0].length, 4)
 
-        d.confirmFolderLaunch(["x", "y"])
-        dialog(d, "folderLaunchDialog").accept()
-        compare(folderSpy.count, 1)
-        compare(folderSpy.signalArguments[0][0].join(","), "x,y")
+        // A folder's "Launch All" goes through the same dialog, titled for it.
+        d.confirmBulkLaunch(["x", "y"], true)
+        compare(dialog(d, "bulkLaunchDialog").title, "Launch all in folder?")
+        dialog(d, "bulkLaunchDialog").accept()
+        compare(launchSpy.count, 2)
+        compare(launchSpy.signalArguments[1][0].join(","), "x,y")
+        d.confirmBulkLaunch(["a"])
+        compare(dialog(d, "bulkLaunchDialog").title, "Launch all selected?")
+        dialog(d, "bulkLaunchDialog").reject()
 
         d.confirmBulkHide(["h"])
         dialog(d, "bulkHideDialog").accept()

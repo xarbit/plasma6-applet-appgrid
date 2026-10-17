@@ -87,17 +87,6 @@ TestCase {
         compare(closeSpy.count, 1)
     }
 
-    // A folder's "Launch All" launches each member in place: it must still
-    // go through the launch service, and must not close the launcher per member.
-    function test_launchAppByStorageIdNoClose() {
-        _reset()
-        coord.launchAppByStorageIdNoClose("beta")
-        compare(launchedSids.join(","), "beta")
-        compare(closeSpy.count, 0)
-        coord.launchAppByStorageIdNoClose("")
-        compare(launchedSids.length, 1, "an empty sid is ignored")
-    }
-
     // A search result of type "app" launches the app at its source row.
     function test_launchSearchResultApp() {
         _reset()
@@ -146,6 +135,9 @@ TestCase {
         _reset()
         coord.requestBulkLaunch(["a", "b", "c", "d"]) // 4 == threshold
         compare(confirmSpy.count, 1, "confirm requested")
+        compare(confirmSpy.signalArguments[0][1], false, "a selection")
+        coord.requestBulkLaunch(["a", "b", "c", "d"], true)
+        compare(confirmSpy.signalArguments[1][1], true, "a folder's apps")
         compare(launchedSids.length, 0, "nothing launched yet")
         compare(closeSpy.count, 0)
     }

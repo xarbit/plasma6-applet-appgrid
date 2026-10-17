@@ -493,34 +493,14 @@ Item {
             searchBar.field.text = text
             searchBar.field.cursorPosition = text.length
         }
-        onBulkLaunchConfirmRequested: function(sids) {
-            dialogs.confirmBulkLaunch(sids)
+        onBulkLaunchConfirmRequested: function(sids, fromFolder) {
+            dialogs.confirmBulkLaunch(sids, fromFolder)
         }
     }
     function launchSearchResult(index) { launcher.launchSearchResult(index) }
     function launchApp(index) { launcher.launchApp(index) }
     function launchAppByStorageId(sid) { launcher.launchAppByStorageId(sid) }
-    function _requestBulkLaunch(sids) { launcher.requestBulkLaunch(sids) }
-
-    // Launch every app in a folder. Unlike the plain bulk path, each member is
-    // launched favourite-aware (a KCM goes through KAStats, not the app
-    // launcher), and the "open many at once?" threshold still applies (#18).
-    function launchFolder(folderId) {
-        const members = panel.favoritesGroupedModel
-            ? panel.favoritesGroupedModel.folderMembers(folderId) : []
-        if (members.length === 0)
-            return
-        if (members.length >= launcher.bulkLaunchConfirmThreshold) {
-            dialogs.confirmFolderLaunch(members)
-        } else {
-            panel._launchFolderMembers(members)
-        }
-    }
-    function _launchFolderMembers(members) {
-        for (var i = 0; i < members.length; ++i)
-            launcher.launchAppByStorageIdNoClose(members[i])
-        panel.closeRequested()
-    }
+    function _requestBulkLaunch(sids, fromFolder = false) { launcher.requestBulkLaunch(sids, fromFolder) }
     function _runBulkLaunch(sids) { launcher.runBulkLaunch(sids) }
 
     // Eat clicks so they don't pass through the panel
@@ -1024,10 +1004,7 @@ Item {
         readonly property var _menuModel: panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
         appIdsOf: id => _menuModel ? _menuModel.folderAppIds(id) : []
         onOpenRequested: folderId => { if (_menuModel) _menuModel.enterFolder(folderId) }
-        onLaunchAllRequested: folderId => {
-            if (_menuModel)
-                panel._requestBulkLaunch(_menuModel.folderAppIds(folderId))
-        }
+        onLaunchAllRequested: appIds => panel._requestBulkLaunch(appIds, true)
 
         AppGridMenuItem {
             text: i18nd("dev.xarbit.appgrid", "Edit in Menu Editor…")
@@ -1052,7 +1029,7 @@ Item {
         appletInterface: panel.appletInterface
         onOpenFolderRequested: folderId => { if (panel.favoritesGroupedModel) panel.favoritesGroupedModel.enterFolder(folderId) }
         onRenameFolderRequested: folderId => dialogs.renameFolder(folderId)
-        onLaunchFolderRequested: folderId => panel.launchFolder(folderId)
+        onFolderLaunchRequested: sids => panel._requestBulkLaunch(sids, true)
 
         // Wrap the bridge's C++ methods in closures (not bare refs): called as
         // contextMenu.<prop>() the bare ref would run with the menu as `this`, not
@@ -1098,7 +1075,6 @@ Item {
         anchors.fill: parent
         favoritesGroupedModel: panel.favoritesGroupedModel
         onBulkLaunchAccepted: sids => launcher.runBulkLaunch(sids)
-        onFolderLaunchAccepted: members => panel._launchFolderMembers(members)
         onBulkHideAccepted: sids => launcher.runBulkHide(sids)
     }
 }

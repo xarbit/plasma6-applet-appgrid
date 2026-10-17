@@ -11,6 +11,7 @@
       * substitutionRequested — paste a runner substitution (calculator result)
                                 back into the search field
       * bulkLaunchConfirmRequested — above the threshold, ask before launching
+                                     (fromFolder: a folder's "Launch All")
 
     Injected appsModel / searchModel / plasmoidBridge so it tests with stubs.
 */
@@ -26,7 +27,7 @@ QtObject {
 
     signal closeRequested()
     signal substitutionRequested(string text)
-    signal bulkLaunchConfirmRequested(var sids)
+    signal bulkLaunchConfirmRequested(var sids, bool fromFolder)
 
     // Direct fire below the threshold (typical workflow bundles are 2-3 apps);
     // at/above it we prompt, because launching e.g. all 80 installed apps would
@@ -45,13 +46,6 @@ QtObject {
             return
         _launchOneBySid(sid)
         closeRequested()
-    }
-
-    // Launch without closing, e.g. one member of a folder's "Launch All".
-    function launchAppByStorageIdNoClose(sid) {
-        if (!appsModel || !sid)
-            return
-        _launchOneBySid(sid)
     }
 
     function launchSearchResult(index) {
@@ -80,11 +74,12 @@ QtObject {
             plasmoidBridge.launchService.launch(sid)
     }
 
-    function requestBulkLaunch(sids) {
+    // Launch @p sids: a selection, or a folder's apps when @p fromFolder.
+    function requestBulkLaunch(sids, fromFolder = false) {
         if (!sids || sids.length === 0)
             return
         if (sids.length >= bulkLaunchConfirmThreshold)
-            bulkLaunchConfirmRequested(sids)
+            bulkLaunchConfirmRequested(sids, fromFolder)
         else
             runBulkLaunch(sids)
     }

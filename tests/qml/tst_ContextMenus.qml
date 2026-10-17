@@ -22,6 +22,7 @@ TestCase {
     SignalSpy { id: openSpy; signalName: "openRequested" }
     SignalSpy { id: favSpy; signalName: "favoriteToggled" }
     SignalSpy { id: actionSpy; signalName: "actionTriggered" }
+    SignalSpy { id: launchAllSpy; signalName: "launchAllRequested" }
 
     function load(file, props) {
         var c = Qt.createComponent("../../package/contents/ui/widgets/" + file)
@@ -67,7 +68,11 @@ TestCase {
         var m = load("FolderContextMenu.qml", { appIdsOf: id => testCase.folderApps[id] || [] })
         m.showFor("f1")
         verify(m.itemAt(1).enabled)
-        m.close()
+        launchAllSpy.target = m
+        launchAllSpy.clear()
+        m.itemAt(1).clicked()
+        compare(launchAllSpy.count, 1)
+        compare(launchAllSpy.signalArguments[0][0].join(","), "a", "sends the folder's apps")
         folderApps = { f1: [] }
         m.showFor("f1")
         verify(!m.itemAt(1).enabled, "emptied folder")

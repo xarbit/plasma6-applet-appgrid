@@ -57,7 +57,8 @@ Item {
     property string _activitiesSig: ""
     signal openFolderRequested(string folderId)
     signal renameFolderRequested(string folderId)
-    signal launchFolderRequested(string folderId)
+    // A folder's "Launch All": its apps, for the bulk launch path.
+    signal folderLaunchRequested(var sids)
 
     // Plasmoid-glue callbacks, injected from the boundary:
     //   appActions(sid) -> list        launchAppAction(sid, actionName)
@@ -550,7 +551,7 @@ Item {
         property bool folderGlobal: false
         appIdsOf: id => contextMenu.favoritesGroupedModel ? contextMenu.favoritesGroupedModel.folderMembers(id) : []
         onOpenRequested: folderId => contextMenu.openFolderRequested(folderId)
-        onLaunchAllRequested: folderId => contextMenu.launchFolderRequested(folderId)
+        onLaunchAllRequested: appIds => contextMenu.folderLaunchRequested(appIds)
 
         AppGridMenuItem {
             icon.name: "edit-rename"
