@@ -9,7 +9,7 @@
 
 import QtQuick
 import QtTest
-import "sysinfoformat.js" as SysInfoFormat
+import "../../package/contents/ui/js/sysinfoformat.js" as SysInfoFormat
 
 TestCase {
     name: "SysInfoFormat"

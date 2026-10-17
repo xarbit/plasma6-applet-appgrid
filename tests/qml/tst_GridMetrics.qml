@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "gridmetrics.js" as GridMetrics
+import "../../package/contents/ui/js/gridmetrics.js" as GridMetrics
 
 TestCase {
     name: "GridMetrics"

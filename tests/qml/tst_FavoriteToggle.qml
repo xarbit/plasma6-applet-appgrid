@@ -9,7 +9,7 @@
 
 import QtQuick
 import QtTest
-import "favoritetoggle.js" as FavoriteToggle
+import "../../package/contents/ui/js/favoritetoggle.js" as FavoriteToggle
 
 TestCase {
     name: "FavoriteToggle"

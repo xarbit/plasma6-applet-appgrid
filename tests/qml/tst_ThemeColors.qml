@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "themecolors.js" as ThemeColors
+import "../../package/contents/ui/js/themecolors.js" as ThemeColors
 
 TestCase {
     name: "ThemeColors"

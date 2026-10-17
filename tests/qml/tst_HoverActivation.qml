@@ -13,7 +13,7 @@ TestCase {
     property var fakeNow: 100000
 
     function gate(enabled) {
-        var c = Qt.createComponent("HoverActivation.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/HoverActivation.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, {
             enabled: enabled === undefined ? true : enabled,

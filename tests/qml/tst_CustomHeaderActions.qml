@@ -11,7 +11,7 @@
 
 import QtQuick
 import QtTest
-import "customheaderactions.js" as CHA
+import "../../package/contents/ui/js/customheaderactions.js" as CHA
 
 TestCase {
     name: "CustomHeaderActions"

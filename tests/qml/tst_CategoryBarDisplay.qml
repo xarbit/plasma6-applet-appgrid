@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "categorybardisplay.js" as Display
+import "../../package/contents/ui/js/categorybardisplay.js" as Display
 
 TestCase {
     name: "CategoryBarDisplay"

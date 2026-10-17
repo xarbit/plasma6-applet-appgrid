@@ -12,7 +12,7 @@
 
 import QtQuick
 import QtTest
-import "configbuffer.js" as ConfigBuffer
+import "../../package/contents/ui/js/configbuffer.js" as ConfigBuffer
 
 TestCase {
     name: "ConfigBuffer"

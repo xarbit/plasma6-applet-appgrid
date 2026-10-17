@@ -38,7 +38,7 @@ TestCase {
     }
 
     function makeSession(props) {
-        var c = Qt.createComponent("SearchSessionManager.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/SearchSessionManager.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, props || {})
     }

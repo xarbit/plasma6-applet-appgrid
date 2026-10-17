@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "prefixmodes.js" as PrefixModes
+import "../../package/contents/ui/js/prefixmodes.js" as PrefixModes
 
 TestCase {
     name: "PrefixModes"

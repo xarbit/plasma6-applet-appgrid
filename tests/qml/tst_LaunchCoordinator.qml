@@ -11,6 +11,8 @@
 import QtQuick
 import QtTest
 
+import "../../package/contents/ui/controllers"
+
 TestCase {
     id: testCase
     name: "LaunchCoordinator"

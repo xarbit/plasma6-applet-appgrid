@@ -13,7 +13,7 @@ TestCase {
     property var fakeNow: 100000
 
     function gate() {
-        var c = Qt.createComponent("WheelGraceGate.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/WheelGraceGate.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, {
             clock: function() { return tst_WheelGraceGate.fakeNow }

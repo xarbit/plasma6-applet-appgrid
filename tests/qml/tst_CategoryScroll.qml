@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "categoryscroll.js" as CategoryScroll
+import "../../package/contents/ui/js/categoryscroll.js" as CategoryScroll
 
 TestCase {
     name: "CategoryScroll"

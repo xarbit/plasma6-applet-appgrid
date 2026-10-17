@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "scrolleasing.js" as ScrollEasing
+import "../../package/contents/ui/js/scrolleasing.js" as ScrollEasing
 
 TestCase {
     name: "ScrollEasing"

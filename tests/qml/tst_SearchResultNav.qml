@@ -7,7 +7,7 @@
 
 import QtQuick
 import QtTest
-import "searchresultnav.js" as SearchResultNav
+import "../../package/contents/ui/js/searchresultnav.js" as SearchResultNav
 
 TestCase {
     name: "SearchResultNav"

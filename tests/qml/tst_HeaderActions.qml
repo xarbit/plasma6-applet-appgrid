@@ -9,7 +9,7 @@
 
 import QtQuick
 import QtTest
-import "headeractions.js" as HeaderActions
+import "../../package/contents/ui/js/headeractions.js" as HeaderActions
 
 TestCase {
     name: "HeaderActions"

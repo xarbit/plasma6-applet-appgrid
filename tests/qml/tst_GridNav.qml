@@ -12,7 +12,7 @@
 
 import QtQuick
 import QtTest
-import "gridnav.js" as GridNav
+import "../../package/contents/ui/js/gridnav.js" as GridNav
 
 TestCase {
     name: "GridNav"

@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "favoriteid.js" as FavoriteId
+import "../../package/contents/ui/js/favoriteid.js" as FavoriteId
 
 TestCase {
     name: "FavoriteId"

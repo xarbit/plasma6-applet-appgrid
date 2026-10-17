@@ -10,7 +10,7 @@ TestCase {
     name: "MnemonicResolver"
 
     function resolver(names) {
-        var c = Qt.createComponent("MnemonicResolver.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/MnemonicResolver.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, { names: names })
     }

@@ -15,7 +15,7 @@ TestCase {
     name: "PrefixDetector"
 
     function detector(input) {
-        var c = Qt.createComponent("PrefixDetector.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/PrefixDetector.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, { input: input })
     }

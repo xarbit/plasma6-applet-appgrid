@@ -12,7 +12,7 @@ TestCase {
     property var fakeNow: 1000
 
     function gate() {
-        var c = Qt.createComponent("HoverGate.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/HoverGate.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         // Inject the fake clock so wheel-grace timing is deterministic.
         return c.createObject(null, {

@@ -13,7 +13,7 @@ TestCase {
     name: "VisibilityState"
 
     function make(props) {
-        var c = Qt.createComponent("VisibilityState.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/VisibilityState.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, props || {})
     }

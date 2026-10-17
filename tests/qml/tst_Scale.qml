@@ -10,7 +10,7 @@
 
 import QtQuick
 import QtTest
-import "scale.js" as Scale
+import "../../package/contents/ui/js/scale.js" as Scale
 
 TestCase {
     name: "Scale"

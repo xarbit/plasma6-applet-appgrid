@@ -17,7 +17,7 @@ TestCase {
     // Build a SelectionState with a deterministic sid mapping
     // (index N → "appN.desktop") and the given grid size.
     function makeSelection(count) {
-        var c = Qt.createComponent("SelectionState.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/SelectionState.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         return c.createObject(null, {
             gridCount: count,
@@ -262,7 +262,7 @@ TestCase {
     // (or vice versa) extends the selection through both sides.
 
     function test_rangeAcrossUnifiedDomainSelectsBothSides() {
-        var c = Qt.createComponent("SelectionState.qml")
+        var c = Qt.createComponent("../../package/contents/ui/controllers/SelectionState.qml")
         verify(c.status === Component.Ready, "component error: " + c.errorString())
         // 0..2 are recents, 3..7 are grid.
         var s = c.createObject(null, {
