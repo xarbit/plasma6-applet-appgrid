@@ -104,6 +104,17 @@ TestCase {
         verify(!v.appGridVisible)
         verify(!v.categorySectionsVisible)
         verify(!v.searchResultsVisible)
+        verify(!v.bodyVisible, "compact: no body")
+        v.isPrefixMode = true
+        v.isSearching = true
+        verify(v.bodyVisible, "a prefix view shows even in compact mode")
+    }
+
+    function test_bodyShowsWithAnyView() {
+        verify(make().bodyVisible, "the app grid")
+        verify(make({ isSearching: true }).bodyVisible, "the results")
+        verify(make({ isSortByCategory: true }).bodyVisible, "the sections")
+        verify(make({ categoryFolders: true, categoryFiltered: true }).bodyVisible, "the menu folders")
     }
 
     function test_compactModeRevealedShowsGrid() {

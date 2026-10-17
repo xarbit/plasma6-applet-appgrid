@@ -73,4 +73,9 @@ QtObject {
                                            && !emptyHidden
 
     readonly property bool searchResultsVisible: isSearching && !isPrefixMode
+
+    // Any body view shows (a prefix view, the results or a grid): the panel's
+    // body takes its height then, and the compact panel collapses without it.
+    readonly property bool bodyVisible: isPrefixMode || searchResultsVisible || menuFolderVisible
+                                        || categorySectionsVisible || appGridVisible
 }

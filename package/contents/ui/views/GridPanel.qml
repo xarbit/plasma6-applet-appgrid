@@ -693,105 +693,105 @@ Item {
             opacity: cellStyle.showDividers ? 1 : 0
         }
 
-        // -- Prefix mode view --
-        // Built only when the user actually enters a prefix mode (#200). The
-        // five sub-views (file browser, terminal, info, help, hidden) are rare,
-        // so instantiating them eagerly only weighed down cold open.
-        Loader {
-            id: prefixModeLoader
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.preferredHeight: panel.bodyHeight
-            active: panel.isPrefixMode
-            visible: active
-            sourceComponent: PrefixModeView {
-                mode: panel.prefixMode
-                argument: panel.prefixArgument
-                searchField: searchBar.field
-                showScrollbars: cellStyle.showScrollbars
-                appsModel: panel.appsModel
-                listDirectory: path => panel.plasmoidBridge.systemActions.listDirectory(path)
-                sysInfoProvider: panel.sysInfoProvider
-                updateChecker: panel.updateChecker
-                onFileOpened: panel.closeRequested()
-                onDirectoryNavigated: function(path) {
-                    searchBar.text = path
-                }
-            }
-        }
-
         AnswerToEverything {
             queryText: searchBar.text
             resultsActive: panel.showSearchResults && !panel.isPrefixMode
             iconSize: panel.gridIconSize
         }
 
-        SearchResultsList {
-            id: searchResultsList
+        // The body: one view at a time fills it (a prefix mode's, the search
+        // results or a grid), and it sizes the panel to the visible rows (#205).
+        // Hidden when none shows, so the compact panel collapses to the header.
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredHeight: panel.bodyHeight
-            visible: panel.showSearchResults
-            model: panel._searchApplied ? panel.searchModel : null
-            cellStyle: cellStyle
-            showShortcuts: cfg.showSearchShortcuts
-            searchField: searchBar.field
-            favoritesManager: favorites
-            plasmoidBridge: panel.plasmoidBridge
-            onLaunched: function(index) { panel.launchSearchResult(index) }
-            onContextMenuRequested: function(index, storageId, desktopFile) {
-                // search-results has no multi-select; passing canSelect=false
-                // hides the otherwise-no-op "Add to Selection" item.
-                if (storageId)
-                    menus.showForApp(storageId, desktopFile, [], false)
+            visible: visibility.bodyVisible
+
+            // -- Prefix mode view --
+            // Built only when the user actually enters a prefix mode (#200). The
+            // five sub-views (file browser, terminal, info, help, hidden) are rare,
+            // so instantiating them eagerly only weighed down cold open.
+            Loader {
+                id: prefixModeLoader
+                anchors.fill: parent
+                active: panel.isPrefixMode
+                visible: active
+                sourceComponent: PrefixModeView {
+                    mode: panel.prefixMode
+                    argument: panel.prefixArgument
+                    searchField: searchBar.field
+                    showScrollbars: cellStyle.showScrollbars
+                    appsModel: panel.appsModel
+                    listDirectory: path => panel.plasmoidBridge.systemActions.listDirectory(path)
+                    sysInfoProvider: panel.sysInfoProvider
+                    updateChecker: panel.updateChecker
+                    onFileOpened: panel.closeRequested()
+                    onDirectoryNavigated: function(path) {
+                        searchBar.text = path
+                    }
+                }
             }
-            onRunnerContextMenuRequested: index => menus.showForRunnerResult(index)
-        }
 
-        // Flat category sections (the By Category sort).
-        CategoryGridView {
-            id: categoryGridView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.preferredHeight: panel.bodyHeight
-            visible: panel.showCategoryGrid
-            host: gridHost
-            rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
-            showRecents: panel.cfgShowRecentApps
-                         && panel.appsModel
-                         && panel.appsModel.recentApps.length > 0
-                         && !panel.isFavoritesActive
-                         && !panel.cfgStartWithFavorites
-        }
+            SearchResultsList {
+                id: searchResultsList
+                anchors.fill: parent
+                visible: panel.showSearchResults
+                model: panel._searchApplied ? panel.searchModel : null
+                cellStyle: cellStyle
+                showShortcuts: cfg.showSearchShortcuts
+                searchField: searchBar.field
+                favoritesManager: favorites
+                plasmoidBridge: panel.plasmoidBridge
+                onLaunched: function(index) { panel.launchSearchResult(index) }
+                onContextMenuRequested: function(index, storageId, desktopFile) {
+                    // search-results has no multi-select; passing canSelect=false
+                    // hides the otherwise-no-op "Add to Selection" item.
+                    if (storageId)
+                        menus.showForApp(storageId, desktopFile, [], false)
+                }
+                onRunnerContextMenuRequested: index => menus.showForRunnerResult(index)
+            }
 
-        // -- Menu folder tree (By Category + group into folders, #201) --
-        MenuFolderView {
-            id: menuFolderView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.preferredHeight: panel.bodyHeight
-            visible: panel.showMenuFolders
-            // Gated on the feature so the (lazy) menu tree is never built when
-            // folders are off — reading menuTreeModel is what triggers the walk.
-            menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
-            host: gridHost
-            hideEmpty: cfg.hideEmptyCategories
-            onFolderContextRequested: function(menuPath) { menus.showForMenuFolder(menuPath) }
-        }
+            // Flat category sections (the By Category sort).
+            CategoryGridView {
+                id: categoryGridView
+                anchors.fill: parent
+                visible: panel.showCategoryGrid
+                host: gridHost
+                rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
+                showRecents: panel.cfgShowRecentApps
+                             && panel.appsModel
+                             && panel.appsModel.recentApps.length > 0
+                             && !panel.isFavoritesActive
+                             && !panel.cfgStartWithFavorites
+            }
 
-        // -- App grid (favourites / all / category) --
-        AppGridPane {
-            id: appGridPane
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.preferredHeight: panel.bodyHeight
-            visible: panel.showAppGrid
-            cfg: cfg
-            host: gridHost
-            model: panel._searchApplied ? null : panel.gridModel
-            favoritesActive: panel.isFavoritesActive
-            onFolderContextMenuRequested: folderId => menus.showForFolder(folderId)
-            onEmptyAreaContextMenuRequested: menus.showForEmptyArea()
+            // -- Menu folder tree (By Category + group into folders, #201) --
+            MenuFolderView {
+                id: menuFolderView
+                anchors.fill: parent
+                visible: panel.showMenuFolders
+                // Gated on the feature so the (lazy) menu tree is never built when
+                // folders are off — reading menuTreeModel is what triggers the walk.
+                menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
+                host: gridHost
+                hideEmpty: cfg.hideEmptyCategories
+                onFolderContextRequested: function(menuPath) { menus.showForMenuFolder(menuPath) }
+            }
+
+            // -- App grid (favourites / all / category) --
+            AppGridPane {
+                id: appGridPane
+                anchors.fill: parent
+                visible: panel.showAppGrid
+                cfg: cfg
+                host: gridHost
+                model: panel._searchApplied ? null : panel.gridModel
+                favoritesActive: panel.isFavoritesActive
+                onFolderContextMenuRequested: folderId => menus.showForFolder(folderId)
+                onEmptyAreaContextMenuRequested: menus.showForEmptyArea()
+            }
         }
     }
 
