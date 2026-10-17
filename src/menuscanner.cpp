@@ -5,6 +5,8 @@
 
 #include "menuscanner.h"
 
+#include "installsource.h"
+
 #include <KService>
 #include <KServiceGroup>
 
@@ -71,9 +73,7 @@ RawScan scan(bool systemMode)
             appEntry.storageId = storageId;
             appEntry.keywords = service->keywords();
             appEntry.comment = service->comment();
-            // entryPath() is the resolved absolute .desktop path (KService applies
-            // XDG precedence), so no extra stat is needed to detect the source.
-            appEntry.installSource = AppModel::detectInstallSource(service->exec(), service->entryPath());
+            appEntry.installSource = InstallSource::of(service);
             appEntry.folderRelPath = relPath;
             if (systemMode) {
                 appEntry.categories.append(topCategory.isEmpty() ? QStringLiteral("Other") : topCategory);

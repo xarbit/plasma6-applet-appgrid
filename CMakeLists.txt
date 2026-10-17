@@ -215,6 +215,8 @@ set(APPGRID_COMMON_SOURCES
     src/qmltypes.h
     src/discoverbackends.cpp
     src/discoverbackends.h
+    src/installsource.cpp
+    src/installsource.h
     src/pluginhelpers.cpp
     src/pluginhelpers.h
     src/searchranking.cpp

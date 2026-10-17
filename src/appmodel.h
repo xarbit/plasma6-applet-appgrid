@@ -79,7 +79,6 @@ public:
     }
 
     // Pure helpers — testable without constructing the model.
-    [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
     [[nodiscard]] static QStringList mapCategories(const QStringList &categories);
 
     [[nodiscard]] bool useSystemCategories() const;

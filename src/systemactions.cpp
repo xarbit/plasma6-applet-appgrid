@@ -9,9 +9,9 @@
 
 #include "appgridconstants.h"
 #include "applauncher.h"
-#include "appmodel.h"
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
+#include "installsource.h"
 #include "pluginhelpers.h"
 
 #include <KConfigGroup>
@@ -38,13 +38,12 @@
 namespace
 {
 // The Discover backend (PackageKit / Flatpak / Snap) owning the installed copy
-// of @p service, or empty if unknown. The installed .desktop path — not the
-// AppStream id — identifies the source, since one component can ship from
-// several backends.
+// of @p service, or empty if unknown. The installed copy — not the AppStream
+// id — identifies the source, since one component can ship from several
+// backends.
 QString discoverBackendFor(const KService::Ptr &service)
 {
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    return DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    return DiscoverBackends::forInstallSource(InstallSource::of(service));
 }
 
 // The AppStream component id the pool resolves for @p service (keyed by its

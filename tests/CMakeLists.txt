@@ -29,6 +29,7 @@ ecm_add_tests(
     test_launchstatestore.cpp
     test_menutree.cpp
     test_newappstracker.cpp
+    test_installsource.cpp
     test_launchservice.cpp
     test_plasmoidclient.cpp
     test_pluginhelpers.cpp

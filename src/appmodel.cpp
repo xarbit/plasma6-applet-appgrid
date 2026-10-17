@@ -135,23 +135,6 @@ QStringList AppModel::mapCategories(const QStringList &categories)
     return result.values();
 }
 
-QString AppModel::detectInstallSource(const QString &exec, const QString &resolvedPath)
-{
-    if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id="))) {
-        return QStringLiteral("Web App");
-    }
-    if (exec.contains(QLatin1String("flatpak")) || resolvedPath.contains(QLatin1String("flatpak"))) {
-        return QStringLiteral("Flatpak");
-    }
-    if (exec.contains(QLatin1String("/snap/")) || resolvedPath.contains(QLatin1String("snap"))) {
-        return QStringLiteral("Snap");
-    }
-    if (exec.contains(QLatin1String("appimage"), Qt::CaseInsensitive)) {
-        return QStringLiteral("AppImage");
-    }
-    return QStringLiteral("System");
-}
-
 bool AppModel::useSystemCategories() const
 {
     return m_useSystemCategories;
