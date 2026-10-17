@@ -267,7 +267,7 @@ void FavoritesGroupedModel::moveRow(int fromRow, int toRow)
     m_state.tokens.move(from.token, to.token);
     moveRowAt(fromRow, toRow);
     syncRowSources();
-    Q_EMIT layoutChanged();
+    Q_EMIT favoriteLayoutChanged();
     Q_EMIT layoutPersistRequested();
 }
 
@@ -292,7 +292,7 @@ void FavoritesGroupedModel::apply(const Layout &next, bool persist)
         }
     }
     if (tokensMoved) {
-        Q_EMIT layoutChanged();
+        Q_EMIT favoriteLayoutChanged();
         if (persist) {
             Q_EMIT layoutPersistRequested();
         }

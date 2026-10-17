@@ -27,7 +27,7 @@ class FavoritesGroupedModel : public AbstractGroupedModel
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList favoriteFolders READ favoriteFolders WRITE setFavoriteFolders NOTIFY foldersChanged)
-    Q_PROPERTY(QStringList favoriteLayout READ favoriteLayout WRITE setFavoriteLayout NOTIFY layoutChanged)
+    Q_PROPERTY(QStringList favoriteLayout READ favoriteLayout WRITE setFavoriteLayout NOTIFY favoriteLayoutChanged)
     // Whether folders render as tiles (true) or fold out into their members in
     // place (false). The favourites tab drives both states from this one model
     // and layout, so toggling grouping only collapses/expands folders where they
@@ -117,7 +117,7 @@ public:
 
 Q_SIGNALS:
     void foldersChanged();
-    void layoutChanged();
+    void favoriteLayoutChanged();
     // Navigation level changed (entered/left a folder, or the open folder
     // dissolved while inside it).
     void pathChanged();
