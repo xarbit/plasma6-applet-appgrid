@@ -474,87 +474,6 @@ RowLayout {
         Accessible.role: Accessible.Button
     }
 
-    // The arrow slot animates its width to 0 at the edge so the
-    // categories reclaim the space. visible:false would resize the
-    // Flickable in a single frame mid-scroll and snap contentX; the
-    // animated width gives the layout time to settle smoothly.
-    component ScrollArrow: PlasmaComponents.ToolButton {
-        id: arrowBtn
-        focusPolicy: Qt.NoFocus
-        property bool scrollable: false
-        // Each arrow supplies its page function; invoked on click and, with
-        // open-on-hover on, after a dwell and then on a slow repeat while hovered.
-        property var pageAction: null
-        // Open-on-hover arming. Set when the cursor enters and cleared on each
-        // fire, so the dwell timer pages exactly once per arming; the retrigger
-        // timer re-arms it every few seconds while the cursor rests on the arrow.
-        property bool _hoverArmed: false
-
-        // Page, then (open-on-hover) schedule a slow re-arm so a resting cursor
-        // keeps paging every hoverRetriggerInterval rather than racing to the end.
-        function _page() {
-            if (pageAction)
-                pageAction()
-            _hoverArmed = false
-            if (categoryBar.openOnHover)
-                retriggerTimer.restart()
-        }
-
-        onHoveredChanged: {
-            _hoverArmed = hovered
-            if (!hovered)
-                retriggerTimer.stop()
-        }
-        onClicked: _page()
-        enabled: scrollable
-        // Fixed-size button sitting in the reserved margin at a catFlick edge (its
-        // instance anchors it). Fades out when its side has nothing to scroll;
-        // hidden at opacity 0 so it never eats clicks meant for the categories.
-        opacity: scrollable ? 1 : 0
-        visible: opacity > 0
-        z: 1
-        // implicitWidth, not width: each instance anchors top/bottom + one side, so
-        // width is free and takes this — and it avoids qmllint's layout-managed-width
-        // warning that a bare width: triggers on a ToolButton.
-        implicitWidth: categoryBar.scrollArrowWidth
-        icon.width: categoryBar.buttonIconSize
-        icon.height: categoryBar.buttonIconSize
-
-        Behavior on opacity {
-            NumberAnimation { duration: Kirigami.Units.shortDuration }
-        }
-
-        // Tooltip mirrors the accessible name each instance sets (#171).
-        PlasmaComponents.ToolTip.text: Accessible.name
-        PlasmaComponents.ToolTip.visible: hovered && scrollable
-        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-
-        // Dwell: while armed, page once after a short delay so merely sweeping
-        // the cursor across the arrow doesn't page. repeat:false alone wouldn't
-        // stop it — the running binding stays true while hovered and would
-        // restart it — so _hoverArmed gates the binding and the fire clears it.
-        Timer {
-            running: categoryBar.openOnHover && arrowBtn.hovered && arrowBtn._hoverArmed
-                && arrowBtn.scrollable && arrowBtn.pageAction !== null
-            interval: categoryBar.hoverPageDwell
-            repeat: false
-            onTriggered: arrowBtn._page()
-        }
-
-        // Slow re-arm: hoverRetriggerInterval after a page, re-arm the dwell if
-        // the cursor still rests on the (still-scrollable) arrow, so paging
-        // continues hands-free without racing to the end.
-        Timer {
-            id: retriggerTimer
-            interval: categoryBar.hoverRetriggerInterval
-            repeat: false
-            onTriggered: if (categoryBar.openOnHover && arrowBtn.hovered && arrowBtn.scrollable)
-                arrowBtn._hoverArmed = true
-        }
-
-        Accessible.role: Accessible.Button
-    }
-
     // -- Scrollable category buttons, with a scroll arrow reserved at each edge.
     // catArea is the single fillWidth slot; the Flickable and the two arrows live
     // inside it, so catArea's width tracks only the bar / All / favorites geometry.
@@ -665,54 +584,12 @@ RowLayout {
                     Repeater {
                         id: catRepeater
                         model: categoryBar.categoryList
-                        delegate: PlasmaComponents.ToolButton {
-                            focusPolicy: Qt.NoFocus
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            // Icon-only: never squish below the icon + padding; past
-                            // that the row overflows and scrolls.
-                            Layout.minimumWidth: categoryBar.tabsIconOnly ? categoryBar.tabMinWidth : 0
-                            required property int index
-                            required property string modelData
-                            Kirigami.MnemonicData.enabled: false
-                            leftPadding: categoryBar.tabHPadding
-                            rightPadding: categoryBar.tabHPadding
-                            text: ""
-                            contentItem: CategoryTabContent {
-                                bar: categoryBar
-                                label: modelData
-                                iconSource: categoryBar.appsModel
-                                    ? categoryBar.appsModel.categoryIcon(modelData) : ""
+                        delegate: CategoryTabButton {
+                            bar: categoryBar
+                            onContextMenuRequested: name => {
+                                catContextMenu.categoryName = name
+                                catContextMenu.popup()
                             }
-                            checked: !categoryBar.wheelScrolling
-                                     && !categoryBar.favoritesActive
-                                     && categoryBar.selectedCategory === modelData
-                            onClicked: {
-                                categoryBar.selectCategory(modelData)
-                                categoryBar.scrollToSelected()
-                            }
-                            onHoveredChanged: hovered ? categoryBar.hoverEnter(modelData)
-                                                      : categoryBar.hoverLeave(modelData)
-
-                            // Icon-only hides the label, so surface the category name
-                            // on hover; redundant when the label is already shown.
-                            PlasmaComponents.ToolTip.text: modelData
-                            PlasmaComponents.ToolTip.visible: hovered && categoryBar.tabsIconOnly
-                            PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.RightButton
-                                onClicked: function(mouse) {
-                                    if (categoryBar.appsModel && categoryBar.appsModel.useSystemCategories) {
-                                        catContextMenu.categoryName = modelData
-                                        catContextMenu.popup()
-                                    }
-                                }
-                            }
-
-                            Accessible.name: modelData
-                            Accessible.role: Accessible.Button
                         }
                     }
                 }
@@ -720,16 +597,18 @@ RowLayout {
         }
 
         // -- Scroll arrows, in the reserved margin at each catFlick edge --
-        ScrollArrow {
+        CategoryScrollArrow {
             id: scrollLeftBtn
+            bar: categoryBar
             anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
             scrollable: catViewport.geom.leftReserve > 0
             icon.name: "arrow-left"
             pageAction: () => categoryBar.pageLeft()
             Accessible.name: i18nd("dev.xarbit.appgrid", "Scroll categories left")
         }
-        ScrollArrow {
+        CategoryScrollArrow {
             id: scrollRightBtn
+            bar: categoryBar
             anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
             scrollable: catViewport.geom.rightShown
             icon.name: "arrow-right"
