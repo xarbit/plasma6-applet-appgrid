@@ -451,38 +451,18 @@ ListView {
                         visible: categoryGrid.activeFocus && categoryGrid.appIndex === cell.flatIndex
                     }
 
-                    AppIconDelegate {
+                    AppCell {
                         id: catIconDelegate
                         anchors.fill: parent
+                        view: categoryGrid
+                        cellIndex: cell.flatIndex
                         appName: cell.appData.name || ""
                         appIcon: cell.appData.iconName || Const.DEFAULT_ICON
-                        iconGeneration: categoryGrid.appsModel ? categoryGrid.appsModel.iconGeneration : 0
                         appComment: cell.appData.comment || ""
                         installSource: cell.appData.installSource || ""
-                        showTooltip: categoryGrid.showTooltips
-                        iconSize: categoryGrid.iconSize
-                        fontScale: categoryGrid.fontScale
-                        hoverAnimation: categoryGrid.hoverAnimation
-                        shadowEnabled: categoryGrid.shadowEnabled
-                        hoverHighlight: categoryGrid.hoverHighlight
                         isCurrentItem: categoryGrid.appIndex === cell.flatIndex && categoryGrid.activeFocus
-                        isNew: {
-                            categoryGrid._newAppsRevision // re-eval when used apps change
-                            return categoryGrid.showNewAppBadge && categoryGrid.appsModel
-                                ? categoryGrid.appsModel.isNewApp(cell.appData.storageId || "") : false
-                        }
                         storageId: cell.appData.storageId || ""
                         desktopFile: cell.appData.desktopFile || ""
-                        dragSource: categoryGrid.dragSource
-
-                        selected: categoryGrid.multiSelectActive
-                                  && !!categoryGrid.selectedSids[cell.appData.storageId || ""]
-                        selectionAnchor: categoryGrid.multiSelectActive
-                                         && categoryGrid.selectionAnchor === cell.flatIndex
-                                         && categoryGrid.selectionCount > 0
-                        multiSelectionSids: selected ? categoryGrid.selectedSidList() : []
-                        multiSelectionUrls: selected ? categoryGrid.selectedDesktopFileUrls() : []
-                        multiSelectionIcons: selected ? categoryGrid.selectedIconNames() : []
 
                         onClicked: function(mouse) {
                             const sid = cell.appData.storageId || ""

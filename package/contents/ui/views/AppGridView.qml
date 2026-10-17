@@ -816,9 +816,11 @@ GridView {
             }
         }
 
-        AppIconDelegate {
+        AppCell {
             id: iconDelegate
             anchors.fill: parent
+            view: gridView
+            cellIndex: model.index
             visible: !delegateRoot._isFolder
             appName: delegateRoot._fromShared
                 ? ((delegateRoot._appKnown && delegateRoot._appData.name)
@@ -833,7 +835,6 @@ GridView {
                    || gridView.defaultIcon)
                 : (model.iconName || gridView.defaultIcon)
             displayIcon: delegateRoot._fromShared ? "" : gridView.getDisplayIcon(model.index)
-            iconGeneration: gridView.appsModel ? gridView.appsModel.iconGeneration : 0
             appGenericName: delegateRoot._fromShared
                 ? (delegateRoot._appData ? delegateRoot._appData.genericName || "" : "")
                 : (model.genericName || "")
@@ -843,45 +844,14 @@ GridView {
             installSource: delegateRoot._fromShared
                 ? (delegateRoot._appData ? delegateRoot._appData.installSource || "" : "")
                 : (model.installSource || "")
-            showTooltip: gridView.showTooltips
             hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
             isCurrentItem: gridView.currentIndex === model.index && gridView.activeFocus
-            iconSize: gridView.iconSize
-            fontScale: gridView.fontScale
-            hoverAnimation: gridView.hoverAnimation
-            shadowEnabled: gridView.shadowEnabled
-            hoverHighlight: gridView.hoverHighlight
-            isNew: {
-                gridView._newAppsRevision // re-eval when used apps change
-                return !delegateRoot._fromShared && gridView.showNewAppBadge && gridView.appsModel
-                    ? gridView.appsModel.isNewApp(delegateRoot._sid) : false
-            }
+            newBadgeAllowed: !delegateRoot._fromShared
             storageId: delegateRoot._sid
             desktopFile: delegateRoot._fromShared
                 ? (delegateRoot._appData ? delegateRoot._appData.desktopFile || "" : "")
                 : (model.desktopFile || "")
             gridRow: model.index
-            // Drag-out is allowed from every view (taskbar/panel/Dolphin
-            // pinning); internal reorder is gated separately in the DropArea
-            // based on the source delegate's storageId lookup, so always
-            // wiring the proxy here is safe.
-            dragSource: gridView.dragSource
-
-            // Selection visuals — `selected` reads the GridView's selection
-            // map, so toggling any item re-evaluates the binding for all
-            // delegates in one pass. `selectionAnchor` highlights the pivot
-            // item used by Shift+click / Shift+Arrow range select.
-            selected: gridView.multiSelectActive
-                      && !!gridView.selectedSids[delegateRoot._sid]
-            selectionAnchor: gridView.multiSelectActive
-                             && gridView.selectionAnchor === model.index
-                             && gridView.selectionCount > 0
-            // Carry the full multi-selection bundle so dragging this item
-            // initiates a multi-URI drag-out. Only populated when this
-            // delegate is itself selected.
-            multiSelectionSids: selected ? gridView.selectedSidList() : []
-            multiSelectionUrls: selected ? gridView.selectedDesktopFileUrls() : []
-            multiSelectionIcons: selected ? gridView.selectedIconNames() : []
 
             onClicked: function(mouse) {
                 const desktopFile = delegateRoot._fromShared
