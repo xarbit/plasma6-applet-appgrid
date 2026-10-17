@@ -14,6 +14,10 @@ namespace AppGrid
  *  value in CMakeLists.txt. */
 inline constexpr QLatin1String ApplicationId{APPGRID_APP_ID};
 
+/** KAStats client id of the favourites model: the ordering scope every AppGrid
+ *  variant shares, so a reorder in one shows in the others. */
+inline constexpr QLatin1String FavoritesClientId{"dev.xarbit.appgrid.favorites"};
+
 /** D-Bus single-instance surface of the standalone `appgrid` daemon
  *  (src/standalone): the daemon registers/exports it, the plasmoid toggles the
  *  daemon through it. One source so the two never drift. */

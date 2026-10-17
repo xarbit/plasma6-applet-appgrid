@@ -45,4 +45,11 @@ namespace FavoriteId
  * of the identity (normalized() keeps it verbatim).
  */
 [[nodiscard]] QStringList variantsOf(const QStringList &stored, const QString &id, const std::function<QString(const QString &)> &normalize);
+
+/**
+ * The storage ids the app models key favourites on: each stored id of
+ * @p stored without the "applications:" scheme, empty entries dropped, order
+ * kept.
+ */
+[[nodiscard]] QStringList plainIds(const QStringList &stored);
 }

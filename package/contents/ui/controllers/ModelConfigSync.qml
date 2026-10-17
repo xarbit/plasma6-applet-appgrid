@@ -22,9 +22,9 @@ QtObject {
     property var appsModel: null
     property var cfg: null // read surface (ConfigCache)
 
-    // Push config -> model. Favorites are loaded separately from
-    // KAStatsFavoritesModel after migration (see FavoritesManager.qml); the
-    // launch state comes from the controller's LaunchStateStore, not here.
+    // Push config -> model. The controller feeds the favourites (from its
+    // KActivities model) and the launch state (from its LaunchStateStore)
+    // into the model itself, not here.
     function sync() {
         if (!appsModel || !cfg)
             return

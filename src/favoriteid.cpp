@@ -51,3 +51,15 @@ QStringList FavoriteId::variantsOf(const QStringList &stored, const QString &id,
     }
     return variants;
 }
+
+QStringList FavoriteId::plainIds(const QStringList &stored)
+{
+    QStringList ids;
+    ids.reserve(stored.size());
+    for (const QString &entry : stored) {
+        if (!entry.isEmpty()) {
+            ids.append(PluginHelpers::stripApplicationsPrefix(entry));
+        }
+    }
+    return ids;
+}

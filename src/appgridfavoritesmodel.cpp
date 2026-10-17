@@ -22,7 +22,6 @@
 
 #include <QFileInfo>
 #include <QMimeType>
-#include <QQmlEngine>
 #include <QTimer>
 
 #include <algorithm>
@@ -63,11 +62,6 @@ QUrl urlForId(const QString &id)
 {
     return id.startsWith(QLatin1Char('/')) ? QUrl::fromLocalFile(id) : QUrl(id);
 }
-}
-
-void AppGridFavoritesModel::registerQmlType()
-{
-    qmlRegisterType<AppGridFavoritesModel>("dev.xarbit.appgrid.models", 1, 0, "AppGridFavoritesModel");
 }
 
 AppGridFavoritesModel::AppGridFavoritesModel(QObject *parent)
@@ -211,6 +205,16 @@ bool AppGridFavoritesModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     // the KActivities link stays, so reinstalling the app or restoring the file
     // brings the favourite back, matching Kicker, which also hides rather than unlinks.
     return resolve(resource).valid;
+}
+
+QStringList AppGridFavoritesModel::favoriteIds() const
+{
+    QStringList stored;
+    stored.reserve(rowCount());
+    for (int row = 0, rows = rowCount(); row < rows; ++row) {
+        stored.append(resourceAt(index(row, 0)));
+    }
+    return FavoriteId::plainIds(stored);
 }
 
 QString AppGridFavoritesModel::resourceForSourceRow(int sourceRow, const QModelIndex &sourceParent) const

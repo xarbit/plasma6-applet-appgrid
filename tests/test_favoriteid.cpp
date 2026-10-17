@@ -132,6 +132,27 @@ private Q_SLOTS:
         QVERIFY(FavoriteId::variantsOf(stored, QStringLiteral("gone.desktop"), normalize).isEmpty());
         QVERIFY(FavoriteId::variantsOf(stored, QString(), normalize).isEmpty());
     }
+
+    // The app models key favourites on bare storage ids: the scheme goes,
+    // bare ids and documents stay as they are, empty rows drop out.
+    void plainIdsStripTheScheme()
+    {
+        QVERIFY(FavoriteId::plainIds({}).isEmpty());
+        const QStringList stored{
+            QStringLiteral("applications:firefox.desktop"),
+            QString(),
+            QStringLiteral("kate.desktop"),
+            QStringLiteral("applications:vivaldi.desktop?action=new-window"),
+            QStringLiteral("/home/user/notes.pdf"),
+        };
+        const QStringList expected{
+            QStringLiteral("firefox.desktop"),
+            QStringLiteral("kate.desktop"),
+            QStringLiteral("vivaldi.desktop?action=new-window"),
+            QStringLiteral("/home/user/notes.pdf"),
+        };
+        QCOMPARE(FavoriteId::plainIds(stored), expected);
+    }
 };
 
 QTEST_MAIN(TestFavoriteId)

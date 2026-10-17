@@ -16,6 +16,7 @@ class ResultsModel;
 }
 
 #include "appfiltermodel.h"
+#include "appgridfavoritesmodel.h"
 #include "appmodel.h"
 #include "categoryrowsmodel.h"
 #include "defaultappsprovider.h"
@@ -56,6 +57,7 @@ class AppGridController : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(AppFilterModel *appsModel READ appsModel CONSTANT)
+    Q_PROPERTY(AppGridFavoritesModel *favoritesModel READ favoritesModel CONSTANT)
     Q_PROPERTY(FavoritesGroupedModel *favoritesGroupedModel READ favoritesGroupedModel CONSTANT)
     Q_PROPERTY(MenuTreeModel *menuTreeModel READ menuTreeModel CONSTANT)
     Q_PROPERTY(CategoryRowsModel *categoryRowsModel READ categoryRowsModel CONSTANT)
@@ -75,6 +77,8 @@ public:
     explicit AppGridController(QObject *parent = nullptr);
 
     [[nodiscard]] AppFilterModel *appsModel() const;
+    /** The KActivities favourites, shared with Kicker/Kickoff. */
+    [[nodiscard]] AppGridFavoritesModel *favoritesModel() const;
     /** The favourites folder grouping model (issue #18), shared by both variants. */
     [[nodiscard]] FavoritesGroupedModel *favoritesGroupedModel() const;
     /** The read-only kmenuedit folder tree for the By Category view (issue #201). */
@@ -259,6 +263,7 @@ private:
     DefaultAppsProvider m_defaultApps;
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
+    AppGridFavoritesModel m_favorites;
     CategoryRowsModel m_categoryRows;
     MenuTreeModel m_menuTreeModel;
     // Built on first menuTreeModel() read (folders feature in use), not at startup.

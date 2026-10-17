@@ -302,11 +302,6 @@ if(Qt6QuickTest_FOUND)
         COPYONLY
     )
     configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/favoritesmigration.js
-        ${CMAKE_CURRENT_SOURCE_DIR}/qml/favoritesmigration.js
-        COPYONLY
-    )
-    configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/headeractions.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/headeractions.js
         COPYONLY

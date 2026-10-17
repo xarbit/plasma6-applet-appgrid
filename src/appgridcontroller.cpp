@@ -49,8 +49,6 @@
 #include <kcoreaddons_version.h>
 #include <plasma_version.h>
 
-#include <mutex>
-
 namespace
 {
 // The Discover backend (PackageKit / Flatpak / Snap) owning the installed copy
@@ -75,11 +73,6 @@ AppGridController::AppGridController(QObject *parent)
     : QObject(parent)
     , m_newAppsTracker(&m_usedApps)
 {
-    // Make the favourites model importable from QML (SharedFavoritesProvider).
-    // Once per process — every variant and the daemon construct a controller.
-    static std::once_flag favoritesTypeOnce;
-    std::call_once(favoritesTypeOnce, &AppGridFavoritesModel::registerQmlType);
-
     m_filterModel.setSourceModel(&m_appModel);
     m_runnerModel = new KRunner::ResultsModel(this);
     m_runnerFilterModel.setSourceModel(m_runnerModel);
@@ -237,6 +230,22 @@ void AppGridController::wireLaunchState()
     connect(&m_favoritesGrouped, &FavoritesGroupedModel::layoutPersistRequested, &m_launchState, [this]() {
         m_launchState.setFavoriteLayout(m_favoritesGrouped.favoriteLayout());
     });
+
+    // The favourites list is held in three places: the KActivities model (the
+    // source of truth), the filter model (favourites-only view, search ranking)
+    // and the folder layout. Push it on every change, synchronously, so a
+    // folder edit right after an unfavourite already sees the shorter list.
+    const auto syncFavorites = [this]() {
+        const QStringList ids = m_favorites.favoriteIds();
+        m_filterModel.setFavoriteApps(ids);
+        m_favoritesGrouped.setFlatFavorites(ids);
+    };
+    connect(&m_favorites, &QAbstractItemModel::rowsInserted, this, syncFavorites);
+    connect(&m_favorites, &QAbstractItemModel::rowsRemoved, this, syncFavorites);
+    connect(&m_favorites, &QAbstractItemModel::rowsMoved, this, syncFavorites);
+    connect(&m_favorites, &QAbstractItemModel::modelReset, this, syncFavorites);
+    connect(&m_favorites, &QAbstractItemModel::layoutChanged, this, syncFavorites);
+    m_favorites.initForClient(QString(AppGrid::FavoritesClientId));
 }
 
 LaunchStateStore *AppGridController::launchState() const
@@ -262,6 +271,11 @@ void AppGridController::positionPanelWindow(QWindow *window, int panelFullHeight
 AppFilterModel *AppGridController::appsModel() const
 {
     return const_cast<AppFilterModel *>(&m_filterModel);
+}
+
+AppGridFavoritesModel *AppGridController::favoritesModel() const
+{
+    return const_cast<AppGridFavoritesModel *>(&m_favorites);
 }
 
 FavoritesGroupedModel *AppGridController::favoritesGroupedModel() const

@@ -61,9 +61,6 @@ Item {
     // Update-checker handle (null on distro packages); forwarded to HeaderActionStrip.
     required property var updateChecker
 
-    // KAStats favorites client id, built from the plasmoid id at the root.
-    required property string favoritesClientInstance
-
     // Supplied by the plasmoid root, forwarded to the prefix views (`i:`). A
     // function returning the system-info map, not the map itself, so the
     // /proc + os-release reads only run when the i: info view opens (#200).
@@ -338,10 +335,8 @@ Item {
     // -- KActivities-backed favorites (always the source of truth) --
     FavoritesManager {
         id: favorites
-        appsModel: panel.appsModel
+        sharedFavoritesModel: panel.plasmoidBridge ? panel.plasmoidBridge.favoritesModel : null
         favoritesGroupedModel: panel.favoritesGroupedModel
-        clientInstance: panel.favoritesClientInstance
-        sortFavoritesAlphabetically: cfg.sortFavoritesAlphabetically
     }
     readonly property alias favoriteIdRole: favorites.favoriteIdRole
     readonly property alias sharedFavoritesModel: favorites.sharedFavoritesModel

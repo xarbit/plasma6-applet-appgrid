@@ -11,7 +11,6 @@ import org.kde.plasma.plasmoid
 
 import "controllers"
 import "views" as Views
-import "js/constants.js" as Const
 
 PlasmoidItem {
     id: appgrid
@@ -74,7 +73,6 @@ PlasmoidItem {
             configuration: Plasmoid.configuration
             plasmoidBridge: Plasmoid.controller
             updateChecker: Plasmoid.controller.updateChecker
-            favoritesClientInstance: Const.FAVORITES_CLIENT_ID
             sysInfoProvider: () => Plasmoid.systemInfo()
             opacity: 1.0
             onCloseRequested: appgrid.expanded = false

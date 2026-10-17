@@ -22,7 +22,6 @@ import org.kde.plasma.core as PlasmaCore
 
 import "controllers"
 import "views" as Views
-import "js/constants.js" as Const
 
 PlasmaCore.Window {
     id: win
@@ -84,7 +83,6 @@ PlasmaCore.Window {
         configuration: appGridConfig
         plasmoidBridge: appGridController
         updateChecker: appGridController.isUniversalBuild ? appGridController.updateChecker : null
-        favoritesClientInstance: Const.FAVORITES_CLIENT_ID
         sysInfoProvider: () => appGridController.systemInfo("Standalone")
         onCloseRequested: win.closeWindow()
 

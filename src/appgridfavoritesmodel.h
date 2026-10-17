@@ -69,10 +69,6 @@ public:
     explicit AppGridFavoritesModel(QObject *parent = nullptr);
     ~AppGridFavoritesModel() override;
 
-    /** Register the type for QML instantiation (SharedFavoritesProvider.qml).
-     *  Idempotent; safe to call from every controller instance. */
-    static void registerQmlType();
-
     [[nodiscard]] int count() const;
     /** True once kactivitymanagerd is running and the store is readable. */
     [[nodiscard]] bool enabled() const;
@@ -86,6 +82,10 @@ public:
     /** Build (or rebuild) the backing query for @p clientId — the ordering
      *  scope shared across AppGrid variants. */
     Q_INVOKABLE void initForClient(const QString &clientId);
+
+    /** The shown favourites as the app models key them (FavoriteId::plainIds),
+     *  in order. */
+    [[nodiscard]] QStringList favoriteIds() const;
 
     [[nodiscard]] Q_INVOKABLE bool isFavorite(const QString &id) const;
     /** Row of the favourite matching @p storageId (bare or "applications:"-

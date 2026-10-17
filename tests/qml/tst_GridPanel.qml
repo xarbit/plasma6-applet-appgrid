@@ -144,7 +144,6 @@ TestCase {
             configuration: configStub,
             plasmoidBridge: bridgeStub,
             updateChecker: null,
-            favoritesClientInstance: "dev.xarbit.appgrid.favorites.instance-test",
             sysInfoProvider: () => ({})
         })
         verify(obj !== null, "GridPanel create returned null")
