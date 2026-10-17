@@ -18,8 +18,8 @@
  * @brief Proxy model adding search, category filtering, and app hiding.
  *
  * Wraps AppModel and provides QML-bindable properties for live filtering.
- * Also exposes convenience methods to launch apps, hide/unhide by storageId,
- * and retrieve row data as a QVariantMap.
+ * Also hides/unhides by storageId and returns row data as a QVariantMap.
+ * Launching is LaunchService's; recordRecentLaunch() takes its reports.
  */
 class AppFilterModel : public FilterProxyModel
 {
@@ -104,12 +104,9 @@ public:
     [[nodiscard]] bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
 
-    Q_INVOKABLE void launch(int proxyIndex);
-    Q_INVOKABLE void launchByStorageId(const QString &storageId);
-    // Bookkeeping side of launch: prepend to recents (capped) and bump
-    // launch count. Public so tests can exercise it
-    // without triggering KIO::ApplicationLauncherJob.
-    Q_INVOKABLE void recordRecentLaunch(const QString &storageId);
+    // A launch happened (LaunchService::appLaunched): prepend to recents
+    // (capped) and bump the launch count.
+    void recordRecentLaunch(const QString &storageId);
 
     [[nodiscard]] QStringList defaultApps() const;
     void setDefaultApps(const QStringList &list);

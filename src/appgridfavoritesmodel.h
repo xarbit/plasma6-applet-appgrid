@@ -5,16 +5,10 @@
 
 #pragma once
 
-#include <KService>
-#include <KServiceAction>
+#include "filterproxymodel.h"
 
-#include <QMimeDatabase>
 #include <QSet>
 #include <QUrl>
-
-#include <optional>
-
-#include "filterproxymodel.h"
 
 class QTimer;
 
@@ -108,12 +102,6 @@ public:
     /** Pin @p id to exactly @p activityIds; an empty list means all activities. */
     Q_INVOKABLE void setLinkedActivities(const QString &id, const QStringList &activityIds);
     Q_INVOKABLE void moveRow(int from, int to);
-    /** Launch the favourite at @p row — an app (with its jump-list action when
-     *  the id carried one), or a document opened with its default app. The grid's
-     *  fallback for rows it can't resolve through the app model (KCMs, files).
-     *  @p actionId / @p argument exist for Kicker-model call compatibility and are
-     *  unused — what to launch comes from the favourite id itself. */
-    Q_INVOKABLE bool trigger(int row, const QString &actionId, const QVariant &argument);
 
     [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
@@ -127,22 +115,8 @@ protected:
     [[nodiscard]] bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 private:
-    // A favourite resolved to what it displays and launches as. Either an
-    // application (service, plus the jump-list action when the id carried one)
-    // or a document (a file/URL opened with its default app). @c valid is false
-    // for a favourite whose target is gone (uninstalled app, deleted file).
-    struct ResolvedFavorite {
-        bool valid = false;
-        QString name;
-        QString icon;
-        KService::Ptr service;
-        std::optional<KServiceAction> action;
-        QUrl documentUrl;
-    };
-
     [[nodiscard]] QString resourceAt(const QModelIndex &index) const;
     [[nodiscard]] QString resourceForSourceRow(int sourceRow, const QModelIndex &sourceParent) const;
-    [[nodiscard]] ResolvedFavorite resolve(const QString &favoriteId) const;
     // Stored form of @p id: action ids verbatim, plain apps canonicalised.
     [[nodiscard]] QString storeId(const QString &id) const;
     // Every stored form of the favourite @p id (see FavoriteId::variantsOf),
@@ -153,7 +127,6 @@ private:
     // Optimistically show/hide @p resource ahead of the async KActivities change
     // the ResultModel doesn't reliably reflect. Re-filters only on a real change.
     void setResourceHidden(const QString &resource, bool hidden);
-    [[nodiscard]] static KService::Ptr serviceFor(const QString &storageId);
 
     KActivities::Consumer *const m_consumer;
     KActivities::Stats::ResultModel *m_results = nullptr;
@@ -164,9 +137,6 @@ private:
     // Coalesces the watcher's reload signals into one rebuild.
     QTimer *m_reloadTimer = nullptr;
     QString m_clientId;
-    // Reused across data()/resolve() calls — constructing one per row on every
-    // view refresh is wasteful (its methods are const, so resolve() stays const).
-    QMimeDatabase m_mimeDb;
     // Resources hidden the instant removeFavorite() runs. KActivities' ResultModel
     // does not reliably drop a linked row when it is unlinked (Kicker rolled its
     // own model for the same reason), so the view would otherwise only refresh on

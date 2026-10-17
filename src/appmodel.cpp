@@ -5,15 +5,11 @@
 
 #include "appmodel.h"
 
-#include "appgrid_debug.h"
-
-#include "applauncher.h"
 #include "appmodelassembly.h"
 #include "categorymapping.h"
 #include "menuscanner.h"
 
 #include <KLocalizedString>
-#include <KService>
 #include <KSycoca>
 
 #include <QTimer>
@@ -211,24 +207,6 @@ void AppModel::loadApplications()
         for (auto it = iconMap.cbegin(); it != iconMap.cend(); ++it) {
             m_categoryIcons.insert(translateCategory(it.key()), it.value());
         }
-    }
-}
-
-void AppModel::launch(int index)
-{
-    if (index < 0 || index >= m_apps.size()) {
-        return;
-    }
-
-    const auto &app = m_apps[index];
-    // serviceByStorageId tries the menu id, the desktop path and the desktop
-    // name, like Kickoff; the entry path is the fallback for an id it misses.
-    auto service = KService::serviceByStorageId(app.storageId);
-    if (!service) {
-        service = KService::serviceByStorageId(app.desktopFile);
-    }
-    if (!AppLauncher::launch(service)) {
-        qCWarning(APPGRID) << "no service found to launch" << app.storageId << app.desktopFile;
     }
 }
 

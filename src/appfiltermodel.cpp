@@ -6,13 +6,12 @@
 #include "appfiltermodel.h"
 
 #include "appactionid.h"
-#include "applauncher.h"
 #include "appmodel.h"
+#include "appresolver.h"
 #include "categoryqueries.h"
 #include "searchranking.h"
 
 #include <KIconLoader>
-#include <KService>
 
 #include <cstdlib>
 #include <limits>
@@ -764,16 +763,14 @@ QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
     // Plasma, not only where Kicker's AppEntry understands the url. The parent app's
     // desktop file rides along so the launch path treats it as launchable.
     if (AppActionId::hasAction(storageId)) {
-        const auto parsed = AppActionId::parse(storageId);
-        const auto service = KService::serviceByStorageId(parsed.storageId);
-        const auto action = AppActionId::resolveAction(service, parsed.actionName);
-        if (service && action) {
-            map[QStringLiteral("name")] = action->text();
-            map[QStringLiteral("iconName")] = action->icon().isEmpty() ? service->icon() : action->icon();
-            map[QStringLiteral("desktopFile")] = service->entryPath();
+        const AppResolver::Target target = AppResolver::resolve(storageId);
+        if (target.action) {
+            map[QStringLiteral("name")] = target.name;
+            map[QStringLiteral("iconName")] = target.icon;
+            map[QStringLiteral("desktopFile")] = target.service->entryPath();
             map[QStringLiteral("storageId")] = storageId;
-            map[QStringLiteral("genericName")] = service->genericName();
-            map[QStringLiteral("comment")] = service->comment();
+            map[QStringLiteral("genericName")] = target.service->genericName();
+            map[QStringLiteral("comment")] = target.service->comment();
             map[QStringLiteral("installSource")] = QString();
         }
         return map;
@@ -840,52 +837,4 @@ void AppFilterModel::recordRecentLaunch(const QString &storageId)
     recordLaunch(storageId);
     invalidate();
     Q_EMIT recentAppsChanged();
-}
-
-void AppFilterModel::launch(int proxyIndex)
-{
-    const auto idx = index(proxyIndex, 0);
-    const auto sid = idx.data(AppModel::StorageIdRole).toString();
-    // Resolve the source row BEFORE recordRecentLaunch: that call invalidate()s
-    // the proxy, freeing the internal mapping `idx` points into — using `idx`
-    // (or mapToSource on it) afterwards is a use-after-free. Capture the row
-    // now, record the bookkeeping, then launch with the captured row. The
-    // bookkeeping runs ahead of the AppModel cast so it stays testable with a
-    // non-AppModel stub source (recordRecentLaunch no-ops on an empty sid).
-    const int sourceRow = mapToSource(idx).row();
-    recordRecentLaunch(sid);
-
-    if (auto *model = qobject_cast<AppModel *>(sourceModel())) {
-        model->launch(sourceRow);
-    }
-}
-
-void AppFilterModel::launchByStorageId(const QString &storageId)
-{
-    if (storageId.isEmpty()) {
-        return;
-    }
-
-    // Jump-list action favourite (#64): launch the named KServiceAction directly,
-    // rather than the bare app, mirroring KIO's ApplicationLauncherJob(action).
-    if (AppActionId::hasAction(storageId)) {
-        const auto parsed = AppActionId::parse(storageId);
-        const auto service = KService::serviceByStorageId(parsed.storageId);
-        const auto action = AppActionId::resolveAction(service, parsed.actionName);
-        if (action) {
-            recordRecentLaunch(storageId);
-            AppLauncher::launch(*action);
-        }
-        return;
-    }
-
-    ensureStorageIdCache();
-    const int row = m_storageIdToSourceRow.value(storageId, -1);
-    if (row < 0) {
-        return;
-    }
-    recordRecentLaunch(storageId);
-    if (auto *model = qobject_cast<AppModel *>(sourceModel())) {
-        model->launch(row);
-    }
 }

@@ -5,8 +5,7 @@
 
 #include "appgridfavoritesmodel.h"
 
-#include "appactionid.h"
-#include "applauncher.h"
+#include "appresolver.h"
 #include "favoriteid.h"
 #include "pluginhelpers.h"
 
@@ -21,7 +20,6 @@
 #include <PlasmaActivities/Stats/Terms>
 
 #include <QFileInfo>
-#include <QMimeType>
 #include <QTimer>
 
 #include <algorithm>
@@ -204,7 +202,7 @@ bool AppGridFavoritesModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     // Drop dead favourites — an uninstalled app or a deleted file. Non-destructive:
     // the KActivities link stays, so reinstalling the app or restoring the file
     // brings the favourite back, matching Kicker, which also hides rather than unlinks.
-    return resolve(resource).valid;
+    return AppResolver::resolve(resource).isValid();
 }
 
 QStringList AppGridFavoritesModel::favoriteIds() const
@@ -244,60 +242,9 @@ QString AppGridFavoritesModel::storeId(const QString &id) const
         return url.toString();
     }
     return FavoriteId::normalized(id, [](const QString &storageId) -> QString {
-        const KService::Ptr service = serviceFor(storageId);
+        const KService::Ptr service = AppResolver::resolve(storageId).service;
         return service ? service->menuId() : QString();
     });
-}
-
-KService::Ptr AppGridFavoritesModel::serviceFor(const QString &storageId)
-{
-    if (storageId.isEmpty()) {
-        return {};
-    }
-    // Tries the menu id, then the desktop path, the file and the desktop name.
-    return KService::serviceByStorageId(storageId);
-}
-
-AppGridFavoritesModel::ResolvedFavorite AppGridFavoritesModel::resolve(const QString &favoriteId) const
-{
-    ResolvedFavorite resolved;
-    if (favoriteId.isEmpty()) {
-        return resolved;
-    }
-
-    if (FavoriteId::isDocument(favoriteId)) {
-        const QUrl url = urlForId(favoriteId);
-        // A deleted local file is a dead favourite (filtered out like an
-        // uninstalled app); a remote URL is assumed reachable.
-        if (url.isLocalFile() && !QFileInfo::exists(url.toLocalFile())) {
-            return resolved;
-        }
-        const QMimeType mime = url.isLocalFile() ? m_mimeDb.mimeTypeForFile(url.toLocalFile()) : m_mimeDb.mimeTypeForUrl(url);
-        resolved.valid = true;
-        resolved.documentUrl = url;
-        resolved.name = url.fileName().isEmpty() ? url.toString() : url.fileName();
-        resolved.icon = mime.iconName();
-        return resolved;
-    }
-
-    const AppActionId::Parsed parsed = AppActionId::parse(favoriteId);
-    const KService::Ptr service = serviceFor(parsed.storageId);
-    if (!service) {
-        return resolved;
-    }
-    resolved.valid = true;
-    resolved.service = service;
-    if (!parsed.actionName.isEmpty()) {
-        resolved.action = AppActionId::resolveAction(service, parsed.actionName);
-    }
-    if (resolved.action) {
-        resolved.name = resolved.action->text();
-        resolved.icon = resolved.action->icon();
-    } else {
-        resolved.name = service->name();
-        resolved.icon = service->icon();
-    }
-    return resolved;
 }
 
 QVariant AppGridFavoritesModel::data(const QModelIndex &index, int role) const
@@ -313,8 +260,8 @@ QVariant AppGridFavoritesModel::data(const QModelIndex &index, int role) const
         return QSortFilterProxyModel::data(index, role);
     }
 
-    const ResolvedFavorite resolved = resolve(resourceAt(index));
-    if (!resolved.valid) {
+    const AppResolver::Target resolved = AppResolver::resolve(resourceAt(index));
+    if (!resolved.isValid()) {
         return role == Qt::DisplayRole ? resourceAt(index) : QString();
     }
     return role == Qt::DisplayRole ? resolved.name : resolved.icon;
@@ -582,25 +529,4 @@ void AppGridFavoritesModel::moveRow(int from, int to)
     // its source position so hidden (filtered) rows don't skew the placement.
     const int sourcePosition = mapToSource(index(to, 0)).row();
     m_results->setResultPosition(resource, sourcePosition);
-}
-
-bool AppGridFavoritesModel::trigger(int row, const QString &actionId, const QVariant &argument)
-{
-    Q_UNUSED(actionId);
-    Q_UNUSED(argument);
-    if (row < 0 || row >= rowCount()) {
-        return false;
-    }
-    const ResolvedFavorite resolved = resolve(data(index(row, 0), FavoriteIdRole).toString());
-    if (!resolved.valid) {
-        return false;
-    }
-    if (resolved.action) {
-        AppLauncher::launch(*resolved.action);
-    } else if (resolved.service) {
-        AppLauncher::launch(resolved.service);
-    } else {
-        AppLauncher::open(resolved.documentUrl);
-    }
-    return true;
 }

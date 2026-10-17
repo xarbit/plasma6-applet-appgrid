@@ -182,6 +182,10 @@ set(APPGRID_COMMON_SOURCES
     src/appactionid.cpp
     src/applauncher.cpp
     src/applauncher.h
+    src/appresolver.cpp
+    src/appresolver.h
+    src/launchservice.cpp
+    src/launchservice.h
     src/appactionid.h
     src/appgridcontroller.cpp
     src/appgridcontroller.h

@@ -18,8 +18,6 @@ TestCase {
     name: "LaunchCoordinator"
     when: windowShown
 
-    property var notified: []
-    property var launchedIdx: []
     property var launchedSids: []
     property var hiddenSids: []
     // searchModel.get() result + bridge return values, set per test.
@@ -28,7 +26,7 @@ TestCase {
     property bool nextRunResult: false
 
     function _reset() {
-        notified = []; launchedIdx = []; launchedSids = []; hiddenSids = []
+        launchedSids = []; hiddenSids = []
         nextItem = null; nextSubst = ""; nextRunResult = false
         closeSpy.clear(); substSpy.clear(); confirmSpy.clear()
     }
@@ -36,8 +34,6 @@ TestCase {
     QtObject {
         id: appsModelStub
         function get(i) { return ({ storageId: "sid-" + i }) }
-        function launch(i) { testCase.launchedIdx.push(i) }
-        function launchByStorageId(sid) { testCase.launchedSids.push(sid) }
         function hideByStorageId(sid) { testCase.hiddenSids.push(sid) }
     }
     QtObject {
@@ -46,7 +42,9 @@ TestCase {
     }
     QtObject {
         id: bridgeStub
-        function notifyAppLaunched(sid) { testCase.notified.push(sid) }
+        readonly property var launchService: ({
+            launch: function(sid) { testCase.launchedSids.push(sid); return true }
+        })
         readonly property var runner: ({
             substitutionText: function(i) { return testCase.nextSubst },
             run: function(i) { return testCase.nextRunResult }
@@ -64,12 +62,11 @@ TestCase {
     SignalSpy { id: substSpy; target: coord; signalName: "substitutionRequested" }
     SignalSpy { id: confirmSpy; target: coord; signalName: "bulkLaunchConfirmRequested" }
 
-    // launchApp: broadcast the sid, launch by index, request close.
+    // launchApp: launch the row's storageId through the service, request close.
     function test_launchApp() {
         _reset()
         coord.launchApp(3)
-        compare(notified.join(","), "sid-3", "notified the storageId")
-        compare(launchedIdx.join(","), "3", "launched by index")
+        compare(launchedSids.join(","), "sid-3", "launched the storageId")
         compare(closeSpy.count, 1, "closed once")
     }
 
@@ -78,38 +75,35 @@ TestCase {
     function test_launchAppIgnoresNegativeIndex() {
         _reset()
         coord.launchApp(-1)
-        compare(notified.length, 0)
-        compare(launchedIdx.length, 0)
+        compare(launchedSids.length, 0)
         compare(closeSpy.count, 0)
     }
 
-    // launchAppByStorageId: broadcast + launch by sid, then close.
+    // launchAppByStorageId: launch by sid, then close.
     function test_launchAppByStorageId() {
         _reset()
         coord.launchAppByStorageId("alpha")
-        compare(notified.join(","), "alpha")
         compare(launchedSids.join(","), "alpha")
         compare(closeSpy.count, 1)
     }
 
     // A folder's "Launch All" launches each member in place: it must still
-    // broadcast the launch, and must not close the launcher per member.
+    // go through the launch service, and must not close the launcher per member.
     function test_launchAppByStorageIdNoClose() {
         _reset()
         coord.launchAppByStorageIdNoClose("beta")
-        compare(notified.join(","), "beta")
         compare(launchedSids.join(","), "beta")
         compare(closeSpy.count, 0)
         coord.launchAppByStorageIdNoClose("")
-        compare(notified.length, 1, "an empty sid is ignored")
+        compare(launchedSids.length, 1, "an empty sid is ignored")
     }
 
-    // A search result of type "app" routes to the index launch path.
+    // A search result of type "app" launches the app at its source row.
     function test_launchSearchResultApp() {
         _reset()
         testCase.nextItem = ({ resultType: "app", sourceIndex: 5 })
         coord.launchSearchResult(0)
-        compare(launchedIdx.join(","), "5", "launched the app's source index")
+        compare(launchedSids.join(","), "sid-5", "launched the app's storageId")
         compare(closeSpy.count, 1)
     }
 
@@ -123,7 +117,7 @@ TestCase {
         compare(substSpy.count, 1, "substitution emitted")
         compare(substSpy.signalArguments[0][0], "1234", "with the substitution text")
         compare(closeSpy.count, 0, "did not close")
-        compare(launchedIdx.length, 0)
+        compare(launchedSids.length, 0)
     }
 
     // A runner result that runs (no substitution) closes the launcher.
@@ -137,11 +131,10 @@ TestCase {
     }
 
     // Below the confirm threshold (4), requestBulkLaunch fires immediately:
-    // one broadcast + one launch per sid, one close.
+    // one launch per sid, one close.
     function test_requestBulkLaunchBelowThreshold() {
         _reset()
         coord.requestBulkLaunch(["a", "b", "c"])
-        compare(notified.join(","), "a,b,c")
         compare(launchedSids.join(","), "a,b,c")
         compare(closeSpy.count, 1, "closed once for the whole batch")
         compare(confirmSpy.count, 0, "no confirm prompt below threshold")

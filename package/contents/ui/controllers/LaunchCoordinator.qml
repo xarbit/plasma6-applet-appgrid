@@ -2,8 +2,8 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Launch routing lifted out of GridPanel: the single/bulk launch paths, the
-    KActivities broadcast pairing, and the bulk-confirm threshold. Pure logic —
+    Launch routing lifted out of GridPanel: the single/bulk launch paths and the
+    bulk-confirm threshold, over the controller's launch service. Pure logic —
     every UI side effect is a signal the panel handles, so this stays free of the
     search field and the confirm dialogs:
 
@@ -36,10 +36,7 @@ QtObject {
     function launchApp(index) {
         if (!appsModel || index < 0)
             return
-        const sid = appsModel.get(index).storageId
-        if (sid)
-            plasmoidBridge.notifyAppLaunched(sid)
-        appsModel.launch(index)
+        _launchOneBySid(appsModel.get(index).storageId)
         closeRequested()
     }
 
@@ -76,15 +73,11 @@ QtObject {
             closeRequested()
     }
 
-    // One launch step: KActivities broadcast plus the model launch. Shared by
-    // the single-sid path and the bulk path so neither repeats the notify/launch
-    // pair (notifyAppLaunched is the one-way broadcast that lets other Plasma
-    // launchers count AppGrid as a contributing source — not read back).
+    // One launch step, shared by every path: the launch service starts it and
+    // records an app launch (KActivities, recents, launch counts).
     function _launchOneBySid(sid) {
-        if (!sid)
-            return
-        plasmoidBridge.notifyAppLaunched(sid)
-        appsModel.launchByStorageId(sid)
+        if (sid)
+            plasmoidBridge.launchService.launch(sid)
     }
 
     function requestBulkLaunch(sids) {

@@ -518,7 +518,7 @@ Item {
     }
     function _launchFolderMembers(members) {
         for (var i = 0; i < members.length; ++i)
-            appGrid.launchFavoriteNoClose(members[i])
+            launcher.launchAppByStorageIdNoClose(members[i])
         panel.closeRequested()
     }
     function _runBulkLaunch(sids) { launcher.runBulkLaunch(sids) }
@@ -982,7 +982,6 @@ Item {
                 onLaunched: function(index) { panel.launchApp(index) }
                 onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
                 onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
-                onLaunchInPlaceRequested: function(storageId) { launcher.launchAppByStorageIdNoClose(storageId) }
                 onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
                 onContextMenuRequested: function(index, storageId, desktopFile) {
                     // Forward the full live selection — the menu derives
@@ -1059,8 +1058,8 @@ Item {
         // contextMenu.<prop>() the bare ref would run with the menu as `this`, not
         // the bridge — Qt6 warns about that (NativeMethodBehavior). The arrow binds
         // the call back to plasmoidBridge.
-        appActions: sid => panel.plasmoidBridge.appActions(sid)
-        launchAppAction: (sid, actionName) => panel.plasmoidBridge.launchAppAction(sid, actionName)
+        appActions: sid => panel.plasmoidBridge.launchService.appActions(sid)
+        launchAppAction: (sid, actionName) => panel.plasmoidBridge.launchService.launchAction(sid, actionName)
         canManageInDiscover: sid => panel.plasmoidBridge.systemActions.canManageInDiscover(sid)
         openInDiscover: sid => panel.plasmoidBridge.systemActions.openInDiscover(sid)
         pinToTaskManager: launcherActions.pinToTaskManager

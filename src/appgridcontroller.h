@@ -15,6 +15,7 @@
 #include "defaultappsprovider.h"
 #include "favoritesgroupedmodel.h"
 #include "frecencyprovider.h"
+#include "launchservice.h"
 #include "launchstatestore.h"
 #include "menutreemodel.h"
 #include "newappstracker.h"
@@ -40,10 +41,10 @@ class Consumer;
  * @brief Applet-independent core of the AppGrid launcher.
  *
  * Owns the models and wires them together (launch state, favourites, default
- * apps, frecency), launches apps and their actions, and places the daemon's
- * window. KRunner search (runner), the calls to the center plasmoid
- * (plasmoidClient) and the actions on the rest of the system (systemActions)
- * are services it owns and exposes. It carries no Plasma::Applet dependency,
+ * apps, frecency) and places the daemon's window. Launching (launchService),
+ * KRunner search (runner), the calls to the center plasmoid (plasmoidClient)
+ * and the actions on the rest of the system (systemActions) are services it
+ * owns and exposes. It carries no Plasma::Applet dependency,
  * so it is driven both by the AppGridPlugin applet and by the standalone
  * `appgrid` executable.
  *
@@ -67,6 +68,7 @@ class AppGridController : public QObject
     Q_PROPERTY(RunnerService *runner READ runner CONSTANT)
     Q_PROPERTY(PlasmoidClient *plasmoidClient READ plasmoidClient CONSTANT)
     Q_PROPERTY(SystemActions *systemActions READ systemActions CONSTANT)
+    Q_PROPERTY(LaunchService *launchService READ launchService CONSTANT)
     // Drives QML's "Check for updates" visibility + i: view "Install" row.
     Q_PROPERTY(bool isUniversalBuild READ isUniversalBuild CONSTANT)
 #ifdef APPGRID_UNIVERSAL_BUILD
@@ -94,6 +96,7 @@ public:
     [[nodiscard]] RunnerService *runner() const;
     [[nodiscard]] PlasmoidClient *plasmoidClient() const;
     [[nodiscard]] SystemActions *systemActions() const;
+    [[nodiscard]] LaunchService *launchService() const;
     [[nodiscard]] bool isUniversalBuild() const;
 #ifdef APPGRID_UNIVERSAL_BUILD
     [[nodiscard]] UpdateChecker *updateChecker() const;
@@ -125,9 +128,6 @@ public:
      *  compact panel still hangs from the full panel's top. */
     Q_INVOKABLE void positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen);
 
-    /** Broadcast an app launch to the system-wide KActivities database. */
-    Q_INVOKABLE void notifyAppLaunched(const QString &storageId);
-
     /** Enable/disable the search-time frecency bias (opt-in via ConfigSearch). */
     Q_INVOKABLE void setSearchUsesFrecency(bool enabled);
 
@@ -137,15 +137,6 @@ public:
     /** Opt-in per-activity scoping (favorites menus + folders). Off (default)
      *  feeds the store an empty activity so folders stay global. */
     Q_INVOKABLE void setActivityScopingEnabled(bool enabled);
-
-    /** Returns application-defined actions (jumplist) for the given storageId. */
-    [[nodiscard]] Q_INVOKABLE QVariantList appActions(const QString &storageId);
-
-    /** Launch the app action named @p actionName (KServiceAction::name(), as
-     *  returned by appActions()) of @p storageId. By name, not by index:
-     *  appActions() skips actions without text, so its indices don't match
-     *  KService::actions(). */
-    Q_INVOKABLE void launchAppAction(const QString &storageId, const QString &actionName);
 
 private:
     // Push the store's lists into the model on load + external change, and the
@@ -180,6 +171,7 @@ private:
     WindowConfigurator m_window;
     PlasmoidClient m_plasmoidClient;
     SystemActions m_systemActions;
+    LaunchService m_launchService;
 #ifdef APPGRID_UNIVERSAL_BUILD
     mutable UpdateChecker *m_updateChecker = nullptr;
 #endif

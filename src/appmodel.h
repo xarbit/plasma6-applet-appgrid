@@ -57,7 +57,6 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    Q_INVOKABLE void launch(int index);
     [[nodiscard]] Q_INVOKABLE QStringList categories() const;
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     [[nodiscard]] Q_INVOKABLE QString categoryIcon(const QString &category) const;

@@ -25,7 +25,7 @@ class ResultModel;
  * Opt-in: idle until setEnabled(true) — there is no KAStats traffic and the
  * map stays empty for users who have not turned the search frecency bias on.
  * Read-only with respect to KActivities; AppGrid's launch broadcasts already
- * feed the database (see #95 close-out / Plugin::notifyAppLaunched).
+ * feed the database (see #95 close-out / LaunchService::launch).
  */
 class FrecencyProvider : public QObject
 {

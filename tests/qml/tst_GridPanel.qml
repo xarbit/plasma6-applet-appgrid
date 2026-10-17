@@ -6,7 +6,7 @@
     GridPanel loads from pure stubs — a QObject configuration, plain-object
     models, and plain-function callbacks — with no live Plasma plasmoid
     context. Asserts default visibility and that the bulk-launch path fires
-    the injected notifyAppLaunched / launchByStorageId callbacks per sid.
+    the injected launch service once per sid.
 */
 
 import QtQuick
@@ -16,7 +16,7 @@ TestCase {
     id: testCase
     name: "GridPanel"
 
-    // notifyAppLaunched spy.
+    // launchService.launch spy.
     property var launchedSids: []
 
     // Stub configuration — mirrors the ConfigCache `source` surface so
@@ -88,9 +88,6 @@ TestCase {
         // CategoryBar connects to it.
         signal categoriesChanged()
 
-        // launchByStorageId spy.
-        property var launchedSids: []
-
         function get(i) { return ({ storageId: "stub-" + i }) }
         function getByStorageId(sid) { return ({ name: "", iconName: "", desktopFile: "", genericName: "", comment: "", installSource: "" }) }
         function categories() { return [] }
@@ -100,8 +97,6 @@ TestCase {
         function hideApp(i) {}
         function hideByStorageId(sid) {}
         function unhideApp(sid) {}
-        function launch(i) {}
-        function launchByStorageId(sid) { appsModelStub.launchedSids.push(sid) }
         function setSearchState(text, category, favoritesOnly) {
             searchText = text
             filterCategory = category
@@ -123,7 +118,11 @@ TestCase {
         var c = Qt.createComponent("../../package/contents/ui/views/GridPanel.qml")
         verify(c.status === Component.Ready, "GridPanel load error: " + c.errorString())
         var bridgeStub = ({
-            notifyAppLaunched: function(sid) { testCase.launchedSids.push(sid) },
+            launchService: ({
+                launch: function(sid) { testCase.launchedSids.push(sid); return true },
+                launchAction: function(sid, actionName) { return false },
+                appActions: function(sid) { return [] }
+            }),
             runner: ({
                 run: function(idx) { return false },
                 runAction: function(idx, actIdx) { return false },
@@ -137,8 +136,6 @@ TestCase {
                 openInDiscover: function(sid) {},
                 listDirectory: function(path) { return [] }
             }),
-            appActions: function(sid) { return [] },
-            launchAppAction: function(sid, actionName) {},
             appsModel: appsModelStub,
             searchModel: searchModelStub,
             runnerSourceModel: runnerStub,
@@ -162,19 +159,16 @@ TestCase {
         p.destroy()
     }
 
-    // Bulk launch below the confirm threshold runs immediately, firing the
-    // injected notify + launch callbacks once per sid.
+    // Bulk launch below the confirm threshold runs immediately, launching
+    // through the injected service once per sid.
     function test_bulkLaunchFiresCallbacksPerSid() {
         testCase.launchedSids = []
-        appsModelStub.launchedSids = []
         var p = make()
 
         p._runBulkLaunch(["alpha", "beta", "gamma"])
 
         compare(testCase.launchedSids.join(","), "alpha,beta,gamma",
-                "notifyAppLaunched fired per sid in order")
-        compare(appsModelStub.launchedSids.join(","), "alpha,beta,gamma",
-                "launchByStorageId fired per sid in order")
+                "launchService.launch fired per sid in order")
         p.destroy()
     }
 
@@ -183,26 +177,23 @@ TestCase {
     // accident. This is the riskiest path; without the gate it would fire all.
     function test_bulkLaunchAboveThresholdDoesNotLaunch() {
         testCase.launchedSids = []
-        appsModelStub.launchedSids = []
         var p = make()
 
         p._requestBulkLaunch(["a", "b", "c", "d"]) // 4 == threshold
 
-        compare(testCase.launchedSids.length, 0, "no notifyAppLaunched above threshold")
-        compare(appsModelStub.launchedSids.length, 0, "no launchByStorageId above threshold")
+        compare(testCase.launchedSids.length, 0, "nothing launched above threshold")
         p.destroy()
     }
 
     // Below the threshold the same gate fires immediately, no prompt.
     function test_bulkLaunchBelowThresholdFiresImmediately() {
         testCase.launchedSids = []
-        appsModelStub.launchedSids = []
         var p = make()
 
         p._requestBulkLaunch(["a", "b", "c"]) // 3 < threshold
 
-        compare(appsModelStub.launchedSids.join(","), "a,b,c",
-                "launchByStorageId fired per sid below threshold")
+        compare(testCase.launchedSids.join(","), "a,b,c",
+                "launchService.launch fired per sid below threshold")
         p.destroy()
     }
 

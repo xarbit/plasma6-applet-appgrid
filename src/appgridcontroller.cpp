@@ -5,19 +5,14 @@
 
 #include "appgridcontroller.h"
 
-#include "appactionid.h"
 #include "appgridconstants.h"
-#include "applauncher.h"
 #include "menutreesource.h"
 #include "pluginhelpers.h"
 
 #include <KConfigGroup>
 #include <KRunner/ResultsModel>
-#include <KService>
 #include <PlasmaActivities/Consumer>
-#include <PlasmaActivities/ResourceInstance>
 #include <QQuickWindow>
-#include <QUrl>
 #include <QWindow>
 
 #ifdef APPGRID_UNIVERSAL_BUILD
@@ -29,6 +24,9 @@ AppGridController::AppGridController(QObject *parent)
     , m_newAppsTracker(&m_usedApps)
 {
     m_filterModel.setSourceModel(&m_appModel);
+    // Every app launch, wherever it came from, counts towards recents and the
+    // launch counts.
+    connect(&m_launchService, &LaunchService::appLaunched, &m_filterModel, &AppFilterModel::recordRecentLaunch);
     m_runner.setAppModel(&m_filterModel);
     m_searchModel.setAppModel(&m_filterModel);
     m_searchModel.setRunnerModel(m_runner.filterModel());
@@ -269,6 +267,11 @@ PlasmoidClient *AppGridController::plasmoidClient() const
     return const_cast<PlasmoidClient *>(&m_plasmoidClient);
 }
 
+LaunchService *AppGridController::launchService() const
+{
+    return const_cast<LaunchService *>(&m_launchService);
+}
+
 SystemActions *AppGridController::systemActions() const
 {
     return const_cast<SystemActions *>(&m_systemActions);
@@ -299,17 +302,6 @@ UpdateChecker *AppGridController::updateChecker() const
 }
 #endif
 
-void AppGridController::notifyAppLaunched(const QString &storageId)
-{
-    if (storageId.isEmpty()) {
-        return;
-    }
-    // Standard convention used by Kicker, Kickoff and friends: the resource
-    // URL is "applications:<storage-id>", tagged with our agent so other
-    // tools can attribute the launch to AppGrid.
-    KActivities::ResourceInstance::notifyAccessed(QUrl(PluginHelpers::ApplicationsUrlPrefix + storageId), QString(AppGrid::ApplicationId));
-}
-
 void AppGridController::setSearchUsesFrecency(bool enabled)
 {
     // Order matters: flip the filter model's usage flag first, then drive the
@@ -334,36 +326,4 @@ void AppGridController::setActivityScopingEnabled(bool enabled)
     m_activityScoping = enabled;
     // Re-scope the store: the current activity when on, empty (global) when off.
     m_launchState.setActivity(enabled ? m_activities->currentActivity() : QString());
-}
-
-QVariantList AppGridController::appActions(const QString &storageId)
-{
-    QVariantList result;
-    auto service = KService::serviceByStorageId(storageId);
-    if (!service) {
-        return result;
-    }
-
-    const auto actions = service->actions();
-    for (const auto &action : actions) {
-        if (action.text().isEmpty()) {
-            continue;
-        }
-        QVariantMap map;
-        map[QStringLiteral("text")] = action.text();
-        map[QStringLiteral("icon")] = action.icon();
-        map[QStringLiteral("name")] = action.name();
-        result.append(map);
-    }
-    return result;
-}
-
-void AppGridController::launchAppAction(const QString &storageId, const QString &actionName)
-{
-    const auto action = AppActionId::resolveAction(KService::serviceByStorageId(storageId), actionName);
-    if (!action) {
-        return;
-    }
-
-    AppLauncher::launch(*action);
 }

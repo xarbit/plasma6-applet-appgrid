@@ -57,8 +57,6 @@ GridView {
 
     // Emitted when a recent app is launched by storageId.
     signal recentLaunched(string storageId)
-    // Launch an app by storageId without closing (launchFavoriteNoClose).
-    signal launchInPlaceRequested(string storageId)
     signal openFolderRequested(string folderId)
     signal folderContextMenuRequested(string folderId)
     signal emptyAreaContextMenuRequested()
@@ -402,37 +400,12 @@ GridView {
             recentLaunched(appsModel.recentApps[idx])
     }
 
-    // Launch the favorites row @p row (whose bare storageId is @p sid). A plain
-    // app goes through our launch path so recents + activities are recorded; a
-    // System Settings module or other non-app favorite is launched by the KAStats
-    // model itself, which resolves the "applications:<id>" entry Kicker-style —
-    // our app launcher can't run a KCM (#64).
+    // Launch the favourite @p sid (its bare id: an app, a jump-list action, a
+    // System Settings module or a document). The launch service resolves any of
+    // them and records an app launch, wherever it came from.
     function launchFavorite(sid) {
-        _launchFavorite(sid, true)
-    }
-
-    // Launch every member of a folder without closing; the caller closes once at
-    // the end (#18).
-    function launchFavoriteNoClose(sid) {
-        _launchFavorite(sid, false)
-    }
-
-    // @p closeAfter true routes a plain app through recentLaunched (records +
-    // closes); false launches it in place. A KCM / non-app favourite is always
-    // triggered by its KAStats row (never closes — Kicker owns that). The grid
-    // row may be a grouped/layout row, so resolve the KAStats row by sid.
-    function _launchFavorite(sid, closeAfter) {
-        const app = (sid && appsModel) ? appsModel.getByStorageId(sid) : null
-        if (app && app.desktopFile) {
-            if (closeAfter)
-                recentLaunched(sid)
-            else
-                launchInPlaceRequested(sid)
-        } else if (sharedFavoritesModel) {
-            const krow = findFavoriteRow(sid)
-            if (krow >= 0)
-                sharedFavoritesModel.trigger(krow, "", null)
-        }
+        if (sid)
+            recentLaunched(sid)
     }
 
     function _launchCurrent() {
@@ -441,21 +414,14 @@ GridView {
             return
         }
         if (currentIndex < 0) return
-        // In favorites view the grid is bound to KAStats directly, so the current
-        // index is a favorites row, not a proxy row. Resolve to a storageId and
-        // launch through launchFavorite (app → our path, else the KAStats model).
+        // A grouped grid (favourites, menu tree) holds ids, not app rows: open a
+        // folder, launch an entry by its id.
         if (_groupedGrid) {
-            // 1 === AbstractGroupedModel.Folder
             if (groupedModel.entryTypeAt(currentIndex) === AbstractGroupedModel.Folder) {
                 openFolderRequested(groupedModel.folderIdAt(currentIndex))
             } else {
                 launchFavorite(FavoriteId.stripPrefix(groupedModel.favoriteIdAt(currentIndex)))
             }
-        } else if (favoritesActive && sharedFavoritesModel
-                && model === sharedFavoritesModel) {
-            const v = sharedFavoritesModel.data(
-                sharedFavoritesModel.index(currentIndex, 0), favoriteIdRole)
-            launchFavorite(FavoriteId.stripPrefix(v))
         } else {
             launched(currentIndex)
         }
