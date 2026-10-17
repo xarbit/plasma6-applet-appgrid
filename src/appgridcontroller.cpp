@@ -5,6 +5,7 @@
 
 #include "appgridcontroller.h"
 
+#include "appactionid.h"
 #include "appgridconstants.h"
 #include "appgridfavoritesmodel.h"
 #include "appstreamresolver.h"
@@ -649,19 +650,14 @@ QVariantList AppGridController::appActions(const QString &storageId)
     return result;
 }
 
-void AppGridController::launchAppAction(const QString &storageId, int actionIndex)
+void AppGridController::launchAppAction(const QString &storageId, const QString &actionName)
 {
-    auto service = KService::serviceByStorageId(storageId);
-    if (!service) {
+    const auto action = AppActionId::resolveAction(KService::serviceByStorageId(storageId), actionName);
+    if (!action) {
         return;
     }
 
-    const auto actions = service->actions();
-    if (actionIndex < 0 || actionIndex >= actions.size()) {
-        return;
-    }
-
-    auto *job = new KIO::ApplicationLauncherJob(actions.at(actionIndex));
+    auto *job = new KIO::ApplicationLauncherJob(*action);
     job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
     job->start();
 }

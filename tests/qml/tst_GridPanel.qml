@@ -126,7 +126,7 @@ TestCase {
             runRunnerAction: function(idx, actIdx) { return false },
             runnerSubstitutionText: function(idx) { return "" },
             appActions: function(sid) { return [] },
-            launchAppAction: function(sid, idx) {},
+            launchAppAction: function(sid, actionName) {},
             canManageInDiscover: function(sid) { return false },
             openInDiscover: function(sid) {},
             listDirectory: function(path) { return [] }

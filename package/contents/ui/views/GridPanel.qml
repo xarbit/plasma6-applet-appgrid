@@ -1191,7 +1191,7 @@ Item {
         // the bridge — Qt6 warns about that (NativeMethodBehavior). The arrow binds
         // the call back to plasmoidBridge.
         appActions: sid => panel.plasmoidBridge.appActions(sid)
-        launchAppAction: (sid, idx) => panel.plasmoidBridge.launchAppAction(sid, idx)
+        launchAppAction: (sid, actionName) => panel.plasmoidBridge.launchAppAction(sid, actionName)
         canManageInDiscover: sid => panel.plasmoidBridge.canManageInDiscover(sid)
         openInDiscover: sid => panel.plasmoidBridge.openInDiscover(sid)
         pinToTaskManager: launcherActions.pinToTaskManager
