@@ -13,6 +13,7 @@ ecm_add_tests(
     test_appactionid.cpp
     test_appfiltermodel.cpp
     test_appmodel.cpp
+    test_appranking.cpp
     test_appsearch.cpp
     test_appmodel_assembly.cpp
     test_appmodel_helpers.cpp

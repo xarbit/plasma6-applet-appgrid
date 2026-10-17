@@ -13,11 +13,10 @@
 
 #include <memory>
 
+#include "appranking.h"
 #include "approwindex.h"
 #include "appsearch.h"
-#include "favoriteorder.h"
 #include "filterproxymodel.h"
-#include "searchranking.h"
 
 /**
  * @brief Proxy model adding search, category filtering, and app hiding.
@@ -58,9 +57,9 @@ class AppFilterModel : public FilterProxyModel
 public:
     /** Sort modes for the grid view. */
     enum SortMode {
-        Alphabetical = 0,
-        MostUsed = 1,
-        ByCategory = 2,
+        Alphabetical = AppRanking::Alphabetical,
+        MostUsed = AppRanking::MostUsed,
+        ByCategory = AppRanking::ByCategory,
     };
     Q_ENUM(SortMode)
 
@@ -196,26 +195,6 @@ private:
     // row from showing dead entries. Runs on every KSycoca reload.
     void pruneRecentsToExisting();
 
-    // Per-source-row sort inputs, computed once per query and cached, instead
-    // of re-read via data() + re-folded inside SearchRanking on every lessThan
-    // comparison. Turns the per-keystroke sort from O(N·logN)×(role reads +
-    // case-folds) into O(N) fill + O(N·logN) integer/short-string compares.
-    struct RowScore {
-        QString sid;
-        QString name;
-        QString category;
-        int relevance = SearchRanking::TierNoMatch;
-        int launchCount = 0;
-        bool isDefault = false; // a mimeapps.list default for some type
-        bool isPreferred = false; // a role default (browser/mail/file-mgr/terminal) — ranks above isDefault
-        bool isFavorite = false; // starred in AppGrid's favourites — ranks above isPreferred
-    };
-    // Returns by value, not by reference: the cache is a QHash and a later
-    // insert can rehash it, so a reference into it can't be promised to outlive
-    // the next rowScore() call (was issue #202). The contents are implicitly
-    // shared QStrings + scalars, so the copy is cheap.
-    [[nodiscard]] RowScore rowScore(const QModelIndex &sourceIndex) const;
-    void invalidateRowScoreCache();
     // Store @p text and its folded forms, and drop the cached relevance.
     void applySearchText(const QString &text);
 
@@ -224,32 +203,20 @@ private:
     int m_maxRecentApps = 6;
     int m_sortMode = Alphabetical;
     int m_iconGeneration = 0;
-    QHash<QString, int> m_frecencyScores;
     QSet<QString> m_newApps; // storage ids with the new-app badge (from NewAppsTracker)
-    bool m_searchUsesFrecency = false;
     bool m_searchShowsHidden = false;
     bool m_showFavoritesOnly = false;
     bool m_sortFavoritesAlphabetically = false;
-    QSet<QString> m_defaultAppsSet;
-    QStringList m_defaultApps;
-    // Storage ids of the user's role defaults (default browser / mail / file
-    // manager via KApplicationTrader, terminal via kdeglobals). Outrank the
-    // broader mimeapps defaults in the search tiebreak.
-    QSet<QString> m_preferredAppsSet;
 
     // The hidden apps, recents and launch counts live in the launch state
     // store; the filter and sort read its lookups through book().
     [[nodiscard]] const LaunchBookkeeping &book() const;
     std::unique_ptr<LaunchStateStore> m_ownState;
     QPointer<LaunchStateStore> m_state;
-    // The favourites in order, for the favourites view and search ranking.
-    FavoriteOrder m_favorites;
+    // The sort order: favourites, default apps, frecency and the cached
+    // per-row sort inputs.
+    AppRanking m_ranking;
 
     // The source rows by storage id, and their search haystacks.
     AppRowIndex m_index;
-
-    // source-row → cached sort inputs (see RowScore). Filled lazily in
-    // lessThan(); cleared when any input changes (query, launch counts,
-    // default apps, or source-model data).
-    mutable QHash<int, RowScore> m_rowScoreCache;
 };

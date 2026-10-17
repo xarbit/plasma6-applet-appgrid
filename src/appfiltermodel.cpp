@@ -14,9 +14,6 @@
 #include <KIconLoader>
 #include <KSharedConfig>
 
-#include <cstdlib>
-#include <limits>
-
 namespace
 {
 // completionFor() scans only the top-ranked rows for an inline-completion word,
@@ -64,7 +61,7 @@ AppFilterModel::AppFilterModel(QObject *parent)
     // QSortFilterProxyModel overrides that don't carry Q_INVOKABLE).
     connect(this, &QSortFilterProxyModel::sourceModelChanged, this, [this]() {
         m_index.setModel(sourceModel());
-        invalidateRowScoreCache();
+        m_ranking.invalidate();
         auto *src = sourceModel();
         if (!src) {
             return;
@@ -75,7 +72,7 @@ AppFilterModel::AppFilterModel(QObject *parent)
         // deliberately leaves the row-score cache alone.
         auto invalidateBoth = [this]() {
             m_index.invalidate();
-            invalidateRowScoreCache();
+            m_ranking.invalidate();
         };
         connect(src, &QAbstractItemModel::modelReset, this, invalidateBoth);
         // After a database reload the app set may have shrunk (uninstall); drop any
@@ -112,13 +109,13 @@ void AppFilterModel::setLaunchState(LaunchStateStore *state)
         Q_EMIT recentAppsChanged();
     });
     connect(state, &LaunchStateStore::launchCountsChanged, this, [this]() {
-        invalidateRowScoreCache(); // cached launchCount changed
+        m_ranking.invalidate(); // cached launchCount changed
         if (m_sortMode == MostUsed) {
             invalidate();
         }
         Q_EMIT launchCountsChanged();
     });
-    invalidateRowScoreCache();
+    m_ranking.invalidate();
     invalidate();
     Q_EMIT hiddenAppsChanged();
     Q_EMIT recentAppsChanged();
@@ -176,7 +173,7 @@ QString AppFilterModel::searchText() const
 void AppFilterModel::applySearchText(const QString &text)
 {
     m_query = AppSearch::Query::of(text);
-    invalidateRowScoreCache(); // cached relevance depends on the query
+    m_ranking.invalidate(); // cached relevance depends on the query
 }
 
 void AppFilterModel::setSearchText(const QString &text)
@@ -250,17 +247,16 @@ void AppFilterModel::unhideApp(const QString &storageId)
 
 QStringList AppFilterModel::favoriteApps() const
 {
-    return m_favorites.list();
+    return m_ranking.favorites().list();
 }
 
 void AppFilterModel::setFavoriteApps(const QStringList &list)
 {
-    if (!m_favorites.set(list)) {
+    if (!m_ranking.setFavorites(list)) {
         return;
     }
     // Favourite order drives the favourites-only view, and being a favourite
-    // ranks search results (cached per row).
-    invalidateRowScoreCache();
+    // ranks search results.
     if (m_showFavoritesOnly || !m_query.isEmpty()) {
         invalidate();
     }
@@ -269,7 +265,7 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
 
 bool AppFilterModel::isFavorite(const QString &storageId) const
 {
-    return m_favorites.contains(storageId);
+    return m_ranking.favorites().contains(storageId);
 }
 
 QStringList AppFilterModel::recentApps() const
@@ -328,22 +324,14 @@ void AppFilterModel::setLaunchCountsMap(const QVariantMap &map)
 
 void AppFilterModel::setFrecencyScores(const QHash<QString, int> &scores)
 {
-    if (m_frecencyScores == scores) {
-        return;
-    }
-    m_frecencyScores = scores;
-    if (m_searchUsesFrecency && !m_query.isEmpty()) {
+    if (m_ranking.setFrecencyScores(scores) && m_ranking.useFrecency() && !m_query.isEmpty()) {
         invalidate();
     }
 }
 
 void AppFilterModel::setSearchUsesFrecency(bool enabled)
 {
-    if (m_searchUsesFrecency == enabled) {
-        return;
-    }
-    m_searchUsesFrecency = enabled;
-    if (!m_query.isEmpty()) {
+    if (m_ranking.setUseFrecency(enabled) && !m_query.isEmpty()) {
         invalidate();
     }
 }
@@ -440,29 +428,23 @@ QString AppFilterModel::completionFor(const QString &query) const
 
 QStringList AppFilterModel::defaultApps() const
 {
-    return m_defaultApps;
+    return m_ranking.defaultApps();
 }
 
 void AppFilterModel::setDefaultApps(const QStringList &list)
 {
-    if (m_defaultApps == list) {
+    if (!m_ranking.setDefaultApps(list)) {
         return;
     }
-    m_defaultApps = list;
-    m_defaultAppsSet = QSet<QString>(list.cbegin(), list.cend());
-    invalidateRowScoreCache(); // cached isDefault changed
     invalidate(); // search ranking depends on this
     Q_EMIT defaultAppsChanged();
 }
 
 void AppFilterModel::setPreferredApps(const QSet<QString> &apps)
 {
-    if (m_preferredAppsSet == apps) {
-        return;
+    if (m_ranking.setPreferredApps(apps)) {
+        invalidate(); // search ranking depends on this
     }
-    m_preferredAppsSet = apps;
-    invalidateRowScoreCache(); // cached isPreferred changed
-    invalidate(); // search ranking depends on this
 }
 
 // --- Filtering ---
@@ -484,7 +466,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 
     // Favorites-only filter
     if (m_showFavoritesOnly) {
-        if (sid.isEmpty() || !m_favorites.contains(sid)) {
+        if (sid.isEmpty() || !m_ranking.favorites().contains(sid)) {
             return false;
         }
     }
@@ -512,86 +494,9 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 
 // --- Sorting ---
 
-AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex) const
-{
-    // lessThan() is handed *source* indices; key by the source row, which is
-    // stable across a re-sort — so sorting alone (the per-keystroke case)
-    // never invalidates the cache.
-    const int sourceRow = sourceIndex.row();
-    const auto cached = m_rowScoreCache.constFind(sourceRow);
-    if (cached != m_rowScoreCache.constEnd()) {
-        return *cached;
-    }
-
-    RowScore s;
-    s.sid = sourceIndex.data(AppModel::StorageIdRole).toString();
-    s.name = sourceIndex.data(AppModel::NameRole).toString();
-    s.category = sourceIndex.data(AppModel::CategoryRole).toString();
-    s.launchCount = book().launchCount(s.sid);
-    s.isDefault = m_defaultAppsSet.contains(s.sid);
-    s.isPreferred = m_preferredAppsSet.contains(s.sid);
-    s.isFavorite = m_favorites.contains(s.sid);
-    // Relevance only matters while searching; skip its role reads + case-folds
-    // in the alphabetical / most-used / by-category sort modes.
-    if (!m_query.isEmpty()) {
-        s.relevance = AppSearch::relevance(sourceIndex, m_query.text);
-    }
-    return *m_rowScoreCache.insert(sourceRow, s);
-}
-
-void AppFilterModel::invalidateRowScoreCache()
-{
-    m_rowScoreCache.clear();
-}
-
 bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-    const RowScore l = rowScore(left);
-    const RowScore r = rowScore(right);
-
-    // In favorites mode, sort by position in favoriteApps list — unless the
-    // user opted into alphabetical ordering.
-    if (m_showFavoritesOnly) {
-        if (m_sortFavoritesAlphabetically) {
-            return QString::localeAwareCompare(l.name, r.name) < 0;
-        }
-        // O(1) position lookup via FavoriteOrder. A sid missing from the
-        // favorites gets the sentinel position so it sorts after every real
-        // entry.
-        constexpr int kSortToEnd = std::numeric_limits<int>::max();
-        return m_favorites.position(l.sid, kSortToEnd) < m_favorites.position(r.sid, kSortToEnd);
-    }
-
-    // When searching, rank by match relevance first (SearchRanking::compare);
-    // a tie falls through to the name below.
-    if (!m_query.isEmpty()) {
-        // Frecency (when opted in via ConfigSearch) substitutes the raw
-        // launchCount everywhere the search ranking looks it up — same paths,
-        // time-weighted input. O(1) hash by the cached sid, so it stays live
-        // without caching frecency itself.
-        const bool useFrecency = m_searchUsesFrecency && !m_frecencyScores.isEmpty();
-        const auto rank = [&](const RowScore &s) {
-            return SearchRanking::ResultRank{s.relevance,
-                                             useFrecency ? m_frecencyScores.value(s.sid, 0) : s.launchCount,
-                                             s.isFavorite,
-                                             s.isPreferred,
-                                             s.isDefault};
-        };
-        if (const int order = SearchRanking::compare(rank(l), rank(r)); order != 0) {
-            return order < 0;
-        }
-    } else if (m_sortMode == MostUsed) {
-        if (l.launchCount != r.launchCount) {
-            return l.launchCount > r.launchCount;
-        }
-    } else if (m_sortMode == ByCategory) {
-        const int cmp = QString::localeAwareCompare(l.category, r.category);
-        if (cmp != 0) {
-            return cmp < 0;
-        }
-    }
-
-    return QString::localeAwareCompare(l.name, r.name) < 0;
+    return m_ranking.lessThan(left, right, {m_query.text, m_showFavoritesOnly, m_sortFavoritesAlphabetically, m_sortMode}, book());
 }
 
 // --- Category queries ---
