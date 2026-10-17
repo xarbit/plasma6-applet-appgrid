@@ -14,7 +14,6 @@ import "../controllers"
 import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
 import "../js/favoritetoggle.js" as FavoriteToggle
-import "../js/favoritevisual.js" as FavoriteVisual
 import "../js/gridmetrics.js" as GridMetrics
 import "../js/constants.js" as Const
 
@@ -168,14 +167,6 @@ GridView {
     // Shared DragSource from the plasmoid root.
     readonly property DragSource dragSource: host.dragSource
 
-    // Name + icon for a favourite that has no row in the app model (a System
-    // Settings module favourited via #64), read from KAStats. The grouped model
-    // can't carry the KAStats QIcon, so the grouped grid resolves it here.
-    function _favoriteVisual(sid) {
-        const v = FavoriteVisual.resolve(appsModel, sharedFavoritesModel, favoriteIdRole, sid, defaultIcon)
-        return { display: v.name, decoration: v.icon }
-    }
-
     function findFavoriteRow(storageId) {
         return sharedFavoritesModel ? sharedFavoritesModel.rowOfFavoriteId(storageId) : -1
     }
@@ -232,13 +223,10 @@ GridView {
     }
     readonly property alias selection: gridSelection
 
-    // The favourites grid drives selection whether it is the direct KAStats grid
-    // or the grouped (folders) grid — both key selection by storageId.
     // The grid is bound to a grouped model (favourites folders or the menu tree).
     readonly property bool _groupedGrid: !!groupedModel && model === groupedModel
-    readonly property bool _favoritesSelect: favoritesActive
-                                             && ((sharedFavoritesModel && model === sharedFavoritesModel)
-                                                 || _groupedGrid)
+    // The favourites grid: the grouped favourites, keyed by storageId.
+    readonly property bool _favoritesSelect: favoritesActive && _groupedGrid
     readonly property bool _otherSelect: !favoritesActive
                                          && appsModel
                                          && model === appsModel
@@ -258,11 +246,6 @@ GridView {
             // Folders aren't selectable.
             if (groupedModel.entryTypeAt(idx) === AbstractGroupedModel.Folder) return ""
             return FavoriteId.stripPrefix(groupedModel.favoriteIdAt(idx)) || ""
-        }
-        if (_favoritesSelect) {
-            const v = sharedFavoritesModel.data(
-                sharedFavoritesModel.index(idx, 0), favoriteIdRole)
-            return FavoriteId.stripPrefix(v) || ""
         }
         // Proxy-model path (All / category-filtered view): AppFilterModel
         // exposes storageId as a role; appsModel.get(idx) yields the row.

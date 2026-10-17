@@ -10,8 +10,6 @@
 import QtQuick
 import dev.xarbit.appgrid.models
 
-import "../js/favoriteid.js" as FavoriteId
-import "../js/favoritevisual.js" as FavoriteVisual
 
 Item {
     id: delegateRoot
@@ -23,25 +21,12 @@ Item {
     width: grid.cellWidth
     height: grid.cellHeight
 
-    // When favoritesActive, the grid is driven directly by
-    // sharedFavoritesModel (KAStats), which exposes different role names
-    // than AppFilterModel. Resolve the storage id from the model and
-    // look up the matching AppModel row for non-essential fields
-    // (genericName, comment, installSource, desktopFile, isNew).
-    // Grid bound to the grouped model (issue #18): folder rows render a
-    // FolderCell, app rows resolve via favoriteId exactly like the direct
-    // KAStats grid does.
+    // A grouped grid (the favourites folders, the menu tree) holds app rows
+    // and folder rows; its app rows give the same fields, under the same role
+    // names, as the app model's rows. Their launch goes by id, not by row.
     readonly property bool _fromGrouped: grid._groupedGrid
     readonly property bool _isFolder: _fromGrouped && model.entryType === AbstractGroupedModel.Folder
-    // "Shared" = a favourite app row keyed by favoriteId — true for both the
-    // direct KAStats grid and the grouped model's app rows.
-    readonly property bool _fromShared: (grid.favoritesActive
-                                         && grid.sharedFavoritesModel
-                                         && grid.model === grid.sharedFavoritesModel)
-                                        || (_fromGrouped && !_isFolder)
-    readonly property string _sid: _isFolder
-        ? ""
-        : (_fromShared ? FavoriteId.stripPrefix(model.favoriteId) : (model.storageId || ""))
+    readonly property string _sid: _isFolder ? "" : (model.storageId || "")
     // Drag-to-folder target zone (#200): the folder's tile or the app's icon,
     // inset a little so it's a tighter target and more of the cell reorders.
     // Landing on it merges/adds; a drag can still pass over a folder.
@@ -49,33 +34,6 @@ Item {
         const r = (_isFolder && folderLoader.item) ? folderLoader.item.iconRect : iconDelegate.iconRect
         const m = r.width * grid.foldZoneInset
         return Qt.rect(r.x + m, r.y + m, r.width - 2 * m, r.height - 2 * m)
-    }
-    readonly property var _appData: _fromShared && grid.appsModel
-                                    ? grid.appsModel.getByStorageId(_sid) : null
-    // A text field of the app: from the app model for a favourite row (keyed by
-    // its favourite id), else from the row itself.
-    function _field(key) {
-        return _fromShared ? (_appData ? _appData[key] || "" : "") : (model[key] || "")
-    }
-    // getByStorageId returns {} (not null) for an id the app model doesn't
-    // know, so test the icon, not the object.
-    readonly property bool _appKnown: !!(_appData && _appData.iconName)
-    // KAStats name/icon fallback for a grouped app row the app model doesn't
-    // know (a favourited KCM); the direct KAStats grid reads model.display /
-    // model.decoration instead, which the grouped model can't provide.
-    readonly property var _kvis: (_fromGrouped && !_appKnown && grid.sharedFavoritesModel)
-                                 ? grid._favoriteVisual(_sid) : null
-    // Member icon names for a folder's 2x2 preview, resolved via the app model.
-    readonly property var _folderIcons: {
-        if (!_isFolder)
-            return []
-        const members = model.folderMembers || []
-        const icons = []
-        for (let i = 0; i < members.length && icons.length < 4; ++i) {
-            icons.push(FavoriteVisual.resolve(grid.appsModel, grid.sharedFavoritesModel,
-                                              grid.favoriteIdRole, members[i], grid.defaultIcon).icon)
-        }
-        return icons
     }
 
     // Bounce this cell's app icon (Ctrl+D toggle feedback, #193). Folder rows
@@ -92,7 +50,7 @@ Item {
         sourceComponent: FolderCell {
             folderId: delegateRoot._isFolder ? (model.folderId || "") : ""
             folderName: delegateRoot._isFolder ? (model.display || "") : ""
-            memberIcons: delegateRoot._folderIcons
+            memberIcons: model.memberIcons || []
             cellStyle: grid.cellStyle
             hideLabel: grid.hideLabelsOnFavorites && grid.favoritesActive
             isCurrentItem: grid.currentIndex === model.index && grid.activeFocus
@@ -114,35 +72,25 @@ Item {
         view: grid
         cellIndex: model.index
         visible: !delegateRoot._isFolder
-        appName: delegateRoot._fromShared
-            ? ((delegateRoot._appKnown && delegateRoot._appData.name)
-               || model.display
-               || (delegateRoot._kvis && delegateRoot._kvis.display)
-               || "")
-            : (model.name || "")
-        appIcon: delegateRoot._fromShared
-            ? ((delegateRoot._appKnown && delegateRoot._appData.iconName)
-               || model.decoration
-               || (delegateRoot._kvis && delegateRoot._kvis.decoration)
-               || grid.defaultIcon)
-            : (model.iconName || grid.defaultIcon)
-        displayIcon: delegateRoot._fromShared ? "" : grid.shuffle.iconAt(model.index)
-        appGenericName: delegateRoot._field("genericName")
-        appComment: delegateRoot._field("comment")
-        installSource: delegateRoot._field("installSource")
+        appName: model.name || ""
+        appIcon: model.iconName || grid.defaultIcon
+        // The shuffle swaps the app grid's icons only.
+        displayIcon: delegateRoot._fromGrouped ? "" : grid.shuffle.iconAt(model.index)
+        appGenericName: model.genericName || ""
+        appComment: model.comment || ""
+        installSource: model.installSource || ""
         hideLabel: grid.hideLabelsOnFavorites && grid.favoritesActive
         isCurrentItem: grid.currentIndex === model.index && grid.activeFocus
-        newBadgeAllowed: !delegateRoot._fromShared
+        newBadgeAllowed: !delegateRoot._fromGrouped
         storageId: delegateRoot._sid
-        desktopFile: delegateRoot._field("desktopFile")
+        desktopFile: model.desktopFile || ""
         gridRow: model.index
 
         onClicked: function(mouse) {
-            const desktopFile = delegateRoot._field("desktopFile")
             if (mouse.button === Qt.RightButton) {
                 // Selection persists across right-click so the menu can
                 // surface "Add to selection" / "Remove from selection".
-                grid.host.appMenuRequested(delegateRoot._sid, desktopFile, grid.selection.sidList())
+                grid.host.appMenuRequested(delegateRoot._sid, model.desktopFile || "", grid.selection.sidList())
                 return
             }
             if (grid.multiSelectActive) {
@@ -150,14 +98,14 @@ Item {
                 if (grid.selection.applyClickModifiers(mouse, model.index)) return
             }
             grid.selection.clear()
-            if (delegateRoot._fromShared) {
+            if (delegateRoot._fromGrouped) {
                 grid.launchFavorite(delegateRoot._sid)
             } else {
                 grid.host.launchAppRequested(model.index)
             }
         }
         onShuffleRequested: {
-            if (!delegateRoot._fromShared)
+            if (!delegateRoot._fromGrouped)
                 grid.shuffle.shuffle(model.index)
         }
     }

@@ -5,9 +5,61 @@
 
 #include "abstractgroupedmodel.h"
 
+#include "appresolver.h"
+#include "appurl.h"
+#include "installsource.h"
+
+#include <KSycoca>
+
+namespace
+{
+// The folder preview shows a 2x2 grid of member icons.
+constexpr int kPreviewIcons = 4;
+}
+
 AbstractGroupedModel::AbstractGroupedModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+    connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AbstractGroupedModel::dropResolved);
+}
+
+AbstractGroupedModel::AppFields AbstractGroupedModel::appFields(const QString &favoriteId) const
+{
+    const auto cached = m_resolved.constFind(favoriteId);
+    if (cached != m_resolved.constEnd()) {
+        return *cached;
+    }
+    const AppResolver::Target target = AppResolver::resolve(favoriteId);
+    AppFields fields;
+    fields.name = target.name;
+    fields.icon = target.icon;
+    if (target.service) {
+        fields.genericName = target.service->genericName();
+        fields.comment = target.service->comment();
+        fields.desktopFile = target.service->entryPath();
+        fields.installSource = InstallSource::of(target.service);
+    }
+    return *m_resolved.insert(favoriteId, fields);
+}
+
+QStringList AbstractGroupedModel::memberIcons(const QStringList &members) const
+{
+    QStringList icons;
+    for (const QString &sid : members) {
+        if (icons.size() == kPreviewIcons) {
+            break;
+        }
+        icons.append(appFields(AppUrl::toFavoriteId(sid)).icon);
+    }
+    return icons;
+}
+
+void AbstractGroupedModel::dropResolved()
+{
+    m_resolved.clear();
+    if (!m_rows.isEmpty()) {
+        Q_EMIT dataChanged(index(0), index(int(m_rows.size()) - 1));
+    }
 }
 
 int AbstractGroupedModel::rowCount(const QModelIndex &parent) const
@@ -34,6 +86,29 @@ QVariant AbstractGroupedModel::data(const QModelIndex &index, int role) const
         return row.members.size();
     case Qt::DisplayRole:
         return row.name;
+    case MemberIconsRole:
+        return row.type == Folder ? memberIcons(row.members) : QStringList();
+    case StorageIdRole:
+        return row.type == App ? AppUrl::stripScheme(row.favoriteId) : QString();
+    default:
+        break;
+    }
+    if (row.type != App) {
+        return {};
+    }
+    switch (role) {
+    case NameRole:
+        return appFields(row.favoriteId).name;
+    case IconNameRole:
+        return appFields(row.favoriteId).icon;
+    case GenericNameRole:
+        return appFields(row.favoriteId).genericName;
+    case CommentRole:
+        return appFields(row.favoriteId).comment;
+    case DesktopFileRole:
+        return appFields(row.favoriteId).desktopFile;
+    case InstallSourceRole:
+        return appFields(row.favoriteId).installSource;
     default:
         return {};
     }
@@ -48,6 +123,14 @@ QHash<int, QByteArray> AbstractGroupedModel::roleNames() const
         {FolderMembersRole, "folderMembers"},
         {MemberCountRole, "memberCount"},
         {Qt::DisplayRole, "display"},
+        {NameRole, "name"},
+        {IconNameRole, "iconName"},
+        {GenericNameRole, "genericName"},
+        {CommentRole, "comment"},
+        {DesktopFileRole, "desktopFile"},
+        {StorageIdRole, "storageId"},
+        {InstallSourceRole, "installSource"},
+        {MemberIconsRole, "memberIcons"},
     };
 }
 

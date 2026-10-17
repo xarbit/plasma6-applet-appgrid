@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QHash>
 #include <QStringList>
 
 /**
@@ -20,6 +21,11 @@
  * (editable, KAStats-backed, issue #18) and, later, a read-only category model
  * over the app menu tree. The folder UI never learns which — it only reads this
  * contract and @c editable.
+ *
+ * An App row also serves the app's fields under the app model's role names
+ * (name, iconName, genericName, …), resolved once per id through AppResolver,
+ * and a Folder row its first members' icons: the grid shows a row of either
+ * model the same way, without looking anything up itself.
  */
 class AbstractGroupedModel : public QAbstractListModel
 {
@@ -39,6 +45,16 @@ public:
         FolderIdRole,
         FolderMembersRole,
         MemberCountRole,
+        // An App row's fields, under the app model's role names.
+        NameRole,
+        IconNameRole,
+        GenericNameRole,
+        CommentRole,
+        DesktopFileRole,
+        StorageIdRole,
+        InstallSourceRole,
+        // A Folder row: the icons of its first members, for the 2x2 preview.
+        MemberIconsRole,
         // Qt::DisplayRole carries the app/folder name.
     };
 
@@ -100,5 +116,20 @@ protected:
     }
 
 private:
+    // An App row's fields, resolved from its id.
+    struct AppFields {
+        QString name;
+        QString icon;
+        QString genericName;
+        QString comment;
+        QString desktopFile;
+        QString installSource;
+    };
+    [[nodiscard]] AppFields appFields(const QString &favoriteId) const;
+    [[nodiscard]] QStringList memberIcons(const QStringList &members) const;
+    // The installed apps changed: resolve again.
+    void dropResolved();
+
     QList<Row> m_rows;
+    mutable QHash<QString, AppFields> m_resolved;
 };
