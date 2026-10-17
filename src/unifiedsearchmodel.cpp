@@ -33,13 +33,21 @@ void UnifiedSearchModel::connectSourceSignals(QAbstractItemModel *model)
 
 void UnifiedSearchModel::setAppModel(AppFilterModel *model)
 {
+    beginResetModel();
     m_appModel = model;
+    m_appCount = model ? model->rowCount() : 0;
+    endResetModel();
+    Q_EMIT resultCountsChanged();
     connectSourceSignals(model);
 }
 
 void UnifiedSearchModel::setRunnerModel(RunnerFilterModel *model)
 {
+    beginResetModel();
     m_runnerModel = model;
+    m_runnerCount = model ? model->rowCount() : 0;
+    endResetModel();
+    Q_EMIT resultCountsChanged();
     connectSourceSignals(model);
 
     const auto roles = model->roleNames();
@@ -62,18 +70,20 @@ void UnifiedSearchModel::doReset()
 {
     m_resetPending = false;
     beginResetModel();
+    m_appCount = m_appModel ? m_appModel->rowCount() : 0;
+    m_runnerCount = m_runnerModel ? m_runnerModel->rowCount() : 0;
     endResetModel();
     Q_EMIT resultCountsChanged();
 }
 
 int UnifiedSearchModel::appResultCount() const
 {
-    return m_appModel ? m_appModel->rowCount() : 0;
+    return m_appCount;
 }
 
 int UnifiedSearchModel::runnerResultCount() const
 {
-    return m_runnerModel ? m_runnerModel->rowCount() : 0;
+    return m_runnerCount;
 }
 
 int UnifiedSearchModel::rowCount(const QModelIndex &parent) const

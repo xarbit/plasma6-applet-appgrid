@@ -100,4 +100,9 @@ private:
     int m_runnerActionsRole = -1;
     int m_runnerMultiLineRole = -1;
     bool m_resetPending = false;
+    // Row counts of both sources as of the last reset. rowCount() and the row
+    // split use these, not the live source counts, so the row count only
+    // changes together with a reset the view is told about.
+    int m_appCount = 0;
+    int m_runnerCount = 0;
 };

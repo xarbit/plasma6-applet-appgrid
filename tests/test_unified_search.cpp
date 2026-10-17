@@ -8,6 +8,8 @@
     SourceIndex).
 */
 
+#include <QAbstractItemModelTester>
+#include <QSignalSpy>
 #include <QStringListModel>
 #include <QTest>
 
@@ -87,8 +89,15 @@ private Q_SLOTS:
     void runnerActionsEmptyForAppRow();
     void runnerActionsEmptyForOutOfRangeRow();
     void runnerActionsUnwrapsAndSkipsEmpty();
+    void rowCountChangesOnlyWithReset();
 
 private:
+    // Source changes reach the unified model as one queued reset; run it.
+    static void settle()
+    {
+        QCoreApplication::processEvents();
+    }
+
     StubAppModel m_appSource;
     AppFilterModel m_appFilter;
     QStringListModel m_runnerSource;
@@ -122,6 +131,7 @@ void TestUnifiedSearch::appOnlyMaps1to1()
          QStringLiteral("Web Browser"), QStringLiteral("firefox"),
          {}, QStringLiteral("Browse the web"), QStringLiteral("Flatpak")},
     });
+    settle();
     QCOMPARE(m_unified.rowCount(), 1);
 
     const auto idx = m_unified.index(0, 0);
@@ -146,6 +156,7 @@ void TestUnifiedSearch::appOnlyMaps1to1()
 void TestUnifiedSearch::runnerOnlyMapsToDisplayRole()
 {
     m_runnerSource.setStringList({QStringLiteral("Calculator")});
+    settle();
     QCOMPARE(m_unified.rowCount(), 1);
 
     const auto idx = m_unified.index(0, 0);
@@ -165,7 +176,9 @@ void TestUnifiedSearch::appBeforeRunnerInRowOrder()
         {QStringLiteral("App1"), {}, {}, {}, {}, QStringLiteral("a1"), {}, {}, {}},
         {QStringLiteral("App2"), {}, {}, {}, {}, QStringLiteral("a2"), {}, {}, {}},
     });
+    settle();
     m_runnerSource.setStringList({QStringLiteral("Runner1")});
+    settle();
 
     QCOMPARE(m_unified.rowCount(), 3);
     QCOMPARE(m_unified.index(0, 0).data(UnifiedSearchModel::ResultTypeRole).toString(),
@@ -181,7 +194,9 @@ void TestUnifiedSearch::sectionBoundaryOnlyOnFirstRunnerRow()
     m_appSource.setApps({
         {QStringLiteral("App1"), {}, {}, {}, {}, QStringLiteral("a1"), {}, {}, {}},
     });
+    settle();
     m_runnerSource.setStringList({QStringLiteral("Runner1"), QStringLiteral("Runner2")});
+    settle();
 
     QCOMPARE(m_unified.index(0, 0).data(UnifiedSearchModel::IsSectionBoundaryRole).toBool(),
              false);
@@ -196,6 +211,7 @@ void TestUnifiedSearch::sectionBoundaryFalseWhenAppsEmpty()
     // No apps: the first runner row is row 0, not a boundary — there's
     // no app section above it to separate from.
     m_runnerSource.setStringList({QStringLiteral("Runner1")});
+    settle();
     QCOMPARE(m_unified.index(0, 0).data(UnifiedSearchModel::IsSectionBoundaryRole).toBool(),
              false);
 }
@@ -208,6 +224,7 @@ void TestUnifiedSearch::shortcutNumberCapsAtNine()
                      QStringLiteral("a%1").arg(i), {}, {}, {}});
     }
     m_appSource.setApps(apps);
+    settle();
 
     for (int row = 0; row < 9; ++row) {
         QCOMPARE(m_unified.index(row, 0).data(UnifiedSearchModel::ShortcutNumberRole).toInt(),
@@ -225,7 +242,9 @@ void TestUnifiedSearch::sourceIndexRelativeToEachSide()
         {QStringLiteral("App1"), {}, {}, {}, {}, QStringLiteral("a1"), {}, {}, {}},
         {QStringLiteral("App2"), {}, {}, {}, {}, QStringLiteral("a2"), {}, {}, {}},
     });
+    settle();
     m_runnerSource.setStringList({QStringLiteral("Runner1"), QStringLiteral("Runner2")});
+    settle();
 
     // App rows: sourceIndex == row.
     QCOMPARE(m_unified.index(0, 0).data(UnifiedSearchModel::SourceIndexRole).toInt(), 0);
@@ -240,7 +259,9 @@ void TestUnifiedSearch::resultTypeReflectsRowSide()
     m_appSource.setApps({
         {QStringLiteral("App1"), {}, {}, {}, {}, QStringLiteral("a1"), {}, {}, {}},
     });
+    settle();
     m_runnerSource.setStringList({QStringLiteral("Runner1")});
+    settle();
 
     QCOMPARE(m_unified.index(0, 0).data(UnifiedSearchModel::ResultTypeRole).toString(),
              QStringLiteral("app"));
@@ -255,6 +276,7 @@ void TestUnifiedSearch::getReturnsAllRolesForRow()
          QStringLiteral("/x/kate.desktop"), {}, {}, QStringLiteral("kate"),
          {}, {}, {}},
     });
+    settle();
     const auto map = m_unified.get(0);
     QCOMPARE(map.value(QStringLiteral("name")).toString(), QStringLiteral("Kate"));
     QCOMPARE(map.value(QStringLiteral("iconName")).toString(), QStringLiteral("kate-icon"));
@@ -267,6 +289,7 @@ void TestUnifiedSearch::dataReturnsEmptyForInvalidIndex()
     m_appSource.setApps({
         {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
     });
+    settle();
     QVERIFY(!m_unified.index(-1, 0).isValid());
     QVERIFY(m_unified.data(m_unified.index(99, 0),
                             UnifiedSearchModel::NameRole).toString().isEmpty());
@@ -290,7 +313,9 @@ void TestUnifiedSearch::runnerActionsEmptyForAppRow()
     app.desktopFile = QStringLiteral("a.desktop");
     app.storageId = QStringLiteral("a.desktop");
     m_appSource.setApps({app});
+    settle();
     m_runnerSource.setStringList({QStringLiteral("calc")});
+    settle();
     QCOMPARE(m_unified.runnerActions(0), QVariantList());
 }
 
@@ -312,6 +337,7 @@ void TestUnifiedSearch::runnerActionsUnwrapsAndSkipsEmpty()
     // Re-resolve the actions role: setRunnerModel cached it against the empty
     // QStringListModel from init(), which had no "actions" role.
     m_unified.setRunnerModel(&m_runnerFilter);
+    settle();
 
     // Row 0 is the runner row (no apps). The empty action is skipped; the valid
     // one is unwrapped into {id, icon, text}.
@@ -325,6 +351,33 @@ void TestUnifiedSearch::runnerActionsUnwrapsAndSkipsEmpty()
     // The count role mirrors the unwrap, also skipping the empty action.
     QCOMPARE(m_unified.data(m_unified.index(0, 0),
                             UnifiedSearchModel::RunnerActionsCountRole).toInt(), 1);
+}
+
+// rowCount() must only change together with a reset the view is told about:
+// between a source change and the queued reset it keeps the old count, then
+// the reset brings the new one.
+void TestUnifiedSearch::rowCountChangesOnlyWithReset()
+{
+    QAbstractItemModelTester tester(&m_unified, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    QSignalSpy resets(&m_unified, &QAbstractItemModel::modelReset);
+    QCOMPARE(m_unified.rowCount(), 0);
+
+    m_runnerSource.setStringList({QStringLiteral("Runner1"), QStringLiteral("Runner2")});
+    QCOMPARE(m_unified.rowCount(), 0);
+    QCOMPARE(m_unified.runnerResultCount(), 0);
+    QCOMPARE(resets.count(), 0);
+
+    settle();
+    QCOMPARE(resets.count(), 1);
+    QCOMPARE(m_unified.rowCount(), 2);
+    QCOMPARE(m_unified.runnerResultCount(), 2);
+
+    // Rows the source dropped before the reset arrives read as empty.
+    m_runnerSource.setStringList({});
+    QCOMPARE(m_unified.rowCount(), 2);
+    QVERIFY(!m_unified.index(1, 0).data(UnifiedSearchModel::NameRole).isValid());
+    settle();
+    QCOMPARE(m_unified.rowCount(), 0);
 }
 
 QTEST_MAIN(TestUnifiedSearch)
