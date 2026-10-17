@@ -200,6 +200,8 @@ set(APPGRID_COMMON_LIBS
     KF6::I18n
     KF6::CoreAddons
     KF6::KIOGui
+    # Registers the default KIO job UI delegate factory (launch prompts/errors).
+    KF6::KIOWidgets
     KF6::WindowSystem
     KF6::IconThemes
     KF6::Svg

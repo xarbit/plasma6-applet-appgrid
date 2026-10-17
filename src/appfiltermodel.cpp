@@ -13,6 +13,7 @@
 
 #include <KConfigGroup>
 #include <KIO/ApplicationLauncherJob>
+#include <KIO/JobUiDelegateFactory>
 #include <KIconLoader>
 #include <KService>
 #include <KSharedConfig>
@@ -938,6 +939,7 @@ void AppFilterModel::launchByStorageId(const QString &storageId)
         if (action) {
             recordRecentLaunch(storageId);
             auto *job = new KIO::ApplicationLauncherJob(*action);
+            job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
             job->start();
         }
         return;

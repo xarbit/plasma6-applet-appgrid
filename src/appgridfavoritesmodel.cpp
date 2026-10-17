@@ -10,6 +10,7 @@
 #include "pluginhelpers.h"
 
 #include <KIO/ApplicationLauncherJob>
+#include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
 #include <KSycoca>
 
@@ -553,6 +554,7 @@ bool AppGridFavoritesModel::trigger(int row, const QString &actionId, const QVar
     }
     if (resolved.service) {
         auto *job = resolved.action ? new KIO::ApplicationLauncherJob(*resolved.action) : new KIO::ApplicationLauncherJob(resolved.service);
+        job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
         job->start();
         return true;
     }
