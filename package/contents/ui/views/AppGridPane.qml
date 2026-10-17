@@ -11,11 +11,9 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../widgets"
-import "../js/constants.js" as Const
 
 ColumnLayout {
     id: pane
@@ -33,8 +31,8 @@ ColumnLayout {
     property var searchField: null
     property bool favoritesActive: false
     property int columns: 5
-    property real iconSize: Kirigami.Units.iconSizes.large
-    property real fontScale: 1.0
+    // How the cells draw (CellStyle).
+    required property CellStyle cellStyle
 
     readonly property alias grid: appGrid
     // Inside a favourites folder: Esc climbs out rather than closing.
@@ -97,7 +95,6 @@ ColumnLayout {
         AppGridView {
             id: appGrid
             anchors.fill: parent
-            PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: pane.cfg.showScrollbars }
             model: pane.model
             appsModel: pane.appsModel
             sharedFavoritesModel: pane.sharedFavoritesModel
@@ -110,21 +107,12 @@ ColumnLayout {
             searchField: pane.searchField
             columns: pane.columns
             adaptiveColumns: true
-            iconSize: pane.iconSize
-            fontScale: pane.fontScale
-            reduceGridSpacing: pane.cfg.reduceGridSpacing
-            hoverAnimation: pane.cfg.hoverAnimation
-            shadowEnabled: pane.cfg.iconShadow
-            hoverHighlight: pane.cfg.hoverHighlight
+            cellStyle: pane.cellStyle
             sortFavoritesAlphabetically: pane.cfg.sortFavoritesAlphabetically
             showRecentApps: pane.cfg.showRecentApps
             startWithFavorites: pane.cfg.startWithFavorites
             favoritesActive: pane.favoritesActive
-            showDividers: pane.cfg.showDividers
-            showTooltips: pane.cfg.showTooltips
-            showNewAppBadge: pane.cfg.showNewAppBadge
             hideLabelsOnFavorites: pane.cfg.hideLabelsOnFavorites
-            animateHighlight: pane.cfg.hoverAnimation !== Const.HoverAnimation.None
             shuffleOverlayParent: shuffleOverlay
 
             // Folders drill in place; Esc climbs back out (the window Shortcut
@@ -153,7 +141,7 @@ ColumnLayout {
             id: shuffleOverlay
             anchors.fill: parent
             z: 10
-            iconSize: pane.iconSize
+            iconSize: pane.cellStyle.iconSize
             onSwapFinished: function(fromIndex, toIndex, fromIcon, toIcon) {
                 appGrid.applySwap(fromIndex, toIndex, fromIcon, toIcon)
             }

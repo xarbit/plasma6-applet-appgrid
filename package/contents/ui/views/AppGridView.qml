@@ -7,6 +7,7 @@
 
 import QtQuick
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.components as PlasmaComponents
 import dev.xarbit.appgrid.models
 
 import "../controllers"
@@ -26,24 +27,14 @@ GridView {
     property bool adaptiveColumns: false
     readonly property int effectiveColumns: adaptiveColumns
         ? GridMetrics.columnsForWidth(width, GridMetrics.labelledCellWidth(
-            iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, fontScale, reduceGridSpacing), 3)
+            cellStyle.iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing,
+            cellStyle.fontScale, cellStyle.reduceGridSpacing), 3)
         : columns
 
-    // Icon size from configuration (Kirigami pixel size).
-    property real iconSize: Kirigami.Units.iconSizes.huge
-
-    // Label font/spacing scale, following the size preset (Scale.textScale).
-    // Drives both the delegate label and the cell-overhead budget so cells
-    // stay proportional across presets; 1.0 when text size is decoupled (#167).
-    property real fontScale: 1.0
-
-    // Use the narrower (pre-#177) cell width for a tighter horizontal grid.
-    property bool reduceGridSpacing: false
-
-    // Icon delegate config, injected from the boundary's ConfigCache.
-    required property int hoverAnimation
-    required property bool shadowEnabled
-    property bool hoverHighlight: true
+    // How the cells draw (CellStyle). Its icon size and label scale also set
+    // the cell size, so cells stay proportional across the size presets.
+    required property CellStyle cellStyle
+    PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: gridView.cellStyle.showScrollbars }
 
     // Disables Ctrl+Shift+Arrow favorite reordering (KAStats can't persist a
     // manual order while alphabetical sort is on). Injected from the boundary.
@@ -140,8 +131,8 @@ GridView {
             return
         }
 
-        var fromPos = fromItem.mapToItem(shuffleOverlayParent, fromItem.width / 2 - gridView.iconSize / 2, 0)
-        var otherPos = otherItem.mapToItem(shuffleOverlayParent, otherItem.width / 2 - gridView.iconSize / 2, 0)
+        var fromPos = fromItem.mapToItem(shuffleOverlayParent, fromItem.width / 2 - gridView.cellStyle.iconSize / 2, 0)
+        var otherPos = otherItem.mapToItem(shuffleOverlayParent, otherItem.width / 2 - gridView.cellStyle.iconSize / 2, 0)
 
         shuffleAnimRequested(fromPos.x, fromPos.y, otherPos.x, otherPos.y,
                              fromIcon, otherIcon, fromIndex, otherIndex)
@@ -209,14 +200,14 @@ GridView {
     cellWidth: Math.floor(width / effectiveColumns)
     cellHeight: labelsHidden
                ? cellWidth
-               : GridMetrics.labelledCellHeight(iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, fontScale)
+               : GridMetrics.labelledCellHeight(cellStyle.iconSize, Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, cellStyle.fontScale)
     boundsBehavior: Flickable.StopAtBounds
     keyNavigationEnabled: true
     currentIndex: -1
     highlightFollowsCurrentItem: true
     // Snapped (no slide) while _snapHighlight — used when a drill view re-selects
     // the folder just left on going back, so the highlight lands on it, not slides.
-    highlightMoveDuration: (animateHighlight && !_snapHighlight) ? Kirigami.Units.shortDuration : 0
+    highlightMoveDuration: (cellStyle.animateHighlight && !_snapHighlight) ? Kirigami.Units.shortDuration : 0
     property bool _snapHighlight: false
     // Set currentIndex without animating the highlight there.
     function selectSnapped(idx) {
@@ -224,8 +215,6 @@ GridView {
         currentIndex = idx
         Qt.callLater(function() { gridView._snapHighlight = false })
     }
-
-    property bool animateHighlight: true
 
     // Smooth transitions when items move during drag reorder
     move: Transition {
@@ -277,9 +266,6 @@ GridView {
     property bool showRecentApps: true
     property bool startWithFavorites: false
     property bool favoritesActive: false
-    property bool showDividers: true
-    property bool showTooltips: true
-    property bool showNewAppBadge: true
     property bool hideLabelsOnFavorites: false
 
     // Show recently used apps in the grid header.
@@ -635,16 +621,10 @@ GridView {
         appsModel: gridView.appsModel
         cellWidth: gridView.cellWidth
         cellHeight: gridView.cellHeight
-        iconSize: gridView.iconSize
-        fontScale: gridView.fontScale
-        hoverAnimation: gridView.hoverAnimation
-        shadowEnabled: gridView.shadowEnabled
-        hoverHighlight: gridView.hoverHighlight
+        cellStyle: gridView.cellStyle
         currentRecentIndex: gridView.recentIndex
         gridHasFocus: gridView.activeFocus
         favoritesActive: gridView.favoritesActive
-        showDividers: gridView.showDividers
-        showTooltips: gridView.showTooltips
         dragSource: gridView.dragSource
         multiSelectActive: gridView.multiSelectActive
         selectionSids: gridView.selection.selectionSids
@@ -746,11 +726,9 @@ GridView {
                 folderId: delegateRoot._isFolder ? (model.folderId || "") : ""
                 folderName: delegateRoot._isFolder ? (model.display || "") : ""
                 memberIcons: delegateRoot._folderIcons
-                iconSize: gridView.iconSize
-                fontScale: gridView.fontScale
+                cellStyle: gridView.cellStyle
                 hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
                 isCurrentItem: gridView.currentIndex === model.index && gridView.activeFocus
-                hoverHighlight: gridView.hoverHighlight
                 dragSource: gridView.dragSource
                 gridRow: model.index
                 // Record the tile as current so focus returns here when the folder

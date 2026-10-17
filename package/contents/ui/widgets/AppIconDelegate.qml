@@ -23,18 +23,14 @@ Item {
     property string appGenericName: ""
     property string appComment: ""
     property string installSource: ""
-    property bool showTooltip: false
-    property bool hoverHighlight: true
+    // How the cell draws (CellStyle).
+    required property CellStyle cellStyle
     property bool isCurrentItem: false
     property bool isNew: false
     property bool hideLabel: false
-    property real iconSize: Kirigami.Units.iconSizes.huge
     // Bumped by the model on a system icon-theme change so the icon re-renders
     // in place (a same-named icon won't reload otherwise). See ShadowedIcon.
     property int iconGeneration: 0
-    // Multiplier on the label font, following the size preset (Scale.textScale).
-    // Pinned to 1.0 when text size is decoupled from the preset (#167).
-    property real fontScale: 1.0
     // Identity used by the favorites drag controller. Set externally;
     // empty disables dragging when desktopFile is also empty.
     property string storageId: ""
@@ -74,9 +70,8 @@ Item {
     // Emitted when shuffle animation wants to swap with another icon
     signal shuffleRequested()
 
-    // 0=None, 1=Shake, 2=Grow, 3=Bounce, 4=Spin, 5=Shuffle
-    required property int hoverAnimation
-    required property bool shadowEnabled
+    // Indexed by the hover animation: 0=None, 1=Shake, 2=Grow, 3=Bounce,
+    // 4=Spin, 5=Shuffle.
     readonly property var iconAnimFiles: [
         "",                          // 0=None
         "../iconanims/ShakeAnim.qml",   // 1
@@ -91,7 +86,8 @@ Item {
         // Async so building a screenful of delegates on open does not block
         // on instantiating one animation object per icon.
         asynchronous: true
-        source: hoverAnimation > 0 && hoverAnimation < iconAnimFiles.length ? iconAnimFiles[hoverAnimation] : ""
+        source: root.cellStyle.hoverAnimation > 0 && root.cellStyle.hoverAnimation < root.iconAnimFiles.length
+                ? root.iconAnimFiles[root.cellStyle.hoverAnimation] : ""
         onLoaded: {
             item.target = delegateIcon
             // All icon animations share the IconAnimBase contract; only Grow
@@ -106,7 +102,7 @@ Item {
 
     function playAnimation() {
         if (Kirigami.Units.longDuration === 0) return
-        if (hoverAnimation === Const.HoverAnimation.Shuffle) {
+        if (root.cellStyle.hoverAnimation === Const.HoverAnimation.Shuffle) {
             shuffleRequested()
         } else if (iconAnimLoader.item) {
             iconAnimLoader.item.start()
@@ -154,7 +150,7 @@ Item {
     // sit below the content so the icon and label stay legible.
     CellHighlight {
         kind: CellHighlight.Hover
-        shown: ((root.hoverHighlight && delegateMouse.containsMouse) || root.isCurrentItem)
+        shown: ((root.cellStyle.hoverHighlight && delegateMouse.containsMouse) || root.isCurrentItem)
                && !root.selected && !(pointerDrag.active || touchDrag.active)
     }
     CellHighlight {
@@ -192,8 +188,8 @@ Item {
         Item {
             id: iconCell
             Layout.alignment: Qt.AlignHCenter
-            implicitWidth: root.iconSize
-            implicitHeight: root.iconSize
+            implicitWidth: root.cellStyle.iconSize
+            implicitHeight: root.cellStyle.iconSize
 
             // True while this cell is part of the favorites drag being held over
             // the launcher's delete area — its icon yields to a ✕ remove marker,
@@ -210,7 +206,7 @@ Item {
                 anchors.fill: parent
                 source: root.displayIcon || root.appIcon || Const.DEFAULT_ICON
                 reloadToken: root.iconGeneration
-                shadowEnabled: root.shadowEnabled
+                shadowEnabled: root.cellStyle.shadowEnabled
                 // No icon brighten — hover is shown by the Rectangle above (#106).
                 active: false
                 transformOrigin: Item.Center
@@ -221,8 +217,8 @@ Item {
 
             Loader {
                 anchors.centerIn: parent
-                width: root.iconSize
-                height: root.iconSize
+                width: root.cellStyle.iconSize
+                height: root.cellStyle.iconSize
                 active: parent._showRemoveMarker
                 sourceComponent: Kirigami.Icon {
                     source: "edit-delete-remove"
@@ -234,12 +230,12 @@ Item {
             // arm a fold (#200) — replaces the icon, pops to confirm.
             Loader {
                 anchors.centerIn: parent
-                width: root.iconSize
-                height: root.iconSize
+                width: root.cellStyle.iconSize
+                height: root.cellStyle.iconSize
                 active: root._isFoldTarget
                 sourceComponent: FoldMarker {
-                    width: root.iconSize
-                    height: root.iconSize
+                    width: root.cellStyle.iconSize
+                    height: root.cellStyle.iconSize
                     source: "folder-new"
                 }
             }
@@ -260,7 +256,7 @@ Item {
                 // Scale the badge with the size preset, but steeper than the
                 // labels (fontScale squared): Large stays full size, Medium and
                 // Small shrink more so the pill never crowds a small icon.
-                onLoaded: item.fontScale = Qt.binding(() => root.fontScale * root.fontScale)
+                onLoaded: item.fontScale = Qt.binding(() => root.cellStyle.fontScale * root.cellStyle.fontScale)
             }
 
         }
@@ -274,7 +270,7 @@ Item {
             visible: !root.hideLabel
             verticalAlignment: Text.AlignTop
             text: root.appName
-            font.pointSize: Kirigami.Theme.defaultFont.pointSize * root.fontScale
+            font.pointSize: Kirigami.Theme.defaultFont.pointSize * root.cellStyle.fontScale
             elide: Text.ElideRight
             maximumLineCount: 2
             wrapMode: Text.Wrap
@@ -297,8 +293,8 @@ Item {
         return parts.join("\n")
     }
 
-    PlasmaComponents.ToolTip.text: (root.showTooltip && delegateMouse.containsMouse) ? root._tooltipText() : ""
-    PlasmaComponents.ToolTip.visible: root.showTooltip && delegateMouse.containsMouse
+    PlasmaComponents.ToolTip.text: (root.cellStyle.showTooltips && delegateMouse.containsMouse) ? root._tooltipText() : ""
+    PlasmaComponents.ToolTip.visible: root.cellStyle.showTooltips && delegateMouse.containsMouse
     PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
 
     MouseArea {

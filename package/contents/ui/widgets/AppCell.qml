@@ -15,10 +15,8 @@ AppIconDelegate {
     id: cell
 
     // The grid this cell belongs to. Both grids expose the same names:
-    // appsModel, iconSize, fontScale, hoverAnimation, shadowEnabled,
-    // hoverHighlight, showTooltips, showNewAppBadge, dragSource, and the
-    // selection (multiSelectActive, and a GridSelection as `selection`), plus
-    // _newAppsRevision for the badge.
+    // appsModel, cellStyle, dragSource, and the selection (multiSelectActive,
+    // and a GridSelection as `selection`), plus _newAppsRevision for the badge.
     required property var view
     // The index the grid's selection anchor is compared against.
     property int cellIndex: -1
@@ -26,19 +24,14 @@ AppIconDelegate {
     property bool newBadgeAllowed: true
 
     iconGeneration: view.appsModel ? view.appsModel.iconGeneration : 0
-    showTooltip: view.showTooltips
-    iconSize: view.iconSize
-    fontScale: view.fontScale
-    hoverAnimation: view.hoverAnimation
-    shadowEnabled: view.shadowEnabled
-    hoverHighlight: view.hoverHighlight
+    cellStyle: view.cellStyle
     // Drag-out is allowed from every view (taskbar/panel/Dolphin pinning);
     // internal reorder is gated separately by the grid's drop handling.
     dragSource: view.dragSource
 
     isNew: {
         view._newAppsRevision // re-evaluate when the used apps change
-        return newBadgeAllowed && view.showNewAppBadge && view.appsModel
+        return newBadgeAllowed && view.cellStyle.showNewAppBadge && view.appsModel
             ? view.appsModel.isNewApp(storageId) : false
     }
 

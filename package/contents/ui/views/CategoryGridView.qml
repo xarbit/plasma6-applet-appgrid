@@ -11,6 +11,7 @@
 
 import QtQuick
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../widgets"
@@ -29,19 +30,15 @@ ListView {
     // CategoryRowsModel from the controller: the apps grouped by category, as
     // rows. null leaves the view empty (e.g. tests without the C++ plugin).
     property var rowsModel: null
-    property real cellWidth: 100
-    property real cellHeight: 100
-    property real iconSize: Kirigami.Units.iconSizes.huge
-    // Label font scale, following the size preset (Scale.textScale).
-    property real fontScale: 1.0
-    // Icon delegate config, injected from the boundary's ConfigCache.
-    required property int hoverAnimation
-    required property bool shadowEnabled
-    property bool hoverHighlight: true
+    // Columns of app cells per row; the cells take the view's width.
+    property int columns: 5
+    readonly property real cellWidth: Math.floor(width / columns)
+    readonly property real cellHeight: GridMetrics.labelledCellHeight(cellStyle.iconSize,
+        Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, cellStyle.fontScale)
+    // How the cells draw (CellStyle).
+    required property CellStyle cellStyle
+    PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: categoryGrid.cellStyle.showScrollbars }
     property bool showRecents: false
-    property bool showDividers: true
-    property bool showTooltips: true
-    property bool showNewAppBadge: true
     property Item searchField: null
     // Shared with AppGridView so drag-out targets work from this view too.
     property DragSource dragSource: null
@@ -314,16 +311,11 @@ ListView {
         appsModel: categoryGrid.appsModel
         cellWidth: categoryGrid.cellWidth
         cellHeight: categoryGrid.cellHeight
-        iconSize: categoryGrid.iconSize
-        hoverAnimation: categoryGrid.hoverAnimation
-        shadowEnabled: categoryGrid.shadowEnabled
-        hoverHighlight: categoryGrid.hoverHighlight
+        cellStyle: categoryGrid.cellStyle
         currentRecentIndex: categoryGrid.recentIndex
         gridHasFocus: categoryGrid.activeFocus
         favoritesActive: false
         hideBottomLabel: true
-        showDividers: categoryGrid.showDividers
-        showTooltips: categoryGrid.showTooltips
         dragSource: categoryGrid.dragSource
         multiSelectActive: categoryGrid.multiSelectActive
         selectionSids: categoryGrid.selection.selectionSids
@@ -376,7 +368,7 @@ ListView {
             HorizontalDivider {
                 width: parent.width
                 visible: rowItem.section > 0
-                opacity: categoryGrid.showDividers ? 1 : 0
+                opacity: categoryGrid.cellStyle.showDividers ? 1 : 0
             }
             SectionLabel {
                 leftPadding: Kirigami.Units.largeSpacing

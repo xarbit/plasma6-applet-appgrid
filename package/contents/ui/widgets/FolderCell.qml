@@ -24,11 +24,10 @@ Item {
     property string folderName: ""
     // Up to four member icon names for the preview, already resolved by the caller.
     property var memberIcons: []
-    property int iconSize: Kirigami.Units.iconSizes.large
-    property real fontScale: 1.0
+    // How the cell draws (CellStyle).
+    required property var cellStyle
     property bool hideLabel: false
     property bool isCurrentItem: false
-    property bool hoverHighlight: true
     // Shared DragSource + this cell's grid row, so a folder can be drag-reordered
     // through the same path as app cells (issue #18).
     property var dragSource: null
@@ -62,7 +61,7 @@ Item {
     // Hover / keyboard-current highlight, like an app's.
     CellHighlight {
         kind: CellHighlight.Hover
-        shown: (root.hoverHighlight && hoverHandler.hovered) || root.isCurrentItem
+        shown: (root.cellStyle.hoverHighlight && hoverHandler.hovered) || root.isCurrentItem
     }
     // A favourite is hovering to drop into this folder (#18).
     CellHighlight {
@@ -91,8 +90,8 @@ Item {
         Rectangle {
             id: tile
             Layout.alignment: Qt.AlignHCenter
-            implicitWidth: root.iconSize
-            implicitHeight: root.iconSize
+            implicitWidth: root.cellStyle.iconSize
+            implicitHeight: root.cellStyle.iconSize
             radius: Kirigami.Units.cornerRadius
             color: ThemeColors.tint(Kirigami.Theme.textColor, 0.1)
 
@@ -107,12 +106,12 @@ Item {
 
             GridLayout {
                 anchors.fill: parent
-                anchors.margins: Math.round(root.iconSize * root._previewInset)
+                anchors.margins: Math.round(root.cellStyle.iconSize * root._previewInset)
                 opacity: (parent._showRemoveMarker || parent._showAddMarker) ? root._removeDimOpacity : 1.0
                 visible: !parent._showAddMarker
                 columns: 2
-                rowSpacing: Math.round(root.iconSize * root._previewSpacing)
-                columnSpacing: Math.round(root.iconSize * root._previewSpacing)
+                rowSpacing: Math.round(root.cellStyle.iconSize * root._previewSpacing)
+                columnSpacing: Math.round(root.cellStyle.iconSize * root._previewSpacing)
 
                 Repeater {
                     model: 4
@@ -131,7 +130,7 @@ Item {
 
             Kirigami.Icon {
                 anchors.centerIn: parent
-                width: root.iconSize * root._removeIconScale
+                width: root.cellStyle.iconSize * root._removeIconScale
                 height: width
                 visible: tile._showRemoveMarker
                 source: "edit-delete-remove"
@@ -141,7 +140,7 @@ Item {
             // Add-to-folder marker: a favourite dwelled on this folder long enough
             // to arm a fold (#200) — replaces the preview, pops to confirm.
             FoldMarker {
-                width: root.iconSize * root._removeIconScale
+                width: root.cellStyle.iconSize * root._removeIconScale
                 height: width
                 visible: tile._showAddMarker
                 source: "list-add"
@@ -153,7 +152,7 @@ Item {
             Layout.preferredHeight: lineCount === 1 ? implicitHeight * 2 : implicitHeight
             visible: !root.hideLabel
             text: root.folderName
-            font.pointSize: Kirigami.Theme.defaultFont.pointSize * root.fontScale
+            font.pointSize: Kirigami.Theme.defaultFont.pointSize * root.cellStyle.fontScale
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignTop
             maximumLineCount: 2

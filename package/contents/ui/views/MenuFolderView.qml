@@ -17,7 +17,6 @@ import QtQuick
 import QtQuick.Layouts
 
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../widgets"
@@ -38,13 +37,8 @@ Item {
     property int columns: 5
     property real cellWidth: 100
     property real cellHeight: 100
-    property real iconSize: Kirigami.Units.iconSizes.large
-    property real fontScale: 1.0
-    property bool reduceGridSpacing: false
-    property bool shadowEnabled: false
-    property int hoverAnimation: 0
-    property bool hoverHighlight: true
-    property bool showScrollbars: true
+    // How the cells draw (CellStyle).
+    required property CellStyle cellStyle
     // Drop folders with no app anywhere in their subtree ("hide empty categories").
     property bool hideEmpty: false
 
@@ -95,7 +89,6 @@ Item {
             id: menuGrid
             Layout.fillWidth: true
             Layout.fillHeight: true
-            PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: root.showScrollbars }
 
             model: root.menuModel
             groupedModel: root.menuModel
@@ -113,13 +106,7 @@ Item {
 
             columns: root.columns
             adaptiveColumns: true
-            iconSize: root.iconSize
-            fontScale: root.fontScale
-            reduceGridSpacing: root.reduceGridSpacing
-            hoverAnimation: root.hoverAnimation
-            shadowEnabled: root.shadowEnabled
-            hoverHighlight: root.hoverHighlight
-            animateHighlight: root.hoverAnimation > 0
+            cellStyle: root.cellStyle
             sortFavoritesAlphabetically: false
 
             // Esc with no selection to clear → climb out one folder level. At the

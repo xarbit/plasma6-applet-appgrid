@@ -69,9 +69,6 @@ Item {
     readonly property alias cfgShowCategoryBar: cfg.showCategoryBar
     readonly property alias cfgStartWithFavorites: cfg.startWithFavorites
     readonly property alias cfgShowRecentApps: cfg.showRecentApps
-    readonly property alias cfgShowDividers: cfg.showDividers
-    readonly property alias cfgShowTooltips: cfg.showTooltips
-    readonly property alias cfgShowNewAppBadge: cfg.showNewAppBadge
     readonly property alias cfgHideLabelsOnFavorites: cfg.hideLabelsOnFavorites
     readonly property alias cfgUseExtraRunners: cfg.useExtraRunners
     readonly property alias cfgHideGridWhenEmpty: cfg.hideGridWhenEmpty
@@ -222,6 +219,21 @@ Item {
     // changes only the app icons, not text/spacing (#167). The curve and
     // the #167 gate live in Scale.textScale (single, tested policy).
     readonly property real densityScale: Scale.textScale(cfg.iconSize, cfg.independentTextSize)
+
+    // How every view draws its cells and rows, from the settings.
+    CellStyle {
+        id: cellStyle
+        iconSize: panel.gridIconSize
+        fontScale: panel.densityScale
+        hoverAnimation: cfg.hoverAnimation
+        shadowEnabled: cfg.iconShadow
+        hoverHighlight: cfg.hoverHighlight
+        showTooltips: cfg.showTooltips
+        showNewAppBadge: cfg.showNewAppBadge
+        showDividers: cfg.showDividers
+        reduceGridSpacing: cfg.reduceGridSpacing
+        showScrollbars: cfg.showScrollbars
+    }
 
     // The keys pressed in the search field, to the results, the shown grid
     // or the prefix mode's view.
@@ -617,7 +629,7 @@ Item {
         HorizontalDivider {
             Layout.fillWidth: true
             visible: panel.showCatBar
-            opacity: panel.cfgShowDividers ? 1 : 0
+            opacity: cellStyle.showDividers ? 1 : 0
         }
 
         CategoryBar {
@@ -666,7 +678,7 @@ Item {
         HorizontalDivider {
             Layout.fillWidth: true
             visible: panel.showCatBar
-            opacity: panel.cfgShowDividers ? 1 : 0
+            opacity: cellStyle.showDividers ? 1 : 0
         }
 
         // -- Prefix mode view --
@@ -684,7 +696,7 @@ Item {
                 mode: panel.prefixMode
                 argument: panel.prefixArgument
                 searchField: searchBar.field
-                showScrollbars: cfg.showScrollbars
+                showScrollbars: cellStyle.showScrollbars
                 appsModel: panel.appsModel
                 listDirectory: path => panel.plasmoidBridge.systemActions.listDirectory(path)
                 sysInfoProvider: panel.sysInfoProvider
@@ -708,14 +720,9 @@ Item {
             Layout.fillHeight: true
             Layout.preferredHeight: panel.bodyHeight
             visible: panel.showSearchResults
-            PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             model: panel._searchApplied ? panel.searchModel : null
-            iconSize: panel.gridIconSize
-            fontScale: panel.densityScale
-            showDividers: panel.cfgShowDividers
-            shadowEnabled: cfg.iconShadow
+            cellStyle: cellStyle
             showShortcuts: cfg.showSearchShortcuts
-            animateHighlight: cfg.hoverAnimation !== Const.HoverAnimation.None
             searchField: searchBar.field
             favoritesManager: favorites
             plasmoidBridge: panel.plasmoidBridge
@@ -736,21 +743,11 @@ Item {
             Layout.fillHeight: true
             Layout.preferredHeight: panel.bodyHeight
             visible: panel.showCategoryGrid
-            PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             searchField: searchBar.field
             appsModel: panel.appsModel
             rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
-            cellWidth: Math.floor(categoryGridView.width / panel.columns)
-            cellHeight: GridMetrics.labelledCellHeight(panel.gridIconSize,
-                        Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, panel.densityScale)
-            iconSize: panel.gridIconSize
-            fontScale: panel.densityScale
-            hoverAnimation: cfg.hoverAnimation
-            shadowEnabled: cfg.iconShadow
-            hoverHighlight: cfg.hoverHighlight
-            showDividers: panel.cfgShowDividers
-            showTooltips: panel.cfgShowTooltips
-            showNewAppBadge: panel.cfgShowNewAppBadge
+            columns: panel.columns
+            cellStyle: cellStyle
             dragSource: panel.dragSource
             showRecents: panel.cfgShowRecentApps
                          && panel.appsModel
@@ -783,13 +780,7 @@ Item {
             favoriteIdRole: panel.favoriteIdRole
             dragSource: panel.dragSource
             columns: panel.columns
-            iconSize: panel.gridIconSize
-            fontScale: panel.densityScale
-            reduceGridSpacing: cfg.reduceGridSpacing
-            shadowEnabled: cfg.iconShadow
-            hoverAnimation: cfg.hoverAnimation
-            hoverHighlight: cfg.hoverHighlight
-            showScrollbars: cfg.showScrollbars
+            cellStyle: cellStyle
             hideEmpty: cfg.hideEmptyCategories
             searchField: searchBar.field
             onLaunched: function(sid) { panel.launchAppByStorageId(sid) }
@@ -819,8 +810,7 @@ Item {
             searchField: searchBar.field
             favoritesActive: panel.isFavoritesActive
             columns: panel.columns
-            iconSize: panel.gridIconSize
-            fontScale: panel.densityScale
+            cellStyle: cellStyle
             onLaunched: index => panel.launchApp(index)
             onRecentLaunched: storageId => panel.launchAppByStorageId(storageId)
             onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)

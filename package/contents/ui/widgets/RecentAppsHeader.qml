@@ -17,19 +17,12 @@ Column {
     property var appsModel: null
     property real cellWidth: 100
     property real cellHeight: 100
-    property real iconSize: Kirigami.Units.iconSizes.huge
-    // Label font scale, following the size preset (Scale.textScale).
-    property real fontScale: 1.0
-    // Icon delegate config, injected from the boundary's ConfigCache.
-    required property int hoverAnimation
-    required property bool shadowEnabled
-    property bool hoverHighlight: true
+    // How the cells draw (CellStyle).
+    required property CellStyle cellStyle
     property int currentRecentIndex: -1
     property bool gridHasFocus: false
     property bool favoritesActive: false
     property bool hideBottomLabel: false
-    property bool showDividers: true
-    property bool showTooltips: true
     // Shared DragSource from the plasmoid root so recent apps can also be
     // dragged out to external targets (taskbar, panel, Dolphin, desktop).
     property DragSource dragSource: null
@@ -86,19 +79,14 @@ Column {
                 AppIconDelegate {
                     id: recentIcon
                     anchors.fill: parent
-                    fontScale: recentHeader.fontScale
                     appName: recentDelegate.appData.name || ""
                     appIcon: recentDelegate.appData.iconName || Const.DEFAULT_ICON
                     iconGeneration: recentHeader.appsModel ? recentHeader.appsModel.iconGeneration : 0
                     appGenericName: recentDelegate.appData.genericName || ""
                     appComment: recentDelegate.appData.comment || ""
                     installSource: recentDelegate.appData.installSource || ""
-                    showTooltip: recentHeader.showTooltips
                     isCurrentItem: recentHeader.currentRecentIndex === recentDelegate.index
-                    iconSize: recentHeader.iconSize
-                    hoverAnimation: recentHeader.hoverAnimation
-                    shadowEnabled: recentHeader.shadowEnabled
-                    hoverHighlight: recentHeader.hoverHighlight
+                    cellStyle: recentHeader.cellStyle
                     storageId: recentDelegate.modelData
                     desktopFile: recentDelegate.appData.desktopFile || ""
                     dragSource: recentHeader.dragSource
@@ -132,7 +120,7 @@ Column {
 
     HorizontalDivider {
         width: parent.width
-        opacity: recentHeader.showDividers ? 1 : 0
+        opacity: recentHeader.cellStyle.showDividers ? 1 : 0
     }
 
     SectionLabel {

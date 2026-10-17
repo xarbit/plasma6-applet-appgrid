@@ -24,14 +24,11 @@ ListView {
     id: listView
 
     property PlasmaComponents.TextField searchField: null
-    property real iconSize: Kirigami.Units.iconSizes.huge
-    // Caller-supplied font multiplier for the result name Label so it
-    // stays proportional with the user's icon-size preference. Subtext
-    // sticks to Kirigami.Theme.smallFont (unaffected — it's secondary
-    // info and shrinks too far below 1.0).
-    property real fontScale: 1.0
-    property bool showDividers: true
-    property bool shadowEnabled: false
+    // How the rows draw (CellStyle). Its label scale applies to the result
+    // name only: the subtext sticks to Kirigami.Theme.smallFont, which would
+    // shrink too far below it.
+    required property CellStyle cellStyle
+    PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: listView.cellStyle.showScrollbars }
     // Show the Alt+N launch-shortcut badge on each row. The shortcut still
     // works when hidden — this only drops the visual label (#165).
     property bool showShortcuts: true
@@ -59,14 +56,13 @@ ListView {
 
     currentIndex: count > 0 ? 0 : -1
 
-    property bool animateHighlight: true
     // Keyboard nav animates the highlight; hover-driven selects snap so the
     // highlight tracks the cursor crisply across rows.
     property bool _suppressHighlightAnim: false
     readonly property var _clearSuppressHighlightAnim: function() {
         _suppressHighlightAnim = false
     }
-    highlightMoveDuration: (animateHighlight && !_suppressHighlightAnim)
+    highlightMoveDuration: (cellStyle.animateHighlight && !_suppressHighlightAnim)
         ? Kirigami.Units.shortDuration : 0
     highlightResizeDuration: 0
     // One themed renderer per row, so hover and keyboard-focus never
@@ -241,7 +237,7 @@ ListView {
     delegate: PlasmaComponents.ItemDelegate {
         id: resultDelegate
         width: listView.width
-        height: Math.max(listView.iconSize, contentItem.implicitHeight) + Kirigami.Units.smallSpacing * 2
+        height: Math.max(listView.cellStyle.iconSize, contentItem.implicitHeight) + Kirigami.Units.smallSpacing * 2
         leftPadding: Kirigami.Units.largeSpacing
         rightPadding: Kirigami.Units.largeSpacing
         highlighted: listView.currentIndex === model.index
@@ -325,10 +321,10 @@ ListView {
             ShortcutBadge { number: model.shortcutNumber }
 
             ShadowedIcon {
-                implicitWidth: listView.iconSize
-                implicitHeight: listView.iconSize
+                implicitWidth: listView.cellStyle.iconSize
+                implicitHeight: listView.cellStyle.iconSize
                 source: model.iconName || Const.DEFAULT_ICON
-                shadowEnabled: listView.shadowEnabled
+                shadowEnabled: listView.cellStyle.shadowEnabled
             }
 
             ColumnLayout {
@@ -346,7 +342,7 @@ ListView {
                         text: model.name || ""
                         lines: model.multiLine ? 8 : 1
                         color: resultDelegate.labelColor
-                        font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.fontScale
+                        font.pointSize: Kirigami.Theme.defaultFont.pointSize * listView.cellStyle.fontScale
                     }
                     // Top-aligned so the indicator and pills stay beside the first
                     // line when a long result name wraps to several lines (#183),
