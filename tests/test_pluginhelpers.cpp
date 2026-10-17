@@ -3,13 +3,16 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     Coverage for the pure helpers extracted from AppGridPlugin: /etc/shells
-    and /etc/os-release parsing, tilde expansion, and the file-browser
-    directory listing (exercised against a QTemporaryDir).
+    parsing, tilde expansion, the file-browser directory listing (exercised
+    against a QTemporaryDir), and the default apps read from mimeapps.list
+    and kdeglobals.
 */
 
+#include <KConfig>
 #include <KConfigGroup>
 #include <KSharedConfig>
 
+#include <QFile>
 #include <QList>
 #include <QTemporaryDir>
 #include <QTest>
@@ -25,6 +28,17 @@ class TestPluginHelpers : public QObject
     Q_OBJECT
 
 private:
+    // Write @p contents to a file in @p dir and return its path.
+    static QString writeFile(const QTemporaryDir &dir, const QString &contents)
+    {
+        const QString path = dir.filePath(QStringLiteral("config"));
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(contents.toUtf8());
+        }
+        return path;
+    }
+
     static QStringList entryNames(const QVariantList &list)
     {
         QStringList names;
@@ -67,59 +81,6 @@ private Q_SLOTS:
     {
         QVERIFY(parseShells(QString()).isEmpty());
         QVERIFY(parseShells(QStringLiteral("# only a comment\n\n")).isEmpty());
-    }
-
-    void parseOsPrettyName_unquotes()
-    {
-        const QString contents = QStringLiteral("NAME=Arch\nPRETTY_NAME=\"Arch Linux\"\nID=arch\n");
-        QCOMPARE(parseOsPrettyName(contents), QStringLiteral("Arch Linux"));
-    }
-
-    void parseOsPrettyName_unquotedValue()
-    {
-        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=Fedora\n")), QStringLiteral("Fedora"));
-    }
-
-    void parseOsPrettyName_missing()
-    {
-        QCOMPARE(parseOsPrettyName(QStringLiteral("NAME=Foo\nID=foo\n")), QString());
-    }
-
-    // CRLF endings (e.g. an os-release file written or copied via Windows
-    // tooling) used to leak a trailing \r into the value because the
-    // closing quote-strip didn't see endsWith('"').
-    void parseOsPrettyName_handlesCrlf()
-    {
-        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=\"Foo\"\r\n")), QStringLiteral("Foo"));
-        QCOMPARE(parseOsPrettyName(QStringLiteral("PRETTY_NAME=Bar\r\n")), QStringLiteral("Bar"));
-    }
-
-    // Comment lines must not be matched as the key.
-    void parseOsPrettyName_skipsCommentLines()
-    {
-        const QString contents = QStringLiteral(
-            "# generated header\n"
-            "NAME=Foo\n"
-            "# PRETTY_NAME=\"NOT THIS\"\n"
-            "PRETTY_NAME=\"Real\"\n");
-        QCOMPARE(parseOsPrettyName(contents), QStringLiteral("Real"));
-    }
-
-    // An indented line is tolerated thanks to the per-line trim;
-    // documents that current behavior rather than relying on it.
-    void parseOsPrettyName_toleratesLeadingWhitespace()
-    {
-        QCOMPARE(parseOsPrettyName(QStringLiteral("    PRETTY_NAME=Indented\n")), QStringLiteral("Indented"));
-    }
-
-    // The first matching key wins; later definitions are ignored
-    // (matches how shell `source` evaluation would treat the file).
-    void parseOsPrettyName_returnsFirstMatch()
-    {
-        const QString contents = QStringLiteral(
-            "PRETTY_NAME=First\n"
-            "PRETTY_NAME=Second\n");
-        QCOMPARE(parseOsPrettyName(contents), QStringLiteral("First"));
     }
 
     void expandTilde_expandsLeading()
@@ -198,26 +159,31 @@ private Q_SLOTS:
         }
     }
 
-    void parseMimeAppsDefaults_extractsDefaultSection()
+    void mimeAppsDefaults_readsDefaultGroup()
     {
-        const QString contents = QStringLiteral(
-            "[Added Associations]\n"
-            "text/plain=ignored.desktop;\n"
-            "[Default Applications]\n"
-            "text/html=firefox.desktop;chromium.desktop\n"
-            "# comment line\n"
-            "application/pdf=okular.desktop\n"
-            "[Removed Associations]\n"
-            "text/html=alsoignored.desktop\n");
-        QStringList ids = parseMimeAppsDefaults(contents);
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = writeFile(dir,
+                                       QStringLiteral("[Added Associations]\n"
+                                                      "text/plain=ignored.desktop;\n"
+                                                      "[Default Applications]\n"
+                                                      "text/html=firefox.desktop;chromium.desktop\n"
+                                                      "# comment line\n"
+                                                      "application/pdf=okular.desktop\n"
+                                                      "[Removed Associations]\n"
+                                                      "text/html=alsoignored.desktop\n"));
+        QStringList ids = mimeAppsDefaults(KConfig(path, KConfig::SimpleConfig));
         ids.sort();
         QCOMPARE(ids, QStringList({QStringLiteral("chromium.desktop"), QStringLiteral("firefox.desktop"), QStringLiteral("okular.desktop")}));
     }
 
-    void parseMimeAppsDefaults_emptyOnNoDefaultSection()
+    void mimeAppsDefaults_emptyWithoutDefaultGroup()
     {
-        QVERIFY(parseMimeAppsDefaults(QString()).isEmpty());
-        QVERIFY(parseMimeAppsDefaults(QStringLiteral("[Added Associations]\ntext/plain=foo.desktop\n")).isEmpty());
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        QVERIFY(mimeAppsDefaults(KConfig(dir.filePath(QStringLiteral("missing.list")), KConfig::SimpleConfig)).isEmpty());
+        const QString path = writeFile(dir, QStringLiteral("[Added Associations]\ntext/plain=foo.desktop\n"));
+        QVERIFY(mimeAppsDefaults(KConfig(path, KConfig::SimpleConfig)).isEmpty());
     }
 
     void desktopPathFromRunnerUrls_findsFirstDesktop()
@@ -234,32 +200,34 @@ private Q_SLOTS:
         QVERIFY(desktopPathFromRunnerUrls(QVariant()).isEmpty());
     }
 
-    void parseKdeTerminalDefaults_readsTerminalKeysOnly()
+    void kdeTerminalDefaults_readsTerminalKeysOnly()
     {
         // TerminalApplication (exec line) + TerminalService (.desktop id, current
         // Plasma 6) are both read. Browser keys are NOT — the browser default
         // comes from KApplicationTrader, so a stale kdeglobals copy can't shadow
-        // it. Keys outside [General] are ignored.
-        const QString contents = QStringLiteral(
-            "[General]\n"
-            "TerminalApplication=/usr/bin/ghostty --gtk-single-instance=true\n"
-            "TerminalService=org.kde.konsole.desktop\n"
-            "BrowserApplication=firefox.desktop\n"
-            "BrowserService=vivaldi-stable.desktop\n"
-            "[KDE]\n"
-            "TerminalApplication=should-be-ignored\n");
-        const QStringList v = parseKdeTerminalDefaults(contents);
-        QVERIFY(v.contains(QStringLiteral("/usr/bin/ghostty --gtk-single-instance=true")));
-        QVERIFY(v.contains(QStringLiteral("org.kde.konsole.desktop")));
-        QVERIFY(!v.contains(QStringLiteral("firefox.desktop")));
-        QVERIFY(!v.contains(QStringLiteral("vivaldi-stable.desktop")));
-        QVERIFY(!v.contains(QStringLiteral("should-be-ignored")));
+        // it.
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = writeFile(dir,
+                                       QStringLiteral("[General]\n"
+                                                      "TerminalApplication=/usr/bin/ghostty --gtk-single-instance=true\n"
+                                                      "TerminalService=org.kde.konsole.desktop\n"
+                                                      "BrowserApplication=firefox.desktop\n"
+                                                      "BrowserService=vivaldi-stable.desktop\n"
+                                                      "[KDE]\n"
+                                                      "TerminalApplication=should-be-ignored\n"));
+        const KConfig config(path, KConfig::SimpleConfig);
+        const QStringList v = kdeTerminalDefaults(config.group(QStringLiteral("General")));
+        QCOMPARE(v, (QStringList{QStringLiteral("/usr/bin/ghostty --gtk-single-instance=true"), QStringLiteral("org.kde.konsole.desktop")}));
     }
 
-    void parseKdeTerminalDefaults_emptyOutsideGeneral()
+    void kdeTerminalDefaults_emptyWithoutTerminal()
     {
-        QVERIFY(parseKdeTerminalDefaults(QString()).isEmpty());
-        QVERIFY(parseKdeTerminalDefaults(QStringLiteral("[KDE]\nTerminalApplication=x\n")).isEmpty());
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const QString path = writeFile(dir, QStringLiteral("[KDE]\nTerminalApplication=x\n"));
+        const KConfig config(path, KConfig::SimpleConfig);
+        QVERIFY(kdeTerminalDefaults(config.group(QStringLiteral("General"))).isEmpty());
     }
 
     void execBinaryName_stripsPathAndArgs()

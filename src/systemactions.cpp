@@ -6,6 +6,7 @@
 #include "systemactions.h"
 
 #include "appgridconstants.h"
+#include "applauncher.h"
 #include "appmodel.h"
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
@@ -14,7 +15,7 @@
 #include <KConfigGroup>
 #include <KDesktopFile>
 #include <KIO/CommandLauncherJob>
-#include <KIO/OpenUrlJob>
+#include <KOSRelease>
 #include <KService>
 #include <KSharedConfig>
 #include <KTerminalLauncherJob>
@@ -24,7 +25,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
-#include <QProcess>
 #include <QScreen>
 #include <QStandardPaths>
 #include <QUrl>
@@ -129,8 +129,7 @@ void SystemActions::runInTerminal(const QString &command, const QString &shell)
     const QString wrapped = QStringLiteral("%1 -c '%2; echo; echo \"[Press Enter to close]\"; read _'")
                                 .arg(sh, QString(command).replace(QLatin1Char('\''), QStringLiteral("'\"'\"'")));
 
-    auto *job = new KTerminalLauncherJob(wrapped);
-    job->start();
+    AppLauncher::start(new KTerminalLauncherJob(wrapped));
 }
 
 void SystemActions::runCommand(const QString &command, const QString &shell)
@@ -140,7 +139,7 @@ void SystemActions::runCommand(const QString &command, const QString &shell)
     }
 
     const QString sh = validatedShell(shell);
-    QProcess::startDetached(sh, {QStringLiteral("-c"), command});
+    AppLauncher::start(new KIO::CommandLauncherJob(sh, {QStringLiteral("-c"), command}));
 }
 
 QStringList SystemActions::availableShells() const
@@ -209,8 +208,7 @@ void SystemActions::openInDiscover(const QString &storageId)
     // AppStream genuinely doesn't know this app — open Discover searching its name
     // so the action is never dead.
     if (appId.isEmpty()) {
-        auto *job = new KIO::CommandLauncherJob(QStringLiteral("plasma-discover"), {QStringLiteral("--search"), service->name()});
-        job->start();
+        AppLauncher::start(new KIO::CommandLauncherJob(QStringLiteral("plasma-discover"), {QStringLiteral("--search"), service->name()}));
         return;
     }
 
@@ -225,13 +223,11 @@ void SystemActions::openInDiscover(const QString &storageId)
         // Discover's --backends identifies a backend by its plugin name, which
         // carries the -backend suffix (see `plasma-discover --listbackends`).
         const QString discoverBackend = backend + QStringLiteral("-backend");
-        auto *job = new KIO::CommandLauncherJob(
+        AppLauncher::start(new KIO::CommandLauncherJob(
             QStringLiteral("plasma-discover"),
-            {QStringLiteral("--backends"), discoverBackend, QStringLiteral("--application"), QStringLiteral("appstream://") + appId});
-        job->start();
+            {QStringLiteral("--backends"), discoverBackend, QStringLiteral("--application"), QStringLiteral("appstream://") + appId}));
     } else {
-        auto *job = new KIO::OpenUrlJob(QUrl(QStringLiteral("appstream://") + appId));
-        job->start();
+        AppLauncher::open(QUrl(QStringLiteral("appstream://") + appId));
     }
 }
 
@@ -257,13 +253,9 @@ QVariantMap SystemActions::systemInfo(const QString &variant) const
     info[QStringLiteral("installType")] = QStringLiteral("Distribution package");
 #endif
 
-    // OS info from /etc/os-release
-    QFile osRelease(QStringLiteral("/etc/os-release"));
-    if (osRelease.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const QString pretty = PluginHelpers::parseOsPrettyName(QString::fromUtf8(osRelease.readAll()));
-        if (!pretty.isEmpty()) {
-            info[QStringLiteral("os")] = pretty;
-        }
+    const QString os = KOSRelease().prettyName();
+    if (!os.isEmpty()) {
+        info[QStringLiteral("os")] = os;
     }
 
     // Screen info

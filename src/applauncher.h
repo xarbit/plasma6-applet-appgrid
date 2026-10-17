@@ -7,16 +7,21 @@
 
 #include <KService>
 
+class KJob;
 class QUrl;
 
 /**
- * The one place AppGrid starts an application or opens a document. Every job
- * gets KIO's default UI delegate, so KIO can ask to trust a non-executable
- * .desktop file and report a failed launch instead of failing silently (#226),
- * and every failure is logged. The jobs delete themselves.
+ * The one place AppGrid starts an application, opens a document or runs a
+ * launch job. Every job gets KIO's default UI delegate, so KIO can ask to
+ * trust a non-executable .desktop file and report a failed launch instead of
+ * failing silently (#226), and every failure is logged. The jobs delete
+ * themselves.
  */
 namespace AppLauncher
 {
+/** Start @p job (a command, terminal or URL job) the same way. */
+void start(KJob *job);
+
 /** Start @p service. Returns false (and starts nothing) when it is null. */
 bool launch(const KService::Ptr &service);
 

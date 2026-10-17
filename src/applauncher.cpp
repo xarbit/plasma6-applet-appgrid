@@ -12,7 +12,7 @@
 #include <QDebug>
 #include <QUrl>
 
-namespace
+namespace AppLauncher
 {
 void start(KJob *job)
 {
@@ -24,10 +24,7 @@ void start(KJob *job)
     });
     job->start();
 }
-}
 
-namespace AppLauncher
-{
 bool launch(const KService::Ptr &service)
 {
     if (!service) {

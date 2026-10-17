@@ -40,25 +40,6 @@ QStringList parseShells(const QString &contents)
     return shells;
 }
 
-QString parseOsPrettyName(const QString &contents)
-{
-    const auto lines = contents.split(QLatin1Char('\n'));
-    for (const auto &raw : lines) {
-        // Trim so a stray CR from CRLF endings doesn't break the quote-strip
-        // below (PRETTY_NAME="…\r" wouldn't endsWith('"') and the value
-        // would leak through with a trailing carriage return).
-        const QString line = raw.trimmed();
-        if (line.startsWith(QLatin1String("PRETTY_NAME="))) {
-            QString val = line.mid(12);
-            if (val.startsWith(QLatin1Char('"')) && val.endsWith(QLatin1Char('"'))) {
-                val = val.mid(1, val.length() - 2);
-            }
-            return val;
-        }
-    }
-    return {};
-}
-
 QString expandTilde(const QString &path)
 {
     if (path.startsWith(QLatin1Char('~'))) {
@@ -116,67 +97,11 @@ QVariantList listDirectoryAt(const QString &path)
     return result;
 }
 
-namespace
-{
-// Invoke @p fn(key, value) for every "key=value" line inside @p sectionHeader
-// (e.g. "[Default Applications]") of an INI-style file's @p contents. Section
-// headers, comments and keyless lines are skipped. Shared by the mimeapps and
-// kdeglobals parsers so the section/comment handling lives in one place.
-template<typename Fn>
-void forEachIniEntry(const QString &contents, const QLatin1String &sectionHeader, Fn &&fn)
-{
-    bool inSection = false;
-    const auto lines = contents.split(QLatin1Char('\n'));
-    for (const auto &raw : lines) {
-        const QString line = raw.trimmed();
-        if (line.startsWith(QLatin1Char('['))) {
-            inSection = (line == sectionHeader);
-            continue;
-        }
-        if (!inSection || line.isEmpty() || line.startsWith(QLatin1Char('#'))) {
-            continue;
-        }
-        const int eq = line.indexOf(QLatin1Char('='));
-        if (eq <= 0) { // no '=' or empty key
-            continue;
-        }
-        fn(line.left(eq).trimmed(), line.mid(eq + 1).trimmed());
-    }
-}
-
-// The mimeapps.list files in XDG precedence (user first, then system).
-QStringList mimeAppsListPaths()
-{
-    return {
-        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
-        QStringLiteral("/usr/share/applications/mimeapps.list"),
-    };
-}
-
-// Run @p parser over every mimeapps.list and merge the de-duplicated result.
-// The path list and read loop live here rather than in each caller.
-template<typename Parser>
-QStringList mergeMimeAppsLists(Parser &&parser)
-{
-    QSet<QString> all;
-    for (const auto &path : mimeAppsListPaths()) {
-        QFile f(path);
-        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            continue;
-        }
-        const auto items = parser(QString::fromUtf8(f.readAll()));
-        for (const auto &item : items) {
-            all.insert(item);
-        }
-    }
-    return QStringList(all.cbegin(), all.cend());
-}
-}
-
-QStringList parseMimeAppsDefaults(const QString &contents)
+QStringList mimeAppsDefaults(const KConfig &mimeApps)
 {
     QSet<QString> result;
-    forEachIniEntry(contents, QLatin1String("[Default Applications]"), [&result](const QString &, const QString &value) {
+    const auto entries = mimeApps.group(QStringLiteral("Default Applications")).entryMap();
+    for (const QString &value : entries) {
         // A value may list several .desktop entries separated by ';'.
         const auto ids = value.split(QLatin1Char(';'), Qt::SkipEmptyParts);
         for (const auto &id : ids) {
@@ -185,13 +110,23 @@ QStringList parseMimeAppsDefaults(const QString &contents)
                 result.insert(trimmed);
             }
         }
-    });
+    }
     return QStringList(result.cbegin(), result.cend());
 }
 
 QStringList loadMimeAppsDefaults()
 {
-    return mergeMimeAppsLists(parseMimeAppsDefaults);
+    // The mimeapps.list files in XDG precedence (user first, then system).
+    const QStringList paths{
+        QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + QStringLiteral("/mimeapps.list"),
+        QStringLiteral("/usr/share/applications/mimeapps.list"),
+    };
+    QSet<QString> all;
+    for (const QString &path : paths) {
+        const auto ids = mimeAppsDefaults(KConfig(path, KConfig::SimpleConfig));
+        all.unite(QSet<QString>(ids.cbegin(), ids.cend()));
+    }
+    return QStringList(all.cbegin(), all.cend());
 }
 
 QString desktopPathFromRunnerUrls(const QVariant &urlsData)
@@ -212,7 +147,7 @@ QString runnerStorageId(const QVariant &urlsData)
     return path.isEmpty() ? QString() : QFileInfo(path).fileName();
 }
 
-QStringList parseKdeTerminalDefaults(const QString &contents)
+QStringList kdeTerminalDefaults(const KConfigGroup &general)
 {
     QStringList values;
     // TerminalApplication carries an exec line (legacy); TerminalService the
@@ -220,22 +155,18 @@ QStringList parseKdeTerminalDefaults(const QString &contents)
     // read from kdeglobals — it comes from KApplicationTrader (x-scheme-handler),
     // so a stale BrowserApplication can't shadow the real default. Terminals
     // have no mimetype, so kdeglobals is their only override source.
-    forEachIniEntry(contents, QLatin1String("[General]"), [&values](const QString &key, const QString &value) {
-        if ((key == QLatin1String("TerminalApplication") || key == QLatin1String("TerminalService")) && !value.isEmpty()) {
+    for (const char *key : {"TerminalApplication", "TerminalService"}) {
+        const QString value = general.readEntry(key, QString());
+        if (!value.isEmpty()) {
             values.append(value);
         }
-    });
+    }
     return values;
 }
 
 QStringList loadKdeTerminalDefaults()
 {
-    const QString path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QStringLiteral("/kdeglobals");
-    QFile f(path);
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return {};
-    }
-    return parseKdeTerminalDefaults(QString::fromUtf8(f.readAll()));
+    return kdeTerminalDefaults(KSharedConfig::openConfig(QStringLiteral("kdeglobals"))->group(QStringLiteral("General")));
 }
 
 QString execBinaryName(const QString &execLine)

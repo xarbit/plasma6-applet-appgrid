@@ -6,6 +6,7 @@
 #include "appgridplugin.h"
 
 #include "appgridconstants.h"
+#include "applauncher.h"
 #include "plasmoidadaptor.h"
 #include "standaloneinterface.h"
 
@@ -178,8 +179,7 @@ void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringLi
         m_daemonVersionChecked = false;
         QStringList args = launchArgs;
         args << AppGrid::Standalone::FlagReplace;
-        auto *job = new KIO::CommandLauncherJob(AppGrid::Standalone::Executable, args, this);
-        job->start();
+        AppLauncher::start(new KIO::CommandLauncherJob(AppGrid::Standalone::Executable, args));
         return;
     }
 
@@ -193,8 +193,7 @@ void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringLi
 #else
     // No activation unit (e.g. the relocatable universal build): launch the binary
     // with the matching flags; it registers the service and acts on them on start.
-    auto *job = new KIO::CommandLauncherJob(AppGrid::Standalone::Executable, launchArgs, this);
-    job->start();
+    AppLauncher::start(new KIO::CommandLauncherJob(AppGrid::Standalone::Executable, launchArgs));
 #endif
 }
 

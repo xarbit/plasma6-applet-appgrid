@@ -10,8 +10,9 @@
 #include <QStringList>
 #include <QVariantList>
 
-class KSharedConfig;
+class KConfig;
 class KConfigGroup;
+class KSharedConfig;
 
 /**
  * Pure, Plasma-free helpers extracted from AppGridPlugin so the parsing and
@@ -48,9 +49,6 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  non-comment lines. The caller verifies each path actually exists. */
 [[nodiscard]] QStringList parseShells(const QString &contents);
 
-/** Unquoted PRETTY_NAME value from /etc/os-release contents, or empty. */
-[[nodiscard]] QString parseOsPrettyName(const QString &contents);
-
 /** Expand a leading ~ to the user's home directory. */
 [[nodiscard]] QString expandTilde(const QString &path);
 
@@ -60,12 +58,12 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  entry is a map: { name, path, isDir, icon }. */
 [[nodiscard]] QVariantList listDirectoryAt(const QString &path);
 
-/** Desktop ids from the [Default Applications] section of a mimeapps.list
- *  file's @p contents. Order is unspecified; empty on no matches. */
-[[nodiscard]] QStringList parseMimeAppsDefaults(const QString &contents);
+/** Desktop ids from the [Default Applications] group of a mimeapps.list
+ *  file. Order is unspecified; empty on no matches. */
+[[nodiscard]] QStringList mimeAppsDefaults(const KConfig &mimeApps);
 
 /** Merged default-app desktop ids from the user and system mimeapps.list
- *  files. Does the filesystem reads; parsing is parseMimeAppsDefaults(). */
+ *  files. */
 [[nodiscard]] QStringList loadMimeAppsDefaults();
 
 /** First .desktop local-file path from a KRunner row's "urls" role value
@@ -78,16 +76,15 @@ inline constexpr QLatin1String ApplicationsUrlPrefix{"applications:"};
  *  "runner result → app storage id" rule shared by the runner-backed models. */
 [[nodiscard]] QString runnerStorageId(const QVariant &urlsData);
 
-/** Terminal-default values (TerminalApplication / TerminalService) from the
- *  [General] section of a kdeglobals file's @p contents. Each value is either a
+/** Terminal-default values (TerminalApplication / TerminalService) from
+ *  kdeglobals' [General] group @p general. Each value is either a
  *  .desktop id or an exec line; resolving it to a storage id is the caller's
  *  job. Empty if none. The browser default is NOT read from kdeglobals — it is
  *  resolved via KApplicationTrader (x-scheme-handler), the authoritative source
  *  System Settings uses; terminals have no mimetype, so kdeglobals is theirs. */
-[[nodiscard]] QStringList parseKdeTerminalDefaults(const QString &contents);
+[[nodiscard]] QStringList kdeTerminalDefaults(const KConfigGroup &general);
 
-/** Those terminal-default values read from the user's kdeglobals. Does the
- *  filesystem read; parsing is parseKdeTerminalDefaults(). */
+/** Those terminal-default values from kdeglobals. */
 [[nodiscard]] QStringList loadKdeTerminalDefaults();
 
 /** Executable basename from an exec line: "/usr/bin/ghostty --foo" → "ghostty",

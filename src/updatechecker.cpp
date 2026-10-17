@@ -20,6 +20,7 @@
 #include <QNetworkRequest>
 #include <QRandomGenerator>
 #include <QRegularExpression>
+#include <QSaveFile>
 #include <QSslConfiguration>
 #include <QStandardPaths>
 #include <QUrl>
@@ -480,15 +481,14 @@ void UpdateChecker::saveState()
         m_etagAge = 0;
     }
 
-    const QString finalPath = stateFilePath();
-    const QString tmpPath = finalPath + QStringLiteral(".tmp");
-
-    QFile f(tmpPath);
-    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QDir().mkpath(QFileInfo(f).absolutePath());
-        if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            return;
-        }
+    // QSaveFile writes a temporary file and renames it over the old one, so a
+    // reader never sees a half-written file when both plasmoid variants race a
+    // save.
+    const QString path = stateFilePath();
+    QDir().mkpath(QFileInfo(path).absolutePath());
+    QSaveFile f(path);
+    if (!f.open(QIODevice::WriteOnly)) {
+        return;
     }
     QJsonObject obj{
         {QStringLiteral("schema"), kCacheSchema},
@@ -499,18 +499,8 @@ void UpdateChecker::saveState()
         {QStringLiteral("etagAge"), m_etagAge},
     };
     f.write(QJsonDocument(obj).toJson(QJsonDocument::Compact));
-    f.close();
     f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-
-    // Atomic replace so a reader never sees a half-written file when both
-    // plasmoid variants race a save. On POSIX rename() atomically overwrites
-    // the destination; Windows rename fails if it exists, so remove first there.
-#ifdef Q_OS_WIN
-    QFile::remove(finalPath);
-#endif
-    if (!QFile::rename(tmpPath, finalPath)) {
-        QFile::remove(tmpPath);
-    }
+    f.commit();
 }
 
 bool UpdateChecker::isNewer(const QString &candidate, const QString &current)
