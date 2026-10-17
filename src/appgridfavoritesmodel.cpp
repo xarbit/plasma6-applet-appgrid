@@ -25,7 +25,9 @@
 #include <QQmlEngine>
 #include <QTimer>
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 namespace KAStats = KActivities::Stats;
 namespace KASTerms = KActivities::Stats::Terms;
@@ -329,12 +331,26 @@ bool AppGridFavoritesModel::isFavorite(const QString &id) const
     if (target.isEmpty()) {
         return false;
     }
+    // Compare stored forms: an older entry may be stored in another spelling.
     for (int row = 0, rows = rowCount(); row < rows; ++row) {
-        if (data(index(row, 0), FavoriteIdRole).toString() == target) {
+        if (storeId(data(index(row, 0), FavoriteIdRole).toString()) == target) {
             return true;
         }
     }
     return false;
+}
+
+QStringList AppGridFavoritesModel::storedVariants(const QString &id) const
+{
+    QStringList stored;
+    if (sourceModel()) {
+        for (int row = 0, rows = sourceModel()->rowCount(); row < rows; ++row) {
+            stored.append(resourceForSourceRow(row, {}));
+        }
+    }
+    return FavoriteId::variantsOf(stored, id, [this](const QString &entry) {
+        return storeId(entry);
+    });
 }
 
 int AppGridFavoritesModel::rowOfFavoriteId(const QString &storageId) const
@@ -361,8 +377,22 @@ void AppGridFavoritesModel::addFavorite(const QString &id, int index)
     if (resource.isEmpty()) {
         return;
     }
-    // Re-adding something just optimistically removed: un-hide it.
+    // Re-adding something just optimistically removed: un-hide it. Any other
+    // stored variant means it is already a favourite (maybe in an older
+    // spelling): don't link a duplicate.
+    bool alreadyStored = false;
+    const QStringList variants = storedVariants(id);
+    for (const QString &variant : variants) {
+        if (m_pendingRemovals.contains(variant)) {
+            setResourceHidden(variant, false);
+        } else {
+            alreadyStored = true;
+        }
+    }
     setResourceHidden(resource, false);
+    if (alreadyStored) {
+        return;
+    }
     if (index >= 0) {
         // linkToActivity is asynchronous; place the row once it surfaces. Watch
         // the model the link targets (not the member, which initForClient may
@@ -437,13 +467,22 @@ QStringList AppGridFavoritesModel::linkedActivitiesFor(const QString &id) const
     if (cached != m_linkedActivitiesCache.constEnd()) {
         return cached.value();
     }
-    const QString agent = agentForResource(resource);
+    // Look at every stored variant: an older spelling may hold the links.
+    QStringList variants = storedVariants(id);
+    if (variants.isEmpty()) {
+        variants.append(resource);
+    }
+    const auto linkedTo = [&](const QString &activity) {
+        return std::any_of(variants.cbegin(), variants.cend(), [&](const QString &variant) {
+            return isLinkedTo(variant, agentForResource(variant), activity);
+        });
+    };
     QStringList linked;
     // A global link means "every activity"; report that as an empty list (the
     // contract setLinkedActivities() takes) so callers never handle the sentinel.
-    if (!isLinkedTo(resource, agent, kActivityGlobal)) {
+    if (!linkedTo(kActivityGlobal)) {
         for (const QString &activity : m_consumer->activities()) {
-            if (isLinkedTo(resource, agent, activity)) {
+            if (linkedTo(activity)) {
                 linked.append(activity);
             }
         }
@@ -463,8 +502,18 @@ void AppGridFavoritesModel::setLinkedActivities(const QString &id, const QString
     }
     const QUrl url = urlForId(resource);
     const auto agent = KASTerms::Agent({agentForResource(resource)});
-    // Replace the whole link set: clear every link, then re-link to the target.
-    // An empty set means "all activities" → a single global link.
+    // Replace the whole link set: clear every link of every stored variant
+    // (older spellings are folded into the canonical one here), then re-link
+    // the canonical form to the target. An empty set means "all activities" →
+    // a single global link.
+    const QStringList variants = storedVariants(id);
+    for (const QString &variant : variants) {
+        if (variant != resource) {
+            m_results->unlinkFromActivity(urlForId(variant), KASTerms::Activity(kActivityAny), KASTerms::Agent({agentForResource(variant)}));
+            m_results->unlinkFromActivity(urlForId(variant), KASTerms::Activity(kActivityGlobal), KASTerms::Agent({agentForResource(variant)}));
+            setResourceHidden(variant, true);
+        }
+    }
     m_results->unlinkFromActivity(url, KASTerms::Activity(kActivityAny), agent);
     if (activityIds.isEmpty()) {
         m_results->linkToActivity(url, KASTerms::Activity(kActivityGlobal), agent);
@@ -490,20 +539,30 @@ void AppGridFavoritesModel::removeFavorite(const QString &id)
     if (resource.isEmpty()) {
         return;
     }
-    // Unlink from the global link AND every activity it could be pinned to.
-    // ":any" does not remove the global link, so the favourite was never actually
-    // unlinked — only hidden locally, which is why a removal never reached the
-    // other launcher variant. Unlinking the real targets removes it and makes
-    // kactivitymanagerd broadcast the unlink the other process picks up.
-    const QUrl url = urlForId(resource);
-    const auto agent = KASTerms::Agent(agentForResource(resource));
-    m_results->unlinkFromActivity(url, KASTerms::Activity(kActivityGlobal), agent);
-    const auto currentActivities = m_consumer->activities();
-    for (const QString &activity : currentActivities) {
-        m_results->unlinkFromActivity(url, KASTerms::Activity(activity), agent);
+    // Remove every stored variant: an older version may have stored the same
+    // app bare and prefixed, and unlinking only the canonical form left the
+    // other one behind, so the favourite never went away.
+    QStringList variants = storedVariants(id);
+    if (!variants.contains(resource)) {
+        variants.append(resource);
     }
-    // Hide it now; the ResultModel doesn't drop the row synchronously.
-    setResourceHidden(resource, true);
+    const auto currentActivities = m_consumer->activities();
+    for (const QString &variant : std::as_const(variants)) {
+        // Unlink from the global link AND every activity it could be pinned to.
+        // ":any" does not remove the global link, so the favourite was never
+        // actually unlinked — only hidden locally, which is why a removal never
+        // reached the other launcher variant. Unlinking the real targets
+        // removes it and makes kactivitymanagerd broadcast the unlink the
+        // other process picks up.
+        const QUrl url = urlForId(variant);
+        const auto agent = KASTerms::Agent(agentForResource(variant));
+        m_results->unlinkFromActivity(url, KASTerms::Activity(kActivityGlobal), agent);
+        for (const QString &activity : currentActivities) {
+            m_results->unlinkFromActivity(url, KASTerms::Activity(activity), agent);
+        }
+        // Hide it now; the ResultModel doesn't drop the row synchronously.
+        setResourceHidden(variant, true);
+    }
 }
 
 void AppGridFavoritesModel::moveRow(int from, int to)

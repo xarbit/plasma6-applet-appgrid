@@ -101,6 +101,37 @@ private Q_SLOTS:
         QFETCH(bool, isDocument);
         QCOMPARE(FavoriteId::isDocument(id), isDocument);
     }
+
+    // An app favourited by an older version can be stored bare and prefixed at
+    // once; both are the same favourite, so removing it must find both.
+    void variantsOfFindsLegacyAndPrefixedEntries()
+    {
+        const auto resolver = [](const QString &storageId) -> QString {
+            return storageId.endsWith(QLatin1String(".desktop")) ? storageId : QString();
+        };
+        const auto normalize = [&](const QString &id) {
+            return FavoriteId::normalized(id, resolver);
+        };
+        const QStringList stored{
+            QStringLiteral("claude-desktop.desktop"),
+            QStringLiteral("applications:claude-desktop.desktop"),
+            QStringLiteral("applications:org.kde.kate.desktop"),
+            QStringLiteral("applications:claude-desktop.desktop?action=new-window"),
+            QStringLiteral("/home/user/notes.pdf"),
+        };
+        const QStringList both{QStringLiteral("claude-desktop.desktop"), QStringLiteral("applications:claude-desktop.desktop")};
+        // Found from either spelling of the id.
+        QCOMPARE(FavoriteId::variantsOf(stored, QStringLiteral("claude-desktop.desktop"), normalize), both);
+        QCOMPARE(FavoriteId::variantsOf(stored, QStringLiteral("applications:claude-desktop.desktop"), normalize), both);
+        // A jump-list action is its own favourite.
+        QCOMPARE(FavoriteId::variantsOf(stored, QStringLiteral("applications:claude-desktop.desktop?action=new-window"), normalize),
+                 QStringList{QStringLiteral("applications:claude-desktop.desktop?action=new-window")});
+        // Unrelated and unknown ids.
+        QCOMPARE(FavoriteId::variantsOf(stored, QStringLiteral("org.kde.kate.desktop"), normalize),
+                 QStringList{QStringLiteral("applications:org.kde.kate.desktop")});
+        QVERIFY(FavoriteId::variantsOf(stored, QStringLiteral("gone.desktop"), normalize).isEmpty());
+        QVERIFY(FavoriteId::variantsOf(stored, QString(), normalize).isEmpty());
+    }
 };
 
 QTEST_MAIN(TestFavoriteId)

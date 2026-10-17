@@ -36,3 +36,18 @@ bool FavoriteId::isDocument(const QString &id)
     const QString scheme = QUrl(id).scheme();
     return !scheme.isEmpty() && scheme != QLatin1String("applications") && scheme != QLatin1String("preferred");
 }
+
+QStringList FavoriteId::variantsOf(const QStringList &stored, const QString &id, const std::function<QString(const QString &)> &normalize)
+{
+    const QString target = normalize(id);
+    if (target.isEmpty()) {
+        return {};
+    }
+    QStringList variants;
+    for (const QString &entry : stored) {
+        if (!variants.contains(entry) && normalize(entry) == target) {
+            variants.append(entry);
+        }
+    }
+    return variants;
+}

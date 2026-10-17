@@ -145,6 +145,9 @@ private:
     [[nodiscard]] ResolvedFavorite resolve(const QString &favoriteId) const;
     // Stored form of @p id: action ids verbatim, plain apps canonicalised.
     [[nodiscard]] QString storeId(const QString &id) const;
+    // Every stored form of the favourite @p id (see FavoriteId::variantsOf),
+    // across all source rows, including the ones filtered out of view.
+    [[nodiscard]] QStringList storedVariants(const QString &id) const;
     // Whether @p resource is currently linked under @p agent in @p activity.
     [[nodiscard]] static bool isLinkedTo(const QString &resource, const QString &agent, const QString &activity);
     // Optimistically show/hide @p resource ahead of the async KActivities change
