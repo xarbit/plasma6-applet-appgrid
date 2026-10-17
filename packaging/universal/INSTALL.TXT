@@ -11,9 +11,9 @@ distro where you prefer a user-local install.
  Requirements
 ----------------------------------------------------------------
 
-  - Plasma 6.4 or newer
-  - KDE Frameworks 6.x (SONAME 6 for KF6 libs)
-  - Qt 6.6 or newer (SONAME 6 for Qt6 libs)
+  - Plasma 6.8 or newer, Wayland session (Plasma 6.8 has no X11)
+  - KDE Frameworks 6.30 or newer (SONAME 6 for KF6 libs)
+  - Qt 6.11 or newer (SONAME 6 for Qt6 libs)
   - Python 3.11 or newer (uses stdlib `tomllib`)
   - The runtime libraries AppGrid links against:
         Qt 6:   libQt6Core libQt6Gui libQt6Quick libQt6Qml
@@ -22,7 +22,7 @@ distro where you prefer a user-local install.
                 libKF6I18n libKF6CoreAddons libKF6WindowSystem
                 libKF6Runner KirigamiPlatform
         Plasma: libPlasma libPlasmaActivities libPlasmaQuick
-                (all at SONAME 7 — current Plasma 6.4+)
+                (libPlasma/libPlasmaQuick at SONAME 8 — Plasma 6.8+)
         Other:  libLayerShellQtInterface (SONAME 6)
 
 If `plasmashell` is not on PATH, the installer refuses to
@@ -34,22 +34,17 @@ exact install command for your distro before aborting.
  SONAME and distro compatibility
 ----------------------------------------------------------------
 
-KDE bumped the Plasma library SONAME from 6 to 7 around Plasma
-6.4. This tarball is built against SONAME 7, so it works on:
+Plasma 6.8 bumped libPlasma / libPlasmaQuick from SONAME 7 to
+8, and a plugin links exactly one of them. AppGrid 2.x is built
+against SONAME 8, so it works on any distro shipping Plasma 6.8
+or newer — e.g. Arch and Arch-based distros, KDE Linux and
+Fedora rawhide today; Fedora, openSUSE, the Fedora-based
+immutables and others as soon as they update to Plasma 6.8.
 
-  Arch / Manjaro / EndeavourOS / CachyOS / Garuda      ✓
-  KDE Linux                                            ✓
-  Fedora 42 and newer                                  ✓
-  Kinoite / Bazzite / Aurora (Fedora 42+ base)         ✓
-  openSUSE Tumbleweed                                  ✓
-  openSUSE Kalpa                                       ✓
-  SteamOS (Steam Deck Desktop Mode)                    ✓
-  Debian 13 / Ubuntu 24.10+ (if shipping Plasma 6.4+)  ✓
-  Older Debian/Ubuntu with Plasma 6.1–6.3              ✗
-
-Users on older Plasma should wait for their distro to update,
-or install AppGrid via their native package (Arch PKGBUILD,
-Fedora RPM, Debian DEB available on the GitHub release page).
+On Plasma 6.4-6.7 (SONAME 7), use the AppGrid 1.9.x universal
+package instead: it carries builds for both SONAMEs. Check
+which one your system has with:
+    ls /usr/lib*/libPlasma.so.*
 
 ----------------------------------------------------------------
  Install
@@ -158,16 +153,18 @@ Quick reference:
 
   AppGrid was working, now broken after distro upgrade
       A library it linked against may have changed SONAME.
-      Re-run ./install.sh with the matching tarball, or
-      rebuild from source.
+      Re-run ./install.sh with the tarball matching your
+      Plasma (2.x for 6.8+, 1.9.x for 6.4-6.7), or rebuild
+      from source.
 
   "cannot open shared object file: libPlasma.so.X"
-      Your distro ships an older (X=6) or newer SONAME than
-      the tarball expects (currently 7). Check yours with:
+      Your distro ships an older SONAME than the tarball
+      expects (8, Plasma 6.8+). Check yours with:
           ls /usr/lib*/libPlasma.so.*
-      If you only see libPlasma.so.6, your Plasma is < 6.4
-      and not yet supported by this universal package. Use
-      your distro's native AppGrid package instead.
+      With libPlasma.so.7 (Plasma 6.4-6.7), use the AppGrid
+      1.9.x universal package. With libPlasma.so.6, your
+      Plasma is < 6.4 and not supported by the universal
+      package; use your distro's native AppGrid package.
 
   Update indicator never updates / always shows
       Cache lives at
