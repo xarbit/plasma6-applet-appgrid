@@ -82,10 +82,19 @@ jobs:
             dev)    PROJECT=scujas/plasma-applet-appgrid-dev ;;
             *) echo "::error::unknown channel ${{ inputs.channel }}"; exit 1 ;;
           esac
-          copr-cli build --nowait "$PROJECT" ./*.src.rpm
+          # 2.0 requires Plasma 6.8. Until a stable Fedora ships it, dev builds
+          # target rawhide only; add a release back here once it has 6.8.
+          CHROOTS=""
+          if [ "${{ inputs.channel }}" = dev ]; then
+            CHROOTS="--chroot fedora-rawhide-x86_64 --chroot fedora-rawhide-aarch64"
+          fi
+          copr-cli build --nowait $CHROOTS "$PROJECT" ./*.src.rpm
 
   launchpad:
     name: Launchpad ${{ matrix.series.codename }} (${{ inputs.channel }})
+    # 2.0 requires Plasma 6.8, which no Ubuntu series below ships yet, so dev
+    # uploads are paused; re-enable once a series has Plasma 6.8.
+    if: inputs.channel != 'dev'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
