@@ -146,6 +146,7 @@ ColumnLayout {
                     QQC2.ToolButton {
                         icon.name: "view-visible"
                         QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
+                        Accessible.name: QQC2.ToolTip.text
                         QQC2.ToolTip.visible: hovered
                         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                         onClicked: root._unhide(modelData)

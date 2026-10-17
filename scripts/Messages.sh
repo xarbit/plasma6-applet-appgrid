@@ -47,7 +47,9 @@ PODIR="${podir:-po}"
 BUGADDR="https://github.com/xarbit/plasma6-applet-appgrid/issues"
 
 # Collect all translatable source files (QML + C++) into a temp list
-{ find package/contents/ui -name '*.qml'; find src -name '*.cpp'; } | sort > "${PODIR}/sourcefiles.list"
+# All QML under package/: the shared UI, the settings sidebars (contents/config)
+# and the standalone daemon's settings window.
+{ find package -name '*.qml'; find src -name '*.cpp'; } | sort > "${PODIR}/sourcefiles.list"
 
 # Run xgettext to extract strings into the .pot template.
 # Additional -k flags for domain-aware i18nd/i18ndc variants used in this project.

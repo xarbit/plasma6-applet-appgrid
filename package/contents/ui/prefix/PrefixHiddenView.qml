@@ -142,6 +142,7 @@ ColumnLayout {
                     PlasmaComponents.ToolButton {
                         icon.name: "view-visible"
                         PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Unhide")
+                        Accessible.name: PlasmaComponents.ToolTip.text
                         PlasmaComponents.ToolTip.visible: hovered
                         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
                         onClicked: hiddenView.appsModel.unhideApp(modelData)
@@ -155,7 +156,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.topMargin: Kirigami.Units.largeSpacing
         visible: hiddenView.hiddenApps.length > 0
-        text: i18nd("dev.xarbit.appgrid", "%1 hidden application(s)", hiddenView.hiddenApps.length)
+        text: i18ndp("dev.xarbit.appgrid", "%1 hidden application", "%1 hidden applications", hiddenView.hiddenApps.length)
         font: Kirigami.Theme.smallFont
         opacity: 0.35
         horizontalAlignment: Text.AlignHCenter

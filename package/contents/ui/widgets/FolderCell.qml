@@ -43,6 +43,11 @@ Item {
     signal clicked()
     signal contextRequested()
 
+    // Read out like an app tile: a button named after the folder.
+    Accessible.role: Accessible.Button
+    Accessible.name: i18ndc("dev.xarbit.appgrid", "@info accessible name of a favourites folder tile; %1 is the folder name", "Folder %1", root.folderName)
+    Accessible.focusable: true
+
     function _beginDrag(handler) {
         if (!dragSource)
             return

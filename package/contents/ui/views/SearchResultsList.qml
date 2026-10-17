@@ -221,7 +221,7 @@ ListView {
         PlasmaComponents.Label {
             id: badgeLabel
             anchors.centerIn: parent
-            text: "Alt+" + parent.number
+            text: i18ndc("dev.xarbit.appgrid", "@label keyboard shortcut; %1 is a digit", "Alt+%1", parent.number)
             font.bold: true
             font.pointSize: Kirigami.Theme.smallFont.pointSize
             opacity: 0.7
@@ -254,7 +254,9 @@ ListView {
             ? Kirigami.Theme.highlightedTextColor
             : Kirigami.Theme.textColor
 
-        Accessible.name: (model.shortcutNumber > 0 ? "Alt+" + model.shortcutNumber + ": " : "") + (model.name || "")
+        Accessible.name: (model.shortcutNumber > 0
+                          ? i18ndc("dev.xarbit.appgrid", "@label keyboard shortcut; %1 is a digit", "Alt+%1", model.shortcutNumber) + ": "
+                          : "") + (model.name || "")
                          + (resultDelegate.itemHidden ? ", " + i18nd("dev.xarbit.appgrid", "hidden") : "")
         Accessible.role: Accessible.Button
         Accessible.description: model.subtext || ""
@@ -402,6 +404,7 @@ ListView {
                     PlasmaComponents.ToolTip.text: resultDelegate.isFavorite
                         ? i18nd("dev.xarbit.appgrid", "Remove from Favorites")
                         : i18nd("dev.xarbit.appgrid", "Add to Favorites")
+                    Accessible.name: PlasmaComponents.ToolTip.text
                     PlasmaComponents.ToolTip.visible: hovered
                     PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
                     onClicked: {
@@ -424,6 +427,7 @@ ListView {
                              || (model.runnerActionsCount || 0) > 0
                     icon.name: "overflow-menu"
                     PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "More options")
+                    Accessible.name: PlasmaComponents.ToolTip.text
                     PlasmaComponents.ToolTip.visible: hovered
                     PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
                     onClicked: {

@@ -131,6 +131,7 @@ ColumnLayout {
                             display: QQC2.AbstractButton.IconOnly
                             onClicked: root._remove(actionRow.index)
                             QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Remove action")
+                            Accessible.name: QQC2.ToolTip.text
                             QQC2.ToolTip.visible: hovered
                             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                         }

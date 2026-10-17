@@ -108,6 +108,7 @@ ColumnLayout {
                 icon.name: "documentinfo"
                 display: QQC2.AbstractButton.IconOnly
                 QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Not available on this system, so the launcher hides it automatically.")
+                Accessible.name: QQC2.ToolTip.text
                 QQC2.ToolTip.visible: hovered
                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
@@ -124,6 +125,7 @@ ColumnLayout {
                 enabled: actionRow.index > 0
                 onClicked: root._move(actionRow.index, actionRow.index - 1)
                 QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Move up")
+                Accessible.name: QQC2.ToolTip.text
                 QQC2.ToolTip.visible: hovered
                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
@@ -133,6 +135,7 @@ ColumnLayout {
                 enabled: actionRow.index < actionModel.count - 1
                 onClicked: root._move(actionRow.index, actionRow.index + 1)
                 QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Move down")
+                Accessible.name: QQC2.ToolTip.text
                 QQC2.ToolTip.visible: hovered
                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }

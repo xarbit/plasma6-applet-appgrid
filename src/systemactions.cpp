@@ -15,9 +15,11 @@
 #include <KConfigGroup>
 #include <KDesktopFile>
 #include <KIO/CommandLauncherJob>
+#include <KLocalizedString>
 #include <KOSRelease>
 #include <KService>
 #include <KSharedConfig>
+#include <KShell>
 #include <KTerminalLauncherJob>
 #include <KWindowSystem>
 #include <QDebug>
@@ -125,9 +127,12 @@ void SystemActions::runInTerminal(const QString &command, const QString &shell)
 
     const QString sh = validatedShell(shell);
 
-    // Wrap command so the terminal stays open after it finishes.
-    const QString wrapped = QStringLiteral("%1 -c '%2; echo; echo \"[Press Enter to close]\"; read _'")
-                                .arg(sh, QString(command).replace(QLatin1Char('\''), QStringLiteral("'\"'\"'")));
+    // Wrap the command so the terminal stays open after it finishes. The
+    // prompt goes in as an argument ($1), so a translation can hold any
+    // character without breaking the script.
+    const QString script = command + QStringLiteral("; echo; printf '%s\\n' \"$1\"; read _");
+    const QString prompt = i18nc("@info shown in a terminal after a command finished", "[Press Enter to close]");
+    const QString wrapped = KShell::joinArgs({sh, QStringLiteral("-c"), script, QStringLiteral("appgrid"), prompt});
 
     AppLauncher::start(new KTerminalLauncherJob(wrapped));
 }

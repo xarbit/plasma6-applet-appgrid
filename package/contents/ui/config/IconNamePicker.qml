@@ -30,6 +30,7 @@ QQC2.Button {
     onClicked: iconDialog.open()
 
     QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Choose icon (%1)", root.iconName || root.fallbackIcon)
+    Accessible.name: QQC2.ToolTip.text
     QQC2.ToolTip.visible: hovered
     QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
 
