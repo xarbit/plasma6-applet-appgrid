@@ -9,7 +9,7 @@ Build-Depends: debhelper-compat (= 13),
  g++,
  qt6-base-dev,
  qt6-declarative-dev,
- libplasma-dev,
+ libplasma-dev (>= 6.8),
  libkf6package-dev,
  libkf6kio-dev,
  libkf6service-dev,
@@ -34,7 +34,7 @@ Package: plasma-applet-appgrid
 Architecture: any
 Depends: ${shlibs:Depends},
  ${misc:Depends},
- plasma-workspace,
+ plasma-workspace (>= 6.8),
  plasma-desktop
 Description: modern application launcher for KDE Plasma
  AppGrid is a grid-style application launcher for KDE Plasma 6. It

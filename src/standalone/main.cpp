@@ -17,11 +17,7 @@
 
 #include <KAboutData>
 #include <KConfigSkeleton>
-#ifdef HAVE_KLOCALIZEDQMLCONTEXT
 #include <KLocalizedQmlContext>
-#else
-#include <KLocalizedContext>
-#endif
 #include <KLocalizedString>
 
 #include <QApplication>
@@ -122,14 +118,9 @@ private:
     void load()
     {
         m_engine = new QQmlApplicationEngine;
-#ifdef HAVE_KLOCALIZEDQMLCONTEXT
-        // KI18n >= 6.8: KLocalizedContext is deprecated; setupLocalizedContext
-        // sets it as the root context object (and honours the TRANSLATION_DOMAIN
-        // macro, which the standalone target defines).
+        // Sets the localized context as the root context object (and honours
+        // the TRANSLATION_DOMAIN macro, which the standalone target defines).
         KLocalization::setupLocalizedContext(m_engine);
-#else
-        m_engine->rootContext()->setContextObject(new KLocalizedContext(m_engine));
-#endif
         // Fail-loud contract: ConfigWindow.qml declares these `required`, so a
         // missing injection errors at load instead of silently undefined (#6).
         m_engine->setInitialProperties({
@@ -358,11 +349,7 @@ int main(int argc, char *argv[])
     // property below. Without these the reused plasmoid QML renders unthemed
     // and half-broken. Same pattern as SettingsWindow, so no Plasma version gate.
     QQmlEngine engine;
-#ifdef HAVE_KLOCALIZEDQMLCONTEXT
     KLocalization::setupLocalizedContext(&engine);
-#else
-    engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
-#endif
     // Make Kirigami.Theme source its colours from Plasma::Theme (the active
     // Plasma Style), so text follows the Plasma desktop theme like the plasmoid
     // and KRunner — not the kdeglobals colour scheme (which may be a light scheme

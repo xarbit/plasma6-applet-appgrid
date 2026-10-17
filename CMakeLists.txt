@@ -112,6 +112,11 @@ message(STATUS "AppGrid version string: ${APPGRID_VERSION_STRING}")
 # (KActivities agent id) — see src/appgridconstants.h.
 set(APPGRID_APP_ID "dev.xarbit.appgrid")
 
+# 2.0 targets Plasma 6.8+ (Wayland-only); KF6 6.30 is what Plasma 6.8 requires.
+# The 1.9.x maintenance line keeps supporting older Plasma 6 releases.
+set(KF6_MIN_VERSION 6.30)
+set(PLASMA_MIN_VERSION 6.8)
+
 find_package(Qt6 REQUIRED COMPONENTS Quick Gui DBus)
 # Widgets + QuickControls2 are needed only by the standalone executable (KDE
 # platform palette + the org.kde.desktop Controls style); the plasmoid gets
@@ -123,11 +128,6 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS ColorScheme)
 if(APPGRID_UNIVERSAL_BUILD)
     find_package(Qt6 REQUIRED COMPONENTS Network)
 endif()
-# KF6 floor matches the oldest Plasma 6 desktop we still ship for
-# (Plasma 6.0 → KF6 6.0). Newer APIs must be gated behind explicit
-# version checks rather than raising this minimum.
-set(KF6_MIN_VERSION 6.0)
-set(PLASMA_MIN_VERSION 6.0)
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     Config
     CoreAddons
@@ -139,39 +139,8 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     Svg
     WindowSystem
 )
-find_package(LayerShellQt REQUIRED)
-# LayerShellQt::Window::setScreen() pins the layer surface to a specific output
-# (multi-monitor positioning). It is newer API — missing on e.g. Ubuntu 25.10's
-# LayerShellQt — so detect it and fall back to QWindow::setScreen() where absent.
-include(CheckCXXSourceCompiles)
-include(CMakePushCheckState)
-cmake_push_check_state()
-set(CMAKE_REQUIRED_LIBRARIES LayerShellQt::Interface)
-check_cxx_source_compiles("
-#include <LayerShellQt/Window>
-int main() { LayerShellQt::Window::get(nullptr)->setScreen(nullptr); return 0; }
-" HAVE_LAYERSHELLQT_SETSCREEN)
-cmake_pop_check_state()
-if(HAVE_LAYERSHELLQT_SETSCREEN)
-    add_compile_definitions(HAVE_LAYERSHELLQT_SETSCREEN)
-endif()
-# KLocalizedContext is deprecated since KI18n 6.8 in favour of
-# KLocalization::setupLocalizedContext() (KLocalizedQmlContext, KF6::I18nQml).
-# The KF6 floor is 6.0, so gate the standalone's use of it behind the same
-# compile-check pattern as the LayerShellQt::setScreen() API above, letting
-# older KF6 keep the deprecated class without failing the strict CI gate.
-include(CheckCXXSourceCompiles)
-include(CMakePushCheckState)
-cmake_push_check_state()
-set(CMAKE_REQUIRED_LIBRARIES KF6::I18nQml Qt6::Qml)
-check_cxx_source_compiles("
-#include <KLocalizedQmlContext>
-int main() { KLocalization::setupLocalizedContext(nullptr); return 0; }
-" HAVE_KLOCALIZEDQMLCONTEXT)
-cmake_pop_check_state()
-if(HAVE_KLOCALIZEDQMLCONTEXT)
-    add_compile_definitions(HAVE_KLOCALIZEDQMLCONTEXT)
-endif()
+# LayerShellQt is versioned with Plasma.
+find_package(LayerShellQt ${PLASMA_MIN_VERSION} REQUIRED)
 find_package(Plasma ${PLASMA_MIN_VERSION} REQUIRED)
 find_package(PlasmaQuick ${PLASMA_MIN_VERSION} REQUIRED)
 # Write-side: KActivities::ResourceInstance::notifyAccessed broadcasts AppGrid

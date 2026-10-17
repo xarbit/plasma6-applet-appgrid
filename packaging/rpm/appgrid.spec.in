@@ -27,7 +27,7 @@ BuildRequires:  gcc-c++
 BuildRequires:  gettext
 BuildRequires:  qt6-qtbase-devel
 BuildRequires:  qt6-qtdeclarative-devel
-BuildRequires:  libplasma-devel
+BuildRequires:  libplasma-devel >= 6.8
 BuildRequires:  kf6-kpackage-devel
 BuildRequires:  kf6-kio-devel
 BuildRequires:  kf6-kservice-devel
@@ -47,7 +47,7 @@ BuildRequires:  appstream-qt-devel
 # Provides the _userunitdir macro used for the systemd user unit below.
 BuildRequires:  systemd-rpm-macros
 
-Requires:       plasma-workspace
+Requires:       plasma-workspace >= 6.8
 Requires:       plasma-desktop
 Requires:       kf6-kiconthemes
 Requires:       kf6-ksvg

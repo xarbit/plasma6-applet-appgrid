@@ -47,7 +47,7 @@ If you maintain an AppGrid package for a distro not listed here, open an issue a
 
 ### Build from source
 
-Requires Plasma 6.0+ (6.4+ recommended) and the KDE Frameworks 6 development headers — see [`PKGBUILD`](PKGBUILD) for the Arch list, or [`packaging/`](packaging/) for the Fedora spec and Ubuntu `debian/` packaging.
+Requires Plasma 6.8+ (Wayland) and the KDE Frameworks 6 development headers; for older Plasma 6 releases, use AppGrid 1.9.x — see [`PKGBUILD`](PKGBUILD) for the Arch list, or [`packaging/`](packaging/) for the Fedora spec and Ubuntu `debian/` packaging.
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr

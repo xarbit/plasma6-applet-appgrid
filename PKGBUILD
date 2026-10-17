@@ -12,7 +12,7 @@ replaces=('appgrid')
 options=('!debug' 'lto')
 install='packaging/aur/plasma6-applets-appgrid.install'
 depends=(
-    'plasma-workspace'
+    'plasma-workspace>=6.8'
     'kservice'
     'ki18n'
     'kiconthemes'
@@ -25,7 +25,7 @@ makedepends=(
     'extra-cmake-modules'
     'qt6-base'
     'qt6-declarative'
-    'libplasma'
+    'libplasma>=6.8'
     'kpackage'
     'kio'
     'kcoreaddons'

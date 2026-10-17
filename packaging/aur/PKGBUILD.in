@@ -13,7 +13,7 @@ url="https://appgrid.xarbit.dev"
 license=('GPL-2.0-or-later')
 install='plasma6-applets-appgrid.install'
 depends=(
-    'plasma-workspace'
+    'plasma-workspace>=6.8'
     'kservice'
     'layer-shell-qt'
     'qt6-base'
@@ -32,7 +32,7 @@ depends=(
     'kconfig'
     'kwindowsystem'
     'kcmutils'
-    'libplasma'
+    'libplasma>=6.8'
     'plasma-activities-stats'
     'appstream-qt'
 )
