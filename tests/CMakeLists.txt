@@ -65,6 +65,10 @@ appgrid_add_test(test_favoriteid ${CMAKE_SOURCE_DIR}/src/favoriteid.cpp)
 # Regression test for issues #86 (icon file change on disk) and #103
 # (system theme switch). Both flow through KIconLoader::iconChanged.
 appgrid_add_test(test_appmodel)
+# Settings key parity: every key a settings page uses has a cfg_ alias in its
+# plasmoid wrapper and a main.xml entry. Reads the QML sources directly.
+appgrid_add_test(test_configkeys)
+target_compile_definitions(test_configkeys PRIVATE APPGRID_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 # Pure helpers extracted from AppGridPlugin — no Plasma deps, so a light
 # standalone target instead of the model-heavy appgrid_add_test().

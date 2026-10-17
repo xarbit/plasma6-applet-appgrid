@@ -35,6 +35,7 @@ KCM.SimpleKCM {
     property alias cfg_hideEmptyCategories: buffer.hideEmptyCategories
     property alias cfg_openCategoryOnHover: buffer.openCategoryOnHover
     property alias cfg_openOnActiveScreen: buffer.openOnActiveScreen
+    property alias cfg_enableActivities: buffer.enableActivities
     property alias cfg_verticalOffset: buffer.verticalOffset
     property alias cfg_terminalShell: buffer.terminalShell
     property alias cfg_checkForUpdates: buffer.checkForUpdates
@@ -60,6 +61,7 @@ KCM.SimpleKCM {
         property bool hideEmptyCategories
         property bool openCategoryOnHover
         property bool openOnActiveScreen
+        property bool enableActivities
         property int verticalOffset
         property string terminalShell
         property bool checkForUpdates
