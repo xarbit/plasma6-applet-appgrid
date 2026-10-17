@@ -62,8 +62,8 @@ QSet<QString> keysUsedBy(const QString &pageFile, bool writesOnly)
         if (type == QFileInfo(pageFile).completeBaseName()) {
             continue;
         }
-        const QRegularExpression useRe(QStringLiteral("\\b%1\\s*\\{").arg(type));
-        if (useRe.match(page).hasMatch()) {
+        const QRegularExpression instanceRe(QStringLiteral("\\b%1\\s*\\{").arg(type));
+        if (instanceRe.match(page).hasMatch()) {
             keys.unite(matches(readFile(kConfigDir + QLatin1Char('/') + helper), keyRe));
         }
     }

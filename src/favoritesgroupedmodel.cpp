@@ -7,6 +7,8 @@
 
 #include "pluginhelpers.h"
 
+#include <utility>
+
 using namespace FavoritesFolderLogic;
 
 FavoritesGroupedModel::FavoritesGroupedModel(QObject *parent)
@@ -381,8 +383,8 @@ void FavoritesGroupedModel::syncRowSources()
     QList<RowSource> sources;
     [[maybe_unused]] const QList<Row> rows = buildRows(sources);
     // A live move must leave exactly the rows a rebuild would produce.
-    Q_ASSERT(rows == AbstractGroupedModel::rows());
-    m_rowSources = sources;
+    Q_ASSERT(rows == visibleRows());
+    m_rowSources = std::move(sources);
 }
 
 void FavoritesGroupedModel::rebuildRows()
@@ -399,6 +401,6 @@ void FavoritesGroupedModel::rebuildRows()
     }
     QList<RowSource> sources;
     const QList<Row> rows = buildRows(sources);
-    m_rowSources = sources;
+    m_rowSources = std::move(sources);
     setRows(rows);
 }

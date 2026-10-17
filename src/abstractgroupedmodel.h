@@ -94,7 +94,7 @@ protected:
     void moveRowAt(int from, int to);
 
     /** The current visible rows. */
-    [[nodiscard]] const QList<Row> &rows() const
+    [[nodiscard]] const QList<Row> &visibleRows() const
     {
         return m_rows;
     }
