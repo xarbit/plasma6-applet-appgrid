@@ -453,15 +453,6 @@ Item {
         appGridPane.reset()
         searchResultsList.resetView()
         categoryGridView.resetView()
-        // Clear all navigation so the next open starts clean (the tab and filter
-        // went back to the start in _applyStartState): the menu tree back to
-        // all-categories, and any open favourites folder closed (#18).
-        if (categoryFolders && plasmoidBridge && plasmoidBridge.menuTreeModel)
-            plasmoidBridge.menuTreeModel.setRootPath("")
-        if (favoritesGroupedModel)
-            favoritesGroupedModel.resetToRoot()
-        // Clear the drill views' scroll + nav memory so the next open doesn't flash
-        // the last folder before snapping back.
         menuFolderView.reset()
     }
 
@@ -642,17 +633,10 @@ Item {
             onCategorySelected: function(name) {
                 viewState.selectCategory(name)
                 searchBar.field.forceActiveFocus()
-                if (panel.categoryFolders) {
-                    const menuModel = panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
-                    if (menuModel)
-                        menuModel.setRootPath(name !== "" && panel.appsModel
-                                              ? panel.appsModel.categoryMenuPath(name) : "")
-                } else if (panel.isSortByCategory) {
-                    if (name !== "")
-                        Qt.callLater(function() { categoryGridView.scrollToCategory(name) })
-                    else
-                        categoryGridView.resetView()
-                }
+                const view = panel.categoryFolders ? menuFolderView
+                           : panel.isSortByCategory ? categoryGridView : null
+                if (view)
+                    view.showCategory(name)
             }
         }
 

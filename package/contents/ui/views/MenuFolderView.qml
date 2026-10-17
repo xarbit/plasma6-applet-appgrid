@@ -38,12 +38,22 @@ Item {
 
     // Drill selection + the canGoBack mirror, shared with the favourites grid.
     readonly property alias canGoBack: nav.canGoBack
+    // The category bar picked @p name: root the tree at its menu folder, or at
+    // all categories for All ("").
+    function showCategory(name) {
+        if (!menuModel)
+            return
+        const appsModel = host.appsModel
+        menuModel.setRootPath(name !== "" && appsModel ? appsModel.categoryMenuPath(name) : "")
+    }
     function enterFromSearch() { menuGrid.enterFromSearch() }
     function activateCurrent() { menuGrid.activateCurrent() }
-    function resetToRoot() { if (menuModel) menuModel.resetToRoot() }
-    // Full reset for close: clears the grid scroll/selection + nav memory (the
-    // model floor is reset separately via setRootPath).
-    function reset() { nav.reset() }
+    // Back to the just-opened state: the tree at all categories, and the
+    // navigation's memory cleared so the last folder doesn't flash on open.
+    function reset() {
+        showCategory("")
+        nav.reset()
+    }
 
     DrillNavigator {
         id: nav

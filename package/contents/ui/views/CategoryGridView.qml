@@ -152,6 +152,15 @@ ListView {
             positionViewAtIndex(row, ListView.Contain)
     }
 
+    // The category bar picked @p name: scroll to its section, or back to the
+    // top for All ("").
+    function showCategory(name) {
+        if (name !== "")
+            Qt.callLater(function() { categoryGrid.scrollToCategory(name) })
+        else
+            resetView()
+    }
+
     // Enter the grid from the search field (Down / Tab): focus it, keeping
     // the cursor where it was if it has one.
     function enterFromSearch() {

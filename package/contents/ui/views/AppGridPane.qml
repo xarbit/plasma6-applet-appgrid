@@ -35,9 +35,11 @@ ColumnLayout {
     signal folderContextMenuRequested(string folderId)
     signal emptyAreaContextMenuRequested()
 
-    // Back to the just-opened state: the grid's scroll, cursor and
-    // selection, and the folder navigation's memory.
+    // Back to the just-opened state: out of any favourites folder (#18), and
+    // the grid's scroll, cursor and selection and the navigation's memory.
     function reset() {
+        if (favoritesGroupedModel)
+            favoritesGroupedModel.resetToRoot()
         appGrid.resetView()
         nav.reset()
     }
