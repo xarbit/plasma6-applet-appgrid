@@ -103,7 +103,17 @@ Item {
     // search list on the unfiltered apps, or rebuilt the grid from the stale
     // search results before the restored filter landed.
     readonly property bool _searchApplied: _appliedSearchText.length > 0
-    readonly property bool isFavoritesActive: categoryBar.favoritesActive
+    readonly property bool isFavoritesActive: viewState.favorites
+
+    // The selected tab and the applied search; the apps model's filter
+    // follows from them (see ViewState).
+    ViewState {
+        id: viewState
+        appsModel: panel.appsModel
+        searchAll: cfg.searchAll
+        isPrefixMode: panel.isPrefixMode
+        categoryFilters: !panel.categoryFolders && !panel.isSortByCategory
+    }
 
     VisibilityState {
         id: visibility
@@ -116,7 +126,7 @@ Item {
         isSortByCategory: panel.isSortByCategory
         categoryFolders: panel.categoryFolders
         // A specific category tab is selected → fold that category in any sort.
-        categoryFiltered: categoryBar.selectedCategory.length > 0
+        categoryFiltered: viewState.category.length > 0
     }
 
     // Folder tree needs the kmenuedit hierarchy, which only exists in system
@@ -177,7 +187,7 @@ Item {
     property string _pendingSearchText: ""
     property string _appliedSearchText: ""
     function _applySearchText() {
-        searchSession.update(panel._pendingSearchText)
+        viewState.setSearchText(panel._pendingSearchText)
         panel._appliedSearchText = panel._pendingSearchText
     }
 
@@ -491,21 +501,13 @@ Item {
     // the value is unchanged — so it's safe to run on open too: it reflects a
     // config change made while closed without refreshing when nothing changed.
     function _applyStartState() {
-        const startFav = cfgShowCategoryBar && cfgStartWithFavorites
-        categoryBar.favoritesActive = startFav
-        categoryBar.selectedCategory = ""
-        if (appsModel) {
-            appsModel.searchText = ""
-            appsModel.filterCategory = ""
-            appsModel.showFavoritesOnly = startFav
-        }
+        viewState.reset(cfgShowCategoryBar && cfgStartWithFavorites)
     }
 
     // Pure UI-state reset (scroll, selection, category view). Close-only: running
     // it on open would visibly jump the grid as the popup appears.
     function _resetGridUiState() {
         categoryBar.altHeld = false
-        categoryBar.selectedCategory = ""
         appGrid.clearShuffles()
         appGrid.clearSelection()
         appGrid.contentY = appGrid.originY
@@ -514,11 +516,9 @@ Item {
         searchResultsList.contentY = searchResultsList.originY
         searchResultsList.currentIndex = 0
         categoryGridView.resetView()
-        // Clear all navigation so the next open starts clean: category filter back
-        // to All, the menu tree back to all-categories, and any open favourites
-        // folder closed.
-        if (appsModel)
-            appsModel.filterCategory = ""
+        // Clear all navigation so the next open starts clean (the tab and filter
+        // went back to the start in _applyStartState): the menu tree back to
+        // all-categories, and any open favourites folder closed.
         if (categoryFolders && plasmoidBridge && plasmoidBridge.menuTreeModel)
             plasmoidBridge.menuTreeModel.setRootPath("")
         if (favoritesGroupedModel)
@@ -834,43 +834,31 @@ Item {
             displayMode: cfg.categoryBarDisplay
             hideEmptyCategories: cfg.hideEmptyCategories
             openOnHover: cfg.openCategoryOnHover
+            // The bar shows the view state and asks to change it. Leaving
+            // favourites goes through categorySelected (All or a category), so
+            // the scroll/reset of the sections grid happens once there.
+            favoritesActive: viewState.favorites
+            selectedCategory: viewState.category
             onFavoritesToggled: function(active) {
-                // Update model state BEFORE UI state so bindings see the
-                // correct proxy data when showCategoryGrid re-evaluates. Leaving
-                // favourites is always paired with a categorySelected (All or a
-                // category), so the scroll/reset of the sections grid happens once
-                // there — no resetView here, which would scroll to the top first.
-                if (panel.appsModel) {
-                    panel.appsModel.showFavoritesOnly = active
-                    panel.appsModel.filterCategory = ""
-                }
-                categoryBar.favoritesActive = active
+                viewState.selectFavorites(active)
                 searchBar.field.forceActiveFocus()
             }
-            // The bar tracks the selection (categoryBar.selectedCategory); the view
-            // reacts to it here — one feature across all sorts: folders root the
-            // tree, By Category scrolls to the section, flat sorts filter the grid.
+            // One feature across all sorts: flat sorts filter the grid (the view
+            // state does that), folders root the tree, By Category scrolls to the
+            // section.
             onCategorySelected: function(name) {
+                viewState.selectCategory(name)
                 searchBar.field.forceActiveFocus()
                 if (panel.categoryFolders) {
                     const menuModel = panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
                     if (menuModel)
                         menuModel.setRootPath(name !== "" && panel.appsModel
                                               ? panel.appsModel.categoryMenuPath(name) : "")
-                    if (panel.appsModel)
-                        panel.appsModel.filterCategory = ""
                 } else if (panel.isSortByCategory) {
-                    // Sections: scroll to the category, never filter (the grid shows
-                    // every section).
-                    if (panel.appsModel)
-                        panel.appsModel.filterCategory = ""
                     if (name !== "")
                         Qt.callLater(function() { categoryGridView.scrollToCategory(name) })
                     else
                         categoryGridView.resetView()
-                } else if (panel.appsModel) {
-                    // Flat sort: filter the grid to the selected category.
-                    panel.appsModel.filterCategory = name
                 }
             }
         }
@@ -1161,14 +1149,6 @@ Item {
     }
 
     SessionActions { id: sessionActions }
-
-    SearchSessionManager {
-        id: searchSession
-        appsModel: panel.appsModel
-        categoryBar: categoryBar
-        searchAll: cfg.searchAll
-        isPrefixMode: panel.isPrefixMode
-    }
 
     AppContextMenu {
         id: contextMenu

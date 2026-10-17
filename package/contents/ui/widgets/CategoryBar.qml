@@ -97,11 +97,12 @@ RowLayout {
 
     // Set when sort mode is By Category
     property bool isSortByCategory: false
-    // The single selected category (empty = All), the same in every view. The bar
-    // only tracks + navigates it; the host decides what selecting it does (filter
-    // the grid, scroll to a section, or root the folder tree). One source of truth
-    // so the tab highlight, Alt+arrow stepping and scroll-into-view behave
-    // identically regardless of sort. (#201)
+    // The selected tab, bound by the host from its view state: the bar only shows
+    // and navigates it, and asks for a change through favoritesToggled /
+    // categorySelected. The host decides what selecting a category does (filter
+    // the grid, scroll to a section, or root the folder tree), so the tab
+    // highlight, Alt+arrow stepping and scroll-into-view behave identically
+    // regardless of sort. (#201)
     property string selectedCategory: ""
 
     property bool hideEmptyCategories: true
@@ -199,9 +200,6 @@ RowLayout {
     function resetScroll() { _setContentX(0) }
 
     function selectAll() {
-        if (categoryBar.favoritesActive)
-            categoryBar.favoritesToggled(false)
-        selectedCategory = ""
         categorySelected("")
     }
 
@@ -214,9 +212,6 @@ RowLayout {
     }
 
     function selectCategory(name) {
-        if (categoryBar.favoritesActive)
-            categoryBar.favoritesToggled(false)
-        selectedCategory = name
         categorySelected(name)
     }
 
