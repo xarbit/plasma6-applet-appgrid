@@ -14,9 +14,15 @@
 
 #include <QDebug>
 
+#ifdef __GLIBC__
+#include <malloc.h>
+#endif
+
 namespace AppStreamResolver
 {
-QString resolve(const QString &desktopId)
+namespace
+{
+QString lookUp(const QString &desktopId)
 {
     // A pool local to this lookup: Kicker keeps a process-global pool resident for
     // the whole session, but AppGrid is a long-lived daemon and this action is
@@ -37,5 +43,20 @@ QString resolve(const QString &desktopId)
         }
     }
     return {};
+}
+}
+
+QString resolve(const QString &desktopId)
+{
+    const QString id = lookUp(desktopId);
+    // When the catalogs changed since the user's AppStream cache was written
+    // (a Flatpak remote refreshed, an app installed), load() recompiles that
+    // cache in our process: a few hundred MB of heap that the pool frees on
+    // return, but that glibc keeps in the daemon's footprint until trimmed.
+    // With a current cache there is little to give back.
+#ifdef __GLIBC__
+    malloc_trim(0);
+#endif
+    return id;
 }
 }
