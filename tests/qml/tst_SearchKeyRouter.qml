@@ -104,6 +104,27 @@ TestCase {
         compare(calls.length, 2, "other prefix views keep their own keys")
     }
 
+    // Each key first flushes the search still pending, then routes on its
+    // results: here the flush shows the results, so Enter launches one.
+    QtObject {
+        id: pipelineStub
+        property var router: null
+        function flush() {
+            testCase.calls.push("flush")
+            router.resultsShown = true
+        }
+    }
+    function test_keysFlushThePendingSearchFirst() {
+        var r = make({ pipeline: pipelineStub, searching: true })
+        pipelineStub.router = r
+        r.accept()
+        compare(calls[0], "flush")
+        compare(launchSpy.count, 1, "routed to the results the flush showed")
+        calls = []
+        r.moveDown(); r.tab(); r.pageDown(); r.altNumber(1)
+        compare(calls.filter(c => c === "flush").length, 4)
+    }
+
     function test_compactGridRevealsAndCollapses() {
         var r = make({ collapsible: true, collapsed: true })
         r.moveDown()

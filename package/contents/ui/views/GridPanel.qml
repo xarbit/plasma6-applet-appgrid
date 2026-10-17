@@ -235,6 +235,7 @@ Item {
     // or the prefix mode's view.
     SearchKeyRouter {
         id: searchKeys
+        pipeline: searchPipeline
         results: searchResultsList
         keyView: panel.activeKeyView
         prefixView: prefixModeLoader.item

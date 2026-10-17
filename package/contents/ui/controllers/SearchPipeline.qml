@@ -53,6 +53,15 @@ QtObject {
         }
     }
 
+    // Filter the grid with the latest text now, if that is still pending. A
+    // key that acts on the results (Enter, Down, …) can arrive in the same
+    // batch of input events as the last keystroke, before the deferred pass;
+    // it calls this first so it acts on the results of what was typed.
+    function flush() {
+        if (viewState && viewState.searchText !== text)
+            _applyToGrid()
+    }
+
     function _runnerSearching() {
         return text.length > 0 && !isPrefixMode && useExtraRunners
     }

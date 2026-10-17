@@ -114,7 +114,14 @@ TestCase {
         property string queryString: ""
     }
 
-    function make() {
+    // A search result list with one app, for the Enter tests.
+    ListModel {
+        id: searchResultsStub
+        ListElement { resultType: "app"; sourceIndex: 0; name: "Kate"; iconName: "kate"; subtext: ""; category: ""; storageId: "stub-0"; desktopFile: ""; isNew: false; isHidden: false; shortcutNumber: 1; isSectionBoundary: false; installSource: ""; runnerActionsCount: 0; isRunnerAction: false; multiLine: false }
+        function iconNameAt(i) { return get(i).iconName }
+    }
+
+    function make(searchModel) {
         var c = Qt.createComponent("../../package/contents/ui/views/GridPanel.qml")
         verify(c.status === Component.Ready, "GridPanel load error: " + c.errorString())
         var bridgeStub = ({
@@ -137,7 +144,7 @@ TestCase {
                 listDirectory: function(path) { return [] }
             }),
             appsModel: appsModelStub,
-            searchModel: searchModelStub,
+            searchModel: searchModel || searchModelStub,
             runnerSourceModel: runnerStub,
             isUniversalBuild: false
         })
@@ -235,6 +242,36 @@ TestCase {
         bar.text = "fi"
         p.resetState()
         compare(bar.text, "")
+        p.destroy()
+    }
+
+    // Enter after the results show launches the top result.
+    function test_enterLaunchesTheTopResult() {
+        testCase.launchedSids = []
+        appsModelStub.searchText = ""
+        var p = make(searchResultsStub)
+        var bar = findChild(p, "searchBar")
+        bar.text = "kate"
+        tryCompare(p, "showSearchResults", true)
+        bar.accepted()
+        compare(testCase.launchedSids.join(","), "stub-0")
+        p.destroy()
+    }
+
+    // Enter pressed in the same event-loop turn as the last keystroke (a fast
+    // typist, or keys sent in bulk): the Return key event is handled before
+    // the deferred search pass. The Enter flushes that pass first and launches
+    // the top result, rather than going to the grid and being dropped.
+    function test_enterRightAfterTypingIsNotLost() {
+        testCase.launchedSids = []
+        appsModelStub.searchText = ""
+        var p = make(searchResultsStub)
+        var bar = findChild(p, "searchBar")
+        bar.text = "kate"
+        verify(!p.showSearchResults, "the search pass hasn't run yet")
+        bar.accepted()
+        compare(testCase.launchedSids.join(","), "stub-0", "the early Enter launched the top result")
+        verify(p.showSearchResults)
         p.destroy()
     }
 

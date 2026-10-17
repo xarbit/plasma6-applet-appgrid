@@ -35,12 +35,22 @@ QtObject {
     property bool collapsed: false
     property bool revealed: false
 
+    // The SearchPipeline: each key first flushes the search still pending, so
+    // it acts on the results of what was typed.
+    property var pipeline: null
+
     signal launchResultRequested(int index)
     // A t: (inTerminal) or : command to run.
     signal runRequested(bool inTerminal)
     signal revealRequested(bool revealed)
 
+    function _flush() {
+        if (pipeline)
+            pipeline.flush()
+    }
+
     function accept() {
+        _flush()
         if (prefixMode === PrefixModes.TERMINAL || prefixMode === PrefixModes.COMMAND) {
             runRequested(prefixMode === PrefixModes.TERMINAL)
         } else if (prefixMode === PrefixModes.FILES) {
@@ -57,6 +67,7 @@ QtObject {
     }
 
     function moveDown() {
+        _flush()
         if (prefixMode === PrefixModes.FILES) {
             if (prefixView)
                 prefixView.focusFileList()
@@ -70,21 +81,23 @@ QtObject {
     }
 
     function moveUp() {
+        _flush()
         if (resultsShown)
             _step(-1, false)
         else if (collapsible && revealed && !searching)
             revealRequested(false)
     }
 
-    function tab() { _step(1, true) }
+    function tab() { _flush(); _step(1, true) }
 
-    function pageUp() { if (resultsShown) results.pageUp() }
-    function pageDown() { if (resultsShown) results.pageDown() }
-    function home() { if (resultsShown) results.goHome() }
-    function end() { if (resultsShown) results.goEnd() }
+    function pageUp() { _flush(); if (resultsShown) results.pageUp() }
+    function pageDown() { _flush(); if (resultsShown) results.pageDown() }
+    function home() { _flush(); if (resultsShown) results.goHome() }
+    function end() { _flush(); if (resultsShown) results.goEnd() }
 
     // Alt+1..9 launches that search result.
     function altNumber(number) {
+        _flush()
         if (resultsShown && results && number >= 1 && number <= results.count)
             launchResultRequested(number - 1)
     }
