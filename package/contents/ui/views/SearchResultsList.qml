@@ -5,7 +5,7 @@
     Unified search results list — renders app results and KRunner results
     in a single ListView with continuous keyboard navigation. Sections are
     grouped under Kirigami.ListSectionHeader with per-section counts; the
-    list shows a Kirigami.PlaceholderMessage when a search returns nothing.
+    list shows an EmptyStateMessage when a search returns nothing.
 */
 
 import QtQuick
@@ -209,14 +209,14 @@ ListView {
         }
     }
 
-    Kirigami.PlaceholderMessage {
+    EmptyStateMessage {
         anchors.centerIn: parent
         width: parent.width - Kirigami.Units.gridUnit * 4
-        icon.name: "system-search-symbolic"
+        visible: listView.count === 0 && searchField && searchField.text.length > 0
+        iconSource: "system-search-symbolic"
         text: searchField && searchField.text.length > 0
               ? i18nd("dev.xarbit.appgrid", "No results for \"%1\"", searchField.text)
               : ""
-        visible: listView.count === 0 && searchField && searchField.text.length > 0
     }
 
     delegate: PlasmaComponents.ItemDelegate {

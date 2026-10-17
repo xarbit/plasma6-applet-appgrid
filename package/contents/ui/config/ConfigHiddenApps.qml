@@ -11,6 +11,7 @@ import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
+import "../widgets"
 import "../js/constants.js" as Const
 
 KCM.ScrollViewKCM {
@@ -93,19 +94,19 @@ KCM.ScrollViewKCM {
         spacing: 0
         reuseItems: true
 
-        Kirigami.PlaceholderMessage {
+        EmptyStateMessage {
             anchors.centerIn: parent
             width: parent.width - Kirigami.Units.gridUnit * 4
             visible: (page.cfg_hiddenApps || []).length === 0
-            icon.name: "view-visible"
+            iconSource: "view-visible"
             text: i18nd("dev.xarbit.appgrid", "No hidden applications")
         }
 
-        Kirigami.PlaceholderMessage {
+        EmptyStateMessage {
             anchors.centerIn: parent
             width: parent.width - Kirigami.Units.gridUnit * 4
             visible: (page.cfg_hiddenApps || []).length > 0 && page._filteredApps.length === 0
-            icon.name: "system-search-symbolic"
+            iconSource: "system-search-symbolic"
             text: i18nd("dev.xarbit.appgrid", "No matches")
         }
 
