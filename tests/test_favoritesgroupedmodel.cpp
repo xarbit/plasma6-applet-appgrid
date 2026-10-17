@@ -7,6 +7,7 @@
     delegate and that mutations + flat-list pushes keep the model consistent.
 */
 
+#include <QAbstractItemModelTester>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -35,7 +36,28 @@ private Q_SLOTS:
     void addLooseFavoriteIsImmediateAndIdempotent();
     void uninstalledFolderMemberHiddenButKept();
     void groupingOffFoldsFoldersInPlace();
+    void groupingOffMoveRowMovesTheDraggedApp();
+    void groupingOffMoveRowIgnoresExpandedMembers();
+    void moveRowInFolderSkipsHiddenMembers();
 };
+
+namespace
+{
+// The FavoriteId of every visible row, top to bottom.
+QStringList rowIds(const FavoritesGroupedModel &m)
+{
+    QStringList ids;
+    for (int i = 0; i < m.rowCount(); ++i) {
+        ids.append(m.data(m.index(i), AbstractGroupedModel::FavoriteIdRole).toString());
+    }
+    return ids;
+}
+
+QString fav(const char *sid)
+{
+    return QStringLiteral("applications:") + QLatin1String(sid);
+}
+}
 
 void TestFavoritesGroupedModel::isEditable()
 {
@@ -326,6 +348,81 @@ void TestFavoritesGroupedModel::groupingOffFoldsFoldersInPlace()
     m.setGroupingEnabled(true);
     QCOMPARE(m.rowCount(), 3);
     QCOMPARE(m.data(m.index(0), AbstractGroupedModel::EntryTypeRole).toInt(), int(AbstractGroupedModel::Folder));
+}
+
+// Grouping off folds a folder out into its members, so visible rows are not
+// layout tokens. A drag passes visible rows; moving loose d before loose c must
+// move d, and the view must still match the layout after a full rebuild.
+void TestFavoritesGroupedModel::groupingOffMoveRowMovesTheDraggedApp()
+{
+    FavoritesGroupedModel m;
+    QAbstractItemModelTester tester(&m, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop"), QStringLiteral("d.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop"), QStringLiteral("d.desktop")});
+    m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"));
+    m.setGroupingEnabled(false);
+    QCOMPARE(rowIds(m), QStringList({fav("a.desktop"), fav("b.desktop"), fav("c.desktop"), fav("d.desktop")}));
+
+    m.moveRow(3, 2); // d before c
+    const QStringList expected{fav("a.desktop"), fav("b.desktop"), fav("d.desktop"), fav("c.desktop")};
+    QCOMPARE(rowIds(m), expected);
+    QCOMPARE(m.favoriteLayout().mid(1), QStringList({QStringLiteral("app:d.desktop"), QStringLiteral("app:c.desktop")}));
+
+    m.moveRow(2, 3); // and back
+    QCOMPARE(rowIds(m), QStringList({fav("a.desktop"), fav("b.desktop"), fav("c.desktop"), fav("d.desktop")}));
+
+    // A rebuild from the layout must show exactly what the live moves showed.
+    m.moveRow(3, 2);
+    m.setGroupingEnabled(true);
+    m.setGroupingEnabled(false);
+    QCOMPARE(rowIds(m), expected);
+}
+
+// With grouping off a folder's members are not top-level entries: dragging one,
+// or dropping onto one, must not move anything (it used to move whatever layout
+// token shared the row number).
+void TestFavoritesGroupedModel::groupingOffMoveRowIgnoresExpandedMembers()
+{
+    FavoritesGroupedModel m;
+    QAbstractItemModelTester tester(&m, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.createFolder(QStringLiteral("a.desktop"), QStringLiteral("b.desktop"));
+    m.setGroupingEnabled(false);
+    const QStringList layout = m.favoriteLayout();
+    const QStringList rows = rowIds(m);
+
+    m.moveRow(1, 2); // folder member b onto loose c
+    m.moveRow(2, 0); // loose c onto folder member a
+    QCOMPARE(m.favoriteLayout(), layout);
+    QCOMPARE(rowIds(m), rows);
+}
+
+// Inside a folder, an uninstalled member is hidden but kept in the layout, so
+// visible rows are not member indices. Moving visible c before visible a must
+// move c, not the hidden b.
+void TestFavoritesGroupedModel::moveRowInFolderSkipsHiddenMembers()
+{
+    FavoritesGroupedModel m;
+    QAbstractItemModelTester tester(&m, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    const QString id = m.createFolderFromMembers({QStringLiteral("a.desktop"), QStringLiteral("b.desktop"), QStringLiteral("c.desktop")});
+    m.setKnownApps({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")});
+    m.setFlatFavorites({QStringLiteral("a.desktop"), QStringLiteral("c.desktop")});
+
+    m.enterFolder(id);
+    QCOMPARE(rowIds(m), QStringList({fav("a.desktop"), fav("c.desktop")}));
+    m.moveRow(1, 0); // c before a
+    QCOMPARE(rowIds(m), QStringList({fav("c.desktop"), fav("a.desktop")}));
+
+    // Re-entering rebuilds from the layout: same rows, and b is still kept.
+    m.goBack();
+    m.enterFolder(id);
+    QCOMPARE(rowIds(m), QStringList({fav("c.desktop"), fav("a.desktop")}));
+    m.goBack();
+    QCOMPARE(m.favoriteFolders().first().toMap().value(QStringLiteral("members")).toStringList(),
+             QStringList({QStringLiteral("c.desktop"), QStringLiteral("a.desktop"), QStringLiteral("b.desktop")}));
 }
 
 QTEST_GUILESS_MAIN(TestFavoritesGroupedModel)

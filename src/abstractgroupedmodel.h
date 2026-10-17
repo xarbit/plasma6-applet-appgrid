@@ -93,6 +93,12 @@ protected:
      *  their own ordering in sync alongside this. */
     void moveRowAt(int from, int to);
 
+    /** The current visible rows. */
+    [[nodiscard]] const QList<Row> &rows() const
+    {
+        return m_rows;
+    }
+
 private:
     QList<Row> m_rows;
 };

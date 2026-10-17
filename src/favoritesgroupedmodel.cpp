@@ -236,30 +236,37 @@ QString FavoritesGroupedModel::currentFolderName() const
 
 void FavoritesGroupedModel::moveRow(int fromRow, int toRow)
 {
+    if (fromRow < 0 || toRow < 0 || fromRow >= m_rowSources.size() || toRow >= m_rowSources.size() || fromRow == toRow) {
+        return;
+    }
+    const RowSource from = m_rowSources.at(fromRow);
+    const RowSource to = m_rowSources.at(toRow);
+
     // Inside a folder, reorder its members (a pure move, like the top level).
-    if (!m_openFolder.isEmpty()) {
+    // Rows skip hidden (uninstalled) members, so move by raw member index.
+    if (m_groupingEnabled && !m_openFolder.isEmpty()) {
         const int idx = folderIndex(m_openFolder);
         if (idx < 0) {
             return;
         }
-        QStringList &members = m_state.folders[idx].members;
-        if (fromRow < 0 || toRow < 0 || fromRow >= members.size() || toRow >= members.size() || fromRow == toRow) {
-            return;
-        }
-        members.move(fromRow, toRow);
+        m_state.folders[idx].members.move(from.member, to.member);
         moveRowAt(fromRow, toRow);
+        syncRowSources();
         Q_EMIT foldersChanged();
         Q_EMIT foldersPersistRequested();
         return;
     }
 
-    if (fromRow < 0 || toRow < 0 || fromRow >= m_state.tokens.size() || toRow >= m_state.tokens.size() || fromRow == toRow) {
+    // Top level: only single-row entries move. A folder folded out in place
+    // (grouping off) spans several rows that are its members, not entries.
+    if (from.member >= 0 || to.member >= 0) {
         return;
     }
-    // The layout stays valid under a pure reorder, so move the token + the row
-    // in lockstep and emit a row-move instead of reconciling (which would reset).
-    m_state.tokens.move(fromRow, toRow);
+    // Rows between the two entries move as whole entries, so the moved row
+    // lands exactly on toRow and a single row-move matches the rebuilt rows.
+    m_state.tokens.move(from.token, to.token);
     moveRowAt(fromRow, toRow);
+    syncRowSources();
     Q_EMIT layoutChanged();
     Q_EMIT layoutPersistRequested();
 }
@@ -315,31 +322,31 @@ AbstractGroupedModel::Row FavoritesGroupedModel::appRow(const QString &sid)
     return row;
 }
 
-void FavoritesGroupedModel::rebuildRows()
+QList<AbstractGroupedModel::Row> FavoritesGroupedModel::buildRows(QList<RowSource> &sources) const
 {
-    // Drilled into a folder (grouping only): show its renderable members as app
-    // rows. If the folder is gone, or every member is now dead (uninstalled/
-    // unfavourited), fall back to the top level and announce it so the UI drops
-    // its back affordance.
+    QList<Row> rows;
+    sources.clear();
+
+    // Drilled into a folder (grouping only): its renderable members as app rows.
     if (m_groupingEnabled && !m_openFolder.isEmpty()) {
         const int idx = folderIndex(m_openFolder);
-        const QStringList members = idx >= 0 ? shownMembers(m_state.folders.at(idx).members) : QStringList();
-        if (!members.isEmpty()) {
-            QList<Row> rows;
-            rows.reserve(members.size());
-            for (const QString &sid : members) {
-                rows.append(appRow(sid));
+        const int token = m_state.tokens.indexOf(folderToken(m_openFolder));
+        if (idx >= 0) {
+            const QStringList &members = m_state.folders.at(idx).members;
+            const QStringList shown = shownMembers(members);
+            for (int m = 0; m < members.size(); ++m) {
+                if (shown.contains(members.at(m))) {
+                    rows.append(appRow(members.at(m)));
+                    sources.append({token, m});
+                }
             }
-            setRows(rows);
-            return;
         }
-        m_openFolder.clear();
-        Q_EMIT pathChanged();
+        return rows;
     }
 
-    QList<Row> rows;
     rows.reserve(m_state.tokens.size());
-    for (const QString &token : m_state.tokens) {
+    for (int t = 0; t < m_state.tokens.size(); ++t) {
+        const QString &token = m_state.tokens.at(t);
         if (isFolderToken(token)) {
             const int idx = folderIndex(tokenPayload(token));
             if (idx < 0) {
@@ -349,17 +356,49 @@ void FavoritesGroupedModel::rebuildRows()
             const QStringList members = shownMembers(f.members);
             if (m_groupingEnabled) {
                 rows.append({AbstractGroupedModel::Folder, {}, f.id, f.name, members});
+                sources.append({t, -1});
             } else {
                 // Grouping off: fold the folder out in place — its members render
                 // as loose apps at the folder's slot, so toggling grouping only
                 // collapses/expands here and never reorders the favourites (#200).
-                for (const QString &sid : members) {
-                    rows.append(appRow(sid));
+                for (int m = 0; m < f.members.size(); ++m) {
+                    if (members.contains(f.members.at(m))) {
+                        rows.append(appRow(f.members.at(m)));
+                        sources.append({t, m});
+                    }
                 }
             }
         } else if (isAppToken(token)) {
             rows.append(appRow(tokenPayload(token)));
+            sources.append({t, -1});
         }
     }
+    return rows;
+}
+
+void FavoritesGroupedModel::syncRowSources()
+{
+    QList<RowSource> sources;
+    [[maybe_unused]] const QList<Row> rows = buildRows(sources);
+    // A live move must leave exactly the rows a rebuild would produce.
+    Q_ASSERT(rows == AbstractGroupedModel::rows());
+    m_rowSources = sources;
+}
+
+void FavoritesGroupedModel::rebuildRows()
+{
+    // Drilled into a folder whose members are all gone (uninstalled or
+    // unfavourited), or that no longer exists: fall back to the top level and
+    // announce it so the UI drops its back affordance.
+    if (m_groupingEnabled && !m_openFolder.isEmpty()) {
+        const int idx = folderIndex(m_openFolder);
+        if (idx < 0 || shownMembers(m_state.folders.at(idx).members).isEmpty()) {
+            m_openFolder.clear();
+            Q_EMIT pathChanged();
+        }
+    }
+    QList<RowSource> sources;
+    const QList<Row> rows = buildRows(sources);
+    m_rowSources = sources;
     setRows(rows);
 }

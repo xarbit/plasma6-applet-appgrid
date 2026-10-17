@@ -107,8 +107,11 @@ public:
     // Dissolve a folder: its members return to the top level as loose favourites.
     Q_INVOKABLE void ungroupFolder(const QString &folderId);
     Q_INVOKABLE void moveTopLevel(int fromRow, int toRow);
-    // Live single-row reorder for drag: moves the top-level token and emits a
-    // row-move (no reconcile/reset) so the grid animates the displacement.
+    // Live single-row reorder for drag: @p fromRow / @p toRow are visible rows.
+    // Moves the matching layout token (or open-folder member) and emits a
+    // row-move (no reconcile/reset) so the grid animates the displacement. With
+    // grouping off, rows that are a folder's members folded out in place are not
+    // top-level entries, so a move from or onto one is ignored.
     Q_INVOKABLE void moveRow(int fromRow, int toRow);
     Q_INVOKABLE void reorderInFolder(const QString &folderId, int fromIndex, int toIndex);
 
@@ -139,6 +142,17 @@ private:
     // Optimistically take @p sids into the flat favourite list (the UI is
     // favouriting them in KAStats in the same step) so grouping survives reconcile.
     void _adoptFavorites(const QStringList &sids);
+    // Where a visible row comes from: the index of its layout token, and for a
+    // folder member (drilled in, or folded out with grouping off) its index in
+    // that folder's raw member list, else -1.
+    struct RowSource {
+        int token = -1;
+        int member = -1;
+    };
+    // Build the visible rows (and each row's source) from the current state.
+    [[nodiscard]] QList<Row> buildRows(QList<RowSource> &sources) const;
+    // Refresh m_rowSources after a live row move (layout indices shifted).
+    void syncRowSources();
     void rebuildRows();
     // The members of @p members to actually SHOW (drilled-in rows + 2x2 preview):
     // keep a member that's still installed (m_knownApps — covers a cross-process
@@ -163,4 +177,6 @@ private:
     QString m_openFolder;
     // Folders as tiles (true) or folded out into their members in place (false).
     bool m_groupingEnabled = true;
+    // Source of each row in m_rows, kept in step by rebuildRows() and moveRow().
+    QList<RowSource> m_rowSources;
 };
