@@ -383,7 +383,7 @@ Item {
         target: panel.favoritesGroupedModel
         ignoreUnknownSignals: true
         // Prompt for a name as soon as a folder is created (drag-fold, menu, empty).
-        function onFolderCreated(folderId) { renameFolderDialog.openFor(folderId) }
+        function onFolderCreated(folderId) { dialogs.renameFolder(folderId) }
     }
     // Leaving the favourites tab drops back to the folder top level.
     onIsFavoritesActiveChanged: if (!isFavoritesActive && favoritesGroupedModel) favoritesGroupedModel.resetToRoot()
@@ -574,8 +574,7 @@ Item {
             searchBar.field.cursorPosition = text.length
         }
         onBulkLaunchConfirmRequested: function(sids) {
-            bulkLaunchDialog.pendingSids = sids
-            bulkLaunchDialog.open()
+            dialogs.confirmBulkLaunch(sids)
         }
     }
     function launchSearchResult(index) { launcher.launchSearchResult(index) }
@@ -592,8 +591,7 @@ Item {
         if (members.length === 0)
             return
         if (members.length >= launcher.bulkLaunchConfirmThreshold) {
-            folderLaunchDialog.pendingMembers = members
-            folderLaunchDialog.open()
+            dialogs.confirmFolderLaunch(members)
         } else {
             panel._launchFolderMembers(members)
         }
@@ -1163,7 +1161,7 @@ Item {
         favoritesActive: panel.isFavoritesActive
         appletInterface: panel.appletInterface
         onOpenFolderRequested: folderId => { if (panel.favoritesGroupedModel) panel.favoritesGroupedModel.enterFolder(folderId) }
-        onRenameFolderRequested: folderId => renameFolderDialog.openFor(folderId)
+        onRenameFolderRequested: folderId => dialogs.renameFolder(folderId)
         onLaunchFolderRequested: folderId => panel.launchFolder(folderId)
 
         // Wrap the bridge's C++ methods in closures (not bare refs): called as
@@ -1187,8 +1185,7 @@ Item {
         onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
         onBulkHideRequested: function(sids) {
             if (!sids || sids.length === 0) return
-            bulkHideDialog.pendingSids = sids
-            bulkHideDialog.open()
+            dialogs.confirmBulkHide(sids)
         }
 
         // Route the menu's "Add / Remove from Selection" item to whichever
@@ -1205,68 +1202,13 @@ Item {
         }
     }
 
-    Kirigami.PromptDialog {
-        id: bulkLaunchDialog
-        property list<string> pendingSids: []
-        title: i18nd("dev.xarbit.appgrid", "Launch all selected?")
-        subtitle: i18ndp("dev.xarbit.appgrid",
-            "Open %1 application at once?",
-            "Open %1 applications at once?",
-            pendingSids.length)
-        standardButtons: Kirigami.Dialog.Ok | Kirigami.Dialog.Cancel
-        onAccepted: launcher.runBulkLaunch(pendingSids)
-    }
-
-    // Folder "Launch All" confirm — like bulkLaunchDialog but launches each
-    // member favourite-aware (handles KCMs) via _launchFolderMembers (#18).
-    Kirigami.PromptDialog {
-        id: folderLaunchDialog
-        property var pendingMembers: []
-        title: i18nd("dev.xarbit.appgrid", "Launch all in folder?")
-        subtitle: i18ndp("dev.xarbit.appgrid",
-            "Open %1 application at once?",
-            "Open %1 applications at once?",
-            pendingMembers.length)
-        standardButtons: Kirigami.Dialog.Ok | Kirigami.Dialog.Cancel
-        onAccepted: panel._launchFolderMembers(pendingMembers)
-    }
-
-    Kirigami.PromptDialog {
-        id: bulkHideDialog
-        property list<string> pendingSids: []
-        title: i18nd("dev.xarbit.appgrid", "Hide selected applications?")
-        subtitle: i18ndp("dev.xarbit.appgrid",
-            "Hide %1 application from AppGrid? You can unhide it later in Settings → Hidden Applications.",
-            "Hide %1 applications from AppGrid? You can unhide them later in Settings → Hidden Applications.",
-            pendingSids.length)
-        standardButtons: Kirigami.Dialog.Ok | Kirigami.Dialog.Cancel
-        onAccepted: launcher.runBulkHide(pendingSids)
-    }
-
-    // Folder rename (#18).
-    Kirigami.PromptDialog {
-        id: renameFolderDialog
-        property string folderId: ""
-        title: i18nd("dev.xarbit.appgrid", "Rename Folder")
-        standardButtons: Kirigami.Dialog.Ok | Kirigami.Dialog.Cancel
-
-        function openFor(fid) {
-            folderId = fid
-            nameField.text = panel.favoritesGroupedModel
-                ? panel.favoritesGroupedModel.folderName(fid) : ""
-            open()
-            nameField.forceActiveFocus()
-            nameField.selectAll()
-        }
-        onAccepted: {
-            const name = nameField.text.trim()
-            if (panel.favoritesGroupedModel && folderId.length > 0 && name.length > 0)
-                panel.favoritesGroupedModel.renameFolder(folderId, name)
-        }
-
-        PlasmaComponents.TextField {
-            id: nameField
-            onAccepted: renameFolderDialog.accept()
-        }
+    // Confirmations and the folder rename.
+    LauncherDialogs {
+        id: dialogs
+        anchors.fill: parent
+        favoritesGroupedModel: panel.favoritesGroupedModel
+        onBulkLaunchAccepted: sids => launcher.runBulkLaunch(sids)
+        onFolderLaunchAccepted: members => panel._launchFolderMembers(members)
+        onBulkHideAccepted: sids => launcher.runBulkHide(sids)
     }
 }
