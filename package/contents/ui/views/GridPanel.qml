@@ -62,34 +62,21 @@ Item {
 
     // -- Configuration (single source of truth for all config reads) --
     ConfigCache { id: cfg; source: panel.configuration }
-    readonly property alias columns: cfg.gridColumns
-    readonly property alias rows: cfg.gridRows
-    readonly property alias sortMode: cfg.sortMode
-    readonly property alias cfgShowCategoryBar: cfg.showCategoryBar
-    readonly property alias cfgStartWithFavorites: cfg.startWithFavorites
-    readonly property alias cfgShowRecentApps: cfg.showRecentApps
-    readonly property alias cfgHideLabelsOnFavorites: cfg.hideLabelsOnFavorites
-    readonly property alias cfgUseExtraRunners: cfg.useExtraRunners
-    readonly property alias cfgHideGridWhenEmpty: cfg.hideGridWhenEmpty
 
     // One-shot override set by the secondary "Open in Compact Mode" global
     // shortcut. While true, the panel behaves as if hideGridWhenEmpty were
     // enabled, regardless of the persisted config. Reset on close so the
     // next normal open uses the user's chosen mode.
     property bool forceCompact: false
-    readonly property bool effectiveHideGridWhenEmpty: cfgHideGridWhenEmpty || forceCompact
+    readonly property bool effectiveHideGridWhenEmpty: cfg.hideGridWhenEmpty || forceCompact
 
     // -- Sort helpers --
-    readonly property bool isSortByCategory: sortMode === AppFilterModel.ByCategory
+    readonly property bool isSortByCategory: cfg.sortMode === AppFilterModel.ByCategory
 
     // -- View state --
-    // hideGridWhenEmpty: Compact mode — suppress grid/category chrome
-    // until the user types. Search and prefix views still take over once
-    // the user starts entering text. _gridRevealed lets the user pop the
-    // grid open manually (Down arrow from the search bar) without typing.
-    // The five visibility outputs and the _gridRevealed flag all live on
-    // visibility (VisibilityState.qml); the aliases below preserve the
-    // existing call sites.
+    // Which views show is VisibilityState's (`visibility`), compact mode
+    // included: it hides the grid and category chrome until the user types,
+    // or pops the grid open (gridRevealed) with Down or the wheel.
     readonly property bool isSearching: searchBar.text.length > 0
     // The views switch between grid and search list on the search the model
     // has actually been filtered with, not the live field text: the filter
@@ -113,7 +100,7 @@ Item {
         id: visibility
         sizeToContent: panel.sizeToContent
         hideGridWhenEmpty: panel.effectiveHideGridWhenEmpty
-        showCategoryBar: panel.cfgShowCategoryBar
+        showCategoryBar: cfg.showCategoryBar
         isSearching: panel._searchApplied
         isPrefixMode: panel.isPrefixMode
         isFavoritesActive: panel.isFavoritesActive
@@ -127,19 +114,12 @@ Item {
     // categories mode (#201).
     readonly property bool categoryFolders: cfg.useSystemCategories && cfg.categoryFoldersEnabled
 
-    property alias _gridRevealed: visibility.gridRevealed
-    readonly property alias _emptyHiddenState: visibility.emptyHidden
-    readonly property alias showCatBar: visibility.catBarVisible
-    // The flat category-section grid (its many consumers keep this name); the
-    // folder-tree variant is showMenuFolders.
-    readonly property alias showCategoryGrid: visibility.categorySectionsVisible
-    readonly property alias showMenuFolders: visibility.menuFolderVisible
     readonly property alias showAppGrid: visibility.appGridVisible
 
     // True while the menu folder view is inside a sub-folder — the variants' Esc
     // Shortcut yields to it so Esc climbs out a level instead of closing (#201),
     // just like favFolderOpen does for a favourites folder.
-    readonly property bool menuFolderCanGoBack: showMenuFolders && menuFolderView.canGoBack
+    readonly property bool menuFolderCanGoBack: visibility.menuFolderVisible && menuFolderView.canGoBack
     // A drill folder (favourites or menu) is open, so Esc should climb out a level
     // rather than close — the variants' Escape Shortcut yields to this. One property
     // so a new drill context only touches GridPanel, not the window code.
@@ -180,7 +160,7 @@ Item {
         id: searchPipeline
         viewState: viewState
         runnerSourceModel: panel.runnerSourceModel
-        useExtraRunners: panel.cfgUseExtraRunners
+        useExtraRunners: cfg.useExtraRunners
         isPrefixMode: panel.isPrefixMode
     }
 
@@ -189,13 +169,13 @@ Item {
     // null because they don't host multi-select; callers treat that as a
     // silent no-op.
     readonly property var activeMultiSelectView: showAppGrid ? appGridPane.grid
-                                              : showCategoryGrid ? categoryGridView
+                                              : visibility.categorySectionsVisible ? categoryGridView
                                               : null
     // The view the keyboard reaches from the search field (Down, Tab, Enter),
     // or null while searching. Each has enterFromSearch() and activateCurrent().
     readonly property var activeKeyView: showAppGrid ? appGridPane.grid
-                                       : showCategoryGrid ? categoryGridView
-                                       : showMenuFolders ? menuFolderView
+                                       : visibility.categorySectionsVisible ? categoryGridView
+                                       : visibility.menuFolderVisible ? menuFolderView
                                        : null
 
     // -- Icon size mapping (0=Small/medium, 1=Medium/large, 2=Large/huge) --
@@ -227,7 +207,7 @@ Item {
         dragSource: panel.dragSource
         searchField: searchBar.field
         cellStyle: cellStyle
-        columns: panel.columns
+        columns: cfg.gridColumns
         onLaunchAppRequested: index => panel.launchApp(index)
         onLaunchRequested: storageId => panel.launchAppByStorageId(storageId)
         onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)
@@ -261,9 +241,9 @@ Item {
         prefixMode: panel.prefixMode
         resultsShown: panel.showSearchResults
         searching: panel.isSearching
-        collapsible: panel.cfgHideGridWhenEmpty
-        collapsed: panel._emptyHiddenState
-        revealed: panel._gridRevealed
+        collapsible: cfg.hideGridWhenEmpty
+        collapsed: visibility.emptyHidden
+        revealed: visibility.gridRevealed
         onLaunchResultRequested: index => panel.launchSearchResult(index)
         onRunRequested: function(inTerminal) {
             const actions = panel.plasmoidBridge.systemActions
@@ -273,7 +253,7 @@ Item {
                 actions.runCommand(panel.prefixArgument, cfg.terminalShell)
             panel.closeRequested()
         }
-        onRevealRequested: revealed => panel._gridRevealed = revealed
+        onRevealRequested: revealed => visibility.gridRevealed = revealed
     }
 
     // -- Prefix mode detection --
@@ -303,18 +283,18 @@ Item {
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
     readonly property real panelMargin: Kirigami.Units.largeSpacing
-    readonly property real panelWidth: estCellWidth * columns + panelMargin * 2
+    readonly property real panelWidth: estCellWidth * cfg.gridColumns + panelMargin * 2
     // Each full-height body view carries this as Layout.preferredHeight, so the
     // panel sizes to header(natural) + rows*cell — visible-rows honoured whatever
     // header chrome shows (#205).
-    readonly property real bodyHeight: estCellHeight * rows
+    readonly property real bodyHeight: estCellHeight * cfg.gridRows
 
     // Full (grid-shown) height — used only to position the daemon window so a
     // start-compact reveal grows downward without drift. Real header items, no
     // units estimate.
     readonly property real panelHeight: panelMargin * 2 + headerRow.implicitHeight
         + Kirigami.Units.largeSpacing + bodyHeight
-        + (showCatBar ? categoryBar.implicitHeight + Kirigami.Units.largeSpacing * 3 : 0)
+        + (visibility.catBarVisible ? categoryBar.implicitHeight + Kirigami.Units.largeSpacing * 3 : 0)
 
     // Only seed the *initial* popup size via implicitWidth/Height and leave
     // width/height + preferred size unbound, so Plasma's own popup-resize
@@ -340,11 +320,11 @@ Item {
     // mirroring the Down/Up-arrow behavior. Once typing starts, wheel
     // events fall through so the search results list can scroll.
     WheelHandler {
-        enabled: panel.cfgHideGridWhenEmpty && !panel.isSearching
+        enabled: cfg.hideGridWhenEmpty && !panel.isSearching
                  && searchBar.field.activeFocus
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: function(event) {
-            panel._gridRevealed = event.angleDelta.y < 0
+            visibility.gridRevealed = event.angleDelta.y < 0
             event.accepted = true
         }
     }
@@ -441,7 +421,7 @@ Item {
     // and the compact-mode reveal flag.
     function _resetSearchSession() {
         searchBar.text = ""
-        _gridRevealed = false
+        visibility.gridRevealed = false
     }
 
     // Done on close (not open) so the height/scroll transitions back to
@@ -466,7 +446,7 @@ Item {
     // the value is unchanged — so it's safe to run on open too: it reflects a
     // config change made while closed without refreshing when nothing changed.
     function _applyStartState() {
-        viewState.reset(cfgShowCategoryBar && cfgStartWithFavorites)
+        viewState.reset(cfg.showCategoryBar && cfg.startWithFavorites)
     }
 
     // Pure UI-state reset (scroll, selection, category view). Close-only: running
@@ -641,18 +621,18 @@ Item {
 
         HorizontalDivider {
             Layout.fillWidth: true
-            visible: panel.showCatBar
+            visible: visibility.catBarVisible
             opacity: cellStyle.showDividers ? 1 : 0
         }
 
         CategoryBar {
             id: categoryBar
-            visible: panel.showCatBar
+            visible: visibility.catBarVisible
             Layout.leftMargin: Kirigami.Units.smallSpacing
             appsModel: panel.appsModel
             isFavorite: sid => favorites.isFavorite(sid)
             editCategoryInMenu: launcherActions.editMenuItem
-            favoritesFirst: panel.cfgStartWithFavorites
+            favoritesFirst: cfg.startWithFavorites
             isSortByCategory: panel.isSortByCategory
             fontScale: panel.densityScale
             displayMode: cfg.categoryBarDisplay
@@ -689,7 +669,7 @@ Item {
 
         HorizontalDivider {
             Layout.fillWidth: true
-            visible: panel.showCatBar
+            visible: visibility.catBarVisible
             opacity: cellStyle.showDividers ? 1 : 0
         }
 
@@ -757,21 +737,21 @@ Item {
             CategoryGridView {
                 id: categoryGridView
                 anchors.fill: parent
-                visible: panel.showCategoryGrid
+                visible: visibility.categorySectionsVisible
                 host: gridHost
                 rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
-                showRecents: panel.cfgShowRecentApps
+                showRecents: cfg.showRecentApps
                              && panel.appsModel
                              && panel.appsModel.recentApps.length > 0
                              && !panel.isFavoritesActive
-                             && !panel.cfgStartWithFavorites
+                             && !cfg.startWithFavorites
             }
 
             // -- Menu folder tree (By Category + group into folders, #201) --
             MenuFolderView {
                 id: menuFolderView
                 anchors.fill: parent
-                visible: panel.showMenuFolders
+                visible: visibility.menuFolderVisible
                 // Gated on the feature so the (lazy) menu tree is never built when
                 // folders are off — reading menuTreeModel is what triggers the walk.
                 menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
