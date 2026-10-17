@@ -5,6 +5,8 @@
 
 #include "launchbookkeeping.h"
 
+#include <utility>
+
 void LaunchBookkeeping::rebuildHiddenSet()
 {
     m_hiddenSet = QSet<QString>(m_hidden.cbegin(), m_hidden.cend());
@@ -132,6 +134,6 @@ bool LaunchBookkeeping::setLaunchCountsFromMap(const QVariantMap &map)
     if (next == m_launchCounts) {
         return false;
     }
-    m_launchCounts = next;
+    m_launchCounts = std::move(next);
     return true;
 }

@@ -275,8 +275,8 @@ void AppGridPlugin::configureWayland(QWindow *window)
     layer->setScope(QStringLiteral("appgrid"));
     // Cover the full screen including panel exclusive zones
     layer->setExclusiveZone(-1);
-    layer->setAnchors(LayerShellQt::Window::Anchors(LayerShellQt::Window::AnchorTop | LayerShellQt::Window::AnchorBottom | LayerShellQt::Window::AnchorLeft
-                                                    | LayerShellQt::Window::AnchorRight));
+    layer->setAnchors(LayerShellQt::Window::Anchors(LayerShellQt::Window::AnchorTop) | LayerShellQt::Window::AnchorBottom | LayerShellQt::Window::AnchorLeft
+                      | LayerShellQt::Window::AnchorRight);
 }
 
 void AppGridPlugin::updateScreenWayland(QWindow *window, QScreen *target, bool useActiveScreen)
