@@ -5,15 +5,18 @@
 
 #include "frecencyscoring.h"
 
+#include "appactionid.h"
 #include "pluginhelpers.h"
 
 namespace
 {
 // Only app resources score (a file/document favourite has no storage id here);
-// non-app resources return empty and are skipped by the caller.
+// non-app resources return empty and are skipped by the caller. A jump-list
+// action ("applications:<id>?action=<name>") counts for its app: the rows it
+// ranks are apps, never actions.
 QString storageIdFromResource(const QString &resource)
 {
-    return resource.startsWith(PluginHelpers::ApplicationsUrlPrefix) ? PluginHelpers::stripApplicationsPrefix(resource) : QString();
+    return resource.startsWith(PluginHelpers::ApplicationsUrlPrefix) ? AppActionId::parse(resource).storageId : QString();
 }
 }
 

@@ -20,6 +20,7 @@ private Q_SLOTS:
     void indexesBothKdeSpellings();
     void neverDemotesHigherScore();
     void skipsNonApplicationResources();
+    void actionCountsForItsApp();
     void emptyInputYieldsEmptyMap();
 };
 
@@ -70,6 +71,21 @@ void TestFrecencyScoring::skipsNonApplicationResources()
     QVERIFY(!s.contains(QStringLiteral("doc.txt")));
     // count is 2, the application row is at index 1 → score 2 - 1 = 1.
     QCOMPARE(s.value(QStringLiteral("a.desktop")), 1);
+}
+
+void TestFrecencyScoring::actionCountsForItsApp()
+{
+    const auto s = FrecencyScoring::scoresFromResources({
+        QStringLiteral("applications:firefox.desktop?action=new-private-window"),
+        QStringLiteral("applications:org.kde.kate.desktop"),
+        QStringLiteral("applications:firefox.desktop"),
+    });
+    // The action's top row lifts its app; its own row never demotes it.
+    QCOMPARE(s.value(QStringLiteral("firefox.desktop")), 3);
+    QCOMPARE(s.value(QStringLiteral("kate.desktop")), 2);
+    for (auto it = s.cbegin(); it != s.cend(); ++it) {
+        QVERIFY2(!it.key().contains(QLatin1Char('?')), qPrintable(it.key()));
+    }
 }
 
 void TestFrecencyScoring::emptyInputYieldsEmptyMap()
