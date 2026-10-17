@@ -89,23 +89,11 @@ Item {
         onRenameFolderRequested: folderId => menus.renameFolderRequested(folderId)
         onFolderLaunchRequested: sids => menus.bulkLaunchRequested(sids, true)
 
-        // Wrap the bridge's C++ methods in closures (not bare refs): called as
-        // appMenu.<prop>() the bare ref would run with the menu as `this`, not
-        // the bridge — Qt6 warns about that (NativeMethodBehavior). The arrow binds
-        // the call back to plasmoidBridge.
-        appActions: sid => menus.plasmoidBridge.launchService.appActions(sid)
-        launchAppAction: (sid, actionName) => menus.plasmoidBridge.launchService.launchAction(sid, actionName)
-        canManageInDiscover: sid => menus.plasmoidBridge.systemActions.canManageInDiscover(sid)
-        openInDiscover: sid => menus.plasmoidBridge.systemActions.openInDiscover(sid)
-        pinToTaskManager: menus.launcherActions.pinToTaskManager
-        addToDesktop: menus.launcherActions.addToDesktop
-        canPinToTaskManager: menus.launcherActions.canPinToTaskManager
-        canAddToDesktop: menus.launcherActions.canAddToDesktop
-        editApplication: menus.launcherActions.editMenuItem
-        runRunnerAction: function(rowIdx, actIdx) {
-            if (menus.plasmoidBridge.runner.runAction(rowIdx, actIdx))
-                menus.closeRequested()
-        }
+        launcherActions: menus.launcherActions
+        launchService: menus.plasmoidBridge.launchService
+        systemActions: menus.plasmoidBridge.systemActions
+        runner: menus.plasmoidBridge.runner
+        onCloseRequested: menus.closeRequested()
 
         onBulkLaunchRequested: sids => menus.bulkLaunchRequested(sids, false)
         onBulkHideRequested: function(sids) {

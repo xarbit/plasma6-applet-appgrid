@@ -34,6 +34,8 @@ TestCase {
         id: managerStub
         property var sharedFavoritesModel: null
         property var favoritesGroupedModel: groupedStub
+        property var favouriteSids: []
+        function isFavorite(sid) { return favouriteSids.indexOf(sid) >= 0 }
     }
 
     Component {
@@ -41,16 +43,13 @@ TestCase {
         AppContextMenu {
             favoritesManager: managerStub
             foldersEnabled: true
-            appActions: sid => []
-            launchAppAction: (sid, actionName) => {}
-            canManageInDiscover: sid => false
-            openInDiscover: sid => {}
-            pinToTaskManager: desktopFile => {}
-            addToDesktop: desktopFile => {}
-            canPinToTaskManager: () => false
-            canAddToDesktop: () => false
-            editApplication: sid => {}
-            runRunnerAction: (row, action) => {}
+            launcherActions: ({
+                pinToTaskManager: df => {}, addToDesktop: df => {}, editMenuItem: sid => {},
+                canPinToTaskManager: () => false, canAddToDesktop: () => false
+            })
+            launchService: ({ appActions: sid => [], launchAction: (sid, name) => {} })
+            systemActions: ({ canManageInDiscover: sid => false, openInDiscover: sid => {} })
+            runner: ({ runAction: (row, action) => false })
         }
     }
 
@@ -67,6 +66,20 @@ TestCase {
         menu.showForApp("a", "", [])
         verify(!menu.popupInFolder, "no longer in a folder")
         menu.close()
+    }
+
+    // Right-clicking a selected app among several opens the selection menu,
+    // counting which of them are favourites.
+    function test_selectionCountsFavourites() {
+        var menu = createTemporaryObject(menuComponent, testCase)
+        managerStub.favouriteSids = ["b"]
+        menu.showForApp("a", "", ["a", "b", "c"])
+        verify(menu.isMultiSelect)
+        compare(menu.popupFavCount, 1)
+        compare(menu.popupNonFavCount, 2)
+        compare(menu.popupActions.length, 0, "no jump-list actions for a selection")
+        menu.close()
+        managerStub.favouriteSids = []
     }
 
     function test_noFolderRowWithFoldersOff() {

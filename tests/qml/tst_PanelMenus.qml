@@ -46,6 +46,7 @@ TestCase {
             })
             plasmoidBridge: ({
                 menuTreeModel: null,
+                launchService: ({ appActions: sid => [], launchAction: (sid, name) => {} }),
                 systemActions: ({ canManageInDiscover: sid => false, openInDiscover: sid => {} }),
                 runner: ({
                     favoriteId: function(row) { testCase.favoriteIdRows.push(row); return "" },

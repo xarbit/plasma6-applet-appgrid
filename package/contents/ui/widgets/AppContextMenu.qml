@@ -2,30 +2,33 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Right-click context menu. Splits into two PlasmaComponents.Menu
-    instances so each only holds items relevant to its mode — gating
-    items inside one shared Menu via `visible: false` left ghost layout
-    rows because AppGridMenuItem's internal padding/insets
-    don't fully collapse with implicitHeight=0. Truly-conditional items
-    (jumplist, bulk Add/Remove favorites, Remove from Folder) use
-    Instantiator so non-applicable rows don't exist at all.
+    The right-click menus of the launcher's apps and folders: one app
+    (SingleAppMenu), a multi-selection (SelectionMenu), a favourites folder
+    (FavoritesFolderMenu), the empty favourites area and a KRunner result
+    (RunnerContextMenu). Each is its own PlasmaComponents.Menu holding only
+    its own rows. This owner reads what the menu is opened for once, as it
+    opens, and holds what they all use: the models and services, and the
+    signals for what the menus leave to the panel.
 */
 
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import org.kde.plasma.components as PlasmaComponents
 import "../js/favoriteid.js" as FavoriteId
 
 Item {
     id: contextMenu
 
-    // Launch/Hide go up to GridPanel for Kirigami.PromptDialog gating.
-    // Pin / Desktop / Copy run inline (immediately reversible).
+    // Launch / Hide go up to the panel for their confirmation; the rest run
+    // inline (they are easy to undo).
     signal bulkLaunchRequested(var sids)
     signal bulkHideRequested(var sids)
     signal toggleSelectionRequested(string sid)
     signal clearSelectionRequested()
+    signal openFolderRequested(string folderId)
+    signal renameFolderRequested(string folderId)
+    // A folder's "Launch All": its apps, for the bulk launch path.
+    signal folderLaunchRequested(var sids)
 
     property var appletInterface: null
     property var appsModel: null
@@ -43,48 +46,27 @@ Item {
     // (Add to Folder, New Folder, Remove from Folder).
     property bool foldersEnabled: false
     property bool favoritesActive: false
-    // Folders available at all (feature enabled + model present + editable). The
-    // favourites-tab gate is applied per-action where it matters (bulk/empty/folder menus).
-    readonly property bool _canFolder: foldersEnabled && favoritesGroupedModel && favoritesGroupedModel.editable
+
+    // The services the rows call:
+    //   launcherActions  pin to the task manager, add to the desktop, edit
+    //                    (LauncherActions), with the canPin/canAdd probes
+    //   launchService    an app's jump-list actions (LaunchService)
+    //   systemActions    Discover (SystemActions)
+    //   runner           a KRunner result's actions (RunnerService)
+    required property var launcherActions
+    required property var launchService
+    required property var systemActions
+    required property var runner
+
+    // Folders available at all (feature enabled + model present + editable).
+    readonly property bool _canFolder: foldersEnabled && !!favoritesGroupedModel && favoritesGroupedModel.editable
     // Folders are single level: creating / adding to a folder is only allowed at
     // the top level, never while drilled inside one (no nesting). "Remove from
     // Folder" stays available inside — it uses _canFolder. (#18)
     readonly property bool _canCreateFolder: _canFolder && !favoritesGroupedModel.canGoBack
-    property bool _folderSubAdded: false
-    property bool _bulkFolderSubAdded: false
-    property bool _activitiesSubAdded: false
-    // Id-set of the activities currently built into the submenu, so its item list
-    // is only rebuilt when the set changes (not on every open).
-    property string _activitiesSig: ""
-    signal openFolderRequested(string folderId)
-    signal renameFolderRequested(string folderId)
-    // A folder's "Launch All": its apps, for the bulk launch path.
-    signal folderLaunchRequested(var sids)
 
-    // Plasmoid-glue callbacks, injected from the boundary:
-    //   appActions(sid) -> list        launchAppAction(sid, actionName)
-    //   canManageInDiscover(sid) -> bool   openInDiscover(sid)
-    //   pinToTaskManager(df)           addToDesktop(df)
-    //   editApplication(sid)           runRunnerAction(rowIdx, actionIdx)
-    // Hidden-apps list persists via AppFilterModel.hiddenAppsChanged
-    // (GridPanel listens), so menu items just mutate the model.
-    required property var appActions
-    required property var launchAppAction
-    required property var canManageInDiscover
-    required property var openInDiscover
-    required property var pinToTaskManager
-    required property var addToDesktop
-    // Capability probes (bool-returning) — hide actions that would no-op: the
-    // Task Manager pin needs the plasmoid's D-Bus helper (absent when the daemon
-    // runs without a plasmoid), Add to Desktop needs a Folder View desktop.
-    required property var canPinToTaskManager
-    required property var canAddToDesktop
-    required property var editApplication
-    required property var runRunnerAction
-
-    // Popup snapshot — populated by showForApp() before popping the
-    // appropriate Menu. Lives here so both child Menus + their dynamic
-    // delegates share one source of truth.
+    // What the menu was opened for — read by showForApp() as it opens, so
+    // nothing goes stale while it shows.
     property string popupStorageId: ""
     property string popupDesktopFile: ""
     property bool popupIsFavorite: false
@@ -93,28 +75,22 @@ Item {
     // desktop switched to/from Folder View).
     property bool popupCanPin: true
     property bool popupCanAddToDesktop: true
+    property bool popupCanManageInDiscover: false
     property var popupActions: []
-    // Activity submenu state for the right-clicked favourite: the running
-    // activities and the ones it's pinned to (see ActivityFavoritesMenu).
-    property var popupActivities: []
-    property var popupLinkedActivities: []
     property list<string> popupSelectedSids: []
     property bool popupIsSelected: false
-    // Whether the originating view supports multi-select. Search-results
-    // + recents don't; gates the "Add/Remove from Selection" item out of
-    // the single menu so it stops looking like a silent no-op.
+    // Whether the originating view has a multi-selection (the search results
+    // don't); gates "Add/Remove from Selection".
     property bool popupCanSelect: true
-    readonly property bool isMultiSelect: popupIsSelected
-                                          && popupSelectedSids.length >= 2
+    readonly property bool isMultiSelect: popupIsSelected && popupSelectedSids.length >= 2
     property int popupNonFavCount: 0
     property int popupFavCount: 0
     // Whether the app is in a favourites folder ("Remove from Folder").
     property bool popupInFolder: false
 
-    // Favorites-mutation rows lock out while a drag-reorder is in flight
-    // to avoid clobbering KAStats state mid-move.
-    readonly property bool _favsLocked: appletInterface
-                                        && appletInterface.isDragInFlight
+    // Favourite rows lock out while a drag-reorder is in flight, so they
+    // don't clobber the KActivities state mid-move.
+    readonly property bool _favsLocked: !!appletInterface && appletInterface.isDragInFlight
 
     // Same-row reclick guard. Menu's onAboutToHide fires synchronously on
     // click-outside dismissal, then the same click continues to the source
@@ -133,9 +109,7 @@ Item {
 
     // Kill the rubber-band overshoot when a menu overflows the popup and
     // scrolls (long jumplists like Steam) — #154. Called on aboutToShow
-    // rather than Component.onCompleted because PlasmaComponents.Menu
-    // constructs contentItem lazily on first open; running earlier would
-    // silently no-op. The assignment is idempotent across re-opens.
+    // because PlasmaComponents.Menu builds contentItem lazily on first open.
     function _stopMenuBounce(menu) {
         if (menu.contentItem && "boundsBehavior" in menu.contentItem)
             menu.contentItem.boundsBehavior = Flickable.StopAtBounds
@@ -153,83 +127,24 @@ Item {
         popupIsSelected = popupSelectedSids.indexOf(storageId) >= 0
         popupCanSelect = canSelect
         popupIsHidden = appsModel ? appsModel.isHidden(storageId) : false
-        popupInFolder = !!storageId && !!_canFolder
+        popupInFolder = !!storageId && _canFolder
                         && favoritesGroupedModel.folderOfMember(storageId).length > 0
-        const prefixed = FavoriteId.toPrefixed(storageId)
-        popupIsFavorite = sharedFavoritesModel
-                          ? sharedFavoritesModel.isFavorite(prefixed)
-                          : false
+        popupIsFavorite = !!favoritesManager && favoritesManager.isFavorite(storageId)
 
-        var favs = 0
-        if (isMultiSelect && sharedFavoritesModel) {
-            for (var i = 0; i < popupSelectedSids.length; ++i) {
-                if (sharedFavoritesModel.isFavorite(
-                        FavoriteId.toPrefixed(popupSelectedSids[i])))
-                    ++favs
-            }
-        }
+        let favs = 0
+        if (isMultiSelect && favoritesManager)
+            favs = popupSelectedSids.filter(sid => favoritesManager.isFavorite(sid)).length
         popupFavCount = favs
         popupNonFavCount = popupSelectedSids.length - favs
-        popupActions = isMultiSelect ? [] : (contextMenu.appActions(storageId) || [])
-        popupCanPin = contextMenu.canPinToTaskManager()
-        popupCanAddToDesktop = contextMenu.canAddToDesktop()
-
-        // Attach the "Add to Folder" submenu only for a favourite on the
-        // favourites tab; a submenu's `visible` is its open-state, so it can't be
-        // bound — add/remove it instead.
-        if (!isMultiSelect) {
-            // Any app can be added to a folder; a non-favourite is favourited in
-            // the process (see the submenu handlers).
-            const wantFolderSub = _canCreateFolder && popupStorageId.length > 0
-            if (wantFolderSub && !_folderSubAdded) {
-                singleMenu.addMenu(addToFolderSubmenu)
-                _folderSubAdded = true
-            } else if (!wantFolderSub && _folderSubAdded) {
-                singleMenu.removeMenu(addToFolderSubmenu)
-                _folderSubAdded = false
-            }
-
-            // "Show in Favorites" activity submenu — attached whenever more than
-            // one activity exists (a stable condition, so it's added once and
-            // stays, like the folder submenu). Picking an activity on a
-            // non-favourite favourites it there.
-            const acts = enableActivities && sharedFavoritesModel ? sharedFavoritesModel.activities() : []
-            const wantActivitiesSub = acts.length > 1
-            if (wantActivitiesSub) {
-                // Rebuild the item list only when the activity set actually
-                // changes; a fresh array every open would churn the Instantiator
-                // and corrupt the menu.
-                const sig = acts.map(a => a.id).join("\n")
-                if (sig !== _activitiesSig) {
-                    popupActivities = acts
-                    _activitiesSig = sig
-                }
-                popupLinkedActivities = popupIsFavorite
-                    ? sharedFavoritesModel.linkedActivitiesFor(prefixed) : []
-                if (!_activitiesSubAdded) {
-                    singleMenu.addMenu(activitiesSubmenu)
-                    _activitiesSubAdded = true
-                }
-            } else if (_activitiesSubAdded) {
-                singleMenu.removeMenu(activitiesSubmenu)
-                _activitiesSubAdded = false
-            }
-        } else {
-            // Bulk "Add to Folder" — any selection; non-favourites are favourited.
-            const wantBulkSub = _canCreateFolder && popupSelectedSids.length > 0
-            if (wantBulkSub && !_bulkFolderSubAdded) {
-                bulkMenu.addMenu(addSelectionToFolderSubmenu)
-                _bulkFolderSubAdded = true
-            } else if (!wantBulkSub && _bulkFolderSubAdded) {
-                bulkMenu.removeMenu(addSelectionToFolderSubmenu)
-                _bulkFolderSubAdded = false
-            }
-        }
+        popupActions = isMultiSelect ? [] : (launchService.appActions(storageId) || [])
+        popupCanPin = launcherActions.canPinToTaskManager()
+        popupCanAddToDesktop = launcherActions.canAddToDesktop()
+        popupCanManageInDiscover = !isMultiSelect && systemActions.canManageInDiscover(storageId)
 
         if (isMultiSelect)
-            bulkMenu.popup()
+            selectionMenu.showForSelection()
         else
-            singleMenu.popup()
+            appMenu.showForApp()
     }
 
     function showForRunner(runnerSourceIndex, actions, favoriteId) {
@@ -242,403 +157,57 @@ Item {
     }
 
     function showForFolder(folderId) {
-        if (!_canFolder || !folderId)
-            return
-        folderMenu.folderGlobal = favoritesGroupedModel.isFolderGlobal(folderId)
-        folderMenu.showFor(folderId)
+        if (_canFolder && folderId)
+            folderMenu.showForFolder(folderId)
     }
 
     function showForEmptyArea() {
-        if (!_canCreateFolder)
-            return
-        emptyAreaMenu.popup()
+        if (_canCreateFolder)
+            emptyAreaMenu.popup()
     }
 
     function close() {
-        singleMenu.close()
-        bulkMenu.close()
+        appMenu.close()
+        selectionMenu.close()
         runnerMenu.close()
         folderMenu.close()
         emptyAreaMenu.close()
     }
 
-    function _desktopFileFor(sid) {
-        if (!appsModel || !sid) return ""
-        const a = appsModel.getByStorageId(sid)
-        return (a && a.desktopFile) ? a.desktopFile : ""
-    }
-
-    function _bulkAdd(addFn) {
-        if (!appsModel) return
-        const sids = popupSelectedSids
-        for (var i = 0; i < sids.length; ++i) {
-            const df = _desktopFileFor(sids[i])
-            if (df) addFn(df)
-        }
-    }
-
-    // Toggle a single already-prefixed KAStats favorite id on/off. Shared by the
-    // grid-app row and the app-backed runner-result row.
+    // Toggle an already-prefixed KActivities favourite id. Shared by the app
+    // menu and the app-backed runner result.
     function _toggleFavorite(id) {
         if (favoritesManager && id)
             favoritesManager.toggleFavorite(FavoriteId.stripPrefix(id))
     }
 
-    function _removeFromAnyFolder(sid) {
-        if (favoritesManager)
-            favoritesManager.removeFromAnyFolder(sid)
+    function _copyText(text) {
+        clipboard.text = text
+        clipboard.selectAll()
+        clipboard.copy()
     }
 
-    function _ensureFavorite(sid) {
-        if (favoritesManager)
-            favoritesManager.ensureFavorite(sid)
-    }
+    // Hidden TextEdit as the clipboard sink — same pattern as PrefixInfoView,
+    // sidesteps the QtQuick.Dialogs / Clipboard plugin imports.
+    TextEdit { id: clipboard; visible: false }
 
-    // Add the whole selection to @p folderId, favouriting any that aren't (#18).
-    function _addSelectionToFolder(folderId) {
-        if (!favoritesGroupedModel || !folderId)
-            return
-        for (var i = 0; i < popupSelectedSids.length; ++i) {
-            _ensureFavorite(popupSelectedSids[i])
-            favoritesGroupedModel.addToFolder(folderId, popupSelectedSids[i])
-        }
-    }
-
-    function _bulkSetFavorite(addNotRemove) {
-        if (!favoritesManager) return
-        const sids = popupSelectedSids
-        for (var i = 0; i < sids.length; ++i) {
-            if (addNotRemove) {
-                favoritesManager.ensureFavorite(sids[i])
-            } else {
-                favoritesManager.removeFavorite(sids[i])
-            }
-        }
-    }
-
-    function _copySelectedPaths() {
-        const sids = popupSelectedSids
-        var paths = []
-        for (var i = 0; i < sids.length; ++i) {
-            const df = _desktopFileFor(sids[i])
-            if (df) paths.push(df)
-        }
-        bulkPathClipboard.text = paths.join("\n")
-        bulkPathClipboard.selectAll()
-        bulkPathClipboard.copy()
-    }
-
-    // Hidden TextEdit clipboard sink — same pattern as PrefixInfoView,
-    // sidesteps QtQuick.Dialogs / Clipboard plugin imports.
-    TextEdit { id: bulkPathClipboard; visible: false }
-
-    AppGridMenu {
-        id: singleMenu
-
+    SingleAppMenu {
+        id: appMenu
+        owner: contextMenu
         onAboutToHide: contextMenu._trackClose()
-        onAboutToShow: contextMenu._stopMenuBounce(singleMenu)
-
-        Instantiator {
-            model: contextMenu.popupActions
-            delegate: AppGridMenuItem {
-                required property var modelData
-                icon.name: modelData.icon || ""
-                text: modelData.text
-                onClicked: {
-                    contextMenu.launchAppAction(contextMenu.popupStorageId, modelData.name)
-                    singleMenu.close()
-                }
-            }
-            onObjectAdded: (idx, obj) => singleMenu.insertItem(idx, obj)
-            onObjectRemoved: (idx, obj) => singleMenu.removeItem(obj)
-        }
-
-        AppGridMenuItem {
-            icon.name: contextMenu.popupIsFavorite ? "bookmark-remove" : "bookmark-new"
-            text: contextMenu.popupIsFavorite
-                  ? i18nd("dev.xarbit.appgrid", "Remove from Favorites")
-                  : i18nd("dev.xarbit.appgrid", "Add to Favorites")
-            enabled: !contextMenu._favsLocked
-            onClicked: {
-                if (contextMenu.popupStorageId)
-                    contextMenu._toggleFavorite(FavoriteId.toPrefixed(contextMenu.popupStorageId))
-            }
-        }
-
-        // Take the app out of its folder (it stays a favourite) — only shown
-        // when it is currently in one. Instantiator + active rather than
-        // visible:false, which leaves a blank ghost row (see header) (#18).
-        Instantiator {
-            active: contextMenu.popupInFolder
-            delegate: AppGridMenuItem {
-                icon.name: "folder-remove"
-                text: i18nd("dev.xarbit.appgrid", "Remove from Folder")
-                onClicked: contextMenu._removeFromAnyFolder(contextMenu.popupStorageId)
-            }
-            onObjectAdded: (idx, obj) => singleMenu.insertItem(idx, obj)
-            onObjectRemoved: (idx, obj) => singleMenu.removeItem(obj)
-        }
-
-
-        // Instantiator + active rather than `visible: false` so the row
-        // doesn't leave a blank padding gap when the originating view
-        // (search-results, prefix view) has no multi-select.
-        Instantiator {
-            active: contextMenu.popupCanSelect
-            delegate: AppGridMenuItem {
-                icon.name: contextMenu.popupIsSelected ? "edit-select-none" : "edit-select-all"
-                text: contextMenu.popupIsSelected
-                      ? i18nd("dev.xarbit.appgrid", "Remove from Selection")
-                      : i18nd("dev.xarbit.appgrid", "Add to Selection")
-                onClicked: contextMenu.toggleSelectionRequested(contextMenu.popupStorageId)
-            }
-            onObjectAdded: (idx, obj) => singleMenu.insertItem(idx, obj)
-            onObjectRemoved: (idx, obj) => singleMenu.removeItem(obj)
-        }
-
-        Instantiator {
-            active: contextMenu.popupCanSelect
-            delegate: PlasmaComponents.MenuSeparator {}
-            onObjectAdded: (idx, obj) => singleMenu.insertItem(idx, obj)
-            onObjectRemoved: (idx, obj) => singleMenu.removeItem(obj)
-        }
-
-        AppGridMenuItem {
-            icon.name: "pin"
-            text: i18nd("dev.xarbit.appgrid", "Pin to Task Manager")
-            visible: contextMenu.popupCanPin
-            onClicked: contextMenu.pinToTaskManager(contextMenu.popupDesktopFile)
-        }
-
-        AppGridMenuItem {
-            icon.name: "desktop"
-            text: i18nd("dev.xarbit.appgrid", "Add to Desktop")
-            visible: contextMenu.popupCanAddToDesktop
-            onClicked: contextMenu.addToDesktop(contextMenu.popupDesktopFile)
-        }
-
-        AppGridMenuItem {
-            icon.name: "document-edit"
-            text: i18nd("dev.xarbit.appgrid", "Edit Application")
-            onClicked: contextMenu.editApplication(contextMenu.popupStorageId)
-        }
-
-        // Truly-conditional item — Instantiator creates/destroys instead
-        // of visible:false, which leaves a blank row in PlasmaComponents.Menu.
-        Instantiator {
-            active: contextMenu.canManageInDiscover(contextMenu.popupStorageId)
-            delegate: AppGridMenuItem {
-                icon.name: "plasmadiscover"
-                text: i18nd("dev.xarbit.appgrid", "Manage in Discover…")
-                onClicked: contextMenu.openInDiscover(contextMenu.popupStorageId)
-            }
-            onObjectAdded: (idx, obj) => singleMenu.addItem(obj)
-            onObjectRemoved: (idx, obj) => singleMenu.removeItem(obj)
-        }
-
-        PlasmaComponents.MenuSeparator {}
-
-        AppGridMenuItem {
-            icon.name: contextMenu.popupIsHidden ? "view-visible" : "view-hidden"
-            text: contextMenu.popupIsHidden
-                  ? i18nd("dev.xarbit.appgrid", "Unhide Application")
-                  : i18nd("dev.xarbit.appgrid", "Hide Application")
-            onClicked: {
-                if (!contextMenu.appsModel || !contextMenu.popupStorageId) return
-                if (contextMenu.popupIsHidden)
-                    contextMenu.appsModel.unhideApp(contextMenu.popupStorageId)
-                else
-                    contextMenu.appsModel.hideByStorageId(contextMenu.popupStorageId)
-            }
-        }
+        onAboutToShow: contextMenu._stopMenuBounce(appMenu)
     }
 
-    AppGridMenu {
-        id: bulkMenu
-
+    SelectionMenu {
+        id: selectionMenu
+        owner: contextMenu
         onAboutToHide: contextMenu._trackClose()
-        onAboutToShow: contextMenu._stopMenuBounce(bulkMenu)
-
-        // Add N inserts at 0 (top). Remove N lands at 0 or 1 based on
-        // whether Add N is already present — both at top, Add N above.
-        Instantiator {
-            active: contextMenu.popupNonFavCount > 0
-            delegate: AppGridMenuItem {
-                icon.name: "bookmark-new"
-                text: i18ndp("dev.xarbit.appgrid",
-                             "Add %1 to Favorites", "Add %1 to Favorites",
-                             contextMenu.popupNonFavCount)
-                enabled: !contextMenu._favsLocked
-                onClicked: contextMenu._bulkSetFavorite(true)
-            }
-            onObjectAdded: (idx, obj) => bulkMenu.insertItem(0, obj)
-            onObjectRemoved: (idx, obj) => bulkMenu.removeItem(obj)
-        }
-
-        Instantiator {
-            active: contextMenu.popupFavCount > 0
-            delegate: AppGridMenuItem {
-                icon.name: "bookmark-remove"
-                text: i18ndp("dev.xarbit.appgrid",
-                             "Remove %1 from Favorites", "Remove %1 from Favorites",
-                             contextMenu.popupFavCount)
-                enabled: !contextMenu._favsLocked
-                onClicked: contextMenu._bulkSetFavorite(false)
-            }
-            onObjectAdded: (idx, obj) => bulkMenu.insertItem(
-                contextMenu.popupNonFavCount > 0 ? 1 : 0, obj)
-            onObjectRemoved: (idx, obj) => bulkMenu.removeItem(obj)
-        }
-
-
-        AppGridMenuItem {
-            icon.name: "pin"
-            text: i18ndp("dev.xarbit.appgrid",
-                         "Pin %1 to Task Manager", "Pin %1 to Task Manager",
-                         contextMenu.popupSelectedSids.length)
-            visible: contextMenu.popupCanPin
-            onClicked: contextMenu._bulkAdd(contextMenu.pinToTaskManager)
-        }
-
-        AppGridMenuItem {
-            icon.name: "desktop"
-            text: i18ndp("dev.xarbit.appgrid",
-                         "Add %1 to Desktop", "Add %1 to Desktop",
-                         contextMenu.popupSelectedSids.length)
-            visible: contextMenu.popupCanAddToDesktop
-            onClicked: contextMenu._bulkAdd(contextMenu.addToDesktop)
-        }
-
-        AppGridMenuItem {
-            icon.name: "system-run"
-            text: i18ndp("dev.xarbit.appgrid",
-                         "Launch %1 application", "Launch %1 applications",
-                         contextMenu.popupSelectedSids.length)
-            onClicked: contextMenu.bulkLaunchRequested(contextMenu.popupSelectedSids)
-        }
-
-        PlasmaComponents.MenuSeparator {}
-
-        AppGridMenuItem {
-            icon.name: "edit-copy"
-            text: i18ndp("dev.xarbit.appgrid",
-                         "Copy %1 path", "Copy %1 paths",
-                         contextMenu.popupSelectedSids.length)
-            onClicked: contextMenu._copySelectedPaths()
-        }
-
-        AppGridMenuItem {
-            icon.name: "view-hidden"
-            text: i18ndp("dev.xarbit.appgrid",
-                         "Hide %1 application", "Hide %1 applications",
-                         contextMenu.popupSelectedSids.length)
-            onClicked: contextMenu.bulkHideRequested(contextMenu.popupSelectedSids)
-        }
-
-        PlasmaComponents.MenuSeparator {}
-
-        AppGridMenuItem {
-            icon.name: "edit-select-none"
-            text: i18nd("dev.xarbit.appgrid", "Remove from Selection")
-            onClicked: contextMenu.toggleSelectionRequested(contextMenu.popupStorageId)
-        }
+        onAboutToShow: contextMenu._stopMenuBounce(selectionMenu)
     }
 
-    // A favourites folder (#18): rename, activities, ungroup (which returns
-    // its members to loose favourites) after the shared Open / Launch All.
-    FolderContextMenu {
+    FavoritesFolderMenu {
         id: folderMenu
-        // Whether the folder shows in every activity.
-        property bool folderGlobal: false
-        appIdsOf: id => contextMenu.favoritesGroupedModel ? contextMenu.favoritesGroupedModel.folderMembers(id) : []
-        onOpenRequested: folderId => contextMenu.openFolderRequested(folderId)
-        onLaunchAllRequested: appIds => contextMenu.folderLaunchRequested(appIds)
-
-        AppGridMenuItem {
-            icon.name: "edit-rename"
-            text: i18nd("dev.xarbit.appgrid", "Rename Folder…")
-            onClicked: {
-                contextMenu.renameFolderRequested(folderMenu.folderId)
-                folderMenu.close()
-            }
-        }
-        // Per-activity opt-in only: otherwise every folder is global anyway.
-        AppGridMenuItem {
-            visible: contextMenu.enableActivities
-            checkable: true
-            checked: folderMenu.folderGlobal
-            text: i18nd("dev.xarbit.appgrid", "Show in all activities")
-            onClicked: {
-                if (contextMenu.favoritesGroupedModel)
-                    contextMenu.favoritesGroupedModel.setFolderGlobal(folderMenu.folderId, !folderMenu.folderGlobal)
-                folderMenu.close()
-            }
-        }
-        PlasmaComponents.MenuSeparator {}
-        AppGridMenuItem {
-            icon.name: "folder-remove"
-            text: i18nd("dev.xarbit.appgrid", "Ungroup Folder")
-            enabled: contextMenu.favoritesGroupedModel
-            onClicked: {
-                contextMenu.favoritesGroupedModel.ungroupFolder(folderMenu.folderId)
-                folderMenu.close()
-            }
-        }
-    }
-
-    // "Show in Favorites" submenu — attached to the single menu only for a
-    // favourite with more than one activity (see showForApp). Pins the favourite
-    // to the chosen activities (state lives in KActivities, shared by every variant).
-    ActivityFavoritesMenu {
-        id: activitiesSubmenu
-        activities: contextMenu.popupActivities
-        linkedActivities: contextMenu.popupLinkedActivities
-        isFavorite: contextMenu.popupIsFavorite
-        onChosen: activityIds => {
-            if (contextMenu.sharedFavoritesModel) {
-                contextMenu.sharedFavoritesModel.setLinkedActivities(
-                    FavoriteId.toPrefixed(contextMenu.popupStorageId), activityIds)
-            }
-            contextMenu.close()
-        }
-    }
-
-    // "Add to Folder" submenu — attached to the single menu only for favourites
-    // (see showForApp). Adds (and favourites, if needed) the clicked app (#18).
-    FolderTargetMenu {
-        id: addToFolderSubmenu
-        foldersModel: contextMenu.favoritesGroupedModel
-        disabledMemberSid: contextMenu.popupStorageId
-        onFolderChosen: folderId => {
-            contextMenu._ensureFavorite(contextMenu.popupStorageId)
-            contextMenu.favoritesGroupedModel.addToFolder(folderId, contextMenu.popupStorageId)
-            contextMenu.close()
-        }
-        onNewFolderRequested: {
-            contextMenu._ensureFavorite(contextMenu.popupStorageId)
-            contextMenu.favoritesGroupedModel.createFolderFromMembers([contextMenu.popupStorageId])
-            contextMenu.close()
-        }
-    }
-
-    // Bulk "Add to Folder" — attached to the multi-select menu; adds the whole
-    // selection to a folder, or makes a new folder from it (#18).
-    FolderTargetMenu {
-        id: addSelectionToFolderSubmenu
-        foldersModel: contextMenu.favoritesGroupedModel
-        onFolderChosen: folderId => {
-            contextMenu._addSelectionToFolder(folderId)
-            contextMenu.clearSelectionRequested()
-            contextMenu.close()
-        }
-        onNewFolderRequested: {
-            for (var i = 0; i < contextMenu.popupSelectedSids.length; ++i)
-                contextMenu._ensureFavorite(contextMenu.popupSelectedSids[i])
-            contextMenu.favoritesGroupedModel.createFolderFromMembers(
-                contextMenu.popupSelectedSids, i18nd("dev.xarbit.appgrid", "New Folder"))
-            contextMenu.clearSelectionRequested()
-            contextMenu.close()
-        }
+        owner: contextMenu
     }
 
     // Right-click on empty favourites space: create a new (empty) folder (#18).
@@ -647,18 +216,24 @@ Item {
         AppGridMenuItem {
             icon.name: "folder-new"
             text: i18nd("dev.xarbit.appgrid", "Create Folder…")
-            enabled: contextMenu.favoritesGroupedModel
+            enabled: !!contextMenu.favoritesGroupedModel
             onClicked: contextMenu.favoritesGroupedModel.createEmptyFolder()
         }
     }
 
-    // KRunner search results. Same menu owner as the app context menus so
-    // bounds/padding/close-tracking fixes apply once.
+    // KRunner search results. Same owner as the app menus so the bounds,
+    // padding and close tracking apply once.
     RunnerContextMenu {
         id: runnerMenu
         onAboutToHide: contextMenu._trackClose()
         onAboutToShow: contextMenu._stopMenuBounce(runnerMenu)
         onFavoriteToggled: favoriteId => contextMenu._toggleFavorite(favoriteId)
-        onActionTriggered: (sourceIndex, actionIndex) => contextMenu.runRunnerAction(sourceIndex, actionIndex)
+        onActionTriggered: function(sourceIndex, actionIndex) {
+            if (contextMenu.runner.runAction(sourceIndex, actionIndex))
+                contextMenu.closeRequested()
+        }
     }
+
+    // A runner action ran: the launcher closes.
+    signal closeRequested()
 }
