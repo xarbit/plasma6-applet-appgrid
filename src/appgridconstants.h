@@ -22,12 +22,18 @@ namespace Dbus
 inline constexpr QLatin1String Service{APPGRID_APP_ID};
 inline constexpr QLatin1String Path{"/Standalone"};
 inline constexpr QLatin1String Interface{APPGRID_APP_ID ".Standalone"};
-// Timeout for the few blocking session-bus calls (the version probe, KWin's
-// active output, the panel's screen). The default is 25s — far too long for a
-// call made from plasmashell or the launcher's open path, where an unresponsive
-// peer would otherwise freeze the panel/window. These peers answer in single-
-// digit milliseconds; on timeout each caller has a safe fallback.
+// Timeout for the few blocking session-bus calls (the version probe; the
+// launcher-open screen lookups use the shorter OpenPathTimeoutMs). The default
+// is 25s — far too long for a call made from plasmashell, where an
+// unresponsive peer would otherwise freeze the panel. These peers answer in
+// single-digit milliseconds; on timeout each caller has a safe fallback.
 inline constexpr int CallTimeoutMs = 1000;
+// Timeout for the screen lookups on the launcher-open path (KWin's active
+// output, the plasmoid's panel screen). They block the window from showing,
+// so cap the wait well below CallTimeoutMs: both answer in under a
+// millisecond normally (about 15 ms at worst measured with plasmashell
+// busy), and a miss falls back to the cursor's / primary screen.
+inline constexpr int OpenPathTimeoutMs = 250;
 // Method names exported by AppGridStandalone — must match its Q_SCRIPTABLE slots.
 inline constexpr QLatin1String MethodToggle{"Toggle"};
 inline constexpr QLatin1String MethodToggleCompact{"ToggleCompact"};

@@ -65,7 +65,7 @@ QScreen *activeScreen()
     auto msg =
         QDBusMessage::createMethodCall(AppGrid::KWinDbus::Service, AppGrid::KWinDbus::Path, AppGrid::KWinDbus::Interface, AppGrid::KWinDbus::ActiveOutputName);
     // Short timeout on the launcher-open path; fall back to the cursor's screen.
-    const QDBusReply<QString> reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, AppGrid::Dbus::CallTimeoutMs);
+    const QDBusReply<QString> reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, AppGrid::Dbus::OpenPathTimeoutMs);
     QScreen *screen = reply.isValid() ? screenByName(reply.value()) : nullptr;
     return screen ? screen : screenForCursor();
 }
@@ -78,7 +78,7 @@ QScreen *panelScreen()
                                               AppGrid::PlasmoidDbus::Path,
                                               AppGrid::PlasmoidDbus::Interface,
                                               AppGrid::PlasmoidDbus::PanelScreenName);
-    const QDBusReply<QString> reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, AppGrid::Dbus::CallTimeoutMs);
+    const QDBusReply<QString> reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, AppGrid::Dbus::OpenPathTimeoutMs);
     return reply.isValid() ? screenByName(reply.value()) : nullptr;
 }
 }
