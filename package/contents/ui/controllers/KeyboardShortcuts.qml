@@ -19,9 +19,10 @@ import QtQuick
 Item {
     id: shortcuts
 
-    // The owning GridView whose KAStats model the reorder shortcuts mutate.
-    // We read its currentIndex, count, effectiveColumns, model,
-    // sharedFavoritesModel, and favoritesActive.
+    // The owning AppGridView. The reorder shortcuts move the highlighted entry
+    // in its grouped favourites model (the stored order, folders included);
+    // we read currentIndex, count, effectiveColumns, model, groupedModel,
+    // groupEditable and favoritesActive.
     required property GridView gridView
 
     required property bool sortFavoritesAlphabetically
@@ -32,8 +33,9 @@ Item {
     // dependency changes — an imperative function call wouldn't track these
     // inside a binding.
     readonly property bool _canReorder: gridView.favoritesActive
-               && gridView.sharedFavoritesModel
-               && gridView.model === gridView.sharedFavoritesModel
+               && gridView.groupEditable
+               && !!gridView.groupedModel
+               && gridView.model === gridView.groupedModel
                && !sortFavoritesAlphabetically
                && gridView.currentIndex >= 0
 
@@ -41,7 +43,7 @@ Item {
         if (!shortcuts._canReorder) return false
         if (target < 0 || target >= gridView.count
                 || target === gridView.currentIndex) return false
-        gridView.sharedFavoritesModel.moveRow(gridView.currentIndex, target)
+        gridView.groupedModel.moveRow(gridView.currentIndex, target)
         gridView.currentIndex = target
         return true
     }
