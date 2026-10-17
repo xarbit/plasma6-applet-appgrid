@@ -45,7 +45,7 @@ TestCase {
     function make(sorted) {
         var c = Qt.createComponent("../../package/contents/ui/controllers/KeyboardShortcuts.qml")
         verify(c.status === Component.Ready, "load error: " + c.errorString())
-        return createTemporaryObject(c, testCase, { gridView: grid, sortFavoritesAlphabetically: sorted })
+        return createTemporaryObject(c, testCase, { grid: grid, sortFavoritesAlphabetically: sorted })
     }
 
     function init() {

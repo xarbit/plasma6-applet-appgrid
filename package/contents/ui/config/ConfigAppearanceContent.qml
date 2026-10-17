@@ -27,19 +27,19 @@ Kirigami.FormLayout {
         id: showDividers
         Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Grid:")
         text: i18nd("dev.xarbit.appgrid", "Show divider lines")
-        checked: (root.revision, root.configuration.showDividers)
+        checked: { void root.revision; return root.configuration.showDividers }
         onToggled: root.configuration.showDividers = checked
     }
     QQC2.CheckBox {
         id: showScrollbars
         text: i18nd("dev.xarbit.appgrid", "Show scrollbars")
-        checked: (root.revision, root.configuration.showScrollbars)
+        checked: { void root.revision; return root.configuration.showScrollbars }
         onToggled: root.configuration.showScrollbars = checked
     }
     QQC2.CheckBox {
         id: showTooltips
         text: i18nd("dev.xarbit.appgrid", "Show tooltips on app icons")
-        checked: (root.revision, root.configuration.showTooltips)
+        checked: { void root.revision; return root.configuration.showTooltips }
         onToggled: root.configuration.showTooltips = checked
         QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
             "Hover-tooltips on grid + recents + by-category app icons. Other tooltips (header actions, More options, settings) are always shown — Qt/KDE has no system-wide tooltip toggle to follow.")
@@ -49,25 +49,25 @@ Kirigami.FormLayout {
     QQC2.CheckBox {
         id: showNewAppBadge
         text: i18nd("dev.xarbit.appgrid", "Show new app badge")
-        checked: (root.revision, root.configuration.showNewAppBadge)
+        checked: { void root.revision; return root.configuration.showNewAppBadge }
         onToggled: root.configuration.showNewAppBadge = checked
     }
     QQC2.CheckBox {
         id: iconShadow
         text: i18nd("dev.xarbit.appgrid", "Drop shadow behind app icons")
-        checked: (root.revision, root.configuration.iconShadow)
+        checked: { void root.revision; return root.configuration.iconShadow }
         onToggled: root.configuration.iconShadow = checked
     }
     QQC2.CheckBox {
         id: hoverHighlight
         text: i18nd("dev.xarbit.appgrid", "Highlight icons on hover")
-        checked: (root.revision, root.configuration.hoverHighlight)
+        checked: { void root.revision; return root.configuration.hoverHighlight }
         onToggled: root.configuration.hoverHighlight = checked
     }
     QQC2.CheckBox {
         id: independentTextSize
         text: i18nd("dev.xarbit.appgrid", "Apply Size to app icons only")
-        checked: (root.revision, root.configuration.independentTextSize)
+        checked: { void root.revision; return root.configuration.independentTextSize }
         onToggled: root.configuration.independentTextSize = checked
         QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
             "By default the Size setting scales the whole panel. Check this to make Size change only the app icons, leaving labels, secondary icons, and spacing at the default — e.g. Medium icons with the default font.")
@@ -77,7 +77,7 @@ Kirigami.FormLayout {
     QQC2.CheckBox {
         id: reduceGridSpacing
         text: i18nd("dev.xarbit.appgrid", "Reduce grid spacing")
-        checked: (root.revision, root.configuration.reduceGridSpacing)
+        checked: { void root.revision; return root.configuration.reduceGridSpacing }
         onToggled: root.configuration.reduceGridSpacing = checked
         QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid",
             "Pack the app grid more tightly by using a narrower cell width. Long single-word names may wrap to a second line sooner.")
@@ -87,14 +87,14 @@ Kirigami.FormLayout {
     QQC2.CheckBox {
         id: hideLabelsOnFavorites
         text: i18nd("dev.xarbit.appgrid", "Hide app labels on favorites tab")
-        enabled: (root.revision, root.configuration.showCategoryBar)
-        checked: (root.revision, root.configuration.hideLabelsOnFavorites)
+        enabled: { void root.revision; return root.configuration.showCategoryBar }
+        checked: { void root.revision; return root.configuration.hideLabelsOnFavorites }
         onToggled: root.configuration.hideLabelsOnFavorites = checked
     }
     QQC2.CheckBox {
         id: favoriteFoldersEnabled
         text: i18nd("dev.xarbit.appgrid", "Group favorites into folders")
-        checked: (root.revision, root.configuration.favoriteFoldersEnabled)
+        checked: { void root.revision; return root.configuration.favoriteFoldersEnabled }
         onToggled: root.configuration.favoriteFoldersEnabled = checked
     }
     Item {
@@ -107,7 +107,7 @@ Kirigami.FormLayout {
         visible: !root.isPanel
         Kirigami.FormData.label: i18nd("dev.xarbit.appgrid", "Compact mode:")
         text: i18nd("dev.xarbit.appgrid", "Hide app grid until I start typing")
-        checked: (root.revision, root.configuration.hideGridWhenEmpty)
+        checked: { void root.revision; return root.configuration.hideGridWhenEmpty }
         onToggled: root.configuration.hideGridWhenEmpty = checked
     }
     QQC2.Label {
@@ -136,7 +136,7 @@ Kirigami.FormLayout {
             i18nd("dev.xarbit.appgrid", "Spin"),
             i18nd("dev.xarbit.appgrid", "Shuffle")
         ]
-        currentIndex: (root.revision, root.configuration.hoverAnimation)
+        currentIndex: { void root.revision; return root.configuration.hoverAnimation }
         onActivated: root.configuration.hoverAnimation = currentIndex
     }
 
@@ -144,7 +144,7 @@ Kirigami.FormLayout {
         id: shakeOnOpen
         text: i18nd("dev.xarbit.appgrid", "Animate icons when the launcher opens")
         enabled: hoverAnimation.currentIndex > 0
-        checked: (root.revision, root.configuration.shakeOnOpen)
+        checked: { void root.revision; return root.configuration.shakeOnOpen }
         onToggled: root.configuration.shakeOnOpen = checked
     }
 

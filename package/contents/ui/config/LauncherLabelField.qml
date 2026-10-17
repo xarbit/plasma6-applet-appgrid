@@ -27,7 +27,7 @@ Kirigami.ActionTextField {
     Layout.fillWidth: true
     Layout.minimumWidth: Kirigami.Units.gridUnit * 14
     placeholderText: i18nd("dev.xarbit.appgrid", "Type here to add a text label")
-    text: (field.revision, field.configuration.menuLabel)
+    text: { void field.revision; return field.configuration.menuLabel }
     onTextChanged: field.configuration.menuLabel = text
     enabled: field.formFactor !== PlasmaCore.Types.Vertical
     rightActions: Kirigami.Action {

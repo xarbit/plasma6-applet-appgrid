@@ -290,7 +290,7 @@ ListView {
         }
         readonly property bool favoritable: favoriteId.length > 0
         readonly property bool isFavorite: {
-            listView._favRevision  // re-evaluate when favourites change
+            void listView._favRevision // re-evaluate when favourites change
             return favoritable && listView.favoritesManager
                    && listView.favoritesManager.isFavorite(favoriteId)
         }

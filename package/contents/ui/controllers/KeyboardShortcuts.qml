@@ -11,7 +11,7 @@
       Ctrl+Shift+Arrow  — reorder the highlighted favorite by one cell
 
     Usage:
-        KeyboardShortcuts { gridView: gridView }
+        KeyboardShortcuts { grid: gridView }
 */
 
 import QtQuick
@@ -23,7 +23,7 @@ Item {
     // in its grouped favourites model (the stored order, folders included);
     // we read currentIndex, count, effectiveColumns, model, groupedModel,
     // groupEditable and favoritesActive.
-    required property GridView gridView
+    required property GridView grid
 
     required property bool sortFavoritesAlphabetically
 
@@ -32,61 +32,61 @@ Item {
     // Reactive so the Shortcut `enabled` bindings below re-evaluate when any
     // dependency changes — an imperative function call wouldn't track these
     // inside a binding.
-    readonly property bool _canReorder: gridView.favoritesActive
-               && gridView.groupEditable
-               && !!gridView.groupedModel
-               && gridView.model === gridView.groupedModel
+    readonly property bool _canReorder: grid.favoritesActive
+               && grid.groupEditable
+               && !!grid.groupedModel
+               && grid.model === grid.groupedModel
                && !sortFavoritesAlphabetically
-               && gridView.currentIndex >= 0
+               && grid.currentIndex >= 0
 
     function reorderTo(target) {
         if (!shortcuts._canReorder) return false
-        if (target < 0 || target >= gridView.count
-                || target === gridView.currentIndex) return false
-        gridView.groupedModel.moveRow(gridView.currentIndex, target)
-        gridView.currentIndex = target
+        if (target < 0 || target >= grid.count
+                || target === grid.currentIndex) return false
+        grid.groupedModel.moveRow(grid.currentIndex, target)
+        grid.currentIndex = target
         return true
     }
 
     Shortcut {
         sequence: "Ctrl+Shift+Right"
-        enabled: shortcuts._canReorder && gridView.currentIndex < gridView.count - 1
-        onActivated: shortcuts.reorderTo(gridView.currentIndex + 1)
+        enabled: shortcuts._canReorder && grid.currentIndex < grid.count - 1
+        onActivated: shortcuts.reorderTo(grid.currentIndex + 1)
     }
     Shortcut {
         sequence: "Ctrl+Shift+Left"
-        enabled: shortcuts._canReorder && gridView.currentIndex > 0
-        onActivated: shortcuts.reorderTo(gridView.currentIndex - 1)
+        enabled: shortcuts._canReorder && grid.currentIndex > 0
+        onActivated: shortcuts.reorderTo(grid.currentIndex - 1)
     }
     Shortcut {
         sequence: "Ctrl+Shift+Down"
         enabled: shortcuts._canReorder
-                 && gridView.currentIndex + gridView.effectiveColumns < gridView.count
-        onActivated: shortcuts.reorderTo(gridView.currentIndex + gridView.effectiveColumns)
+                 && grid.currentIndex + grid.effectiveColumns < grid.count
+        onActivated: shortcuts.reorderTo(grid.currentIndex + grid.effectiveColumns)
     }
     Shortcut {
         sequence: "Ctrl+Shift+Up"
         enabled: shortcuts._canReorder
-                 && gridView.currentIndex - gridView.effectiveColumns >= 0
-        onActivated: shortcuts.reorderTo(gridView.currentIndex - gridView.effectiveColumns)
+                 && grid.currentIndex - grid.effectiveColumns >= 0
+        onActivated: shortcuts.reorderTo(grid.currentIndex - grid.effectiveColumns)
     }
 
     // --- Multi-select (Favorites only) ---
 
     Shortcut {
         sequence: StandardKey.SelectAll
-        enabled: gridView.multiSelectActive && gridView.activeFocus
-                 && gridView.count > 0
-        onActivated: gridView.selection.selectAllVisible()
+        enabled: grid.multiSelectActive && grid.activeFocus
+                 && grid.count > 0
+        onActivated: grid.selection.selectAllVisible()
     }
     // Delete removes the selected favorites, gated to the favorites view — the
     // All / category views have nothing to remove (apps are listed, not owned),
     // and silently doing nothing there reads as broken, so it stays unbound.
     Shortcut {
         sequence: "Delete"
-        enabled: gridView.favoritesActive && gridView.multiSelectActive
-                 && gridView.activeFocus && gridView.selection.selectionCount > 0
-        onActivated: gridView.removeSelectedFromFavorites()
+        enabled: grid.favoritesActive && grid.multiSelectActive
+                 && grid.activeFocus && grid.selection.selectionCount > 0
+        onActivated: grid.removeSelectedFromFavorites()
     }
     // Ctrl+D toggles the favourite state of the highlighted app, or the whole
     // selection — browser-style bookmark, in any view (#193). Gated on grid
@@ -94,8 +94,8 @@ Item {
     // selection or a highlighted row (the selection's virtualIndex covers recents + grid).
     Shortcut {
         sequence: "Ctrl+D"
-        enabled: gridView.activeFocus
-                 && (gridView.selection.selectionCount > 0 || gridView.selection.virtualIndex >= 0)
-        onActivated: gridView.toggleFavoritesForSelectionOrCurrent()
+        enabled: grid.activeFocus
+                 && (grid.selection.selectionCount > 0 || grid.selection.virtualIndex >= 0)
+        onActivated: grid.toggleFavoritesForSelectionOrCurrent()
     }
 }

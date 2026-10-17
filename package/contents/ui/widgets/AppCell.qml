@@ -30,7 +30,7 @@ AppIconDelegate {
     dragSource: view.dragSource
 
     isNew: {
-        view._newAppsRevision // re-evaluate when the used apps change
+        void view._newAppsRevision // re-evaluate when the used apps change
         return newBadgeAllowed && view.cellStyle.showNewAppBadge && view.appsModel
             ? view.appsModel.isNewApp(storageId) : false
     }

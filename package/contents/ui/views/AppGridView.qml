@@ -411,7 +411,7 @@ GridView {
     Keys.onBacktabPressed: function(event) { event.accepted = true }
 
     KeyboardShortcuts {
-        gridView: gridView
+        grid: gridView
         sortFavoritesAlphabetically: gridView.sortFavoritesAlphabetically
     }
 
@@ -496,14 +496,14 @@ GridView {
     FavoritesReorderArea {
         id: reorderArea
         parent: gridView
-        gridView: gridView
-        edgeScroller: edgeScroller
+        grid: gridView
+        edgeScroller: autoScroller
         // Off for a read-only grouped grid (the menu tree): no reorder / fold.
         enabled: gridView.groupEditable && gridView.sharedFavoritesModel !== null
     }
 
     EdgeAutoScroller {
-        id: edgeScroller
+        id: autoScroller
         flickable: gridView
         dropArea: reorderArea
     }

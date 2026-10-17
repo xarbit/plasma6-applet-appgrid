@@ -11,7 +11,7 @@ import QtQuick
 import org.kde.plasma.components as PlasmaComponents
 
 FolderContextMenu {
-    id: menu
+    id: folderMenu
 
     // The AppContextMenu this menu belongs to.
     required property var owner
@@ -25,38 +25,38 @@ FolderContextMenu {
         showFor(id)
     }
 
-    appIdsOf: id => menu._folders ? menu._folders.folderMembers(id) : []
-    onOpenRequested: folderId => menu.owner.openFolderRequested(folderId)
-    onLaunchAllRequested: appIds => menu.owner.folderLaunchRequested(appIds)
+    appIdsOf: id => folderMenu._folders ? folderMenu._folders.folderMembers(id) : []
+    onOpenRequested: folderId => folderMenu.owner.openFolderRequested(folderId)
+    onLaunchAllRequested: appIds => folderMenu.owner.folderLaunchRequested(appIds)
 
     AppGridMenuItem {
         icon.name: "edit-rename"
         text: i18nd("dev.xarbit.appgrid", "Rename Folder…")
         onClicked: {
-            menu.owner.renameFolderRequested(menu.folderId)
-            menu.close()
+            folderMenu.owner.renameFolderRequested(folderMenu.folderId)
+            folderMenu.close()
         }
     }
     // Per-activity opt-in only: otherwise every folder is global anyway.
     AppGridMenuItem {
-        visible: menu.owner.enableActivities
+        visible: folderMenu.owner.enableActivities
         checkable: true
-        checked: menu._global
+        checked: folderMenu._global
         text: i18nd("dev.xarbit.appgrid", "Show in all activities")
         onClicked: {
-            if (menu._folders)
-                menu._folders.setFolderGlobal(menu.folderId, !menu._global)
-            menu.close()
+            if (folderMenu._folders)
+                folderMenu._folders.setFolderGlobal(folderMenu.folderId, !folderMenu._global)
+            folderMenu.close()
         }
     }
     PlasmaComponents.MenuSeparator {}
     AppGridMenuItem {
         icon.name: "folder-remove"
         text: i18nd("dev.xarbit.appgrid", "Ungroup Folder")
-        enabled: !!menu._folders
+        enabled: !!folderMenu._folders
         onClicked: {
-            menu._folders.ungroupFolder(menu.folderId)
-            menu.close()
+            folderMenu._folders.ungroupFolder(folderMenu.folderId)
+            folderMenu.close()
         }
     }
 }

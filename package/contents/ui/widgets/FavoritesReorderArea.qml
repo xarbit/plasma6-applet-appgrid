@@ -32,7 +32,7 @@ DropArea {
     // The owning GridView. We read its dragSource, sharedFavoritesModel,
     // favoritesActive flag, findFavoriteRow() helper, plus the standard
     // GridView geometry/animation properties.
-    required property GridView gridView
+    required property GridView grid
 
     // EdgeAutoScroller instance scrolling the same grid; we defer reorder
     // ticks while it's running so the displaced delegates aren't disturbed.
@@ -43,7 +43,7 @@ DropArea {
     // Always alive when the model is available so external file drags can
     // ferry us to the favorites tab. Internal reorder is gated further down
     // on favoritesActive + non-alphabetical mode.
-    enabled: gridView.sharedFavoritesModel !== null
+    enabled: grid.sharedFavoritesModel !== null
 
     property var pendingMoves: []
     // True when the live preview of an Add-from-other-tab is currently in
@@ -52,13 +52,13 @@ DropArea {
     // it back out, on drop we leave it.
     property bool addPreviewActive: false
 
-    readonly property DragSource _source: gridView.dragSource
+    readonly property DragSource _source: grid.dragSource
 
     // The grid is bound to the grouped (folders) model. Its order is the folder
     // layout, not KAStats order, so reorder goes through moveTopLevel on drop
     // rather than the live KAStats moveRow path below (issue #18).
-    readonly property bool _grouped: gridView.favoritesGroupedModel
-                                     && gridView.model === gridView.favoritesGroupedModel
+    readonly property bool _grouped: grid.favoritesGroupedModel
+                                     && grid.model === grid.favoritesGroupedModel
 
     // Drag-create (issue #18): while a single app favourite hovers the inner area
     // of another cell, a "fold" arms — dropping then creates a folder (onto an
@@ -74,7 +74,7 @@ DropArea {
     // no nesting — #18).
     readonly property bool _canFold: _grouped && _sourceId.length > 0
                                      && _source.sourceFolderId.length === 0
-                                     && !gridView.favoritesGroupedModel.canGoBack
+                                     && !grid.favoritesGroupedModel.canGoBack
 
     // Classify the cursor @p pos (contentItem coords) over target cell @p targetIdx,
     // given the dragged source cell @p sourceIdx (#200):
@@ -84,7 +84,7 @@ DropArea {
     //   1 fold   — over the icon (or anywhere on a folder cell) → merge
     //   2 reorder — moved past the icon along the travel direction → swap live
     function _dragZone(pos, targetIdx, sourceIdx) {
-        const t = gridView.itemAtIndex(targetIdx)
+        const t = grid.itemAtIndex(targetIdx)
         if (!t)
             return 0
         const fr = t.foldRect
@@ -99,7 +99,7 @@ DropArea {
         // right after open (or once the source recycles mid-drag), and the old
         // horizontal fallback then misread a vertical approach as a reorder —
         // swapping instead of folding on the first drag (#200).
-        const cols = gridView.effectiveColumns || 1
+        const cols = grid.effectiveColumns || 1
         let dx = (targetIdx % cols) - (sourceIdx % cols)
         let dy = Math.floor(targetIdx / cols) - Math.floor(sourceIdx / cols)
         const len = Math.hypot(dx, dy) || 1
@@ -113,7 +113,7 @@ DropArea {
 
     // Arm the fold highlight for the candidate row (or clear it when @p index < 0).
     function _armFold(index) {
-        const gm = gridView.favoritesGroupedModel
+        const gm = grid.favoritesGroupedModel
         if (!_source || index < 0 || !gm) {
             if (_source) {
                 _source.foldTargetStorageId = ""
@@ -154,7 +154,7 @@ DropArea {
     function _isAddFromOtherTab(drag) {
         if (!_source || !_source.isOwnDrag(drag) || !_sourceId)
             return false
-        return gridView.findFavoriteRow(_sourceId) < 0
+        return grid.findFavoriteRow(_sourceId) < 0
     }
 
     // Multi-drag (selection of 2+ favorites) is treated as drag-OUT only.
@@ -169,7 +169,7 @@ DropArea {
     // opened with its default app). @p insertAt >= 0 places them from that row,
     // -1 appends. Returns the count added.
     function _addExternalUrls(drag, insertAt) {
-        if (!drag.hasUrls || !gridView.favoritesActive)
+        if (!drag.hasUrls || !grid.favoritesActive)
             return 0
         let added = 0
         for (const url of drag.urls) {
@@ -184,10 +184,10 @@ DropArea {
                 continue
             }
             if (insertAt >= 0) {
-                gridView.sharedFavoritesModel.addFavorite(id, insertAt)
+                grid.sharedFavoritesModel.addFavorite(id, insertAt)
                 insertAt++
             } else {
-                gridView.sharedFavoritesModel.addFavorite(id)
+                grid.sharedFavoritesModel.addFavorite(id)
             }
             added++
         }
@@ -198,8 +198,8 @@ DropArea {
     // GridView cell). Used wherever a drop position is needed; the grouped path
     // keeps its own mapToItem because it also needs the point for _dragZone.
     function _dragPosToIndex(drag) {
-        const p = mapToItem(gridView.contentItem, drag.x, drag.y)
-        return gridView.indexAt(p.x, p.y)
+        const p = mapToItem(grid.contentItem, drag.x, drag.y)
+        return grid.indexAt(p.x, p.y)
     }
 
     onEntered: drag => {
@@ -215,41 +215,41 @@ DropArea {
         // without dropping.
         while (pendingMoves.length > 0) {
             const [from, to] = pendingMoves.pop()
-            if (gridView.favoritesGroupedModel) gridView.favoritesGroupedModel.moveRow(to, from)
+            if (grid.favoritesGroupedModel) grid.favoritesGroupedModel.moveRow(to, from)
         }
         // Pull the live "add preview" back out if it was inserted (the optimistic
         // grouped row + the real KAStats favourite).
         if (addPreviewActive && _sourceId) {
-            if (_grouped && gridView.favoritesGroupedModel)
-                gridView.favoritesGroupedModel.removeLooseFavorite(_sourceId)
-            if (gridView.sharedFavoritesModel)
-                gridView.sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(_sourceId))
+            if (_grouped && grid.favoritesGroupedModel)
+                grid.favoritesGroupedModel.removeLooseFavorite(_sourceId)
+            if (grid.sharedFavoritesModel)
+                grid.sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(_sourceId))
         }
         addPreviewActive = false
         _clearFold()
     }
 
     onPositionChanged: drag => {
-        if (!_source || !_source.isOwnDrag(drag) || !gridView.sharedFavoritesModel)
+        if (!_source || !_source.isOwnDrag(drag) || !grid.sharedFavoritesModel)
             return
         // Grouped grid: hovering a target's icon arms a fold (single or multi);
         // anywhere else swaps live (single drag). A non-favourite
         // (add-from-other-tab) is added on drop instead.
         if (_grouped) {
-            const gpos = mapToItem(gridView.contentItem, drag.x, drag.y)
-            const gtarget = gridView.indexAt(gpos.x, gpos.y)
+            const gpos = mapToItem(grid.contentItem, drag.x, drag.y)
+            const gtarget = grid.indexAt(gpos.x, gpos.y)
             // Add-from-other-tab: favourite it live so it joins as a loose
             // top-level row at the cursor slot, then reflow it exactly like a
             // spring-out — the same live, animated positioning as the non-grouped
             // grid, instead of only adding on drop.
             if (_isAddFromOtherTab(drag) && !addPreviewActive && _sourceId
-                    && gridView.favoritesActive) {
+                    && grid.favoritesActive) {
                 // Optimistic: show the loose row instantly at the cursor
                 // (synchronous), then favourite it in KAStats in parallel — so it
                 // appears under the pointer, not at the bottom, and without waiting
                 // for the KAStats round-trip.
-                gridView.favoritesGroupedModel.addLooseFavorite(_sourceId, gtarget)
-                gridView.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(_sourceId))
+                grid.favoritesGroupedModel.addLooseFavorite(_sourceId, gtarget)
+                grid.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(_sourceId))
                 addPreviewActive = true
             }
             // Resolve the source row in THIS grid by sid whenever the dragged
@@ -257,7 +257,7 @@ DropArea {
             // an add-from-other-tab's sourceItem still points at the origin grid
             // (its gridRow is that grid's index, not the favourites one).
             const gsource = (addPreviewActive || !_source.sourceItem)
-                ? gridView.favoritesGroupedModel.indexOfApp(FavoriteId.toPrefixed(_sourceId))
+                ? grid.favoritesGroupedModel.indexOfApp(FavoriteId.toPrefixed(_sourceId))
                 : _source.sourceItem.gridRow
             const act = addPreviewActive ? Qt.CopyAction : Qt.MoveAction
             if (gsource < 0) {
@@ -297,11 +297,11 @@ DropArea {
                 // cursor travelled, and the displaced transition animates the
                 // catch-up, so a fast drag keeps up instead of skipping swaps.
                 // Only a real scroll (flick / edge auto-scroll) holds it off.
-                if (gridView.flicking || gridView.moving || edgeScroller.active) {
+                if (grid.flicking || grid.moving || edgeScroller.active) {
                     drag.accept(act)
                     return
                 }
-                gridView.favoritesGroupedModel.moveRow(gsource, gtarget)
+                grid.favoritesGroupedModel.moveRow(gsource, gtarget)
                 // While adding, don't log the move for rollback — onExited pulls the
                 // whole preview out instead.
                 if (!addPreviewActive)
@@ -315,9 +315,9 @@ DropArea {
         // the stored order otherwise). The sort places a favourite, so there is
         // nothing to reorder; a single app dragged in from another view is
         // favourited at once (and taken back out if the drag leaves).
-        if (!_isMultiDrag && _isAddFromOtherTab(drag) && gridView.favoritesActive) {
+        if (!_isMultiDrag && _isAddFromOtherTab(drag) && grid.favoritesActive) {
             if (!addPreviewActive) {
-                gridView.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(_sourceId))
+                grid.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(_sourceId))
                 addPreviewActive = true
             }
             drag.accept(Qt.CopyAction)
@@ -328,7 +328,7 @@ DropArea {
     // commit it; a new favourite (other tab / external) reconciles in as a loose
     // app at the end.
     function _handleGroupedDrop(drag) {
-        const gm = gridView.favoritesGroupedModel
+        const gm = grid.favoritesGroupedModel
         if (!gm)
             return
         // Armed fold → add the dragged favourite(s) to the target folder, or make
@@ -367,11 +367,11 @@ DropArea {
         }
         // Fallback: an add-from-other-tab dropped without a live preview (e.g. not
         // dragged over the grid first) — add it at the end.
-        if (_source && _source.isOwnDrag(drag) && gridView.favoritesActive) {
+        if (_source && _source.isOwnDrag(drag) && grid.favoritesActive) {
             const sids = _isMultiDrag ? _source.sourceStorageIds : [_sourceId]
             for (let i = 0; i < sids.length; ++i) {
                 if (sids[i])
-                    gridView.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(sids[i]))
+                    grid.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(sids[i]))
             }
             drag.accept(Qt.CopyAction)
             return
@@ -384,7 +384,7 @@ DropArea {
         // Stop the dwell now so it can't fire after the drop and arm a stale fold;
         // any fold already armed stays set for the drop handlers below.
         foldDwellTimer.stop()
-        if (!gridView.sharedFavoritesModel) return
+        if (!grid.sharedFavoritesModel) return
         if (_grouped) {
             _handleGroupedDrop(drag)
             return
@@ -403,12 +403,12 @@ DropArea {
         // places them). Sids that are already favorites are skipped
         // (idempotent), which covers a drag within the favourites too.
         if (_isMultiDrag && _source && _source.isOwnDrag(drag)
-                && gridView.favoritesActive) {
+                && grid.favoritesActive) {
             const sids = _source.sourceStorageIds
             for (let i = 0; i < sids.length; ++i) {
                 const prefixed = FavoriteId.toPrefixed(sids[i])
-                if (!gridView.sharedFavoritesModel.isFavorite(prefixed))
-                    gridView.sharedFavoritesModel.addFavorite(prefixed)
+                if (!grid.sharedFavoritesModel.isFavorite(prefixed))
+                    grid.sharedFavoritesModel.addFavorite(prefixed)
             }
             drag.accept(Qt.CopyAction)
             return

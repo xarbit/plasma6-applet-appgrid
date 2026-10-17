@@ -28,6 +28,12 @@ QQC2.Button {
     property int location: 0            // PlasmaCore.Types.Location (preview frame)
     property string defaultIcon: "dev.xarbit.appgrid"
     property int revision: 0
+    // The configured icon: its theme name, or the dropped image's path.
+    readonly property string _iconText: {
+        void iconButton.revision
+        return iconButton.configuration.useCustomButtonImage
+            ? iconButton.configuration.customButtonImage : iconButton.configuration.icon
+    }
 
     implicitWidth: previewFrame.width + Kirigami.Units.smallSpacing * 2
     implicitHeight: previewFrame.height + Kirigami.Units.smallSpacing * 2
@@ -38,9 +44,7 @@ QQC2.Button {
     QQC2.ToolTip.text: i18ndc("dev.xarbit.appgrid",
                               "@info:tooltip %1 is the icon-theme name or, if an image was dropped in, the file path of the configured launcher icon",
                               "Icon name is \"%1\"",
-                              (iconButton.revision, iconButton.configuration.useCustomButtonImage)
-                                  ? iconButton.configuration.customButtonImage
-                                  : iconButton.configuration.icon)
+                              iconButton._iconText)
     QQC2.ToolTip.visible: iconButton.hovered
     QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
 
@@ -86,9 +90,7 @@ QQC2.Button {
             anchors.centerIn: parent
             width: Kirigami.Units.iconSizes.large
             height: width
-            source: (iconButton.revision, iconButton.configuration.useCustomButtonImage)
-                    ? iconButton.configuration.customButtonImage
-                    : iconButton.configuration.icon
+            source: iconButton._iconText
         }
     }
 

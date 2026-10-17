@@ -11,7 +11,6 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.components as PlasmaComponents
 import dev.xarbit.appgrid.models
 
 import "../controllers"
@@ -50,7 +49,7 @@ Item {
     readonly property var updateChecker: plasmoidBridge && plasmoidBridge.isUniversalBuild ? plasmoidBridge.updateChecker : null
 
     // Read-write handle to Plasmoid.configuration. Reads route through
-    // ConfigCache (`cfg`) below; writes still target this handle directly
+    // ConfigCache (`config`) below; writes still target this handle directly
     // for the launch-bookkeeping flush (recents / launchCounts /
     // hiddenApps).
     required property var configuration
@@ -61,17 +60,17 @@ Item {
     required property var sysInfoProvider
 
     // -- Configuration (single source of truth for all config reads) --
-    ConfigCache { id: cfg; source: panel.configuration }
+    ConfigCache { id: config; source: panel.configuration }
 
     // One-shot override set by the secondary "Open in Compact Mode" global
     // shortcut. While true, the panel behaves as if hideGridWhenEmpty were
     // enabled, regardless of the persisted config. Reset on close so the
     // next normal open uses the user's chosen mode.
     property bool forceCompact: false
-    readonly property bool effectiveHideGridWhenEmpty: cfg.hideGridWhenEmpty || forceCompact
+    readonly property bool effectiveHideGridWhenEmpty: config.hideGridWhenEmpty || forceCompact
 
     // -- Sort helpers --
-    readonly property bool isSortByCategory: cfg.sortMode === AppFilterModel.ByCategory
+    readonly property bool isSortByCategory: config.sortMode === AppFilterModel.ByCategory
 
     // -- View state --
     // Which views show is VisibilityState's (`visibility`), compact mode
@@ -83,15 +82,15 @@ Item {
     // pass is deferred (see SearchPipeline), and switching early showed the
     // search list on the unfiltered apps, or rebuilt the grid from the stale
     // search results before the restored filter landed.
-    readonly property bool _searchApplied: viewState.searchText.length > 0
-    readonly property bool isFavoritesActive: viewState.favorites
+    readonly property bool _searchApplied: current.searchText.length > 0
+    readonly property bool isFavoritesActive: current.favorites
 
     // The selected tab and the applied search; the apps model's filter
     // follows from them (see ViewState).
     ViewState {
-        id: viewState
+        id: current
         appsModel: panel.appsModel
-        searchAll: cfg.searchAll
+        searchAll: config.searchAll
         isPrefixMode: panel.isPrefixMode
         categoryFilters: !panel.categoryFolders && !panel.isSortByCategory
     }
@@ -100,19 +99,19 @@ Item {
         id: visibility
         sizeToContent: panel.sizeToContent
         hideGridWhenEmpty: panel.effectiveHideGridWhenEmpty
-        showCategoryBar: cfg.showCategoryBar
+        showCategoryBar: config.showCategoryBar
         isSearching: panel._searchApplied
         isPrefixMode: panel.isPrefixMode
         isFavoritesActive: panel.isFavoritesActive
         isSortByCategory: panel.isSortByCategory
         categoryFolders: panel.categoryFolders
         // A specific category tab is selected → fold that category in any sort.
-        categoryFiltered: viewState.category.length > 0
+        categoryFiltered: current.category.length > 0
     }
 
     // Folder tree needs the kmenuedit hierarchy, which only exists in system
     // categories mode (#201).
-    readonly property bool categoryFolders: cfg.useSystemCategories && cfg.categoryFoldersEnabled
+    readonly property bool categoryFolders: config.useSystemCategories && config.categoryFoldersEnabled
 
     readonly property alias showAppGrid: visibility.appGridVisible
 
@@ -141,7 +140,7 @@ Item {
     // named "Ghostty" that matched via its terminal keyword. Empty in prefix
     // mode or when nothing matches.
     readonly property string searchCompletion: {
-        if (!cfg.searchInlineCompletion || !showSearchResults || panel.isPrefixMode || !panel.appsModel)
+        if (!config.searchInlineCompletion || !showSearchResults || panel.isPrefixMode || !panel.appsModel)
             return ""
         // Use the live field text (not the coalesced searchText): the ghost's
         // position tracks the caret every frame, so its content must update the
@@ -158,9 +157,9 @@ Item {
     // The field text to the grid filter (deferred) and KRunner (debounced).
     SearchPipeline {
         id: searchPipeline
-        viewState: viewState
+        viewState: current
         runnerSourceModel: panel.runnerSourceModel
-        useExtraRunners: cfg.useExtraRunners
+        useExtraRunners: config.useExtraRunners
         isPrefixMode: panel.isPrefixMode
     }
 
@@ -180,7 +179,7 @@ Item {
 
     // -- Icon size mapping (0=Small/medium, 1=Medium/large, 2=Large/huge) --
     readonly property real gridIconSize: {
-        var preset = cfg.iconSize
+        var preset = config.iconSize
         if (preset === 0) return Kirigami.Units.iconSizes.medium
         if (preset === 1) return Kirigami.Units.iconSizes.large
         return Kirigami.Units.iconSizes.huge
@@ -197,7 +196,7 @@ Item {
     // stay fixed. independentTextSize pins this to 1.0 so the Size preset
     // changes only the app icons, not text/spacing (#167). The curve and
     // the #167 gate live in Scale.textScale (single, tested policy).
-    readonly property real densityScale: Scale.textScale(cfg.iconSize, cfg.independentTextSize)
+    readonly property real densityScale: Scale.textScale(config.iconSize, config.independentTextSize)
 
     // What every grid reads from the panel, and where its requests go.
     GridHost {
@@ -206,8 +205,8 @@ Item {
         favoritesManager: favorites
         dragSource: panel.dragSource
         searchField: searchBar.field
-        cellStyle: cellStyle
-        columns: cfg.gridColumns
+        cellStyle: look
+        columns: config.gridColumns
         onLaunchAppRequested: index => launcher.launchApp(index)
         onLaunchRequested: storageId => launcher.launchAppByStorageId(storageId)
         onBulkLaunchRequested: sids => launcher.requestBulkLaunch(sids)
@@ -218,17 +217,17 @@ Item {
 
     // How every view draws its cells and rows, from the settings.
     CellStyle {
-        id: cellStyle
+        id: look
         iconSize: panel.gridIconSize
         fontScale: panel.densityScale
-        hoverAnimation: cfg.hoverAnimation
-        shadowEnabled: cfg.iconShadow
-        hoverHighlight: cfg.hoverHighlight
-        showTooltips: cfg.showTooltips
-        showNewAppBadge: cfg.showNewAppBadge
-        showDividers: cfg.showDividers
-        reduceGridSpacing: cfg.reduceGridSpacing
-        showScrollbars: cfg.showScrollbars
+        hoverAnimation: config.hoverAnimation
+        shadowEnabled: config.iconShadow
+        hoverHighlight: config.hoverHighlight
+        showTooltips: config.showTooltips
+        showNewAppBadge: config.showNewAppBadge
+        showDividers: config.showDividers
+        reduceGridSpacing: config.reduceGridSpacing
+        showScrollbars: config.showScrollbars
     }
 
     // The keys pressed in the search field, to the results, the shown grid
@@ -241,16 +240,16 @@ Item {
         prefixMode: panel.prefixMode
         resultsShown: panel.showSearchResults
         searching: panel.isSearching
-        collapsible: cfg.hideGridWhenEmpty
+        collapsible: config.hideGridWhenEmpty
         collapsed: visibility.emptyHidden
         revealed: visibility.gridRevealed
         onLaunchResultRequested: index => launcher.launchSearchResult(index)
         onRunRequested: function(inTerminal) {
-            const actions = panel.plasmoidBridge.systemActions
+            const system = panel.plasmoidBridge.systemActions
             if (inTerminal)
-                actions.runInTerminal(panel.prefixArgument, cfg.terminalShell)
+                system.runInTerminal(panel.prefixArgument, config.terminalShell)
             else
-                actions.runCommand(panel.prefixArgument, cfg.terminalShell)
+                system.runCommand(panel.prefixArgument, config.terminalShell)
             panel.closeRequested()
         }
         onRevealRequested: revealed => visibility.gridRevealed = revealed
@@ -278,16 +277,16 @@ Item {
     // row would accumulate and clip the bottom row).
     readonly property real estCellWidth: GridMetrics.labelledCellWidth(gridIconSize,
                                          Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing,
-                                         densityScale, cfg.reduceGridSpacing)
+                                         densityScale, config.reduceGridSpacing)
     readonly property real estCellHeight: GridMetrics.labelledCellHeight(gridIconSize,
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
     readonly property real panelMargin: Kirigami.Units.largeSpacing
-    readonly property real panelWidth: estCellWidth * cfg.gridColumns + panelMargin * 2
+    readonly property real panelWidth: estCellWidth * config.gridColumns + panelMargin * 2
     // Each full-height body view carries this as Layout.preferredHeight, so the
     // panel sizes to header(natural) + rows*cell — visible-rows honoured whatever
     // header chrome shows (#205).
-    readonly property real bodyHeight: estCellHeight * cfg.gridRows
+    readonly property real bodyHeight: estCellHeight * config.gridRows
 
     // Full (grid-shown) height — used only to position the daemon window so a
     // start-compact reveal grows downward without drift. Real header items, no
@@ -320,7 +319,7 @@ Item {
     // mirroring the Down/Up-arrow behavior. Once typing starts, wheel
     // events fall through so the search results list can scroll.
     WheelHandler {
-        enabled: cfg.hideGridWhenEmpty && !panel.isSearching
+        enabled: config.hideGridWhenEmpty && !panel.isSearching
                  && searchBar.field.activeFocus
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: function(event) {
@@ -348,7 +347,7 @@ Item {
     ModelConfigSync {
         id: modelSync
         appsModel: panel.appsModel
-        cfg: cfg
+        cfg: config
     }
     function syncModelFromConfig() { modelSync.sync() }
 
@@ -373,11 +372,11 @@ Item {
     // toggling grouping keeps a single layout and order (issue #200).
     readonly property var favoritesGroupedModel: panel.plasmoidBridge
         ? panel.plasmoidBridge.favoritesGroupedModel : null
-    readonly property bool useFavoritesGrouped: favoritesGroupedModel && !cfg.sortFavoritesAlphabetically
+    readonly property bool useFavoritesGrouped: favoritesGroupedModel && !config.sortFavoritesAlphabetically
     Binding {
         target: panel.favoritesGroupedModel
         property: "groupingEnabled"
-        value: cfg.favoriteFoldersEnabled
+        value: config.favoriteFoldersEnabled
         when: panel.favoritesGroupedModel
         restoreMode: Binding.RestoreNone
     }
@@ -443,7 +442,7 @@ Item {
     // the value is unchanged — so it's safe to run on open too: it reflects a
     // config change made while closed without refreshing when nothing changed.
     function _applyStartState() {
-        viewState.reset(cfg.showCategoryBar && cfg.startWithFavorites)
+        current.reset(config.showCategoryBar && config.startWithFavorites)
     }
 
     // Pure UI-state reset (scroll, selection, category view). Close-only: running
@@ -584,16 +583,16 @@ Item {
                 showSearchResults: panel.showSearchResults
                 currentResultIcon: panel.currentResultIcon
                 densityScale: panel.densityScale
-                showActionLabels: cfg.showActionLabels
-                hideMenuButtonLabel: cfg.hideMenuButtonLabel
-                headerActions: cfg.headerActions
-                customHeaderActions: cfg.customHeaderActions
+                showActionLabels: config.showActionLabels
+                hideMenuButtonLabel: config.hideMenuButtonLabel
+                headerActions: config.headerActions
+                customHeaderActions: config.customHeaderActions
                 commandRunner: panel.plasmoidBridge ? panel.plasmoidBridge.systemActions : null
-                terminalShell: cfg.terminalShell
-                menuButtonIcon: cfg.menuButtonIcon
-                iconShadow: cfg.iconShadow
+                terminalShell: config.terminalShell
+                menuButtonIcon: config.menuButtonIcon
+                iconShadow: config.iconShadow
                 updateChecker: panel.updateChecker
-                sessionActions: sessionActions
+                sessionActions: session
                 onActionTriggered: panel.closeRequested()
                 onConfigureRequested: panel.configureRequested()
             }
@@ -602,7 +601,7 @@ Item {
         HorizontalDivider {
             Layout.fillWidth: true
             visible: visibility.catBarVisible
-            opacity: cellStyle.showDividers ? 1 : 0
+            opacity: look.showDividers ? 1 : 0
         }
 
         CategoryBar {
@@ -611,27 +610,27 @@ Item {
             Layout.leftMargin: Kirigami.Units.smallSpacing
             appsModel: panel.appsModel
             isFavorite: sid => favorites.isFavorite(sid)
-            editCategoryInMenu: launcherActions.editMenuItem
-            favoritesFirst: cfg.startWithFavorites
+            editCategoryInMenu: actions.editMenuItem
+            favoritesFirst: config.startWithFavorites
             isSortByCategory: panel.isSortByCategory
             fontScale: panel.densityScale
-            displayMode: cfg.categoryBarDisplay
-            hideEmptyCategories: cfg.hideEmptyCategories
-            openOnHover: cfg.openCategoryOnHover
+            displayMode: config.categoryBarDisplay
+            hideEmptyCategories: config.hideEmptyCategories
+            openOnHover: config.openCategoryOnHover
             // The bar shows the view state and asks to change it. Leaving
             // favourites goes through categorySelected (All or a category), so
             // the scroll/reset of the sections grid happens once there.
-            favoritesActive: viewState.favorites
-            selectedCategory: viewState.category
+            favoritesActive: current.favorites
+            selectedCategory: current.category
             onFavoritesToggled: function(active) {
-                viewState.selectFavorites(active)
+                current.selectFavorites(active)
                 searchBar.field.forceActiveFocus()
             }
             // One feature across all sorts: flat sorts filter the grid (the view
             // state does that), folders root the tree, By Category scrolls to the
             // section.
             onCategorySelected: function(name) {
-                viewState.selectCategory(name)
+                current.selectCategory(name)
                 searchBar.field.forceActiveFocus()
                 const view = panel.categoryFolders ? menuFolderView
                            : panel.isSortByCategory ? categoryGridView : null
@@ -643,7 +642,7 @@ Item {
         HorizontalDivider {
             Layout.fillWidth: true
             visible: visibility.catBarVisible
-            opacity: cellStyle.showDividers ? 1 : 0
+            opacity: look.showDividers ? 1 : 0
         }
 
         AnswerToEverything {
@@ -674,7 +673,7 @@ Item {
                     mode: panel.prefixMode
                     argument: panel.prefixArgument
                     searchField: searchBar.field
-                    showScrollbars: cellStyle.showScrollbars
+                    showScrollbars: look.showScrollbars
                     appsModel: panel.appsModel
                     listDirectory: path => panel.plasmoidBridge.systemActions.listDirectory(path)
                     sysInfoProvider: panel.sysInfoProvider
@@ -691,8 +690,8 @@ Item {
                 anchors.fill: parent
                 visible: panel.showSearchResults
                 model: panel._searchApplied ? panel.searchModel : null
-                cellStyle: cellStyle
-                showShortcuts: cfg.showSearchShortcuts
+                cellStyle: look
+                showShortcuts: config.showSearchShortcuts
                 searchField: searchBar.field
                 favoritesManager: favorites
                 plasmoidBridge: panel.plasmoidBridge
@@ -713,11 +712,11 @@ Item {
                 visible: visibility.categorySectionsVisible
                 host: gridHost
                 rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
-                showRecents: cfg.showRecentApps
+                showRecents: config.showRecentApps
                              && panel.appsModel
                              && panel.appsModel.recentApps.length > 0
                              && !panel.isFavoritesActive
-                             && !cfg.startWithFavorites
+                             && !config.startWithFavorites
             }
 
             // -- Menu folder tree (By Category + group into folders, #201) --
@@ -729,7 +728,7 @@ Item {
                 // folders are off — reading menuTreeModel is what triggers the walk.
                 menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
                 host: gridHost
-                hideEmpty: cfg.hideEmptyCategories
+                hideEmpty: config.hideEmptyCategories
                 onFolderContextRequested: function(menuPath) { menus.showForMenuFolder(menuPath) }
             }
 
@@ -738,7 +737,7 @@ Item {
                 id: appGridPane
                 anchors.fill: parent
                 visible: panel.showAppGrid
-                cfg: cfg
+                cfg: config
                 host: gridHost
                 model: panel._searchApplied ? null : panel.gridModel
                 favoritesActive: panel.isFavoritesActive
@@ -750,18 +749,18 @@ Item {
 
 
     LauncherActions {
-        id: launcherActions
+        id: actions
         taskManager: panel.plasmoidBridge ? panel.plasmoidBridge.plasmoidClient : null
         desktop: panel.plasmoidBridge ? panel.plasmoidBridge.systemActions : null
     }
 
-    SessionActions { id: sessionActions }
+    SessionActions { id: session }
 
     PanelMenus {
         id: menus
         plasmoidBridge: panel.plasmoidBridge
-        cfg: cfg
-        launcherActions: launcherActions
+        cfg: config
+        launcherActions: actions
         appsModel: panel.appsModel
         searchModel: panel.searchModel
         favoritesManager: favorites

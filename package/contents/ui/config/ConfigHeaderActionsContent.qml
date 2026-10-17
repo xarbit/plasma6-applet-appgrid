@@ -62,7 +62,7 @@ Item {
         HeaderActionsConfig {
             Layout.fillWidth: true
             Layout.minimumWidth: Kirigami.Units.gridUnit * 22
-            actions: (root.revision, root.configuration.headerActions)
+            actions: { void root.revision; return root.configuration.headerActions }
             universalBuild: root.isUniversalBuild
             availability: root.actionAvailability
             onEdited: newList => root.configuration.headerActions = newList
@@ -95,7 +95,7 @@ Item {
 
         CustomHeaderActionsEditor {
             Layout.fillWidth: true
-            entries: (root.revision, root.configuration.customHeaderActions)
+            entries: { void root.revision; return root.configuration.customHeaderActions }
             reloadToken: root.revision
             onEdited: newList => root.configuration.customHeaderActions = newList
         }
@@ -103,7 +103,7 @@ Item {
         QQC2.CheckBox {
             id: showActionLabels
             text: i18nd("dev.xarbit.appgrid", "Show labels on header buttons")
-            checked: (root.revision, root.configuration.showActionLabels)
+            checked: { void root.revision; return root.configuration.showActionLabels }
             onToggled: root.configuration.showActionLabels = checked
         }
 
@@ -111,7 +111,7 @@ Item {
             id: hideMenuButtonLabel
             enabled: showActionLabels.checked
             text: i18nd("dev.xarbit.appgrid", "Hide label on the menu button")
-            checked: (root.revision, root.configuration.hideMenuButtonLabel)
+            checked: { void root.revision; return root.configuration.hideMenuButtonLabel }
             onToggled: root.configuration.hideMenuButtonLabel = checked
         }
 
@@ -125,12 +125,12 @@ Item {
                 text: i18nd("dev.xarbit.appgrid", "Menu button icon:")
             }
             IconNamePicker {
-                iconName: (root.revision, root.configuration.menuButtonIcon)
+                iconName: { void root.revision; return root.configuration.menuButtonIcon }
                 fallbackIcon: HeaderActions.MENU_BUTTON_DEFAULT_ICON
                 onPicked: name => root.configuration.menuButtonIcon = name
             }
             QQC2.ToolButton {
-                visible: (root.revision, root.configuration.menuButtonIcon.length > 0)
+                visible: { void root.revision; return root.configuration.menuButtonIcon.length > 0 }
                 icon.name: "edit-clear"
                 display: QQC2.AbstractButton.IconOnly
                 onClicked: root.configuration.menuButtonIcon = ""

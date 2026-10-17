@@ -15,7 +15,7 @@ import QtQuick
 import org.kde.plasma.components as PlasmaComponents
 
 AppGridMenu {
-    id: menu
+    id: selectionMenu
 
     // The AppContextMenu this menu belongs to.
     required property var owner
@@ -61,57 +61,57 @@ AppGridMenu {
 
     // Add-to-favourites goes first, remove-from-favourites below it.
     Instantiator {
-        active: menu.owner.popupNonFavCount > 0
+        active: selectionMenu.owner.popupNonFavCount > 0
         delegate: AppGridMenuItem {
             icon.name: "bookmark-new"
             text: i18ndp("dev.xarbit.appgrid",
                          "Add %1 to Favorites", "Add %1 to Favorites",
-                         menu.owner.popupNonFavCount)
-            enabled: !menu.owner._favsLocked
-            onClicked: menu._setFavorite(true)
+                         selectionMenu.owner.popupNonFavCount)
+            enabled: !selectionMenu.owner._favsLocked
+            onClicked: selectionMenu._setFavorite(true)
         }
-        onObjectAdded: (idx, obj) => menu.insertItem(0, obj)
-        onObjectRemoved: (idx, obj) => menu.removeItem(obj)
+        onObjectAdded: (idx, obj) => selectionMenu.insertItem(0, obj)
+        onObjectRemoved: (idx, obj) => selectionMenu.removeItem(obj)
     }
 
     Instantiator {
-        active: menu.owner.popupFavCount > 0
+        active: selectionMenu.owner.popupFavCount > 0
         delegate: AppGridMenuItem {
             icon.name: "bookmark-remove"
             text: i18ndp("dev.xarbit.appgrid",
                          "Remove %1 from Favorites", "Remove %1 from Favorites",
-                         menu.owner.popupFavCount)
-            enabled: !menu.owner._favsLocked
-            onClicked: menu._setFavorite(false)
+                         selectionMenu.owner.popupFavCount)
+            enabled: !selectionMenu.owner._favsLocked
+            onClicked: selectionMenu._setFavorite(false)
         }
-        onObjectAdded: (idx, obj) => menu.insertItem(menu.owner.popupNonFavCount > 0 ? 1 : 0, obj)
-        onObjectRemoved: (idx, obj) => menu.removeItem(obj)
+        onObjectAdded: (idx, obj) => selectionMenu.insertItem(selectionMenu.owner.popupNonFavCount > 0 ? 1 : 0, obj)
+        onObjectRemoved: (idx, obj) => selectionMenu.removeItem(obj)
     }
 
     AppGridMenuItem {
         icon.name: "pin"
         text: i18ndp("dev.xarbit.appgrid",
                      "Pin %1 to Task Manager", "Pin %1 to Task Manager",
-                     menu._sids.length)
-        visible: menu.owner.popupCanPin
-        onClicked: menu._desktopFiles().forEach(file => menu.owner.launcherActions.pinToTaskManager(file))
+                     selectionMenu._sids.length)
+        visible: selectionMenu.owner.popupCanPin
+        onClicked: selectionMenu._desktopFiles().forEach(file => selectionMenu.owner.launcherActions.pinToTaskManager(file))
     }
 
     AppGridMenuItem {
         icon.name: "desktop"
         text: i18ndp("dev.xarbit.appgrid",
                      "Add %1 to Desktop", "Add %1 to Desktop",
-                     menu._sids.length)
-        visible: menu.owner.popupCanAddToDesktop
-        onClicked: menu._desktopFiles().forEach(file => menu.owner.launcherActions.addToDesktop(file))
+                     selectionMenu._sids.length)
+        visible: selectionMenu.owner.popupCanAddToDesktop
+        onClicked: selectionMenu._desktopFiles().forEach(file => selectionMenu.owner.launcherActions.addToDesktop(file))
     }
 
     AppGridMenuItem {
         icon.name: "system-run"
         text: i18ndp("dev.xarbit.appgrid",
                      "Launch %1 application", "Launch %1 applications",
-                     menu._sids.length)
-        onClicked: menu.owner.bulkLaunchRequested(menu._sids)
+                     selectionMenu._sids.length)
+        onClicked: selectionMenu.owner.bulkLaunchRequested(selectionMenu._sids)
     }
 
     PlasmaComponents.MenuSeparator {}
@@ -120,16 +120,16 @@ AppGridMenu {
         icon.name: "edit-copy"
         text: i18ndp("dev.xarbit.appgrid",
                      "Copy %1 path", "Copy %1 paths",
-                     menu._sids.length)
-        onClicked: menu.owner._copyText(menu._desktopFiles().join("\n"))
+                     selectionMenu._sids.length)
+        onClicked: selectionMenu.owner._copyText(selectionMenu._desktopFiles().join("\n"))
     }
 
     AppGridMenuItem {
         icon.name: "view-hidden"
         text: i18ndp("dev.xarbit.appgrid",
                      "Hide %1 application", "Hide %1 applications",
-                     menu._sids.length)
-        onClicked: menu.owner.bulkHideRequested(menu._sids)
+                     selectionMenu._sids.length)
+        onClicked: selectionMenu.owner.bulkHideRequested(selectionMenu._sids)
     }
 
     PlasmaComponents.MenuSeparator {}
@@ -137,7 +137,7 @@ AppGridMenu {
     AppGridMenuItem {
         icon.name: "edit-select-none"
         text: i18nd("dev.xarbit.appgrid", "Remove from Selection")
-        onClicked: menu.owner.toggleSelectionRequested(menu.owner.popupStorageId)
+        onClicked: selectionMenu.owner.toggleSelectionRequested(selectionMenu.owner.popupStorageId)
     }
 
     // "Add to Folder": the whole selection into a folder, or a new folder made
@@ -146,24 +146,24 @@ AppGridMenu {
     // submenu at once, and this one is attached only when it applies.
     property var _addToFolderSubmenu: FolderTargetMenu {
         id: addToFolderSubmenu
-        parent: menu.owner
-        foldersModel: menu.owner.favoritesGroupedModel
+        parent: selectionMenu.owner
+        foldersModel: selectionMenu.owner.favoritesGroupedModel
         onFolderChosen: folderId => {
-            const folders = menu.owner.favoritesGroupedModel
-            for (let i = 0; i < menu._sids.length; ++i) {
-                menu.owner.favoritesManager.ensureFavorite(menu._sids[i])
-                folders.addToFolder(folderId, menu._sids[i])
+            const folders = selectionMenu.owner.favoritesGroupedModel
+            for (let i = 0; i < selectionMenu._sids.length; ++i) {
+                selectionMenu.owner.favoritesManager.ensureFavorite(selectionMenu._sids[i])
+                folders.addToFolder(folderId, selectionMenu._sids[i])
             }
-            menu.owner.clearSelectionRequested()
-            menu.owner.close()
+            selectionMenu.owner.clearSelectionRequested()
+            selectionMenu.owner.close()
         }
         onNewFolderRequested: {
-            for (let i = 0; i < menu._sids.length; ++i)
-                menu.owner.favoritesManager.ensureFavorite(menu._sids[i])
-            menu.owner.favoritesGroupedModel.createFolderFromMembers(
-                menu._sids, i18nd("dev.xarbit.appgrid", "New Folder"))
-            menu.owner.clearSelectionRequested()
-            menu.owner.close()
+            for (let i = 0; i < selectionMenu._sids.length; ++i)
+                selectionMenu.owner.favoritesManager.ensureFavorite(selectionMenu._sids[i])
+            selectionMenu.owner.favoritesGroupedModel.createFolderFromMembers(
+                selectionMenu._sids, i18nd("dev.xarbit.appgrid", "New Folder"))
+            selectionMenu.owner.clearSelectionRequested()
+            selectionMenu.owner.close()
         }
     }
 }

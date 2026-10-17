@@ -32,7 +32,10 @@ ColumnLayout {
     property int revision: 0
 
     property string _filter: ""
-    readonly property var _hidden: (root.revision, (root.appsModel && root.appsModel.hiddenApps) || [])
+    readonly property var _hidden: {
+        void root.revision
+        return (root.appsModel && root.appsModel.hiddenApps) || []
+    }
 
     spacing: Kirigami.Units.smallSpacing
 
