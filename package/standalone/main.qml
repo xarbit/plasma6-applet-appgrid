@@ -83,7 +83,7 @@ PlasmaCore.Window {
         configuration: appGridConfig
         plasmoidBridge: appGridController
         updateChecker: appGridController.isUniversalBuild ? appGridController.updateChecker : null
-        sysInfoProvider: () => appGridController.systemInfo("Standalone")
+        sysInfoProvider: () => appGridController.systemActions.systemInfo("Standalone")
         onCloseRequested: win.closeWindow()
 
         Component.onCompleted: {

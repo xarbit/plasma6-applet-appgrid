@@ -712,10 +712,10 @@ Item {
                 }
                 onAccepted: {
                     if (panel.prefixMode === PrefixModes.TERMINAL) {
-                        panel.plasmoidBridge.runInTerminal(panel.prefixArgument, cfg.terminalShell)
+                        panel.plasmoidBridge.systemActions.runInTerminal(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === PrefixModes.COMMAND) {
-                        panel.plasmoidBridge.runCommand(panel.prefixArgument, cfg.terminalShell)
+                        panel.plasmoidBridge.systemActions.runCommand(panel.prefixArgument, cfg.terminalShell)
                         panel.closeRequested()
                     } else if (panel.prefixMode === PrefixModes.FILES) {
                         prefixModeLoader.item?.activateFileCurrent()
@@ -806,7 +806,7 @@ Item {
                 hideMenuButtonLabel: cfg.hideMenuButtonLabel
                 headerActions: cfg.headerActions
                 customHeaderActions: cfg.customHeaderActions
-                commandRunner: panel.plasmoidBridge
+                commandRunner: panel.plasmoidBridge ? panel.plasmoidBridge.systemActions : null
                 terminalShell: cfg.terminalShell
                 menuButtonIcon: cfg.menuButtonIcon
                 iconShadow: cfg.iconShadow
@@ -901,7 +901,7 @@ Item {
                 searchField: searchBar.field
                 showScrollbars: cfg.showScrollbars
                 appsModel: panel.appsModel
-                listDirectory: panel.plasmoidBridge.listDirectory
+                listDirectory: path => panel.plasmoidBridge.systemActions.listDirectory(path)
                 sysInfoProvider: panel.sysInfoProvider
                 updateChecker: panel.updateChecker
                 onFileOpened: panel.closeRequested()
@@ -945,10 +945,10 @@ Item {
                 var item = panel.searchModel.get(index)
                 if (!item) return
                 var actions = panel.searchModel.runnerActions(index)
-                // runnerResultFavoriteId maps via the runner submodel, so it takes
-                // the runner-row index (unified row minus the app count), the same
+                // runner.favoriteId maps via the runner submodel, so it takes the
+                // runner-row index (unified row minus the app count), the same
                 // sourceIndex showForRunner uses — not the raw unified index.
-                var favoriteId = panel.plasmoidBridge.runnerResultFavoriteId(item.sourceIndex)
+                var favoriteId = panel.plasmoidBridge.runner.favoriteId(item.sourceIndex)
                 contextMenu.showForRunner(item.sourceIndex, actions, favoriteId)
             }
         }
@@ -1143,7 +1143,8 @@ Item {
 
     LauncherActions {
         id: launcherActions
-        actions: panel.plasmoidBridge
+        taskManager: panel.plasmoidBridge ? panel.plasmoidBridge.plasmoidClient : null
+        desktop: panel.plasmoidBridge ? panel.plasmoidBridge.systemActions : null
     }
 
     // Right-click menu for a menu-tree folder (#201): edit it in kmenuedit, the
@@ -1194,15 +1195,15 @@ Item {
         // the call back to plasmoidBridge.
         appActions: sid => panel.plasmoidBridge.appActions(sid)
         launchAppAction: (sid, actionName) => panel.plasmoidBridge.launchAppAction(sid, actionName)
-        canManageInDiscover: sid => panel.plasmoidBridge.canManageInDiscover(sid)
-        openInDiscover: sid => panel.plasmoidBridge.openInDiscover(sid)
+        canManageInDiscover: sid => panel.plasmoidBridge.systemActions.canManageInDiscover(sid)
+        openInDiscover: sid => panel.plasmoidBridge.systemActions.openInDiscover(sid)
         pinToTaskManager: launcherActions.pinToTaskManager
         addToDesktop: launcherActions.addToDesktop
         canPinToTaskManager: launcherActions.canPinToTaskManager
         canAddToDesktop: launcherActions.canAddToDesktop
         editApplication: launcherActions.editMenuItem
         runRunnerAction: function(rowIdx, actIdx) {
-            if (panel.plasmoidBridge.runRunnerAction(rowIdx, actIdx))
+            if (panel.plasmoidBridge.runner.runAction(rowIdx, actIdx))
                 closeRequested()
         }
 

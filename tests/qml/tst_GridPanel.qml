@@ -124,16 +124,21 @@ TestCase {
         verify(c.status === Component.Ready, "GridPanel load error: " + c.errorString())
         var bridgeStub = ({
             notifyAppLaunched: function(sid) { testCase.launchedSids.push(sid) },
-            runInTerminal: function(cmd, shell) {},
-            runCommand: function(cmd, shell) {},
-            runRunnerResult: function(idx) { return false },
-            runRunnerAction: function(idx, actIdx) { return false },
-            runnerSubstitutionText: function(idx) { return "" },
+            runner: ({
+                run: function(idx) { return false },
+                runAction: function(idx, actIdx) { return false },
+                substitutionText: function(idx) { return "" },
+                favoriteId: function(idx) { return "" }
+            }),
+            systemActions: ({
+                runInTerminal: function(cmd, shell) {},
+                runCommand: function(cmd, shell) {},
+                canManageInDiscover: function(sid) { return false },
+                openInDiscover: function(sid) {},
+                listDirectory: function(path) { return [] }
+            }),
             appActions: function(sid) { return [] },
-            launchAppAction: function(sid, actionName) {},
-            canManageInDiscover: function(sid) { return false },
-            openInDiscover: function(sid) {},
-            listDirectory: function(path) { return [] }
+            launchAppAction: function(sid, actionName) {}
         })
         var obj = c.createObject(null, {
             width: 600,

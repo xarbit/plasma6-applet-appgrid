@@ -76,7 +76,7 @@ KCM.SimpleKCM {
         isPanel: Plasmoid.pluginName === Const.PLUGIN_ID_PANEL
         formFactor: Plasmoid.formFactor
         location: Plasmoid.location
-        availableShells: Plasmoid.controller.availableShells ? Plasmoid.controller.availableShells() : []
+        availableShells: Plasmoid.controller.systemActions.availableShells()
         isUniversalBuild: Plasmoid.controller.isUniversalBuild
         defaultIcon: Const.PLUGIN_ID_CENTER
     }

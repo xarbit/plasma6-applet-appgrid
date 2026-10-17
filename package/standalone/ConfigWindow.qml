@@ -51,7 +51,7 @@ Kirigami.ApplicationWindow {
     // undefined (#6).
     //   appGridConfig       — the live AppGridConfig (read on open, written on Apply)
     //   appGridConfigBuffer — the staging AppGridConfig the pages edit
-    //   appGridController   — exposes availableShells() / isUniversalBuild / appsModel
+    //   appGridController   — exposes systemActions / isUniversalBuild / appsModel
     required property var appGridConfig
     required property var appGridConfigBuffer
     required property var appGridController
@@ -102,12 +102,12 @@ Kirigami.ApplicationWindow {
 
     // -- Panel button appearance (icon + text label) ---------------------------
     // Edited here only when a center plasmoid is in the panel to apply them; the
-    // values round-trip to it over D-Bus (controller.plasmoidButtonAppearance /
-    // setPlasmoidButtonAppearance). Buffered like the rest so Apply/Cancel work (#191).
+    // values round-trip to it over D-Bus (the controller's plasmoidClient).
+    // Buffered like the rest so Apply/Cancel work (#191).
     readonly property var _buttonKeys: ["icon", "customButtonImage", "useCustomButtonImage", "menuLabel"]
     readonly property bool canConfigureButton: {
         void win.revision
-        return appGridController.canConfigureButton()
+        return appGridController.plasmoidClient.canConfigureButton()
     }
     property var _buttonBaseline: ({})
     QtObject {
@@ -118,7 +118,7 @@ Kirigami.ApplicationWindow {
         property string menuLabel
     }
     function _fillButtonBuffer() {
-        var live = appGridController.plasmoidButtonAppearance()
+        var live = appGridController.plasmoidClient.buttonAppearance()
         for (var i = 0; i < _buttonKeys.length; ++i) {
             var k = _buttonKeys[i]
             if (live[k] !== undefined)
@@ -127,22 +127,22 @@ Kirigami.ApplicationWindow {
         win._buttonBaseline = ConfigBuffer.snapshot(buttonBuffer, _buttonKeys)
     }
     function _syncButtonFromPlasmoid() {
-        if (!appGridController.canConfigureButton())
+        if (!appGridController.plasmoidClient.canConfigureButton())
             return
-        // Async: request a refresh (filled in on plasmoidButtonAppearanceChanged)
-        // and seed from the last known value now. Never blocks the UI.
-        appGridController.requestPlasmoidButtonAppearance()
+        // Async: request a refresh (filled in on buttonAppearanceChanged) and
+        // seed from the last known value now. Never blocks the UI.
+        appGridController.plasmoidClient.requestButtonAppearance()
         _fillButtonBuffer()
     }
     function _applyButtonToPlasmoid() {
-        if (!appGridController.canConfigureButton())
+        if (!appGridController.plasmoidClient.canConfigureButton())
             return
         if (!ConfigBuffer.isDirty(buttonBuffer, win._buttonBaseline, _buttonKeys))
             return
         var values = ({})
         for (var i = 0; i < _buttonKeys.length; ++i)
             values[_buttonKeys[i]] = buttonBuffer[_buttonKeys[i]]
-        appGridController.setPlasmoidButtonAppearance(values)
+        appGridController.plasmoidClient.setButtonAppearance(values)
     }
 
     // True when the buffer differs from the live config in any editable key.
@@ -207,9 +207,9 @@ Kirigami.ApplicationWindow {
     // The button-edit target switched to another plasmoid (Configure opened from
     // a different instance while this window was already up) — re-read its button.
     Connections {
-        target: appGridController
+        target: appGridController.plasmoidClient
         function onButtonTargetChanged() { win._syncFromLive() }
-        function onPlasmoidButtonAppearanceChanged() {
+        function onButtonAppearanceChanged() {
             win._fillButtonBuffer()
             win.revision++
         }
@@ -366,7 +366,7 @@ Kirigami.ApplicationWindow {
                                 buttonConfiguration: buttonBuffer
                                 formFactor: 0
                                 location: 0
-                                availableShells: appGridController.availableShells()
+                                availableShells: appGridController.systemActions.availableShells()
                                 isUniversalBuild: appGridController.isUniversalBuild
                                 defaultIcon: "dev.xarbit.appgrid"
                                 revision: win.revision

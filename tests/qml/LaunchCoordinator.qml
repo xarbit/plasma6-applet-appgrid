@@ -67,12 +67,12 @@ QtObject {
         }
         // KRunner UX: calculator hits paste the result back into the search
         // field so the user can keep extending the expression.
-        var subst = plasmoidBridge.runnerSubstitutionText(item.sourceIndex)
+        var subst = plasmoidBridge.runner.substitutionText(item.sourceIndex)
         if (subst.length > 0) {
             substitutionRequested(subst)
             return
         }
-        if (plasmoidBridge.runRunnerResult(item.sourceIndex))
+        if (plasmoidBridge.runner.run(item.sourceIndex))
             closeRequested()
     }
 

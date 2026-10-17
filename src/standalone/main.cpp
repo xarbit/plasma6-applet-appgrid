@@ -288,9 +288,9 @@ int main(int argc, char *argv[])
     // carry its id, so the settings window edits that instance's panel button.
     // Empty (terminal/autostart) → no owner, no button rows. Seed it from this
     // launch and update it whenever a (different) plasmoid toggles/configures us.
-    controller.setButtonTargetId(plasmoidId);
+    controller.plasmoidClient()->setButtonTargetId(plasmoidId);
     const auto setOwner = [&controller](const QString &id) {
-        controller.setButtonTargetId(id);
+        controller.plasmoidClient()->setButtonTargetId(id);
     };
     QObject::connect(&standalone, &AppGridStandalone::toggleRequested, &controller, setOwner);
     QObject::connect(&standalone, &AppGridStandalone::toggleCompactRequested, &controller, setOwner);
@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
     // Configure (from a plasmoid's "Configure Launcher", or a terminal --configure)
     // retargets the button-edit owner to that plasmoid (empty clears it).
     QObject::connect(&standalone, &AppGridStandalone::configureRequested, &app, [&](const QString &targetId) {
-        controller.setButtonTargetId(targetId);
+        controller.plasmoidClient()->setButtonTargetId(targetId);
         settings.show();
     });
     // The launcher's own Settings action: open the window keeping the owner set

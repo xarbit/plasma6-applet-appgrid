@@ -283,7 +283,7 @@ ListView {
         readonly property string favoriteId: {
             if (actsLikeApp)
                 return (model.storageId || "").length > 0 ? FavoriteId.toPrefixed(model.storageId) : ""
-            return listView.plasmoidBridge ? listView.plasmoidBridge.runnerResultFavoriteId(model.sourceIndex) : ""
+            return listView.plasmoidBridge ? listView.plasmoidBridge.runner.favoriteId(model.sourceIndex) : ""
         }
         readonly property bool favoritable: favoriteId.length > 0
         readonly property bool isFavorite: {

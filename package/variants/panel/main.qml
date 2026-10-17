@@ -32,7 +32,7 @@ PlasmoidItem {
 
     // GridPanel and the controllers are driven by the applet's controller — the
     // single launcher surface the standalone injects too. No per-variant
-    // forwarder to drift out of sync (that lost runnerResultFavoriteId once, #200).
+    // forwarder to drift out of sync (that lost the runner favourite id once, #200).
     PlasmoidConfigSync {
         configuration: Plasmoid.configuration
         updateChecker: Plasmoid.controller.updateChecker

@@ -251,6 +251,12 @@ set(APPGRID_COMMON_SOURCES
     src/newappstracker.h
     src/windowconfigurator.cpp
     src/windowconfigurator.h
+    src/runnerservice.cpp
+    src/runnerservice.h
+    src/plasmoidclient.cpp
+    src/plasmoidclient.h
+    src/systemactions.cpp
+    src/systemactions.h
     src/frecencyscoring.cpp
     src/frecencyscoring.h
 )

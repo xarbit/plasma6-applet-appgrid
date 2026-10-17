@@ -45,8 +45,10 @@ TestCase {
     QtObject {
         id: bridgeStub
         function notifyAppLaunched(sid) { testCase.notified.push(sid) }
-        function runnerSubstitutionText(i) { return testCase.nextSubst }
-        function runRunnerResult(i) { return testCase.nextRunResult }
+        readonly property var runner: ({
+            substitutionText: function(i) { return testCase.nextSubst },
+            run: function(i) { return testCase.nextRunResult }
+        })
     }
 
     LaunchCoordinator {

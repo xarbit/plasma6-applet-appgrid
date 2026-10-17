@@ -124,8 +124,8 @@ AppGridController *AppGridPlugin::controller()
         // in-process (Kicker's ContainmentInterface needs a corona): the
         // controller emits a request this applet forwards to its QML. The
         // standalone daemon leaves this off.
-        m_controller->setInProcessTaskManagerPin(true);
-        connect(m_controller, &AppGridController::addToTaskManagerRequested, this, &AppGridPlugin::addToTaskManagerRequested);
+        m_controller->plasmoidClient()->setInProcessPin(true);
+        connect(m_controller->plasmoidClient(), &PlasmoidClient::addToTaskManagerRequested, this, &AppGridPlugin::addToTaskManagerRequested);
     }
     return m_controller;
 }
@@ -144,7 +144,7 @@ QString AppGridPlugin::panelScreenName() const
 
 QVariantMap AppGridPlugin::systemInfo()
 {
-    return controller()->systemInfo(m_useNativeActivation ? QStringLiteral("Panel") : QStringLiteral("Center"));
+    return controller()->systemActions()->systemInfo(m_useNativeActivation ? QStringLiteral("Panel") : QStringLiteral("Center"));
 }
 
 void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringList &launchArgs, const QVariantList &dbusArgs)
