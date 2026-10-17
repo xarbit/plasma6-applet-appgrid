@@ -4,8 +4,10 @@
 """
 AppGrid universal-package installer.
 
-Extracts the bundled `files/` tree into `~/.local/`, where Plasma 6 picks
-up user-installed plasmoids alongside system ones. Never installs OS
+Extracts the bundled payload into `~/.local/`, where Plasma 6 picks
+up user-installed plasmoids alongside system ones. The package carries one
+payload per libPlasma SONAME (`files-plasma7/`, `files-plasma8/`, ...) and
+installs the one this system can load. Never installs OS
 packages itself — if runtime dependencies are missing, prints the
 per-distro install command and exits.
 
@@ -26,7 +28,13 @@ import tomllib
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+# One payload per libPlasma SONAME: Plasma 6.4-6.7 ship libPlasma.so.7,
+# 6.8+ ship .so.8, and a binary links exactly one (#217). A plain files/
+# (single local build) is still accepted. main() sets PAYLOAD_DIR to the
+# payload selected for this system.
+PAYLOAD_RE = re.compile(r"^files-plasma(\d+)$")
 PAYLOAD_DIR = SCRIPT_DIR / "files"
+LIB_DIRS = ("/usr/lib", "/usr/lib64", "/lib", "/lib64")
 MANIFEST_FILE = SCRIPT_DIR / "MANIFEST"
 SHA256SUMS_FILE = SCRIPT_DIR / "SHA256SUMS"
 DISTROS_TOML = SCRIPT_DIR / "distros.toml"
@@ -253,13 +261,52 @@ def plasma_present() -> bool:
     return shutil.which("plasmashell") is not None
 
 
-def unresolved_dependencies() -> list[str]:
+def payload_dirs() -> list[Path]:
+    """Payload dirs in this package, newest libPlasma SONAME first."""
+    variants = [(int(m.group(1)), p) for p in SCRIPT_DIR.iterdir()
+                if p.is_dir() and (m := PAYLOAD_RE.match(p.name))]
+    if variants:
+        return [p for _, p in sorted(variants, reverse=True)]
+    legacy = SCRIPT_DIR / "files"
+    return [legacy] if legacy.is_dir() else []
+
+
+def system_has_lib(name: str) -> bool:
+    """Whether a shared library file exists in a standard lib dir."""
+    dirs = [Path(d) for d in LIB_DIRS] + sorted(Path("/usr/lib").glob("*-linux-gnu"))
+    return any((d / name).exists() for d in dirs)
+
+
+def select_payload(payloads: list[Path]) -> tuple[Path, list[str]]:
+    """Pick the newest payload whose bundled .so files all resolve here.
+
+    Without ldd, fall back to which libPlasma.so.N exists. If none resolves,
+    return the payload missing the fewest libs, for the error message.
+    """
+    if len(payloads) > 1 and not shutil.which("ldd"):
+        for payload in payloads:
+            m = PAYLOAD_RE.match(payload.name)
+            if m and system_has_lib(f"libPlasma.so.{m.group(1)}"):
+                return payload, []
+        return payloads[0], []
+    best: tuple[Path, list[str]] | None = None
+    for payload in payloads:
+        missing = unresolved_dependencies(payload)
+        if not missing:
+            return payload, []
+        if best is None or len(missing) < len(best[1]):
+            best = (payload, missing)
+    assert best is not None
+    return best
+
+
+def unresolved_dependencies(payload: Path) -> list[str]:
     """ldd each bundled .so; return libs the dynamic linker can't resolve."""
     if not shutil.which("ldd"):
         return []
 
     missing: set[str] = set()
-    for so in PAYLOAD_DIR.rglob("*.so"):
+    for so in payload.rglob("*.so"):
         try:
             out = subprocess.run(["ldd", str(so)], capture_output=True,
                                  text=True, check=False).stdout
@@ -340,7 +387,7 @@ def describe_transition(old: str, new: str) -> str:
     return f"{old} -> {new}" + (" (downgrade)" if version_tuple(new) < version_tuple(old) else "")
 
 
-def verify_sha256sums() -> None:
+def verify_sha256sums(payloads: list[Path]) -> None:
     """Verify SHA256SUMS; refuse install if any listed file mismatches or
     any payload file is present but not listed (defeats attacker dropping
     extra unverified binaries into files/).
@@ -373,7 +420,8 @@ def verify_sha256sums() -> None:
         listed_paths.add(rel)
 
     payload_paths = {str(p.relative_to(SCRIPT_DIR))
-                     for p in PAYLOAD_DIR.rglob("*") if p.is_file()}
+                     for payload in payloads
+                     for p in payload.rglob("*") if p.is_file()}
     uncovered = payload_paths - listed_paths
     if uncovered:
         die("the following payload files are present but NOT covered by "
@@ -477,12 +525,14 @@ def main() -> int:
                         help="install on top of a system-wide distro package "
                              "(not recommended — Plasma may load the system copy)")
     args = parser.parse_args()
+    global PAYLOAD_DIR
 
     refuse_if_root()
     validate_home()
 
-    if not PAYLOAD_DIR.is_dir():
-        die(f"missing payload: {PAYLOAD_DIR}\n"
+    payloads = payload_dirs()
+    if not payloads:
+        die(f"missing payload: no files-plasma*/ or files/ in {SCRIPT_DIR}\n"
             f"run this from the unpacked universal package directory.")
 
     if not DISTROS_TOML.is_file():
@@ -517,9 +567,11 @@ def main() -> int:
         info()
         return 1
 
-    verify_sha256sums()
+    verify_sha256sums(payloads)
 
-    missing_libs = unresolved_dependencies()
+    PAYLOAD_DIR, missing_libs = select_payload(payloads)
+    if len(payloads) > 1 and not missing_libs:
+        info(f"Using payload: {PAYLOAD_DIR.name}")
     if missing_libs:
         info()
         info("error: AppGrid's bundled plugin can't resolve these libraries on this system:")

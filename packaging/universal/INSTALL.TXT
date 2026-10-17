@@ -22,7 +22,8 @@ distro where you prefer a user-local install.
                 libKF6I18n libKF6CoreAddons libKF6WindowSystem
                 libKF6Runner KirigamiPlatform
         Plasma: libPlasma libPlasmaActivities libPlasmaQuick
-                (all at SONAME 7 — current Plasma 6.4+)
+                (SONAME 7 for Plasma 6.4-6.7, SONAME 8 for 6.8+;
+                the package carries a build for each)
         Other:  libLayerShellQtInterface (SONAME 6)
 
 If `plasmashell` is not on PATH, the installer refuses to
@@ -63,12 +64,14 @@ The installer will:
 
   1. Detect your distro from /etc/os-release.
   2. Verify SHA256SUMS over the payload.
-  3. Run `ldd` over the bundled .so files. If any library is
-     unresolved, it prints the per-distro install command and
-     exits without touching anything.
+  3. Pick the payload built for your Plasma: files-plasma8/
+     (Plasma 6.8+) or files-plasma7/ (Plasma 6.4-6.7), using
+     `ldd` over the bundled .so files. If no payload resolves,
+     it prints the per-distro install command and exits
+     without touching anything.
   4. Show a summary (file count, target prefix) and ask to
      confirm. Pass `-y` to skip the prompt.
-  5. Copy files/ into ~/.local/.
+  5. Copy the selected payload into ~/.local/.
   6. Drop a small plasma-workspace env script at
      ~/.config/plasma-workspace/env/appgrid-user-local.sh
      so Qt's plugin loader finds the .so under ~/.local/.
@@ -157,13 +160,14 @@ Quick reference:
       exists and is executable, then start a new session.
 
   AppGrid was working, now broken after distro upgrade
-      A library it linked against may have changed SONAME.
-      Re-run ./install.sh with the matching tarball, or
-      rebuild from source.
+      A library it linked against may have changed SONAME,
+      e.g. Plasma 6.7 -> 6.8 (libPlasma.so.7 -> .so.8). Re-run
+      ./install.sh from the same tarball: it now picks the
+      payload for your new Plasma. Then restart plasmashell.
 
   "cannot open shared object file: libPlasma.so.X"
       Your distro ships an older (X=6) or newer SONAME than
-      the tarball expects (currently 7). Check yours with:
+      the tarball carries (currently 7 and 8). Check yours with:
           ls /usr/lib*/libPlasma.so.*
       If you only see libPlasma.so.6, your Plasma is < 6.4
       and not yet supported by this universal package. Use

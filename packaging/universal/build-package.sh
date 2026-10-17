@@ -5,43 +5,70 @@
 # Builds the universal package tarball:
 #   appgrid-universal-<version>-<arch>.tar.gz
 #
-# Run from the project root with a built tree present (cmake -B build ...).
-# CI uses this; locally you can run it after a full build to sanity-check.
+# The tarball carries one payload per libPlasma SONAME (files-plasma7/ for
+# Plasma 6.4-6.7, files-plasma8/ for 6.8+); install.py installs the one the
+# system can load (#217). Each payload is built in its own container, so
+# packaging is two steps, run from the project root:
+#
+#   stage: install a built tree (cmake -B build ...) into a payload dir whose
+#          basename is plasma<N>; run where the tree was built (needs cmake).
+#   pack:  combine staged payloads into the tarball (needs tar/sha256sum).
 #
 # Usage:
-#   packaging/universal/build-package.sh <version> <arch> <build-dir> <out-dir>
+#   packaging/universal/build-package.sh stage <build-dir> <stage-dir>/plasma<N>
+#   packaging/universal/build-package.sh pack <version> <arch> <out-dir> <stage-dir>/plasma<N>...
 
 set -eu
 
-if [ "$#" -ne 4 ]; then
-    echo "usage: $0 <version> <arch> <build-dir> <out-dir>" >&2
+usage() {
+    echo "usage: $0 stage <build-dir> <stage-dir>/plasma<N>" >&2
+    echo "       $0 pack <version> <arch> <out-dir> <stage-dir>/plasma<N>..." >&2
     exit 2
+}
+
+[ "$#" -ge 1 ] || usage
+MODE="$1"
+shift
+
+if [ "$MODE" = stage ]; then
+    [ "$#" -eq 2 ] || usage
+    BUILD_DIR="$1"
+    PAYLOAD_ROOT="$2"
+    case "$(basename "$PAYLOAD_ROOT")" in plasma[0-9]*) ;; *) usage ;; esac
+    rm -rf "$PAYLOAD_ROOT"
+    mkdir -p "$PAYLOAD_ROOT"
+    # Install prefixed with /.local so the tree maps to ~/.local on extract.
+    DESTDIR="$PAYLOAD_ROOT/__prefix__" \
+        cmake --install "$BUILD_DIR" --prefix "/.local"
+    mv "$PAYLOAD_ROOT/__prefix__/.local/"* "$PAYLOAD_ROOT/"
+    rm -rf "$PAYLOAD_ROOT/__prefix__"
+    echo "Staged: $PAYLOAD_ROOT"
+    exit 0
 fi
 
+[ "$MODE" = pack ] && [ "$#" -ge 4 ] || usage
 VERSION="$1"
 ARCH="$2"
-BUILD_DIR="$3"
-OUT_DIR="$4"
+OUT_DIR="$3"
+shift 3
 
 # Resolve to absolute paths so we can cd around freely later.
 mkdir -p "$OUT_DIR"
 OUT_DIR="$(cd "$OUT_DIR" && pwd)"
-BUILD_DIR="$(cd "$BUILD_DIR" && pwd)"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PKG_NAME="appgrid-universal-${VERSION}-${ARCH}"
 STAGE_DIR=$(mktemp -d)
 trap 'rm -rf "$STAGE_DIR"' EXIT
 
 PKG_ROOT="$STAGE_DIR/$PKG_NAME"
-PAYLOAD_ROOT="$PKG_ROOT/files"
+mkdir -p "$PKG_ROOT"
 
-mkdir -p "$PKG_ROOT" "$PAYLOAD_ROOT"
-
-# Install into files/, prefixed with /.local so the tree maps to ~/.local on extract.
-DESTDIR="$PAYLOAD_ROOT/__prefix__" \
-    cmake --install "$BUILD_DIR" --prefix "/.local"
-mv "$PAYLOAD_ROOT/__prefix__/.local/"* "$PAYLOAD_ROOT/"
-rm -rf "$PAYLOAD_ROOT/__prefix__"
+for staged in "$@"; do
+    variant="$(basename "$staged")"
+    case "$variant" in plasma[0-9]*) ;; *) usage ;; esac
+    [ -d "$staged" ] || { echo "missing staged payload: $staged" >&2; exit 1; }
+    cp -R "$staged" "$PKG_ROOT/files-$variant"
+done
 
 cp "$PROJECT_ROOT/packaging/universal/install.sh"   "$PKG_ROOT/"
 cp "$PROJECT_ROOT/packaging/universal/install.py"   "$PKG_ROOT/"
@@ -90,7 +117,8 @@ removes only the files it placed there.
 
 ## What's inside
 
-- \`files/\` — the install payload (mirrors \`~/.local/\` layout)
+- \`files-plasma<N>/\` — the install payloads (mirror the \`~/.local/\` layout),
+  one per libPlasma SONAME; \`install.sh\` picks the one this system loads
 - \`install.sh\` / \`uninstall.sh\` — Python-version-gated wrappers
 - \`install.py\` / \`uninstall.py\` — the actual installer / uninstaller
 - \`distros.toml\` — per-distro dependency declarations
@@ -102,9 +130,9 @@ removes only the files it placed there.
   detect upgrade vs. reinstall vs. downgrade of an existing install)
 EOF
 
-( cd "$PAYLOAD_ROOT" && find . -type f -printf "%P\n" | sort ) > "$PKG_ROOT/MANIFEST"
+( cd "$PKG_ROOT" && find files-plasma* -type f | sort ) > "$PKG_ROOT/MANIFEST"
 ( cd "$PKG_ROOT" && \
-    find files -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS )
+    find files-plasma* -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS )
 
 TARBALL="$OUT_DIR/${PKG_NAME}.tar.gz"
 ( cd "$STAGE_DIR" && tar -czf "$TARBALL" "$PKG_NAME" )

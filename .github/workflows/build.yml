@@ -230,44 +230,51 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Build and package
-        # Fedora 42 = oldest mainstream stable shipping Plasma libs at
-        # SONAME 7 (KDE bumped from 6 around Plasma 6.4). Built here so the
-        # tarball loads on KDE Linux / Kinoite / Bazzite / Aurora / Kalpa /
-        # SteamOS / Arch / Tumbleweed. Excludes Plasma <= 6.3 users.
+        # Two payloads in one tarball, one per libPlasma SONAME, since a
+        # binary links exactly one and Plasma 6.8 removed APIs (#217):
+        #   plasma7 = Fedora 42, oldest mainstream stable at SONAME 7
+        #             (Plasma 6.4-6.7; excludes Plasma <= 6.3 users).
+        #   plasma8 = Fedora rawhide, the only Fedora on Plasma 6.8 yet;
+        #             move to the first stable Fedora that ships 6.8.
+        # install.py installs whichever one the system can load.
         run: |
-          docker run --rm --platform ${{ matrix.platform }} \
-            -v ${{ github.workspace }}:/workspace \
-            -e APP_VERSION="${APP_VERSION}" \
-            -e BUILD_TYPE="${BUILD_TYPE}" \
-            -e ARCH="${{ matrix.arch }}" \
-            fedora:42 bash -c '
-              set -e
-              dnf install -y \
-                cmake extra-cmake-modules gcc-c++ make \
-                qt6-qtbase-devel qt6-qtdeclarative-devel \
-                libplasma-devel kf6-kpackage-devel kf6-kio-devel \
-                kf6-kconfig-devel kf6-kservice-devel kf6-ki18n-devel kf6-kcoreaddons-devel \
-                kf6-kiconthemes-devel kf6-ksvg-devel \
-                kf6-kwindowsystem-devel kf6-kglobalaccel-devel kf6-krunner-devel layer-shell-qt-devel \
-                plasma-activities-devel plasma-activities-stats-devel \
-                plasma-workspace-devel \
-                appstream-qt-devel \
-                gettext
-              cd /workspace
-              # Pin plugin install path to lib/qt6/plugins (Fedora ECM
-              # defaults to lib64/qt6/plugins, but the universal payload
-              # script wires QT_PLUGIN_PATH to ~/.local/lib/qt6/plugins
-              # only). NO APOSTROPHES in any comment inside this bash -c
-              # block — single quote here closes the outer string.
-              cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-                  -DAPPGRID_UNIVERSAL_BUILD=ON \
-                  -DKDE_INSTALL_QTPLUGINDIR=lib/qt6/plugins \
-                  -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
-              cmake --build build -j$(nproc)
-              mkdir -p out
-              bash packaging/universal/build-package.sh \
-                "$APP_VERSION" "$ARCH" build out
-            '
+          for variant in "plasma7 fedora:42" "plasma8 fedora:rawhide"; do
+            set -- $variant
+            docker run --rm --platform ${{ matrix.platform }} \
+              -v ${{ github.workspace }}:/workspace \
+              -e APP_VERSION="${APP_VERSION}" \
+              -e BUILD_TYPE="${BUILD_TYPE}" \
+              -e ARCH="${{ matrix.arch }}" \
+              -e VARIANT="$1" \
+              "$2" bash -c '
+                set -e
+                dnf install -y \
+                  cmake extra-cmake-modules gcc-c++ make \
+                  qt6-qtbase-devel qt6-qtdeclarative-devel \
+                  libplasma-devel kf6-kpackage-devel kf6-kio-devel \
+                  kf6-kconfig-devel kf6-kservice-devel kf6-ki18n-devel kf6-kcoreaddons-devel \
+                  kf6-kiconthemes-devel kf6-ksvg-devel \
+                  kf6-kwindowsystem-devel kf6-kglobalaccel-devel kf6-krunner-devel layer-shell-qt-devel \
+                  plasma-activities-devel plasma-activities-stats-devel \
+                  plasma-workspace-devel \
+                  appstream-qt-devel \
+                  gettext
+                cd /workspace
+                # Pin plugin install path to lib/qt6/plugins (Fedora ECM
+                # defaults to lib64/qt6/plugins, but the universal payload
+                # script wires QT_PLUGIN_PATH to ~/.local/lib/qt6/plugins
+                # only). NO APOSTROPHES in any comment inside this bash -c
+                # block — single quote here closes the outer string.
+                cmake -B build-$VARIANT -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+                    -DAPPGRID_UNIVERSAL_BUILD=ON \
+                    -DKDE_INSTALL_QTPLUGINDIR=lib/qt6/plugins \
+                    -DAPPGRID_VERSION_OVERRIDE="$APP_VERSION"
+                cmake --build build-$VARIANT -j$(nproc)
+                bash packaging/universal/build-package.sh stage build-$VARIANT stage/$VARIANT
+              '
+          done
+          bash packaging/universal/build-package.sh pack \
+            "$APP_VERSION" "${{ matrix.arch }}" out stage/plasma7 stage/plasma8
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
