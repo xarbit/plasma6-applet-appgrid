@@ -11,6 +11,8 @@
 #include <PlasmaActivities/Stats/ResultModel>
 #include <PlasmaActivities/Stats/Terms>
 
+#include <utility>
+
 namespace KAStats = KActivities::Stats;
 namespace KASTerms = KActivities::Stats::Terms;
 
@@ -53,7 +55,7 @@ void UsedAppsProvider::rebuild()
         }
     }
     if (next != m_used) {
-        m_used = next;
+        m_used = std::move(next);
         Q_EMIT usedAppsChanged();
     }
 }

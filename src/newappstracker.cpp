@@ -11,6 +11,7 @@
 #include <KConfigGroup>
 
 #include <optional>
+#include <utility>
 
 namespace
 {
@@ -111,7 +112,7 @@ void NewAppsTracker::refresh(const QStringList &installedIds)
         group.sync();
     }
 
-    m_firstSeen = next;
+    m_firstSeen = std::move(next);
     recompute();
 }
 
@@ -129,7 +130,7 @@ void NewAppsTracker::recompute()
         next.insert(it.key());
     }
     if (next != m_new) {
-        m_new = next;
+        m_new = std::move(next);
         Q_EMIT newAppsChanged();
     }
 }

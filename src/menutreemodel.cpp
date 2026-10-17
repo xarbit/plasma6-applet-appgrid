@@ -7,6 +7,8 @@
 
 #include "pluginhelpers.h"
 
+#include <utility>
+
 MenuTreeModel::MenuTreeModel(QObject *parent)
     : AbstractGroupedModel(parent)
 {
@@ -36,7 +38,7 @@ void MenuTreeModel::setRootPath(const QString &relPath)
         return;
     }
     m_rootPath = floor;
-    m_path = floor;
+    m_path = std::move(floor);
     rebuildRows();
     Q_EMIT pathChanged();
 }
@@ -77,7 +79,7 @@ void MenuTreeModel::goBack()
     if (parent.length() < m_rootPath.length()) {
         parent = m_rootPath;
     }
-    m_path = parent;
+    m_path = std::move(parent);
     rebuildRows();
     Q_EMIT pathChanged();
 }
