@@ -13,174 +13,28 @@
 #include "appgridconfig.h"
 
 #include "appgrid_debug.h"
-#include "appgridconstants.h"
 #include "appgridcontroller.h"
 #include "appgridstandalone.h"
+#include "configautosave.h"
 #include "qmltypes.h"
+#include "residentquitguard.h"
+#include "settingswindow.h"
+#include "standaloneoptions.h"
 
 #include <KAboutData>
-#include <KConfigSkeleton>
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
 #include <PlasmaQuick/PlasmaQuick>
 
 #include <QApplication>
-#include <QEvent>
 #include <QEventLoop>
 #include <QIcon>
-#include <QMetaMethod>
-#include <QMetaProperty>
-#include <QQmlApplicationEngine>
 #include <QQmlComponent>
-#include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickWindow>
 #include <QThread>
-#include <QTimer>
 
 #include <memory>
-
-namespace
-{
-/**
- * Keeps the daemon resident like KRunner. When the launcher's layer-shell window
- * hides as the last window, the Wayland platform posts a QEvent::Quit to
- * terminate the app — a path setQuitOnLastWindowClosed(false) does not cover, so
- * the daemon would die and the next launch would cold-start. This filter
- * swallows that stray Quit; only the explicit D-Bus Quit (an upgrade asking us
- * to step aside) sets @c allowQuit and lets the process exit.
- */
-class ResidentQuitGuard : public QObject
-{
-public:
-    bool allowQuit = false;
-
-    // QObject::eventFilter is public; keep the same visibility so the override
-    // doesn't narrow it (clang-tidy misc-override-with-different-visibility).
-    bool eventFilter(QObject *watched, QEvent *event) override
-    {
-        if (event->type() == QEvent::Quit && !allowQuit) {
-            return true;
-        }
-        return QObject::eventFilter(watched, event);
-    }
-};
-
-/**
- * The daemon's settings window. It runs in its OWN QQmlApplicationEngine using
- * the desktop colour platform (unlike the launcher's Plasma theme), created on
- * first show() and destroyed the moment it closes — never left hidden, because a
- * lingering qqc2-desktop-style window crashes when a later launcher hide
- * re-lays-out its stale style items. Recreated fresh on the next open
- * (ConfigWindow re-syncs from live on show), so nothing is lost.
- */
-class SettingsWindow
-{
-public:
-    SettingsWindow(AppGridConfig *config, AppGridConfig *buffer, AppGridController *controller)
-        : m_config(config)
-        , m_buffer(buffer)
-        , m_controller(controller)
-    {
-    }
-
-    ~SettingsWindow()
-    {
-        // Declared after the QApplication in main(), so destroyed before it while
-        // the QQC2 style is still alive — a clean window teardown. Null first: the
-        // delete hides the window, re-entering destroy() via visibleChanged.
-        QQmlApplicationEngine *engine = m_engine;
-        m_engine = nullptr;
-        delete engine;
-    }
-
-    SettingsWindow(const SettingsWindow &) = delete;
-    SettingsWindow &operator=(const SettingsWindow &) = delete;
-
-    void show()
-    {
-        if (!m_engine) {
-            load();
-        }
-        if (QQuickWindow *w = window()) {
-            w->show();
-            w->raise();
-            w->requestActivate();
-        }
-    }
-
-private:
-    [[nodiscard]] QQuickWindow *window() const
-    {
-        if (!m_engine) {
-            return nullptr;
-        }
-        const QList<QObject *> roots = m_engine->rootObjects();
-        return roots.isEmpty() ? nullptr : qobject_cast<QQuickWindow *>(roots.first());
-    }
-
-    // Every setting of the shared schema the window buffers for Apply/Cancel:
-    // all of them but the panel button's appearance, which the plasmoid
-    // owns (#191). Read from the generated config, so a new setting is
-    // buffered without being listed anywhere.
-    QStringList editableKeys() const
-    {
-        static const QStringList buttonKeys{
-            QStringLiteral("icon"),
-            QStringLiteral("useCustomButtonImage"),
-            QStringLiteral("customButtonImage"),
-            QStringLiteral("menuLabel"),
-        };
-        QStringList keys;
-        const auto items = m_buffer->items();
-        for (const KConfigSkeletonItem *item : items) {
-            if (!buttonKeys.contains(item->name())) {
-                keys.append(item->name());
-            }
-        }
-        return keys;
-    }
-
-    void load()
-    {
-        m_engine = new QQmlApplicationEngine;
-        // Sets the localized context as the root context object (and honours
-        // the TRANSLATION_DOMAIN macro, which the standalone target defines).
-        KLocalization::setupLocalizedContext(m_engine);
-        // Fail-loud contract: ConfigWindow.qml declares these `required`, so a
-        // missing injection errors at load instead of silently undefined (#6).
-        m_engine->setInitialProperties({
-            {QStringLiteral("appGridConfig"), QVariant::fromValue(m_config)},
-            {QStringLiteral("appGridConfigBuffer"), QVariant::fromValue(m_buffer)},
-            {QStringLiteral("appGridController"), QVariant::fromValue(m_controller)},
-            {QStringLiteral("aboutData"), QVariant::fromValue(KAboutData::applicationData())},
-            {QStringLiteral("editableKeys"), editableKeys()},
-        });
-        m_engine->load(QUrl(QStringLiteral("qrc:/qt/qml/appgrid/ConfigWindow.qml")));
-        if (const QQuickWindow *w = window()) {
-            QObject::connect(w, &QWindow::visibleChanged, m_engine, [this](bool visible) {
-                if (!visible) {
-                    destroy();
-                }
-            });
-        }
-    }
-
-    void destroy()
-    {
-        if (!m_engine) {
-            return;
-        }
-        m_engine->deleteLater();
-        m_engine = nullptr;
-    }
-
-    AppGridConfig *const m_config;
-    AppGridConfig *const m_buffer;
-    AppGridController *const m_controller;
-    QQmlApplicationEngine *m_engine = nullptr;
-};
-}
 
 int main(int argc, char *argv[])
 {
@@ -234,37 +88,14 @@ int main(int argc, char *argv[])
     ResidentQuitGuard quitGuard;
     app.installEventFilter(&quitGuard);
 
-    const QStringList appArgs = app.arguments();
-    // --daemon: started by D-Bus/systemd activation, not an explicit user trigger.
-    // Stay hidden and let the activating method call (queued by D-Bus until the
-    // service name is up) drive the window — instead of auto-showing on start.
-    const bool daemonMode = appArgs.contains(AppGrid::Standalone::FlagDaemon);
-    // --configure: open the settings window straight away and skip auto-showing
-    // the launcher (the plasmoid's "Configure Launcher…" when we were not yet
-    // running). The launcher window is still created, ready for a later toggle.
-    const bool openConfigOnStart = appArgs.contains(AppGrid::Standalone::FlagConfigure);
-    // --compact: open collapsed to the search bar (the secondary "Open in Compact
-    // Mode" shortcut fired while we were not yet running).
-    const bool startCompact = appArgs.contains(AppGrid::Standalone::FlagCompact);
-    // --replace: take over from a running (stale) daemon the plasmoid is quitting
-    // after an upgrade — poll for the bus name to free instead of forwarding to it.
-    const bool replaceRunning = appArgs.contains(AppGrid::Standalone::FlagReplace);
-    // --plasmoid-id=<id>: the center plasmoid that opened the settings, so the
-    // daemon edits that instance's panel button. Empty when launched directly
-    // (terminal / autostart), which clears any button-edit binding.
-    QString plasmoidId;
-    for (const QString &arg : appArgs) {
-        if (arg.startsWith(AppGrid::Standalone::FlagPlasmoidId)) {
-            plasmoidId = arg.mid(AppGrid::Standalone::FlagPlasmoidId.size());
-            break;
-        }
-    }
+    const StandaloneOptions options = StandaloneOptions::parse(app.arguments());
+    const QString &plasmoidId = options.plasmoidId;
 
     // Single instance: a second launch toggles the running window and exits, so
     // the binary behaves like KRunner (one daemon, toggled on demand).
     AppGridStandalone standalone;
     if (!standalone.registerService()) {
-        if (replaceRunning) {
+        if (options.replace) {
             // The old daemon was just asked to Quit; wait for it to release the
             // name (it exits in its own process), then register as the new owner.
             constexpr int kReplaceRetries = 40;
@@ -283,9 +114,9 @@ int main(int argc, char *argv[])
             // shortcut re-launches `appgrid --compact`), else a plain toggle. The
             // origin plasmoid id (empty for a terminal / shortcut launch) rides
             // along so the binding clears or retargets to match.
-            if (openConfigOnStart) {
+            if (options.configure) {
                 AppGridStandalone::callConfigureOnRunningInstance(plasmoidId);
-            } else if (startCompact) {
+            } else if (options.compact) {
                 AppGridStandalone::callToggleCompactOnRunningInstance(plasmoidId);
             } else {
                 AppGridStandalone::callToggleOnRunningInstance(plasmoidId);
@@ -332,36 +163,8 @@ int main(int argc, char *argv[])
     // open/Reset, and compares the two for its dirty state.
     AppGridConfig configBuffer;
 
-    // KConfigXT setters mutate in-memory items but don't persist. The launcher
-    // writes settings live (hide an app, favourite toggles, recents, launch
-    // counts), so flush them to the file with a debounced save plus a final one
-    // at quit.
-    //
-    // The save trigger is every property's NOTIFY signal, NOT the skeleton's
-    // configChanged(): the generated setters emit their per-property *Changed()
-    // signal on set, but configChanged() only fires around save() itself — so a
-    // configChanged()-driven timer would never start from a live write and the
-    // change would be lost on a hard kill. Connecting each NOTIFY covers every
-    // writable key and stays correct as the schema grows.
-    // Debounce window for coalescing bursts of live config writes into one save.
-    constexpr int kConfigSaveDebounceMs = 500;
-    auto *saveTimer = new QTimer(&app);
-    saveTimer->setSingleShot(true);
-    saveTimer->setInterval(kConfigSaveDebounceMs);
-    QObject::connect(saveTimer, &QTimer::timeout, &config, [&config]() {
-        config.save();
-    });
-    const QMetaObject *configMeta = config.metaObject();
-    const QMetaMethod startTimer = saveTimer->metaObject()->method(saveTimer->metaObject()->indexOfMethod("start()"));
-    for (int i = configMeta->propertyOffset(); i < configMeta->propertyCount(); ++i) {
-        const QMetaProperty prop = configMeta->property(i);
-        if (prop.hasNotifySignal()) {
-            QObject::connect(&config, prop.notifySignal(), saveTimer, startTimer);
-        }
-    }
-    QObject::connect(&app, &QGuiApplication::aboutToQuit, &config, [&config]() {
-        config.save();
-    });
+    // The launcher changes settings live; keep the file in step.
+    ConfigAutosave::install(&config);
 
     // The app model defers its .desktop scan to the first event-loop pass (so it
     // never blocks plasmashell at startup). The plasmoid is created long before
@@ -388,8 +191,8 @@ int main(int argc, char *argv[])
         {QStringLiteral("appGridController"), QVariant::fromValue(&controller)},
         {QStringLiteral("appGridConfig"), QVariant::fromValue(&config)},
         {QStringLiteral("appGridStandalone"), QVariant::fromValue(&standalone)},
-        {QStringLiteral("appGridAutoShow"), !daemonMode && !openConfigOnStart},
-        {QStringLiteral("appGridStartCompact"), startCompact},
+        {QStringLiteral("appGridAutoShow"), !options.daemon && !options.configure},
+        {QStringLiteral("appGridStartCompact"), options.compact},
     };
     // Bundled at this qrc path by qt_add_resources (see CMakeLists). The root is
     // a PlasmaCore.Window (PlasmaWindow) hosting GridPanel as its mainItem.
@@ -419,7 +222,7 @@ int main(int argc, char *argv[])
     // Launched as "appgrid --configure" (plasmoid, daemon not yet running): open
     // the settings window now. The launcher itself stayed hidden (appGridAutoShow).
     // plasmoidId targets that center plasmoid's button (empty for a terminal launch).
-    if (openConfigOnStart) {
+    if (options.configure) {
         standalone.Configure(plasmoidId);
     }
 

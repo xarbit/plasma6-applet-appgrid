@@ -442,7 +442,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/standalone/appgridconfig.kcfgc
 set(APPGRID_STANDALONE_SOURCES
     src/standalone/main.cpp
     src/standalone/appgridstandalone.cpp
-    src/standalone/appgridstandalone.h)
+    src/standalone/appgridstandalone.h
+    src/standalone/configautosave.cpp
+    src/standalone/configautosave.h
+    src/standalone/residentquitguard.h
+    src/standalone/settingswindow.cpp
+    src/standalone/settingswindow.h
+    src/standalone/standaloneoptions.cpp
+    src/standalone/standaloneoptions.h)
 qt_add_dbus_adaptor(APPGRID_STANDALONE_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standalone/appgridstandalone.h AppGridStandalone standaloneadaptor StandaloneAdaptor)
 
 add_executable(appgrid ${APPGRID_STANDALONE_SOURCES})

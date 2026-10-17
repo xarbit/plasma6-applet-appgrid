@@ -64,6 +64,14 @@ ecm_add_test(${TEST_STANDALONE_SOURCES}
     LINK_LIBRARIES appgrid_core Qt6::Test)
 target_include_directories(test_standalone PRIVATE ${CMAKE_SOURCE_DIR}/src/standalone ${CMAKE_CURRENT_BINARY_DIR})
 
+# The daemon's command line and settings autosave, also daemon-only.
+ecm_add_test(test_standaloneoptions.cpp
+    ${CMAKE_SOURCE_DIR}/src/standalone/standaloneoptions.cpp
+    ${CMAKE_SOURCE_DIR}/src/standalone/configautosave.cpp
+    TEST_NAME test_standaloneoptions
+    LINK_LIBRARIES appgrid_core Qt6::Test)
+target_include_directories(test_standaloneoptions PRIVATE ${CMAKE_SOURCE_DIR}/src/standalone)
+
 # --- clang-format check ---
 # Mirrors the CI clang-format step so `ctest --preset ci` fails locally
 # before CI does. Skipped when clang-format isn't on PATH (distro-package
