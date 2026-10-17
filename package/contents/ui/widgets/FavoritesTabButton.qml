@@ -39,8 +39,8 @@ PlasmaComponents.ToolButton {
 
     checked: root.bar.favoritesActive && !root.bar.wheelScrolling
     onClicked: root.bar.selectFavorites()
-    onHoveredChanged: hovered ? root.bar.hoverEnter(root.bar.favoritesLabel)
-                              : root.bar.hoverLeave(root.bar.favoritesLabel)
+    onHoveredChanged: hovered ? root.bar.hoverEnter(root.bar.favoritesTab)
+                              : root.bar.hoverLeave(root.bar.favoritesTab)
 
     PlasmaComponents.ToolTip.text: i18nd("dev.xarbit.appgrid", "Favorites")
     PlasmaComponents.ToolTip.visible: hovered

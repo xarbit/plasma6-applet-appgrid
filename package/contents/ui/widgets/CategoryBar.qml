@@ -127,40 +127,51 @@ RowLayout {
     readonly property string allLabel: i18nd("dev.xarbit.appgrid", "All")
     readonly property string favoritesLabel: i18nd("dev.xarbit.appgrid", "Favorites")
 
+    // Tabs are named by id: a category's id is its name, the two anchors use
+    // ids no category name can take. Matching on the shown label instead sent
+    // a category named like an anchor (a menu folder "Favorites", a category
+    // whose translation reads "All") to the anchor.
+    readonly property string allTab: "\u0001all"
+    readonly property string favoritesTab: "\u0001favorites"
+    function tabLabel(id) {
+        return id === allTab ? allLabel : id === favoritesTab ? favoritesLabel : id
+    }
+
     MnemonicResolver {
         id: mnemonicResolver
-        names: [allLabel].concat(categoryList).concat([favoritesLabel])
+        names: [allTab].concat(categoryList).concat([favoritesTab])
+        labelOf: categoryBar.tabLabel
     }
 
     function mnemonicIndex(name) { return mnemonicResolver.indexFor(name) }
     function mnemonicRichText(name) { return mnemonicResolver.richTextFor(name) }
 
-    // Selectable tabs in visual (left-to-right) order — the single source
+    // Selectable tab ids in visual (left-to-right) order — the single source
     // of truth for what Alt+Left/Right steps through.
     readonly property var orderedTabs: {
         var tabs = []
-        if (favoritesFirst) tabs.push(favoritesLabel)
+        if (favoritesFirst) tabs.push(favoritesTab)
         // All is a real tab in every view now — including the By Category grid,
         // where it scrolls back to the top / clears the filter (#201).
-        tabs.push(allLabel)
+        tabs.push(allTab)
         tabs = tabs.concat(categoryList)
-        if (!favoritesFirst) tabs.push(favoritesLabel)
+        if (!favoritesFirst) tabs.push(favoritesTab)
         return tabs
     }
 
-    // Label of the currently selected tab.
+    // Id of the currently selected tab.
     readonly property string currentTab: {
-        if (favoritesActive) return favoritesLabel
+        if (favoritesActive) return favoritesTab
         var sel = selectedCategory
-        return sel === "" ? allLabel : sel
+        return sel === "" ? allTab : sel
     }
 
-    // Route a tab label to its action — the single dispatch shared by
+    // Route a tab id to its action — the single dispatch shared by
     // clicks, mnemonics, Alt+arrow nav, and open-on-hover.
     function selectTab(name) {
-        if (name === favoritesLabel)
+        if (name === favoritesTab)
             selectFavorites()
-        else if (name === allLabel)
+        else if (name === allTab)
             selectAll()
         else
             selectCategory(name)
@@ -178,7 +189,7 @@ RowLayout {
         var name = mnemonicResolver.nameForKey(key)
         if (!name) return false
         // Favorites and every other tab select; nothing toggles (#169).
-        if (name === favoritesLabel)
+        if (name === favoritesTab)
             selectFavorites()
         else
             selectByName(name)
@@ -321,11 +332,11 @@ RowLayout {
     // The selectable tab currently under the cursor, or "" if none.
     function hoveredTab() {
         if (favButtonLeft.visible && favButtonLeft.hovered)
-            return favoritesLabel
+            return favoritesTab
         if (favButtonRight.visible && favButtonRight.hovered)
-            return favoritesLabel
+            return favoritesTab
         if (allButton.visible && allButton.hovered)
-            return allLabel
+            return allTab
         for (var i = 0; i < catRepeater.count; i++) {
             var it = catRepeater.itemAt(i)
             if (it && it.hovered && i < categoryList.length)
@@ -462,8 +473,8 @@ RowLayout {
             categoryBar.selectAll()
             catFlick.contentX = 0
         }
-        onHoveredChanged: hovered ? categoryBar.hoverEnter(categoryBar.allLabel)
-                                  : categoryBar.hoverLeave(categoryBar.allLabel)
+        onHoveredChanged: hovered ? categoryBar.hoverEnter(categoryBar.allTab)
+                                  : categoryBar.hoverLeave(categoryBar.allTab)
 
         // Always icon-only, so it needs a tooltip like Favorites.
         PlasmaComponents.ToolTip.text: categoryBar.allLabel
