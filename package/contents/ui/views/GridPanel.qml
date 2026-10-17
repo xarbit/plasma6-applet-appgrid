@@ -36,7 +36,7 @@ Item {
     readonly property var dragSource: appletInterface ? appletInterface.dragSource : null
 
     function shakeAllIcons() {
-        appGrid.shakeAllIcons()
+        appGridPane.grid.shakeAllIcons()
         categoryGridView.shakeAllIcons()
     }
 
@@ -194,12 +194,12 @@ Item {
     // menu-driven selection toggles. Search and prefix views resolve to
     // null because they don't host multi-select; callers treat that as a
     // silent no-op.
-    readonly property var activeMultiSelectView: showAppGrid ? appGrid
+    readonly property var activeMultiSelectView: showAppGrid ? appGridPane.grid
                                               : showCategoryGrid ? categoryGridView
                                               : null
     // The view the keyboard reaches from the search field (Down, Tab, Enter),
     // or null while searching. Each has enterFromSearch() and activateCurrent().
-    readonly property var activeKeyView: showAppGrid ? appGrid
+    readonly property var activeKeyView: showAppGrid ? appGridPane.grid
                                        : showCategoryGrid ? categoryGridView
                                        : showMenuFolders ? menuFolderView
                                        : null
@@ -230,8 +230,6 @@ Item {
     readonly property string prefixMode: prefixDetector.mode
     readonly property bool isPrefixMode: prefixDetector.isPrefixMode
     readonly property string prefixArgument: prefixDetector.argument
-
-    property bool _needsScrollToTop: false
 
     // Raised by the "settings" header action; the host opens its settings
     // surface (the daemon's window, or the applet config for the panel variant).
@@ -359,16 +357,9 @@ Item {
     // favourites).
     readonly property var gridModel: !isFavoritesActive ? appsModel
         : (useFavoritesGrouped ? favoritesGroupedModel : appsModel)
-    // Favourites drills in place (#18): the same DrillNavigator the menu view uses,
-    // so the back-focus / canGoBack behaviour is identical. favFolderOpen feeds the
-    // variants' Escape Shortcut (it yields while inside a favourites folder).
-    readonly property bool favFolderOpen: isFavoritesActive && favDrillNav.canGoBack
-    DrillNavigator {
-        id: favDrillNav
-        model: panel.favoritesGroupedModel
-        grid: appGrid
-        active: panel.isFavoritesActive
-    }
+    // Inside a favourites folder (#18): feeds the variants' Escape Shortcut,
+    // which yields so Esc climbs out of the folder.
+    readonly property bool favFolderOpen: appGridPane.folderOpen
     Connections {
         target: panel.favoritesGroupedModel
         ignoreUnknownSignals: true
@@ -434,11 +425,7 @@ Item {
     // it on open would visibly jump the grid as the popup appears.
     function _resetGridUiState() {
         categoryBar.altHeld = false
-        appGrid.clearShuffles()
-        appGrid.selection.clear()
-        appGrid.contentY = appGrid.originY
-        appGrid.currentIndex = -1
-        appGrid.recentIndex = -1
+        appGridPane.reset()
         searchResultsList.contentY = searchResultsList.originY
         searchResultsList.currentIndex = 0
         categoryGridView.resetView()
@@ -451,9 +438,7 @@ Item {
             favoritesGroupedModel.resetToRoot()
         // Clear the drill views' scroll + nav memory so the next open doesn't flash
         // the last folder before snapping back.
-        favDrillNav.reset()
         menuFolderView.reset()
-        _needsScrollToTop = true
     }
 
     // Perf instrumentation for the open path (#200). console.debug is silent
@@ -862,117 +847,34 @@ Item {
             onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
         }
 
-        // -- App grid (favourites / all / category). Favourites folders drill in
-        // place via the shared DrillBar instead of a popup overlay (#18). --
-        ColumnLayout {
+        // -- App grid (favourites / all / category) --
+        AppGridPane {
+            id: appGridPane
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredHeight: panel.bodyHeight
             visible: panel.showAppGrid
-            spacing: Kirigami.Units.smallSpacing
-
-            // Back + breadcrumb while inside a favourites folder; drag a member
-            // onto it to remove it from the folder.
-            DrillBar {
-                Layout.fillWidth: true
-                model: panel.favoritesGroupedModel
-                dragSource: panel.dragSource
-                editable: true
-                visible: panel.isFavoritesActive && panel.favFolderOpen
-                onRemoveMemberRequested: function(sid) {
-                    if (panel.favoritesGroupedModel)
-                        panel.favoritesGroupedModel.removeFromFolder(panel.favoritesGroupedModel.currentPath, sid)
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-            // Favourites come from KActivities, which may still be starting on a
-            // cold boot; show a loading state instead of an empty grid until the
-            // store is ready.
-            Kirigami.LoadingPlaceholder {
-                anchors.centerIn: parent
-                z: 1
-                visible: panel.isFavoritesActive && panel.sharedFavoritesModel
-                         && !panel.sharedFavoritesModel.enabled
-            }
-
-            AppGridView {
-                id: appGrid
-                anchors.fill: parent
-                PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
-                model: panel._searchApplied ? null : panel.gridModel
-                appsModel: panel.appsModel
-                sharedFavoritesModel: panel.sharedFavoritesModel
-                favoritesGroupedModel: panel.favoritesGroupedModel
-                // Editable here (unlike the read-only menu tree).
-                groupedModel: panel.favoritesGroupedModel
-                favoritesManager: favorites
-                // Folders drill in place; Esc climbs back out (the window Shortcut
-                // yields via favFolderOpen, like the menu view).
-                onOpenFolderRequested: function(folderId) {
-                    if (panel.favoritesGroupedModel)
-                        panel.favoritesGroupedModel.enterFolder(folderId)
-                }
-                onEscapePressed: favDrillNav.goBack()
-                onFolderContextMenuRequested: folderId => contextMenu.showForFolder(folderId)
-                onEmptyAreaContextMenuRequested: contextMenu.showForEmptyArea()
-                favoriteIdRole: panel.favoriteIdRole
-                dragSource: panel.dragSource
-                columns: panel.columns
-                adaptiveColumns: true
-                iconSize: panel.gridIconSize
-                fontScale: panel.densityScale
-                reduceGridSpacing: cfg.reduceGridSpacing
-                hoverAnimation: cfg.hoverAnimation
-                shadowEnabled: cfg.iconShadow
-                hoverHighlight: cfg.hoverHighlight
-                sortFavoritesAlphabetically: cfg.sortFavoritesAlphabetically
-                searchField: searchBar.field
-                showRecentApps: panel.cfgShowRecentApps
-                startWithFavorites: panel.cfgStartWithFavorites
-                favoritesActive: panel.isFavoritesActive
-                showDividers: panel.cfgShowDividers
-                showTooltips: panel.cfgShowTooltips
-                showNewAppBadge: panel.cfgShowNewAppBadge
-                hideLabelsOnFavorites: panel.cfgHideLabelsOnFavorites
-                animateHighlight: cfg.hoverAnimation !== Const.HoverAnimation.None
-                shuffleOverlayParent: shuffleOverlay
-                onOriginYChanged: {
-                    if (panel._needsScrollToTop) {
-                        contentY = originY
-                        panel._needsScrollToTop = false
-                    }
-                }
-                onLaunched: function(index) { panel.launchApp(index) }
-                onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
-                onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
-                onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
-                onContextMenuRequested: function(index, storageId, desktopFile) {
-                    // Forward the full live selection — the menu derives
-                    // both popupIsSelected (for the toggle item) and the
-                    // bulk-mode counts from it. Empty when nothing is
-                    // selected.
-                    contextMenu.showForApp(storageId, desktopFile,
-                                           appGrid.selection.sidList())
-                }
-                onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
-                    shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
-                }
-            }
-
-            ShuffleOverlay {
-                id: shuffleOverlay
-                anchors.fill: parent
-                z: 10
-                iconSize: panel.gridIconSize
-                onSwapFinished: function(fromIndex, toIndex, fromIcon, toIcon) {
-                    appGrid.applySwap(fromIndex, toIndex, fromIcon, toIcon)
-                }
-            }
-            }
+            cfg: cfg
+            model: panel._searchApplied ? null : panel.gridModel
+            appsModel: panel.appsModel
+            sharedFavoritesModel: panel.sharedFavoritesModel
+            favoritesGroupedModel: panel.favoritesGroupedModel
+            favoritesManager: favorites
+            favoriteIdRole: panel.favoriteIdRole
+            dragSource: panel.dragSource
+            searchField: searchBar.field
+            favoritesActive: panel.isFavoritesActive
+            columns: panel.columns
+            iconSize: panel.gridIconSize
+            fontScale: panel.densityScale
+            onLaunched: index => panel.launchApp(index)
+            onRecentLaunched: storageId => panel.launchAppByStorageId(storageId)
+            onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)
+            onCategoryNavRequested: direction => panel.navigateCategory(direction)
+            onContextMenuRequested: (storageId, desktopFile, selectedSids) =>
+                contextMenu.showForApp(storageId, desktopFile, selectedSids)
+            onFolderContextMenuRequested: folderId => contextMenu.showForFolder(folderId)
+            onEmptyAreaContextMenuRequested: contextMenu.showForEmptyArea()
         }
     }
 

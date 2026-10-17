@@ -160,6 +160,25 @@ GridView {
         shufflesUpdated()
     }
 
+    // Back to the just-opened state: top of the grid, nothing selected or
+    // current, no shuffles. The model may still refill after this and move
+    // originY, so the first such move scrolls to the top again.
+    property bool _scrollToTopPending: false
+    function resetView() {
+        clearShuffles()
+        selection.clear()
+        contentY = originY
+        currentIndex = -1
+        recentIndex = -1
+        _scrollToTopPending = true
+    }
+    onOriginYChanged: {
+        if (_scrollToTopPending) {
+            contentY = originY
+            _scrollToTopPending = false
+        }
+    }
+
     readonly property string defaultIcon: Const.DEFAULT_ICON
 
     // Drag-to-folder fold target (#200): the central fraction of the icon/folder
