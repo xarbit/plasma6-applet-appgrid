@@ -5,6 +5,8 @@
 
 #include "appmodel.h"
 
+#include "appgrid_debug.h"
+
 #include "applauncher.h"
 #include "appmodelassembly.h"
 #include "categorymapping.h"
@@ -226,7 +228,7 @@ void AppModel::launch(int index)
         service = KService::serviceByStorageId(app.desktopFile);
     }
     if (!AppLauncher::launch(service)) {
-        qWarning() << "AppGrid: no service found to launch" << app.storageId << app.desktopFile;
+        qCWarning(APPGRID) << "no service found to launch" << app.storageId << app.desktopFile;
     }
 }
 

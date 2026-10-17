@@ -92,6 +92,7 @@ fi
 %{_sysconfdir}/xdg/autostart/dev.xarbit.appgrid.autostart.desktop
 %{_metainfodir}/dev.xarbit.appgrid.metainfo.xml
 %{_datadir}/icons/hicolor/scalable/apps/dev.xarbit.appgrid.svg
+%{_datadir}/qlogging-categories6/appgrid.categories
 
 %changelog
 * ${CHANGELOG_DATE} AppGrid CI <code@xarbit.dev> - ${PKG_VERSION}-1

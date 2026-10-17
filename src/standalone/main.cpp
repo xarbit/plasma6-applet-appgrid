@@ -11,6 +11,8 @@
 */
 
 #include "appgridconfig.h"
+
+#include "appgrid_debug.h"
 #include "appgridconstants.h"
 #include "appgridcontroller.h"
 #include "appgridstandalone.h"
@@ -368,7 +370,7 @@ int main(int argc, char *argv[])
     QQmlComponent component(engine.get(), QUrl(QStringLiteral("qrc:/qt/qml/appgrid/Main.qml")));
     const std::unique_ptr<QObject> rootObject(component.createWithInitialProperties(entryProperties));
     if (!rootObject) {
-        qWarning("AppGrid: failed to load standalone entry QML: %s", qPrintable(component.errorString()));
+        qCWarning(APPGRID) << "failed to load standalone entry QML:" << component.errorString();
         return 1;
     }
 

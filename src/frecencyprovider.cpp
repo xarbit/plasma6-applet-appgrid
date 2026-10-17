@@ -5,14 +5,14 @@
 
 #include "frecencyprovider.h"
 
+#include "appgrid_frecency_debug.h"
+
 #include "frecencyscoring.h"
 #include "pluginhelpers.h"
 
 #include <PlasmaActivities/Stats/Query>
 #include <PlasmaActivities/Stats/ResultModel>
 #include <PlasmaActivities/Stats/Terms>
-
-#include <QLoggingCategory>
 
 #include <algorithm>
 
@@ -21,11 +21,6 @@ namespace KASTerms = KActivities::Stats::Terms;
 
 namespace
 {
-// Opt-in via QT_LOGGING_RULES='appgrid.frecency.debug=true'. Used to triage
-// storage-id mismatches between KAStats's resource URIs and the .desktop ids
-// AppModel::StorageIdRole hands AppFilterModel.
-Q_LOGGING_CATEGORY(lcFrecency, "appgrid.frecency", QtWarningMsg)
-
 // Cap how many top-frecent apps we track. The ranking only needs enough rows
 // to win tiebreaks among search hits, not the full launch history.
 constexpr int kFrecencyLimit = 200;
@@ -91,13 +86,13 @@ void FrecencyProvider::rebuildScores()
 
     if (next != m_scores) {
         m_scores = next;
-        if (lcFrecency().isDebugEnabled()) {
+        if (APPGRID_FRECENCY().isDebugEnabled()) {
             QStringList sample = m_scores.keys();
             std::sort(sample.begin(), sample.end());
             if (sample.size() > 10) {
                 sample = sample.mid(0, 10);
             }
-            qCDebug(lcFrecency) << "scores populated:" << m_scores.size() << "keys; sample:" << sample;
+            qCDebug(APPGRID_FRECENCY) << "scores populated:" << m_scores.size() << "keys; sample:" << sample;
         }
         Q_EMIT scoresChanged();
     }

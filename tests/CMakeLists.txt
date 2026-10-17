@@ -2,262 +2,64 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 find_package(Qt6 REQUIRED COMPONENTS Test)
+include(ECMAddTests)
 
-set(TEST_COMMON_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/appactionid.cpp
-    ${CMAKE_SOURCE_DIR}/src/applauncher.cpp
-    ${CMAKE_SOURCE_DIR}/src/appmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/menuscanner.cpp
-    ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp
-    ${CMAKE_SOURCE_DIR}/src/appfiltermodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/categorymapping.cpp
-    ${CMAKE_SOURCE_DIR}/src/categoryqueries.cpp
-    ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/unifiedsearchmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
-    ${CMAKE_SOURCE_DIR}/src/searchranking.cpp
-    ${CMAKE_SOURCE_DIR}/src/launchbookkeeping.cpp
+# StubAppModel, the fake app list the model tests filter, sort and group.
+add_library(appgrid_teststubs STATIC stubappmodel.h)
+target_link_libraries(appgrid_teststubs PUBLIC appgrid_core)
+
+# Each test is one source file linked against the launcher core.
+ecm_add_tests(
+    test_appactionid.cpp
+    test_appfiltermodel.cpp
+    test_appmodel.cpp
+    test_appmodel_assembly.cpp
+    test_appmodel_helpers.cpp
+    test_category_mapping.cpp
+    test_categoryqueries.cpp
+    test_categoryrows.cpp
+    test_configkeys.cpp
+    test_discoverbackends.cpp
+    test_favoriteid.cpp
+    test_favoritesfolderlogic.cpp
+    test_favoritesgroupedmodel.cpp
+    test_filter.cpp
+    test_frecency_scoring.cpp
+    test_launchbookkeeping.cpp
+    test_launchstatestore.cpp
+    test_menutree.cpp
+    test_newappstracker.cpp
+    test_plasmoidclient.cpp
+    test_pluginhelpers.cpp
+    test_runner_filter.cpp
+    test_search_ranking.cpp
+    test_sort.cpp
+    test_systemactions.cpp
+    test_unified_search.cpp
+    LINK_LIBRARIES appgrid_teststubs appgrid_core Qt6::Test
 )
-
-set(TEST_COMMON_LIBS
-    Qt6::Test
-    Qt6::Gui
-    KF6::Service
-    KF6::I18n
-    KF6::CoreAddons
-    KF6::KIOGui
-    KF6::IconThemes
-    KF6::Runner
-)
-
-include_directories(${CMAKE_SOURCE_DIR}/src)
-
-# Helper: defines a Qt test executable and registers it with CTest.
-# Pass extra headers (e.g. Q_OBJECT-containing helpers) as ARGN so AUTOMOC
-# generates moc files for them.
-function(appgrid_add_test name)
-    add_executable(${name} ${name}.cpp ${TEST_COMMON_SOURCES} ${ARGN})
-    target_link_libraries(${name} PRIVATE ${TEST_COMMON_LIBS})
-    add_test(NAME ${name} COMMAND ${name})
-endfunction()
-
-appgrid_add_test(test_appfiltermodel ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
-appgrid_add_test(test_search_ranking ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
-appgrid_add_test(test_filter ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
-appgrid_add_test(test_sort ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
-appgrid_add_test(test_runner_filter ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h
-    ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.h)
-appgrid_add_test(test_unified_search ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h
-    ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.h
-    ${CMAKE_SOURCE_DIR}/src/unifiedsearchmodel.h)
-appgrid_add_test(test_appmodel_helpers)
-appgrid_add_test(test_category_mapping
-    ${CMAKE_SOURCE_DIR}/src/categorymapping.h)
-# CategoryQueries — pure category grouping over a stub source model.
-appgrid_add_test(test_categoryqueries ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
-# CategoryRowsModel — By Category header/app rows over a stub source model.
-appgrid_add_test(test_categoryrows ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h
-    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.h)
-# Jump-list action favourite id parsing (#64). appactionid.cpp is in
-# TEST_COMMON_SOURCES, so no extra source needed here.
-appgrid_add_test(test_appactionid)
-# FavoriteId::normalized — the store-id rule that keeps jump-list action ids
-# verbatim while canonicalising plain apps (#64). Pure: a fake menu-id resolver,
-# no KActivities.
-appgrid_add_test(test_favoriteid ${CMAKE_SOURCE_DIR}/src/favoriteid.cpp)
-# Regression test for issues #86 (icon file change on disk) and #103
-# (system theme switch). Both flow through KIconLoader::iconChanged.
-appgrid_add_test(test_appmodel)
-# Settings key parity: every key a settings page uses has a cfg_ alias in its
-# plasmoid wrapper and a main.xml entry. Reads the QML sources directly.
-appgrid_add_test(test_configkeys)
+# Settings key parity reads the QML sources directly.
 target_compile_definitions(test_configkeys PRIVATE APPGRID_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
-# Pure helpers extracted from AppGridPlugin — no Plasma deps, so a light
-# standalone target instead of the model-heavy appgrid_add_test().
-add_executable(test_pluginhelpers
-    test_pluginhelpers.cpp
-    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
-    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.h
-)
-target_link_libraries(test_pluginhelpers PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
-add_test(NAME test_pluginhelpers COMMAND test_pluginhelpers)
-
-# LaunchStateStore depends only on KConfig (KSharedConfig + KConfigWatcher), so
-# a light standalone target like test_pluginhelpers.
-add_executable(test_launchstatestore
-    test_launchstatestore.cpp
-    ${CMAKE_SOURCE_DIR}/src/launchstatestore.cpp
-    ${CMAKE_SOURCE_DIR}/src/launchstatestore.h
-    ${CMAKE_SOURCE_DIR}/src/favoritesfolderlogic.cpp
-    ${CMAKE_SOURCE_DIR}/src/favoritesfolderlogic.h
-)
-target_link_libraries(test_launchstatestore PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
-add_test(NAME test_launchstatestore COMMAND test_launchstatestore)
-
-# NewAppsTracker — Kickoff-style new-app baseline. KActivities usage is injected
-# null in the test, but usedappsprovider.{cpp,h} is compiled for its moc + the
-# isUsed/signal symbols the tracker references.
-add_executable(test_newappstracker
-    test_newappstracker.cpp
-    ${CMAKE_SOURCE_DIR}/src/newappstracker.cpp
-    ${CMAKE_SOURCE_DIR}/src/newappstracker.h
-    ${CMAKE_SOURCE_DIR}/src/usedappsprovider.cpp
-    ${CMAKE_SOURCE_DIR}/src/usedappsprovider.h
-    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.cpp
-    ${CMAKE_SOURCE_DIR}/src/pluginhelpers.h
-)
-target_link_libraries(test_newappstracker PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore Plasma::ActivitiesStats)
-add_test(NAME test_newappstracker COMMAND test_newappstracker)
-
-# FavoritesFolderLogic — pure folder/layout transforms, QtCore only (issue #18).
-add_executable(test_favoritesfolderlogic
-    test_favoritesfolderlogic.cpp
-    ${CMAKE_SOURCE_DIR}/src/favoritesfolderlogic.cpp
-    ${CMAKE_SOURCE_DIR}/src/favoritesfolderlogic.h
-)
-target_link_libraries(test_favoritesfolderlogic PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_favoritesfolderlogic COMMAND test_favoritesfolderlogic)
-
-# FavoritesGroupedModel — editable grouped model (QtCore item model, no Kicker).
-add_executable(test_favoritesgroupedmodel
-    test_favoritesgroupedmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/abstractgroupedmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/abstractgroupedmodel.h
-    ${CMAKE_SOURCE_DIR}/src/favoritesgroupedmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/favoritesgroupedmodel.h
-    ${CMAKE_SOURCE_DIR}/src/favoritesfolderlogic.cpp
-    ${CMAKE_SOURCE_DIR}/src/favoritesfolderlogic.h
-)
-target_link_libraries(test_favoritesgroupedmodel PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_favoritesgroupedmodel COMMAND test_favoritesgroupedmodel)
-
-# MenuTreeModel — read-only, multi-level category folders over the app-menu tree
-# (#201). Pure builder + the navigable cursor; no KSycoca, fed a synthetic tree.
-add_executable(test_menutree
-    test_menutree.cpp
-    ${CMAKE_SOURCE_DIR}/src/abstractgroupedmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/abstractgroupedmodel.h
-    ${CMAKE_SOURCE_DIR}/src/menutree.cpp
-    ${CMAKE_SOURCE_DIR}/src/menutree.h
-    ${CMAKE_SOURCE_DIR}/src/menutreemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/menutreemodel.h
-)
-target_link_libraries(test_menutree PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_menutree COMMAND test_menutree)
-
-# LaunchBookkeeping is a plain value type (QtCore only) — light standalone
-# target like test_pluginhelpers.
-add_executable(test_launchbookkeeping
-    test_launchbookkeeping.cpp
-    ${CMAKE_SOURCE_DIR}/src/launchbookkeeping.cpp
-    ${CMAKE_SOURCE_DIR}/src/launchbookkeeping.h
-)
-target_link_libraries(test_launchbookkeeping PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_launchbookkeeping COMMAND test_launchbookkeeping)
-
-# FrecencyScoring — pure rank-scoring extracted from FrecencyProvider, free of
-# KActivities so it tests with QtCore only (like the helpers above).
-add_executable(test_frecency_scoring
-    test_frecency_scoring.cpp
-    ${CMAKE_SOURCE_DIR}/src/frecencyscoring.cpp
-    ${CMAKE_SOURCE_DIR}/src/frecencyscoring.h
-)
-target_link_libraries(test_frecency_scoring PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_frecency_scoring COMMAND test_frecency_scoring)
-
-# AppModelAssembly — pure dedup/merge/sort extracted from AppModel, free of
-# KService so it tests with QtCore only.
-add_executable(test_appmodel_assembly
-    test_appmodel_assembly.cpp
-    ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp
-    ${CMAKE_SOURCE_DIR}/src/appmodelassembly.h
-)
-target_link_libraries(test_appmodel_assembly PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_appmodel_assembly COMMAND test_appmodel_assembly)
-
-# PopupSizePolicy — pure panel popup-size save/restore decisions, QtCore only.
-add_executable(test_popup_size_policy
-    test_popup_size_policy.cpp
-    ${CMAKE_SOURCE_DIR}/src/popupsizepolicy.cpp
-    ${CMAKE_SOURCE_DIR}/src/popupsizepolicy.h
-)
-target_link_libraries(test_popup_size_policy PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_popup_size_policy COMMAND test_popup_size_policy)
-
-# AppGridStandalone — the daemon's D-Bus method→signal surface (QtDBus),
-# called through the adaptor generated from its interface XML.
-set(TEST_STANDALONE_DBUS_SOURCES)
-set_source_files_properties(${APPGRID_DBUS_STANDALONE_XML} PROPERTIES CLASSNAME StandaloneInterface NO_NAMESPACE ON)
-qt_add_dbus_adaptor(TEST_STANDALONE_DBUS_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standalone/appgridstandalone.h AppGridStandalone standaloneadaptor StandaloneAdaptor)
-qt_add_dbus_interface(TEST_STANDALONE_DBUS_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standaloneinterface)
-add_executable(test_standalone
-    test_standalone.cpp
-    ${CMAKE_SOURCE_DIR}/src/standalone/appgridstandalone.cpp
-    ${CMAKE_SOURCE_DIR}/src/standalone/appgridstandalone.h
-    ${TEST_STANDALONE_DBUS_SOURCES}
-)
-target_compile_definitions(test_standalone PRIVATE
-    "APPGRID_APP_ID=\"${APPGRID_APP_ID}\""
-    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
-target_include_directories(test_standalone PRIVATE ${CMAKE_SOURCE_DIR}/src/standalone ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(test_standalone PRIVATE Qt6::Test Qt6::Core Qt6::DBus)
-add_test(NAME test_standalone COMMAND test_standalone)
-
-# PlasmoidClient — in-process pin and the settings' button target. The
-# D-Bus proxy is generated from the same XML the plasmoid exports.
-set(TEST_PLASMOID_DBUS_SOURCES)
-set_source_files_properties(${APPGRID_DBUS_PLASMOID_XML} PROPERTIES CLASSNAME PlasmoidInterface NO_NAMESPACE ON)
-qt_add_dbus_interface(TEST_PLASMOID_DBUS_SOURCES ${APPGRID_DBUS_PLASMOID_XML} plasmoidinterface)
-add_executable(test_plasmoidclient
-    test_plasmoidclient.cpp
-    ${CMAKE_SOURCE_DIR}/src/plasmoidclient.cpp
-    ${CMAKE_SOURCE_DIR}/src/plasmoidclient.h
-    ${TEST_PLASMOID_DBUS_SOURCES}
-)
-target_compile_definitions(test_plasmoidclient PRIVATE "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
-target_include_directories(test_plasmoidclient PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(test_plasmoidclient PRIVATE Qt6::Test Qt6::Core Qt6::DBus)
-add_test(NAME test_plasmoidclient COMMAND test_plasmoidclient)
-
-# SystemActions — shells, empty commands, directory listing, system info.
-appgrid_add_test(test_systemactions
-    ${CMAKE_SOURCE_DIR}/src/systemactions.cpp
-    ${CMAKE_SOURCE_DIR}/src/systemactions.h
-    ${CMAKE_SOURCE_DIR}/src/appstreamresolver.cpp
-    ${CMAKE_SOURCE_DIR}/src/discoverbackends.cpp)
-target_compile_definitions(test_systemactions PRIVATE
-    "APPGRID_APP_ID=\"${APPGRID_APP_ID}\""
-    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
-target_link_libraries(test_systemactions PRIVATE KF6::WindowSystem Plasma::Plasma AppStreamQt)
-
-# DiscoverBackends — Plasma-free string/filesystem mapping (QtCore only).
-add_executable(test_discoverbackends
-    test_discoverbackends.cpp
-    ${CMAKE_SOURCE_DIR}/src/discoverbackends.cpp
-    ${CMAKE_SOURCE_DIR}/src/discoverbackends.h
-)
-target_link_libraries(test_discoverbackends PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_discoverbackends COMMAND test_discoverbackends)
-
-# UpdateChecker only exists in universal builds; gate the test to match so
-# distro-package CI runs (which don't compile updatechecker.cpp) don't try
-# to link against missing symbols.
+# The update checker is only built into universal packages.
 if(APPGRID_UNIVERSAL_BUILD)
-    find_package(Qt6 REQUIRED COMPONENTS Network)
-    add_executable(test_updatechecker
-        test_updatechecker.cpp
-        ${CMAKE_SOURCE_DIR}/src/updatechecker.cpp
-        ${CMAKE_SOURCE_DIR}/src/updatechecker.h
-    )
-    target_link_libraries(test_updatechecker PRIVATE
-        Qt6::Test Qt6::Core Qt6::Gui Qt6::Network)
-    target_compile_definitions(test_updatechecker PRIVATE
-        APPGRID_UNIVERSAL_BUILD
-        "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
-    add_test(NAME test_updatechecker COMMAND test_updatechecker)
+    ecm_add_test(test_updatechecker.cpp LINK_LIBRARIES appgrid_core Qt6::Test)
 endif()
+
+# PopupSizePolicy belongs to the panel applet, not the core.
+ecm_add_test(test_popup_size_policy.cpp ${CMAKE_SOURCE_DIR}/src/popupsizepolicy.cpp
+    TEST_NAME test_popup_size_policy
+    LINK_LIBRARIES Qt6::Test Qt6::Core)
+target_include_directories(test_popup_size_policy PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+# AppGridStandalone belongs to the daemon. Its D-Bus surface is called
+# through the adaptor generated from the interface XML.
+set(TEST_STANDALONE_SOURCES test_standalone.cpp ${CMAKE_SOURCE_DIR}/src/standalone/appgridstandalone.cpp)
+qt_add_dbus_adaptor(TEST_STANDALONE_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standalone/appgridstandalone.h AppGridStandalone standaloneadaptor StandaloneAdaptor)
+ecm_add_test(${TEST_STANDALONE_SOURCES}
+    TEST_NAME test_standalone
+    LINK_LIBRARIES appgrid_core Qt6::Test)
+target_include_directories(test_standalone PRIVATE ${CMAKE_SOURCE_DIR}/src/standalone ${CMAKE_CURRENT_BINARY_DIR})
 
 # --- clang-format check ---
 # Mirrors the CI clang-format step so `ctest --preset ci` fails locally

@@ -5,6 +5,8 @@
 
 #include "applauncher.h"
 
+#include "appgrid_debug.h"
+
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
@@ -19,7 +21,7 @@ void start(KJob *job)
     job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
     QObject::connect(job, &KJob::finished, job, [](KJob *finished) {
         if (finished->error()) {
-            qWarning() << "AppGrid: launch failed:" << finished->errorString();
+            qCWarning(APPGRID) << "launch failed:" << finished->errorString();
         }
     });
     job->start();

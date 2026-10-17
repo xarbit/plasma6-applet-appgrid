@@ -23,6 +23,7 @@ include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(FeatureSummary)
+include(ECMQtDeclareLoggingCategory)
 
 # Universal-build flag — enables the in-app update checker (notify-only,
 # opt-in via config). Distros that ship via their package manager should
@@ -188,8 +189,6 @@ set(APPGRID_COMMON_SOURCES
     src/appgridfavoritesmodel.h
     src/favoriteid.cpp
     src/favoriteid.h
-    src/appgridplugin.cpp
-    src/appgridplugin.h
     src/appstreamresolver.cpp
     src/appstreamresolver.h
     src/appmodel.cpp
@@ -263,12 +262,66 @@ set_source_files_properties(${APPGRID_DBUS_PLASMOID_XML} PROPERTIES CLASSNAME Pl
 set_source_files_properties(${APPGRID_DBUS_STANDALONE_XML} PROPERTIES CLASSNAME StandaloneInterface NO_NAMESPACE ON)
 qt_add_dbus_interface(APPGRID_COMMON_SOURCES ${APPGRID_DBUS_PLASMOID_XML} plasmoidinterface)
 qt_add_dbus_interface(APPGRID_COMMON_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standaloneinterface)
-qt_add_dbus_adaptor(APPGRID_COMMON_SOURCES ${APPGRID_DBUS_PLASMOID_XML} appgridplugin.h AppGridPlasmoidService plasmoidadaptor PlasmoidAdaptor)
 
 # Update checker is compiled in only for universal-tarball builds.
 if(APPGRID_UNIVERSAL_BUILD)
     list(APPEND APPGRID_COMMON_SOURCES src/updatechecker.cpp src/updatechecker.h)
 endif()
+
+# Logging categories, listed for kdebugsettings via the installed .categories.
+ecm_qt_declare_logging_category(APPGRID_COMMON_SOURCES
+    HEADER appgrid_debug.h
+    IDENTIFIER APPGRID
+    CATEGORY_NAME dev.xarbit.appgrid
+    DEFAULT_SEVERITY Warning
+    DESCRIPTION "AppGrid launcher"
+    EXPORT APPGRID)
+ecm_qt_declare_logging_category(APPGRID_COMMON_SOURCES
+    HEADER appgrid_frecency_debug.h
+    IDENTIFIER APPGRID_FRECENCY
+    CATEGORY_NAME dev.xarbit.appgrid.frecency
+    DEFAULT_SEVERITY Warning
+    DESCRIPTION "AppGrid launcher (search usage ranking)"
+    EXPORT APPGRID)
+ecm_qt_declare_logging_category(APPGRID_COMMON_SOURCES
+    HEADER appgrid_perf_debug.h
+    IDENTIFIER APPGRID_PERF
+    CATEGORY_NAME dev.xarbit.appgrid.perf
+    DEFAULT_SEVERITY Warning
+    DESCRIPTION "AppGrid launcher (timings)"
+    EXPORT APPGRID)
+
+# The launcher core, compiled once and linked by both applets, the standalone
+# daemon and the tests. Static and position-independent, so it can go into
+# the applet plugins.
+add_library(appgrid_core STATIC ${APPGRID_COMMON_SOURCES})
+set_target_properties(appgrid_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(appgrid_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(appgrid_core PUBLIC ${APPGRID_COMMON_LIBS})
+target_compile_definitions(appgrid_core PUBLIC
+    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\""
+    "TRANSLATION_DOMAIN=\"${APPGRID_APP_ID}\""
+    "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
+if(APPGRID_UNIVERSAL_BUILD)
+    target_link_libraries(appgrid_core PUBLIC Qt6::Network)
+    target_compile_definitions(appgrid_core PUBLIC APPGRID_UNIVERSAL_BUILD)
+endif()
+
+# Warnings as errors for AppGrid's own code (opt-in, CI turns it on).
+function(appgrid_strict_warnings target)
+    if(APPGRID_STRICT_WARNINGS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        set(_w -Wall -Wextra -Wunused -Wshadow -Wnon-virtual-dtor -Werror)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            list(APPEND _w -Wunreachable-code-aggressive)
+        endif()
+        target_compile_options(${target} PRIVATE ${_w})
+    endif()
+endfunction()
+appgrid_strict_warnings(appgrid_core)
+
+# The applet code both plasmoid variants share; the daemon has no applet.
+set(APPGRID_APPLET_SOURCES src/appgridplugin.cpp src/appgridplugin.h)
+qt_add_dbus_adaptor(APPGRID_APPLET_SOURCES ${APPGRID_DBUS_PLASMOID_XML} appgridplugin.h AppGridPlasmoidService plasmoidadaptor PlasmoidAdaptor)
 
 # Build an AppGrid variant as a compiled-QML Plasma applet (#173): the QML is
 # baked into the .so as PLAIN qrc resources at the root Plasma::Applet::qrcPath()
@@ -282,31 +335,14 @@ endif()
 function(appgrid_add_compiled_applet)
     cmake_parse_arguments(A "" "TARGET;VARIANT;METADATA" "SOURCES" ${ARGN})
 
-    add_library(${A_TARGET} SHARED ${A_SOURCES})
-    # The generated D-Bus adaptor includes appgridplugin.h; sources include the
-    # generated proxies from the build dir.
-    target_include_directories(${A_TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
+    add_library(${A_TARGET} SHARED ${A_SOURCES} ${APPGRID_APPLET_SOURCES})
     set_target_properties(${A_TARGET} PROPERTIES PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plasma/applets")
-    target_link_libraries(${A_TARGET} PRIVATE ${APPGRID_COMMON_LIBS})
-    target_compile_definitions(${A_TARGET} PRIVATE
-        "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\""
-        "TRANSLATION_DOMAIN=\"${APPGRID_APP_ID}\""
-        "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
-    if(APPGRID_UNIVERSAL_BUILD)
-        target_link_libraries(${A_TARGET} PRIVATE Qt6::Network)
-        target_compile_definitions(${A_TARGET} PRIVATE APPGRID_UNIVERSAL_BUILD)
-    endif()
+    target_link_libraries(${A_TARGET} PRIVATE appgrid_core)
     if(APPGRID_DBUS_ACTIVATION)
         target_compile_definitions(${A_TARGET} PRIVATE APPGRID_DBUS_ACTIVATION)
     endif()
-    if(APPGRID_STRICT_WARNINGS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        set(_w -Wall -Wextra -Wunused -Wshadow -Wnon-virtual-dtor -Werror)
-        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            list(APPEND _w -Wunreachable-code-aggressive)
-        endif()
-        target_compile_options(${A_TARGET} PRIVATE ${_w})
-    endif()
+    appgrid_strict_warnings(${A_TARGET})
 
     # qrc prefix mirrors Applet::qrcPath(): the pluginId (= the .so/target name)
     # with dots replaced by slashes.
@@ -365,7 +401,7 @@ appgrid_add_compiled_applet(
     TARGET dev.xarbit.appgrid
     VARIANT center
     METADATA metadata.json.in
-    SOURCES src/appgridplugin_register.cpp ${APPGRID_COMMON_SOURCES})
+    SOURCES src/appgridplugin_register.cpp)
 
 # --- Panel plasmoid (native Plasma popup near panel icon) ---
 appgrid_add_compiled_applet(
@@ -373,7 +409,7 @@ appgrid_add_compiled_applet(
     VARIANT panel
     METADATA metadata-panel.json.in
     SOURCES src/appgridpanelplugin.cpp src/appgridpanelplugin.h
-            src/popupsizepolicy.cpp src/popupsizepolicy.h ${APPGRID_COMMON_SOURCES})
+            src/popupsizepolicy.cpp src/popupsizepolicy.h)
 
 # --- Standalone executable (own process → KWin window open/close effects) ---
 # A plasmoid window lives in plasmashell, which KWin's Glide/Scale effects
@@ -396,31 +432,15 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/standalone/appgridconfig.kcfgc
 set(APPGRID_STANDALONE_SOURCES
     src/standalone/main.cpp
     src/standalone/appgridstandalone.cpp
-    src/standalone/appgridstandalone.h
-    ${APPGRID_COMMON_SOURCES})
+    src/standalone/appgridstandalone.h)
 qt_add_dbus_adaptor(APPGRID_STANDALONE_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standalone/appgridstandalone.h AppGridStandalone standaloneadaptor StandaloneAdaptor)
 
 add_executable(appgrid ${APPGRID_STANDALONE_SOURCES})
 kconfig_add_kcfg_files(appgrid GENERATE_MOC ${CMAKE_BINARY_DIR}/appgridconfig.kcfgc)
-target_include_directories(appgrid PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
 # KF6::ConfigGui supplies KConfigSkeleton (the generated AppGridConfig base);
 # Widgets gives the KDE platform style and palette (QApplication).
-target_link_libraries(appgrid PRIVATE ${APPGRID_COMMON_LIBS} KF6::ConfigGui Qt6::Widgets KF6::I18nQml)
-target_compile_definitions(appgrid PRIVATE
-    "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\""
-    "TRANSLATION_DOMAIN=\"${APPGRID_APP_ID}\""
-    "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
-if(APPGRID_UNIVERSAL_BUILD)
-    target_link_libraries(appgrid PRIVATE Qt6::Network)
-    target_compile_definitions(appgrid PRIVATE APPGRID_UNIVERSAL_BUILD)
-endif()
-if(APPGRID_STRICT_WARNINGS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    set(_w -Wall -Wextra -Wunused -Wshadow -Wnon-virtual-dtor -Werror)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        list(APPEND _w -Wunreachable-code-aggressive)
-    endif()
-    target_compile_options(appgrid PRIVATE ${_w})
-endif()
+target_link_libraries(appgrid PRIVATE appgrid_core KF6::ConfigGui Qt6::Widgets KF6::I18nQml)
+appgrid_strict_warnings(appgrid)
 
 # Bundle the shared QML the same way the applet does, but under a private prefix
 # the executable loads from. main.qml sits as a sibling of views/, controllers/,
@@ -466,6 +486,7 @@ endif()
 # --- Common ---
 
 ki18n_install(po)
+ecm_qt_install_logging_categories(EXPORT APPGRID FILE appgrid.categories DESTINATION ${KDE_INSTALL_LOGGINGCATEGORIESDIR})
 
 install(FILES dev.xarbit.appgrid.metainfo.xml
         DESTINATION ${KDE_INSTALL_METAINFODIR})

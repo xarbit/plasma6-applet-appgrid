@@ -5,6 +5,8 @@
 
 #include "defaultappsprovider.h"
 
+#include "appgrid_perf_debug.h"
+
 #include "defaultappsresolver.h"
 
 #include <KConfigGroup>
@@ -12,15 +14,7 @@
 #include <KSycoca>
 
 #include <QElapsedTimer>
-#include <QLoggingCategory>
 #include <QTimer>
-
-namespace
-{
-// Off by default; enable with QT_LOGGING_RULES="appgrid.perf.debug=true" to time
-// the cost of resolving the default apps (#200).
-Q_LOGGING_CATEGORY(lcPerf, "appgrid.perf", QtWarningMsg)
-}
 
 DefaultAppsProvider::DefaultAppsProvider(QObject *parent)
     : QObject(parent)
@@ -44,7 +38,7 @@ void DefaultAppsProvider::reload()
     QElapsedTimer timer;
     timer.start();
     const auto resolved = DefaultAppsResolver::resolve();
-    qCDebug(lcPerf) << "default apps resolved" << resolved.defaults.size() << "defaults in" << timer.nsecsElapsed() / 1000 << "us";
+    qCDebug(APPGRID_PERF) << "default apps resolved" << resolved.defaults.size() << "defaults in" << timer.nsecsElapsed() / 1000 << "us";
     if (resolved.defaults == m_defaults && resolved.preferred == m_preferred) {
         return;
     }

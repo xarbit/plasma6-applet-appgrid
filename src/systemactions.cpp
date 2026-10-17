@@ -5,6 +5,8 @@
 
 #include "systemactions.h"
 
+#include "appgrid_debug.h"
+
 #include "appgridconstants.h"
 #include "applauncher.h"
 #include "appmodel.h"
@@ -68,7 +70,7 @@ QString validatedShell(const QString &shell)
         }
     }
 
-    qWarning() << "AppGrid: shell not in /etc/shells, falling back to /bin/sh:" << shell;
+    qCWarning(APPGRID) << "shell not in /etc/shells, falling back to /bin/sh:" << shell;
     return QStringLiteral("/bin/sh");
 }
 }

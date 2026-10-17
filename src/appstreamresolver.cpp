@@ -5,6 +5,8 @@
 
 #include "appstreamresolver.h"
 
+#include "appgrid_debug.h"
+
 #include <AppStreamQt/component-box.h>
 #include <AppStreamQt/component.h>
 #include <AppStreamQt/launchable.h>
@@ -25,7 +27,7 @@ QString resolve(const QString &desktopId)
     // hidden behind Discover's own launch.
     AppStream::Pool pool;
     if (!pool.load()) {
-        qWarning() << "AppGrid: AppStream pool load failed:" << pool.lastError();
+        qCWarning(APPGRID) << "AppStream pool load failed:" << pool.lastError();
         return {};
     }
     const auto components = pool.componentsByLaunchable(AppStream::Launchable::KindDesktopId, desktopId);

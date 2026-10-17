@@ -5,6 +5,8 @@
 
 #include "updatechecker.h"
 
+#include "appgrid_debug.h"
+
 #include <QAuthenticator>
 #include <QDesktopServices>
 #include <QDir>
@@ -202,7 +204,7 @@ void UpdateChecker::openReleasePage()
     }
     const QUrl url(m_releaseUrl);
     if (!isAllowedReleaseScheme(url)) {
-        qWarning("AppGrid update check: refusing release URL with scheme %s", qPrintable(url.scheme()));
+        qCWarning(APPGRID, "update check: refusing release URL with scheme %s", qPrintable(url.scheme()));
         return;
     }
     QDesktopServices::openUrl(url);
@@ -283,13 +285,13 @@ void UpdateChecker::runCheck(bool force)
     connect(reply, &QNetworkReply::metaDataChanged, this, [reply]() {
         const auto cl = reply->header(QNetworkRequest::ContentLengthHeader);
         if (cl.isValid() && cl.toLongLong() > kMaxResponseBytes) {
-            qWarning("AppGrid update check: Content-Length %lld exceeds cap, aborting", cl.toLongLong());
+            qCWarning(APPGRID, "update check: Content-Length %lld exceeds cap, aborting", cl.toLongLong());
             reply->abort();
         }
     });
     connect(reply, &QNetworkReply::downloadProgress, this, [reply](qint64 bytesReceived, qint64 /*bytesTotal*/) {
         if (bytesReceived > kMaxResponseBytes) {
-            qWarning("AppGrid update check: response exceeded %lld bytes, aborting", static_cast<long long>(kMaxResponseBytes));
+            qCWarning(APPGRID, "update check: response exceeded %lld bytes, aborting", static_cast<long long>(kMaxResponseBytes));
             reply->abort();
         }
     });
@@ -319,7 +321,7 @@ UpdateChecker::ManifestResult UpdateChecker::parseManifest(const QByteArray &byt
     QJsonParseError err{};
     const auto doc = QJsonDocument::fromJson(bytes, &err);
     if (err.error != QJsonParseError::NoError || !doc.isObject()) {
-        qWarning("AppGrid update check: malformed JSON");
+        qCWarning(APPGRID, "update check: malformed JSON");
         return result;
     }
 
@@ -331,11 +333,11 @@ UpdateChecker::ManifestResult UpdateChecker::parseManifest(const QByteArray &byt
     const auto stableUrl = obj.value(QStringLiteral("release_notes_url")).toString();
 
     if (!isValidVersionString(stableVersion)) {
-        qWarning("AppGrid update check: rejecting malformed version string");
+        qCWarning(APPGRID, "update check: rejecting malformed version string");
         return result;
     }
     if (!stableUrl.isEmpty() && !isAllowedReleaseScheme(QUrl(stableUrl))) {
-        qWarning("AppGrid update check: rejecting release URL with disallowed scheme");
+        qCWarning(APPGRID, "update check: rejecting release URL with disallowed scheme");
         return result;
     }
 
@@ -352,12 +354,12 @@ UpdateChecker::ManifestResult UpdateChecker::parseManifest(const QByteArray &byt
         QString preVersion = pre.value(QStringLiteral("version")).toString();
         QString preUrl = pre.value(QStringLiteral("release_notes_url")).toString();
         if (!preVersion.isEmpty() && !isValidVersionString(preVersion)) {
-            qWarning("AppGrid update check: rejecting malformed prerelease version");
+            qCWarning(APPGRID, "update check: rejecting malformed prerelease version");
             preVersion.clear();
             preUrl.clear();
         }
         if (!preUrl.isEmpty() && !isAllowedReleaseScheme(QUrl(preUrl))) {
-            qWarning("AppGrid update check: rejecting prerelease URL with disallowed scheme");
+            qCWarning(APPGRID, "update check: rejecting prerelease URL with disallowed scheme");
             preVersion.clear();
             preUrl.clear();
         }
@@ -388,7 +390,7 @@ void UpdateChecker::handleReply(QNetworkReply *reply)
     }
 
     if (reply->error() != QNetworkReply::NoError || status != kHttpOk) {
-        qWarning("AppGrid update check: %s (HTTP %d)", qPrintable(reply->errorString()), status);
+        qCWarning(APPGRID, "update check: %s (HTTP %d)", qPrintable(reply->errorString()), status);
         saveState();
         return;
     }
