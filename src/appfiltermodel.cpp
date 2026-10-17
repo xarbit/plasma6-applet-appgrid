@@ -9,7 +9,6 @@
 #include "appmodel.h"
 #include "appresolver.h"
 #include "categoryqueries.h"
-#include "searchranking.h"
 
 #include <KIconLoader>
 
@@ -53,27 +52,24 @@ AppFilterModel::AppFilterModel(QObject *parent)
         Q_EMIT iconGenerationChanged();
     });
 
-    // storageId → source-row cache and per-row haystack cache: rebuilt
-    // lazily on first read, invalidated together whenever the source
-    // model changes shape or row data. Hooks attached via
-    // sourceModelChanged so we don't need to override setSourceModel
-    // (moc generates a duplicate definition for QSortFilterProxyModel
-    // overrides that don't carry Q_INVOKABLE).
+    // The row index and the row-score cache are rebuilt lazily on first read
+    // and dropped whenever the source model changes shape or row data. Hooks
+    // attached via sourceModelChanged so we don't need to override
+    // setSourceModel (moc generates a duplicate definition for
+    // QSortFilterProxyModel overrides that don't carry Q_INVOKABLE).
     connect(this, &QSortFilterProxyModel::sourceModelChanged, this, [this]() {
-        invalidateStorageIdCache();
-        invalidateHaystackCache();
+        m_index.setModel(sourceModel());
         invalidateRowScoreCache();
         auto *src = sourceModel();
         if (!src) {
             return;
         }
         // Row-set changes shift source rows + their name/sid/category, so the
-        // row-score cache goes with the storage-id / haystack caches. The
-        // dataChanged below is icon-only (AppModel) and touches no RowScore
-        // field, so it deliberately leaves the row-score cache alone.
+        // row-score cache goes with the row index. The dataChanged below is
+        // icon-only (AppModel) and touches no RowScore field, so it
+        // deliberately leaves the row-score cache alone.
         auto invalidateBoth = [this]() {
-            invalidateStorageIdCache();
-            invalidateHaystackCache();
+            m_index.invalidate();
             invalidateRowScoreCache();
         };
         connect(src, &QAbstractItemModel::modelReset, this, invalidateBoth);
@@ -83,76 +79,20 @@ AppFilterModel::AppFilterModel(QObject *parent)
         connect(src, &QAbstractItemModel::rowsInserted, this, invalidateBoth);
         connect(src, &QAbstractItemModel::rowsRemoved, this, invalidateBoth);
         // Per-row data updates (e.g. icon refresh) keep the storage id
-        // map valid but invalidate the haystack for that row.
-        connect(src, &QAbstractItemModel::dataChanged, this, &AppFilterModel::invalidateHaystackCache);
+        // map valid but invalidate the haystacks.
+        connect(src, &QAbstractItemModel::dataChanged, this, [this]() {
+            m_index.invalidateHaystacks();
+        });
     });
-}
-
-void AppFilterModel::invalidateHaystackCache()
-{
-    m_haystackCache.clear();
-}
-
-QString AppFilterModel::ensureHaystack(int sourceRow) const
-{
-    const auto cached = m_haystackCache.constFind(sourceRow);
-    if (cached != m_haystackCache.constEnd()) {
-        return *cached;
-    }
-
-    auto *src = sourceModel();
-    if (!src) {
-        return {};
-    }
-
-    const auto idx = src->index(sourceRow, 0);
-    QStringList parts{
-        idx.data(AppModel::NameRole).toString(),
-        idx.data(AppModel::GenericNameRole).toString(),
-        idx.data(AppModel::KeywordsRole).toStringList().join(QLatin1Char('\n')),
-        idx.data(AppModel::CategoriesRole).toStringList().join(QLatin1Char('\n')),
-        idx.data(AppModel::CommentRole).toString(),
-        idx.data(AppModel::InstallSourceRole).toString(),
-    };
-    const QString hay = parts.join(QLatin1Char('\n')).toCaseFolded();
-    m_haystackCache.insert(sourceRow, hay);
-    return hay;
-}
-
-void AppFilterModel::invalidateStorageIdCache()
-{
-    m_storageIdToSourceRow.clear();
-    m_storageIdCacheDirty = true;
-}
-
-void AppFilterModel::ensureStorageIdCache() const
-{
-    if (!m_storageIdCacheDirty) {
-        return;
-    }
-    m_storageIdToSourceRow.clear();
-    auto *src = sourceModel();
-    if (src) {
-        const int n = src->rowCount();
-        m_storageIdToSourceRow.reserve(n);
-        for (int i = 0; i < n; ++i) {
-            const auto sid = src->index(i, 0).data(AppModel::StorageIdRole).toString();
-            if (!sid.isEmpty()) {
-                m_storageIdToSourceRow.insert(sid, i);
-            }
-        }
-    }
-    m_storageIdCacheDirty = false;
 }
 
 void AppFilterModel::pruneRecentsToExisting()
 {
-    ensureStorageIdCache();
     const QStringList current = m_book.recent();
     QStringList kept;
     kept.reserve(current.size());
     for (const auto &sid : current) {
-        if (m_storageIdToSourceRow.contains(sid)) {
+        if (m_index.contains(sid)) {
             kept.append(sid);
         }
     }
@@ -187,20 +127,18 @@ void AppFilterModel::setFilterCategory(const QString &category)
 
 QString AppFilterModel::searchText() const
 {
-    return m_searchText;
+    return m_query.text;
 }
 
 void AppFilterModel::applySearchText(const QString &text)
 {
-    m_searchText = text;
-    m_searchTextLower = text.toCaseFolded();
-    m_searchTextLowerSingular = SearchRanking::singularize(m_searchTextLower);
+    m_query = AppSearch::Query::of(text);
     invalidateRowScoreCache(); // cached relevance depends on the query
 }
 
 void AppFilterModel::setSearchText(const QString &text)
 {
-    if (m_searchText == text) {
+    if (m_query.text == text) {
         return;
     }
     applySearchText(text);
@@ -210,7 +148,7 @@ void AppFilterModel::setSearchText(const QString &text)
 
 void AppFilterModel::setSearchState(const QString &text, const QString &category, bool favoritesOnly)
 {
-    const bool textChanged = m_searchText != text;
+    const bool textChanged = m_query.text != text;
     const bool categoryChanged = m_filterCategory != category;
     const bool favoritesChanged = m_showFavoritesOnly != favoritesOnly;
     if (!textChanged && !categoryChanged && !favoritesChanged) {
@@ -294,7 +232,7 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
     // Favourite order drives the favourites-only view, and being a favourite
     // ranks search results (cached per row).
     invalidateRowScoreCache();
-    if (m_showFavoritesOnly || !m_searchText.isEmpty()) {
+    if (m_showFavoritesOnly || !m_query.isEmpty()) {
         invalidate();
     }
     Q_EMIT favoriteAppsChanged();
@@ -376,7 +314,7 @@ void AppFilterModel::setFrecencyScores(const QHash<QString, int> &scores)
         return;
     }
     m_frecencyScores = scores;
-    if (m_searchUsesFrecency && !m_searchText.isEmpty()) {
+    if (m_searchUsesFrecency && !m_query.isEmpty()) {
         invalidate();
     }
 }
@@ -387,7 +325,7 @@ void AppFilterModel::setSearchUsesFrecency(bool enabled)
         return;
     }
     m_searchUsesFrecency = enabled;
-    if (!m_searchText.isEmpty()) {
+    if (!m_query.isEmpty()) {
         invalidate();
     }
 }
@@ -403,7 +341,7 @@ void AppFilterModel::setSearchShowsHidden(bool enabled)
         return;
     }
     m_searchShowsHidden = enabled;
-    if (!m_searchText.isEmpty()) {
+    if (!m_query.isEmpty()) {
         refilter();
     }
     Q_EMIT searchShowsHiddenChanged();
@@ -477,45 +415,7 @@ int AppFilterModel::getLaunchCount(const QString &storageId) const
 
 QString AppFilterModel::completionFor(const QString &query) const
 {
-    if (query.isEmpty()) {
-        return {};
-    }
-    const QString folded = query.toCaseFolded();
-    const int limit = qMin(rowCount(), kCompletionScanLimit);
-
-    // Pass 1: an app whose *name* starts with the query — complete the whole
-    // name (e.g. "vi" → "Visual Studio Code"), highest-ranked first.
-    for (int i = 0; i < limit; ++i) {
-        const QString name = index(i, 0).data(AppModel::NameRole).toString();
-        if (name.size() > query.size() && name.toCaseFolded().startsWith(folded)) {
-            return name;
-        }
-    }
-
-    // Pass 2: no name prefix-matched — complete to the best matching *word*
-    // across name / generic name / keywords, so a fuzzy top hit (a terminal
-    // named "Ghostty") still completes "te" → "terminal" from its term.
-    for (int i = 0; i < limit; ++i) {
-        const auto idx = index(i, 0);
-        const QString fields[] = {
-            idx.data(AppModel::NameRole).toString(),
-            idx.data(AppModel::GenericNameRole).toString(),
-        };
-        for (const auto &field : fields) {
-            const QString word = SearchRanking::completionWord(field, query);
-            if (!word.isEmpty()) {
-                return word;
-            }
-        }
-        const auto keywords = idx.data(AppModel::KeywordsRole).toStringList();
-        for (const auto &keyword : keywords) {
-            const QString word = SearchRanking::completionWord(keyword, query);
-            if (!word.isEmpty()) {
-                return word;
-            }
-        }
-    }
-    return {};
+    return AppSearch::completion(*this, query, kCompletionScanLimit);
 }
 
 // --- Default apps (mimeapps.list) ---
@@ -571,7 +471,7 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
     // chooses) without un-hiding it from the grid.
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
     if (m_book.isHidden(sid)) {
-        if (m_searchText.isEmpty() || !m_searchShowsHidden) {
+        if (m_query.isEmpty() || !m_searchShowsHidden) {
             return false;
         }
     }
@@ -590,23 +490,14 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
         }
     }
 
-    if (!m_searchTextLower.isEmpty()) {
-        // Match against the pre-folded "name\ngeneric\nkw…\ncategories\n
-        // comment\nsource" haystack so a single case-sensitive contains()
-        // replaces multiple case-insensitive ones. Plural queries also try
-        // the singular form so "games" still reaches a row whose category
-        // is "Game"/"ArcadeGame"/etc.
-        const auto &haystack = ensureHaystack(sourceRow);
-        if (!haystack.contains(m_searchTextLower) && (m_searchTextLowerSingular.isEmpty() || !haystack.contains(m_searchTextLowerSingular))) {
-            return false;
-        }
+    if (!m_query.isEmpty() && !m_query.matches(m_index.haystack(sourceRow))) {
+        return false;
     }
 
     // In "All" view (no category, no search), hide recents from the main grid
     // (they are shown in the header section instead).
     // Skip when: sorting by most-used, showing favorites, or filtering by category/search.
-    if (m_sortMode == Alphabetical && !m_showFavoritesOnly && m_filterCategory.isEmpty() && m_searchText.isEmpty() && m_book.hasRecent()
-        && m_book.isRecent(sid)) {
+    if (m_sortMode == Alphabetical && !m_showFavoritesOnly && m_filterCategory.isEmpty() && m_query.isEmpty() && m_book.hasRecent() && m_book.isRecent(sid)) {
         return false;
     }
 
@@ -614,18 +505,6 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 }
 
 // --- Sorting ---
-
-// Reads the app's text roles off @p idx and delegates to the pure
-// SearchRanking::relevance(). Lower score = better match.
-static int searchRelevance(const QModelIndex &idx, const QString &query)
-{
-    return SearchRanking::relevance(idx.data(AppModel::NameRole).toString(),
-                                    idx.data(AppModel::GenericNameRole).toString(),
-                                    idx.data(AppModel::CommentRole).toString(),
-                                    idx.data(AppModel::KeywordsRole).toStringList(),
-                                    idx.data(AppModel::CategoriesRole).toStringList(),
-                                    query);
-}
 
 AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex) const
 {
@@ -648,8 +527,8 @@ AppFilterModel::RowScore AppFilterModel::rowScore(const QModelIndex &sourceIndex
     s.isFavorite = m_book.isFavorite(s.sid);
     // Relevance only matters while searching; skip its role reads + case-folds
     // in the alphabetical / most-used / by-category sort modes.
-    if (!m_searchText.isEmpty()) {
-        s.relevance = searchRelevance(sourceIndex, m_searchText);
+    if (!m_query.isEmpty()) {
+        s.relevance = AppSearch::relevance(sourceIndex, m_query.text);
     }
     return *m_rowScoreCache.insert(sourceRow, s);
 }
@@ -679,7 +558,7 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
 
     // When searching, rank by match relevance first (SearchRanking::compare);
     // a tie falls through to the name below.
-    if (!m_searchText.isEmpty()) {
+    if (!m_query.isEmpty()) {
         // Frecency (when opted in via ConfigSearch) substitutes the raw
         // launchCount everywhere the search ranking looks it up — same paths,
         // time-weighted input. O(1) hash by the cached sid, so it stays live
@@ -777,12 +656,8 @@ QVariantMap AppFilterModel::getByStorageId(const QString &storageId) const
     }
 
     auto *src = sourceModel();
-    if (!src) {
-        return map;
-    }
-    ensureStorageIdCache();
-    const int row = m_storageIdToSourceRow.value(storageId, -1);
-    if (row < 0) {
+    const int row = m_index.rowOf(storageId);
+    if (!src || row < 0) {
         return map;
     }
     const auto idx = src->index(row, 0);

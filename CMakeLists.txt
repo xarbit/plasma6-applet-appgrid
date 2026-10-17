@@ -200,6 +200,10 @@ set(APPGRID_COMMON_SOURCES
     src/appmodelassembly.cpp
     src/appmodelassembly.h
     src/appfiltermodel.cpp
+    src/appsearch.cpp
+    src/appsearch.h
+    src/approwindex.cpp
+    src/approwindex.h
     src/defaultappsprovider.cpp
     src/defaultappsprovider.h
     src/defaultappsresolver.cpp

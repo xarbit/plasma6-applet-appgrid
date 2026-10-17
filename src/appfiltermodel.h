@@ -10,6 +10,8 @@
 #include <QStringList>
 #include <QVariantMap>
 
+#include "approwindex.h"
+#include "appsearch.h"
 #include "filterproxymodel.h"
 #include "launchbookkeeping.h"
 #include "searchranking.h"
@@ -179,13 +181,9 @@ protected:
 
 private:
     void recordLaunch(const QString &storageId);
-    void invalidateStorageIdCache();
-    void ensureStorageIdCache() const;
     // Drop recents whose app left the database (uninstalled); keeps the recents
     // row from showing dead entries. Runs on every KSycoca reload.
     void pruneRecentsToExisting();
-    void invalidateHaystackCache();
-    [[nodiscard]] QString ensureHaystack(int sourceRow) const;
 
     // Per-source-row sort inputs, computed once per query and cached, instead
     // of re-read via data() + re-folded inside SearchRanking on every lessThan
@@ -211,15 +209,7 @@ private:
     void applySearchText(const QString &text);
 
     QString m_filterCategory;
-    QString m_searchText;
-    // Pre-folded copy of m_searchText so filterAcceptsRow can run a
-    // case-sensitive contains() against the cached lower-cased haystack
-    // and avoid the per-character Unicode case-fold inside QString::contains.
-    QString m_searchTextLower;
-    // Naive singular form of the query ("games" → "game"), or empty when the
-    // query doesn't end in s / is too short. Filter + ranking both consult
-    // it so a plural query against a singular category still matches.
-    QString m_searchTextLowerSingular;
+    AppSearch::Query m_query;
     int m_maxRecentApps = 6;
     int m_sortMode = Alphabetical;
     int m_iconGeneration = 0;
@@ -241,17 +231,8 @@ private:
     // filterAcceptsRow / lessThan.
     LaunchBookkeeping m_book;
 
-    // storageId → source-row cache for getByStorageId(). Built lazily on
-    // first call; invalidated when the source model resets or rows shift
-    // (KSycoca changes). Mutable because getByStorageId is const.
-    mutable QHash<QString, int> m_storageIdToSourceRow;
-    mutable bool m_storageIdCacheDirty = true;
-
-    // source-row → lower-cased haystack ("name\ngeneric\nkw1\n…\nsource")
-    // used by filterAcceptsRow during search. Built lazily per row on
-    // first match attempt; cleared in lockstep with the storage-id cache
-    // when the source model changes.
-    mutable QHash<int, QString> m_haystackCache;
+    // The source rows by storage id, and their search haystacks.
+    AppRowIndex m_index;
 
     // source-row → cached sort inputs (see RowScore). Filled lazily in
     // lessThan(); cleared when any input changes (query, launch counts,
