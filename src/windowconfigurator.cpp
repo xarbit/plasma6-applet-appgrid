@@ -8,9 +8,6 @@
 #include "appgridconstants.h"
 
 #include <KWindowSystem>
-#ifdef APPGRID_X11_SUPPORT
-#include <KX11Extras>
-#endif
 #include <LayerShellQt/window.h>
 #include <QCursor>
 #include <QDBusConnection>
@@ -84,14 +81,6 @@ QScreen *panelScreen()
     const QDBusReply<QString> reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, AppGrid::Dbus::CallTimeoutMs);
     return reply.isValid() ? screenByName(reply.value()) : nullptr;
 }
-
-#ifdef APPGRID_X11_SUPPORT
-void configureX11(QWindow *window)
-{
-    window->setFlags(window->flags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    KX11Extras::setState(window->winId(), NET::SkipTaskbar | NET::SkipPager);
-}
-#endif
 }
 
 void WindowConfigurator::setLayerScope(const QString &scope)
@@ -125,11 +114,6 @@ void WindowConfigurator::configurePanelWindow(QWindow *window)
     if (KWindowSystem::isPlatformWayland()) {
         configurePanelWayland(window);
     }
-#ifdef APPGRID_X11_SUPPORT
-    else {
-        configureX11(window);
-    }
-#endif
 }
 
 void WindowConfigurator::positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen)

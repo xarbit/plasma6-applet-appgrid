@@ -12,7 +12,7 @@ class QWindow;
 /**
  * @brief Owns the standalone daemon's launcher-window surface configuration.
  *
- * Layer-shell setup (Wayland), the X11 fallback, and the atomic
+ * Layer-shell setup (Wayland; Plasma 6.8 has no X11 session) and the atomic
  * screen-pick-plus-vertical-center positioning the panel needs on a
  * multi-monitor setup. Pure side effects on a QWindow + a little KWin/plasmoid
  * D-Bus to find the right output; no identity or signals, so a plain class, not

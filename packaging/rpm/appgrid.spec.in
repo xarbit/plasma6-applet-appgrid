@@ -75,8 +75,7 @@ presentation.
 if [ $1 -ge 2 ]; then
 cat <<'MSG'
 AppGrid was updated. Restart Plasma to load the new version:
-  Wayland:  systemctl --user restart plasma-plasmashell.service
-  X11:      kquitapp6 plasmashell && kstart plasmashell
+  systemctl --user restart plasma-plasmashell.service
 MSG
 fi
 

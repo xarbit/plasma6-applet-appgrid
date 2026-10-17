@@ -7,8 +7,7 @@ set -e
 
 if [ "$1" = "configure" ] && [ -n "$2" ]; then
     echo "AppGrid was updated. Restart Plasma to load the new version:"
-    echo "  Wayland:  systemctl --user restart plasma-plasmashell.service"
-    echo "  X11:      kquitapp6 plasmashell && kstart plasmashell"
+    echo "  systemctl --user restart plasma-plasmashell.service"
 fi
 
 #DEBHELPER#

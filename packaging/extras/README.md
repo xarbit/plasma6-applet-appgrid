@@ -7,8 +7,7 @@ freeze) until it is restarted. The fix is always the same: restart Plasma once,
 in your own session:
 
 ```sh
-systemctl --user restart plasma-plasmashell.service   # Wayland / systemd session
-kquitapp6 plasmashell && kstart plasmashell            # X11
+systemctl --user restart plasma-plasmashell.service
 ```
 
 The packages only **print** this reminder — a package script runs as root with
@@ -47,7 +46,7 @@ systemctl --user daemon-reload
   both variants; non-existent paths are ignored, so it works regardless of how
   you installed.
 - `ExecStart` uses `systemctl --user restart plasma-plasmashell.service`, the
-  systemd-managed session shell on Plasma 6 (Wayland and X11). On a session that
+  systemd-managed session shell on Plasma 6. On a session that
   doesn't manage `plasmashell` via systemd the restart is a harmless no-op; use
   the `kquitapp6 && kstart` form manually there.
 - Prefer not to add units? A shell wrapper does the same per-update, e.g.

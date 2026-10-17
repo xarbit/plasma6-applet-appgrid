@@ -24,9 +24,6 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(FeatureSummary)
 
-# X11 support — disable when targeting Plasma 6.8+ (Wayland-only)
-option(ENABLE_X11 "Enable X11 session support" ON)
-
 # Universal-build flag — enables the in-app update checker (notify-only,
 # opt-in via config). Distros that ship via their package manager should
 # leave this OFF so the package manager remains the source of truth for
@@ -307,9 +304,6 @@ function(appgrid_add_compiled_applet)
         "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\""
         "TRANSLATION_DOMAIN=\"${APPGRID_APP_ID}\""
         "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
-    if(ENABLE_X11)
-        target_compile_definitions(${A_TARGET} PRIVATE APPGRID_X11_SUPPORT)
-    endif()
     if(APPGRID_UNIVERSAL_BUILD)
         target_link_libraries(${A_TARGET} PRIVATE Qt6::Network)
         target_compile_definitions(${A_TARGET} PRIVATE APPGRID_UNIVERSAL_BUILD)
@@ -426,9 +420,6 @@ target_compile_definitions(appgrid PRIVATE
     "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\""
     "TRANSLATION_DOMAIN=\"${APPGRID_APP_ID}\""
     "APPGRID_APP_ID=\"${APPGRID_APP_ID}\"")
-if(ENABLE_X11)
-    target_compile_definitions(appgrid PRIVATE APPGRID_X11_SUPPORT)
-endif()
 if(APPGRID_UNIVERSAL_BUILD)
     target_link_libraries(appgrid PRIVATE Qt6::Network)
     target_compile_definitions(appgrid PRIVATE APPGRID_UNIVERSAL_BUILD)
@@ -481,8 +472,6 @@ if(APPGRID_DBUS_ACTIVATION)
     install(FILES ${CMAKE_BINARY_DIR}/appgrid.service
             DESTINATION ${KDE_INSTALL_SYSTEMDUSERUNITDIR})
 endif()
-
-message(STATUS "AppGrid ENABLE_X11=${ENABLE_X11}")
 
 # --- Common ---
 
