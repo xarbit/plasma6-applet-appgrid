@@ -83,6 +83,14 @@ LaunchStateStore::LaunchStateStore(const KSharedConfig::Ptr &config, QObject *pa
     });
 }
 
+LaunchStateStore::~LaunchStateStore()
+{
+    // A change in the last moments before quitting would otherwise be lost.
+    if (m_saveTimer->isActive()) {
+        save();
+    }
+}
+
 QStringList LaunchStateStore::hiddenApps() const
 {
     return m_book.hidden();

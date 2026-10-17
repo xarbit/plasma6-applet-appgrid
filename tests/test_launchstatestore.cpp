@@ -23,6 +23,7 @@ private Q_SLOTS:
     void init();
     void setters_emitAndDedup();
     void hideUnhideAndRecordLaunch();
+    void pendingChangesSaveOnDestruction();
     void launchCounts_roundtripThroughFile();
     void persists_acrossInstances();
     void migrateFrom_seedsOnlyAbsentKeys();
@@ -108,6 +109,18 @@ void TestLaunchStateStore::hideUnhideAndRecordLaunch()
     LaunchStateStore reread(cfg);
     QCOMPARE(reread.hiddenApps(), QStringList{QStringLiteral("b.desktop")});
     QCOMPARE(reread.book().launchCount(QStringLiteral("x.desktop")), 2);
+}
+
+void TestLaunchStateStore::pendingChangesSaveOnDestruction()
+{
+    auto cfg = freshConfig();
+    {
+        LaunchStateStore store(cfg);
+        store.recordLaunch(QStringLiteral("x.desktop"), 6);
+        // Gone before the debounced save fires.
+    }
+    LaunchStateStore reread(cfg);
+    QCOMPARE(reread.recentApps(), QStringList{QStringLiteral("x.desktop")});
 }
 
 void TestLaunchStateStore::launchCounts_roundtripThroughFile()

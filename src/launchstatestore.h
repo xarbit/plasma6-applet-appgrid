@@ -50,6 +50,8 @@ public:
     /** @p config defaults to appgridrc; injectable so tests can point at a
      *  scratch file. */
     explicit LaunchStateStore(const KSharedConfig::Ptr &config = {}, QObject *parent = nullptr);
+    /** Writes what is still waiting for the debounced save. */
+    ~LaunchStateStore() override;
 
     [[nodiscard]] QStringList hiddenApps() const;
     [[nodiscard]] QStringList recentApps() const;
