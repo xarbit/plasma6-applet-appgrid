@@ -6,17 +6,14 @@
 #include "appgridplugin.h"
 
 #include "appgridconstants.h"
-#include "applauncher.h"
+#include "appletmigration.h"
 #include "plasmoidadaptor.h"
+#include "plasmoidservice.h"
 #include "qmltypes.h"
-#include "standaloneinterface.h"
 
 #include <KConfig>
 #include <KConfigGroup>
-#include <KIO/CommandLauncherJob>
 #include <QDBusConnection>
-#include <QDBusConnectionInterface>
-#include <QGuiApplication>
 #include <QQuickWindow>
 #include <QScreen>
 #include <QTimer>
@@ -55,32 +52,6 @@ AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const
 }
 
 AppGridPlugin::~AppGridPlugin() = default;
-
-AppGridPlasmoidService::AppGridPlasmoidService(AppGridPlugin *plugin, QObject *parent)
-    : QObject(parent)
-    , m_plugin(plugin)
-{
-}
-
-void AppGridPlasmoidService::requestAddToTaskManager(const QString &desktopFile)
-{
-    Q_EMIT addToTaskManagerRequested(desktopFile);
-}
-
-QString AppGridPlasmoidService::panelScreenName() const
-{
-    return m_plugin ? m_plugin->panelScreenName() : QString();
-}
-
-QVariantMap AppGridPlasmoidService::buttonAppearance() const
-{
-    return m_plugin ? m_plugin->buttonAppearance() : QVariantMap();
-}
-
-void AppGridPlasmoidService::setButtonAppearance(const QVariantMap &values)
-{
-    Q_EMIT setButtonAppearanceRequested(values);
-}
 
 void AppGridPlugin::updateButtonAppearanceCache(const QVariantMap &values)
 {
@@ -151,101 +122,26 @@ QVariantMap AppGridPlugin::systemInfo()
     return controller()->systemActions()->systemInfo(m_useNativeActivation ? QStringLiteral("Panel") : QStringLiteral("Center"));
 }
 
-void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringList &launchArgs, const QVariantList &dbusArgs)
-{
-    auto bus = QDBusConnection::sessionBus();
-    const bool running = bus.interface() && bus.interface()->isServiceRegistered(AppGrid::Dbus::Service);
-    StandaloneInterface daemon(AppGrid::Dbus::Service, AppGrid::Dbus::Path, bus);
-
-    if (running) {
-        // Detect a stale daemon left over from an upgrade — its build differs
-        // from ours, so it lacks our D-Bus methods. Checked once and cached;
-        // re-checked after a replace (so the fresh instance is re-validated).
-        if (!m_daemonVersionChecked) {
-            // Short timeout: this runs in plasmashell, so a hung daemon must not
-            // freeze the panel. On timeout the reply is invalid → treated as not
-            // stale → we just toggle it rather than aggressively replacing it.
-            daemon.setTimeout(AppGrid::Dbus::CallTimeoutMs);
-            QDBusPendingReply<QString> version = daemon.Version();
-            version.waitForFinished();
-            m_daemonStale = version.isValid() && version.value() != QLatin1String(APPGRID_VERSION);
-            m_daemonVersionChecked = true;
-        }
-        if (!m_daemonStale) {
-            // Current daemon — invoke the requested method on it (with any args).
-            daemon.asyncCallWithArgumentList(dbusMethod, dbusArgs);
-            return;
-        }
-        // Stale: ask it to quit, then relaunch our build with --replace (it polls
-        // for the freed bus name and takes over). Re-validate it next time.
-        daemon.Quit();
-        m_daemonVersionChecked = false;
-        QStringList args = launchArgs;
-        args << AppGrid::Standalone::FlagReplace;
-        AppLauncher::start(new KIO::CommandLauncherJob(AppGrid::Standalone::Executable, args));
-        return;
-    }
-
-    // Not running.
-#ifdef APPGRID_DBUS_ACTIVATION
-    // A method call to the activatable name starts the installed build via the
-    // D-Bus/systemd .service unit, then delivers the call — no explicit launch and
-    // no single-instance race. The unit starts it with --daemon (it stays hidden),
-    // and this queued method drives the window.
-    daemon.asyncCallWithArgumentList(dbusMethod, dbusArgs);
-#else
-    // No activation unit (e.g. the relocatable universal build): launch the binary
-    // with the matching flags; it registers the service and acts on them on start.
-    AppLauncher::start(new KIO::CommandLauncherJob(AppGrid::Standalone::Executable, launchArgs));
-#endif
-}
-
-void AppGridPlugin::triggerStandaloneAsOwner(const QString &dbusMethod, const QStringList &extraFlags)
-{
-    // The id reaches a running daemon as the D-Bus method arg and a cold start as
-    // a launch flag, so either way it learns which plasmoid this came from.
-    const QString plasmoidId = QString::number(id());
-    QStringList launchArgs = extraFlags;
-    launchArgs << AppGrid::Standalone::FlagPlasmoidId + plasmoidId;
-    triggerStandalone(dbusMethod, launchArgs, {plasmoidId});
-}
-
 void AppGridPlugin::configureStandaloneWindow()
 {
     // Open straight into the settings window; --configure skips popping the launcher.
-    triggerStandaloneAsOwner(AppGrid::Dbus::MethodConfigure, {AppGrid::Standalone::FlagConfigure});
+    m_standalone.triggerAsOwner(QString::number(id()), AppGrid::Dbus::MethodConfigure, {AppGrid::Standalone::FlagConfigure});
 }
 
 void AppGridPlugin::migrateConfigToStandalone()
 {
-    KConfig dst(QStringLiteral("appgridrc"));
-    KConfigGroup marker = dst.group(QStringLiteral("Migration"));
-    if (marker.readEntry("fromPlasmoid", false)) {
-        return; // already migrated — the daemon owns appgridrc now
-    }
-    // The applet's KConfigXT values live under [Configuration][General]; copy
-    // them into the daemon's appgridrc [General] (same schema, same keys).
-    KConfigGroup src = config().group(QStringLiteral("General"));
-    KConfigGroup dstGeneral = dst.group(QStringLiteral("General"));
-    src.copyTo(&dstGeneral);
-    marker.writeEntry("fromPlasmoid", true);
-    dst.sync();
+    KConfig appgridrc(QStringLiteral("appgridrc"));
+    AppletMigration::copySettingsToStandalone(config().group(QStringLiteral("General")), appgridrc);
 }
 
 void AppGridPlugin::migrateLaunchState()
 {
-    // The applet's old per-applet launch lists live under [Configuration][General]
-    // (the same keys, even though the schema no longer maps them). Hand them to
-    // the store, which seeds only the lists it doesn't already hold.
-    const KConfigGroup src = config().group(QStringLiteral("General"));
-    controller()->launchState()->migrateFrom(src.readEntry("hiddenApps", QStringList()),
-                                             src.readEntry("recentApps", QStringList()),
-                                             src.readEntry("launchCounts", QStringList()));
+    AppletMigration::moveLaunchState(config().group(QStringLiteral("General")), *controller()->launchState());
 }
 
 void AppGridPlugin::toggleStandaloneWindow()
 {
     // This plasmoid owns the launcher session it opens, so the launcher's
     // Settings action edits this plasmoid's panel button (#191).
-    triggerStandaloneAsOwner(AppGrid::Dbus::MethodToggle);
+    m_standalone.triggerAsOwner(QString::number(id()), AppGrid::Dbus::MethodToggle);
 }

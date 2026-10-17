@@ -223,12 +223,16 @@ set(APPGRID_COMMON_SOURCES
     src/discoverbackends.h
     src/installsource.cpp
     src/installsource.h
+    src/appletmigration.cpp
+    src/appletmigration.h
     src/appurl.h
     src/configcleanup.cpp
     src/configcleanup.h
     src/localsystem.cpp
     src/localsystem.h
     src/runnerresults.cpp
+    src/standaloneclient.cpp
+    src/standaloneclient.h
     src/runnerresults.h
     src/searchranking.cpp
     src/searchranking.h
@@ -340,8 +344,8 @@ endfunction()
 appgrid_strict_warnings(appgrid_core)
 
 # The applet code both plasmoid variants share; the daemon has no applet.
-set(APPGRID_APPLET_SOURCES src/appgridplugin.cpp src/appgridplugin.h)
-qt_add_dbus_adaptor(APPGRID_APPLET_SOURCES ${APPGRID_DBUS_PLASMOID_XML} appgridplugin.h AppGridPlasmoidService plasmoidadaptor PlasmoidAdaptor)
+set(APPGRID_APPLET_SOURCES src/appgridplugin.cpp src/appgridplugin.h src/plasmoidservice.cpp src/plasmoidservice.h)
+qt_add_dbus_adaptor(APPGRID_APPLET_SOURCES ${APPGRID_DBUS_PLASMOID_XML} plasmoidservice.h AppGridPlasmoidService plasmoidadaptor PlasmoidAdaptor)
 
 # Build an AppGrid variant as a compiled-QML Plasma applet (#173): the QML is
 # baked into the .so as PLAIN qrc resources at the root Plasma::Applet::qrcPath()

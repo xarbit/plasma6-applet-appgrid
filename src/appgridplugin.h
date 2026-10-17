@@ -9,40 +9,9 @@
 #include <QVariantMap>
 
 #include "appgridcontroller.h"
+#include "standaloneclient.h"
 
-class AppGridPlugin;
-
-/**
- * Minimal session-bus surface the center plasmoid exports so the standalone
- * daemon (which has no live applet/corona) can ask it to do things that need
- * one: pin to the Task Manager (Kicker, in-process) and report which screen the
- * panel icon is on (the "open on the panel's screen" option). Separate from
- * AppGridPlugin so only these reach the bus — not the applet's whole surface.
- */
-class AppGridPlasmoidService : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit AppGridPlasmoidService(AppGridPlugin *plugin, QObject *parent = nullptr);
-
-    // dev.xarbit.appgrid.Plasmoid (src/dbus), exported through PlasmoidAdaptor.
-    void requestAddToTaskManager(const QString &desktopFile);
-    /** Name of the screen the panel icon sits on (empty if unknown). */
-    [[nodiscard]] QString panelScreenName() const;
-    /** The panel button's appearance (read live from the plugin), for the daemon
-     *  settings window to show. */
-    [[nodiscard]] QVariantMap buttonAppearance() const;
-    /** Apply a new button appearance — forwarded to QML which writes the config. */
-    void setButtonAppearance(const QVariantMap &values);
-
-Q_SIGNALS:
-    void addToTaskManagerRequested(const QString &desktopFile);
-    void setButtonAppearanceRequested(const QVariantMap &values);
-
-private:
-    AppGridPlugin *const m_plugin;
-};
+class AppGridPlasmoidService;
 
 /**
  * @brief Main Plasma applet plugin for the AppGrid application launcher.
@@ -132,17 +101,9 @@ private:
     // daemon can delegate the in-process Task Manager pin to it.
     void registerPlasmoidService();
 
-    // Shared trigger for the standalone daemon: call @p dbusMethod on the running
-    // instance, or launch the executable with @p launchArgs if it is not running.
-    void triggerStandalone(const QString &dbusMethod, const QStringList &launchArgs, const QVariantList &dbusArgs = {});
-    /** triggerStandalone() tagged with this applet's id, so the daemon knows which
-     *  center plasmoid owns the launcher session / settings it opens (#191). */
-    void triggerStandaloneAsOwner(const QString &dbusMethod, const QStringList &extraFlags = {});
-
     AppGridController *m_controller = nullptr; // see controller()
     AppGridPlasmoidService *m_plasmoidService = nullptr;
     QVariantMap m_buttonAppearance;
-    // Cached result of the running daemon's version probe (see triggerStandalone).
-    bool m_daemonVersionChecked = false;
-    bool m_daemonStale = false;
+    // Reaches the standalone daemon (center variant).
+    StandaloneClient m_standalone;
 };

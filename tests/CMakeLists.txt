@@ -12,6 +12,7 @@ target_link_libraries(appgrid_teststubs PUBLIC appgrid_core)
 ecm_add_tests(
     test_appactionid.cpp
     test_appfiltermodel.cpp
+    test_appletmigration.cpp
     test_appmodel.cpp
     test_appranking.cpp
     test_appurl.cpp
