@@ -12,6 +12,7 @@
 #include <QTest>
 
 #include "appfiltermodel.h"
+#include "categoryqueries.h"
 #include "stubappmodel.h"
 
 class TestAppFilterModel : public QObject
@@ -49,7 +50,6 @@ private Q_SLOTS:
     void unhideAppRemovesFromList();
     void isRecentReflectsList();
     void setRecentAppsSkipsWorkWhenUnchanged();
-    void hiddenAppsChangedTriggersGroupedSignal();
     void recordRecentLaunchPrependsAndBumpsCount();
     void recordRecentLaunchCapsAtMaxRecentApps();
     void recordRecentLaunchDeduplicatesPriorEntry();
@@ -315,7 +315,7 @@ void TestAppFilterModel::appsByCategoryGroupsMultiCategoryApp()
         {QStringLiteral("Multi"), {}, {}, {QStringLiteral("Dev"), QStringLiteral("Util")}, {}, QStringLiteral("m"), {}, {}, {}},
         {QStringLiteral("Single"), {}, {}, {QStringLiteral("Dev")}, {}, QStringLiteral("s"), {}, {}, {}},
     });
-    const auto groups = m_filter.appsByCategory();
+    const auto groups = CategoryQueries::groupByCategory(&m_filter);
     QCOMPARE(groups.size(), 2);
 
     QHash<QString, int> appsPerCategory;
@@ -402,14 +402,6 @@ void TestAppFilterModel::setRecentAppsSkipsWorkWhenUnchanged()
 
     m_filter.setRecentApps({QStringLiteral("c")});
     QCOMPARE(changed.count(), 1);
-}
-
-void TestAppFilterModel::hiddenAppsChangedTriggersGroupedSignal()
-{
-    QSignalSpy spy(&m_filter, &AppFilterModel::groupedByCategoryChanged);
-    m_filter.setHiddenApps({QStringLiteral("a")});
-    // Exactly once: the markGroupedDirty lambda coalesces to a single emit.
-    QCOMPARE(spy.count(), 1);
 }
 
 void TestAppFilterModel::recordRecentLaunchPrependsAndBumpsCount()

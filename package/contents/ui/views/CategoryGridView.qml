@@ -16,7 +16,6 @@ import "../controllers"
 import "../widgets"
 import "../js/gridnav.js" as GridNav
 import "../js/gridmetrics.js" as GridMetrics
-import "../js/categoryflatten.js" as CategoryFlatten
 import "../js/constants.js" as Const
 
 ListView {
@@ -27,9 +26,8 @@ ListView {
     WheelScroller { target: categoryGrid }
 
     property var appsModel: null
-    property var groupedApps: []
-    // CategoryRowsModel from the controller; null leaves the view empty
-    // (e.g. tests without the C++ plugin).
+    // CategoryRowsModel from the controller: the apps grouped by category, as
+    // rows. null leaves the view empty (e.g. tests without the C++ plugin).
     property var rowsModel: null
     property real cellWidth: 100
     property real cellHeight: 100
@@ -64,11 +62,12 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     focus: true
 
-    // The rows follow the sections and the column count.
+    // The model groups only while the view is shown, and lays the rows out
+    // for the column count.
     Binding {
         target: categoryGrid.rowsModel
-        property: "groupedApps"
-        value: categoryGrid.groupedApps
+        property: "active"
+        value: categoryGrid.visible
         when: categoryGrid.rowsModel !== null
     }
     Binding {
@@ -80,19 +79,9 @@ ListView {
 
     // -- Keyboard navigation --
 
-    // Flat list of all apps across categories for index-based navigation, and
-    // the per-section start offsets (prefix sums) for O(1) flat-index lookup
-    // from a section delegate. Both are recomputed once per groupedApps change
-    // (_rebuildFlatApps) rather than re-flattened on every read / re-summed
-    // O(S²) per section delegate.
-    property var flatApps: []
-    property var sectionStartIndices: []
-
-    function _rebuildFlatApps() {
-        var r = CategoryFlatten.flatten(groupedApps)
-        flatApps = r.flatApps
-        sectionStartIndices = r.sectionStartIndices
-    }
+    // Navigation runs on a flat app index across all categories in order;
+    // the model maps it to an app and a row.
+    readonly property int appCount: rowsModel ? rowsModel.appCount : 0
 
     property int appIndex: -1
     property int recentIndex: -1
@@ -111,7 +100,7 @@ ListView {
     SelectionState {
         id: selection
         sidAt: function(idx) { return categoryGrid._unifiedSidAt(idx) }
-        gridCount: categoryGrid.recentCount + categoryGrid.flatApps.length
+        gridCount: categoryGrid.recentCount + categoryGrid.appCount
     }
     readonly property int virtualIndex:
         recentIndex >= 0 ? recentIndex
@@ -123,10 +112,9 @@ ListView {
         if (virtualIdx < recentCount)
             return appsModel ? (appsModel.recentApps[virtualIdx] || "") : ""
         const gridIdx = virtualIdx - recentCount
-        if (gridIdx >= flatApps.length) return ""
-        return flatApps[gridIdx].storageId || ""
+        return rowsModel ? rowsModel.storageIdAt(gridIdx) : ""
     }
-    readonly property bool multiSelectActive: flatApps.length > 0
+    readonly property bool multiSelectActive: appCount > 0
 
     property alias selectedSids: selection.selectionSids
     property alias selectionAnchor: selection.anchor
@@ -172,11 +160,10 @@ ListView {
 
     // Clear selection whenever the grouped model is rebuilt (search, category
     // pick) so the user doesn't carry ghost selections across filter changes.
-    onGroupedAppsChanged: {
-        _rebuildFlatApps()
-        clearSelection()
+    Connections {
+        target: categoryGrid.rowsModel
+        function onSectionsChanged() { categoryGrid.clearSelection() }
     }
-    Component.onCompleted: _rebuildFlatApps()
 
     // Bumped on newAppsChanged so each cell's isNew binding re-evaluates
     // without a Connections object per delegate.
@@ -195,7 +182,7 @@ ListView {
     Shortcut {
         sequence: StandardKey.SelectAll
         enabled: categoryGrid.multiSelectActive && categoryGrid.activeFocus
-                 && categoryGrid.flatApps.length > 0
+                 && categoryGrid.appCount > 0
         onActivated: categoryGrid.selectAllVisible()
     }
 
@@ -204,7 +191,7 @@ ListView {
             recentIndex = 0
             appIndex = -1
         } else {
-            appIndex = flatApps.length > 0 ? 0 : -1
+            appIndex = appCount > 0 ? 0 : -1
             recentIndex = -1
         }
         positionViewAtBeginning()
@@ -230,7 +217,7 @@ ListView {
     }
     function _moveRight() {
         if (recentIndex >= 0 && recentIndex < recentCount - 1) recentIndex++
-        else if (recentIndex < 0 && appIndex < flatApps.length - 1) {
+        else if (recentIndex < 0 && appIndex < appCount - 1) {
             appIndex++
             ensureVisible()
         }
@@ -253,11 +240,11 @@ ListView {
             if (newIdx < recentCount) {
                 recentIndex = newIdx
             } else {
-                appIndex = GridNav.gridLandingFromRecents(recentIndex, itemsPerRow, flatApps.length)
+                appIndex = GridNav.gridLandingFromRecents(recentIndex, itemsPerRow, appCount)
                 recentIndex = -1
                 ensureVisible()
             }
-        } else if (appIndex + itemsPerRow < flatApps.length) {
+        } else if (appIndex + itemsPerRow < appCount) {
             appIndex += itemsPerRow
             ensureVisible()
         }
@@ -308,8 +295,8 @@ ListView {
     function _launchCurrent() {
         if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
             recentLaunched(appsModel.recentApps[recentIndex])
-        else if (appIndex >= 0 && appIndex < flatApps.length)
-            launched(flatApps[appIndex].proxyIndex)
+        else if (appIndex >= 0 && appIndex < appCount)
+            launched(rowsModel.proxyIndexAt(appIndex))
         clearSelection()
     }
     function activateCurrent() {
@@ -351,13 +338,8 @@ ListView {
         var row = rowsModel.rowForCategory(name)
         if (row < 0) return
         positionViewAtIndex(row, ListView.Beginning)
-        for (var i = 0; i < groupedApps.length; i++) {
-            if (groupedApps[i].category === name) {
-                appIndex = sectionStartIndices[i]
-                recentIndex = -1
-                return
-            }
-        }
+        appIndex = rowsModel.flatIndexOfCategory(name)
+        recentIndex = -1
     }
 
 

@@ -36,7 +36,6 @@ class AppFilterModel : public FilterProxyModel
     Q_PROPERTY(bool showFavoritesOnly READ showFavoritesOnly WRITE setShowFavoritesOnly NOTIFY showFavoritesOnlyChanged)
     Q_PROPERTY(bool sortFavoritesAlphabetically READ sortFavoritesAlphabetically WRITE setSortFavoritesAlphabetically NOTIFY sortFavoritesAlphabeticallyChanged)
     Q_PROPERTY(bool useSystemCategories READ useSystemCategories WRITE setUseSystemCategories NOTIFY useSystemCategoriesChanged)
-    Q_PROPERTY(QVariantList groupedByCategory READ appsByCategory NOTIFY groupedByCategoryChanged)
     Q_PROPERTY(QStringList defaultApps READ defaultApps WRITE setDefaultApps NOTIFY defaultAppsChanged)
     // Opt-in: surface hidden apps in search results so a deliberately
     // hidden tool can still be found by name. Default false — hidden
@@ -149,7 +148,6 @@ public:
     void setSortFavoritesAlphabetically(bool enabled);
     [[nodiscard]] Q_INVOKABLE QVariantMap getByStorageId(const QString &storageId) const;
     [[nodiscard]] Q_INVOKABLE bool isNewApp(const QString &storageId) const;
-    [[nodiscard]] Q_INVOKABLE QVariantList appsByCategory() const;
     [[nodiscard]] Q_INVOKABLE QStringList nonEmptyCategories() const;
     [[nodiscard]] Q_INVOKABLE int getLaunchCount(const QString &storageId) const;
 
@@ -177,7 +175,6 @@ Q_SIGNALS:
     void sortFavoritesAlphabeticallyChanged();
     void useSystemCategoriesChanged();
     void categoriesChanged();
-    void groupedByCategoryChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
@@ -263,12 +260,4 @@ private:
     // lessThan(); cleared when any input changes (query, launch counts,
     // default apps, or source-model data).
     mutable QHash<int, RowScore> m_rowScoreCache;
-
-    // Lazy cache for the groupedByCategory Q_PROPERTY. Rebuilds on next
-    // read after any filter/visibility change that flips the dirty flag.
-    // Skips the O(N) QVariantMap-construction loop when QML isn't actually
-    // reading the property (e.g. when in Alphabetical sort and the
-    // CategoryGridView binding short-circuits).
-    mutable QVariantList m_groupedByCategoryCache;
-    mutable bool m_groupedByCategoryDirty = true;
 };

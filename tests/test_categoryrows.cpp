@@ -3,10 +3,12 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     CategoryRows / CategoryRowsModel — the By Category view's header and app
-    rows, the flat-index and category lookups the view navigates with.
+    rows over a source app model, and the flat-index and category lookups the
+    view navigates with.
 */
 
 #include "categoryrowsmodel.h"
+#include "stubappmodel.h"
 
 #include <QSignalSpy>
 #include <QTest>
@@ -17,24 +19,21 @@ using CategoryRows::Row;
 
 namespace
 {
-QVariantMap app(const QString &id)
+StubApp app(const QString &id, const QStringList &categories)
 {
-    return {{QStringLiteral("storageId"), id}};
+    return {id, {}, {}, categories, {}, id, {}, {}, {}};
 }
 
-// Sections "A" (5 apps), "B" (0 apps), "C" (2 apps).
-QVariantList sampleSections()
+// Category "A" holds a0..a4, "C" holds c0 and c1.
+QVector<StubApp> sampleApps()
 {
-    QVariantList a;
+    QVector<StubApp> apps;
     for (int i = 0; i < 5; ++i) {
-        a.append(app(QStringLiteral("a%1").arg(i)));
+        apps.append(app(QStringLiteral("a%1").arg(i), {QStringLiteral("A")}));
     }
-    const QVariantList c{app(QStringLiteral("c0")), app(QStringLiteral("c1"))};
-    return {
-        QVariantMap{{QStringLiteral("category"), QStringLiteral("A")}, {QStringLiteral("apps"), a}},
-        QVariantMap{{QStringLiteral("category"), QStringLiteral("B")}, {QStringLiteral("apps"), QVariantList()}},
-        QVariantMap{{QStringLiteral("category"), QStringLiteral("C")}, {QStringLiteral("apps"), c}},
-    };
+    apps.append(app(QStringLiteral("c0"), {QStringLiteral("C")}));
+    apps.append(app(QStringLiteral("c1"), {QStringLiteral("C")}));
+    return apps;
 }
 
 QStringList idsOf(const QVariantList &apps)
@@ -74,12 +73,30 @@ private Q_SLOTS:
         QVERIFY(CategoryRows::build({}, 4).isEmpty());
     }
 
+    void inactiveModelIsEmpty()
+    {
+        StubAppModel source;
+        source.setApps(sampleApps());
+        CategoryRowsModel model;
+        model.setSourceModel(&source);
+        QCOMPARE(model.rowCount(), 0);
+        QCOMPARE(model.appCount(), 0);
+
+        model.setActive(true);
+        QCOMPARE(model.rowCount(), 2 + 5 + 2); // grouped at once, not a turn later
+        model.setActive(false);
+        QCOMPARE(model.rowCount(), 0);
+    }
+
     void modelExposesRows()
     {
+        StubAppModel source;
+        source.setApps(sampleApps());
         CategoryRowsModel model;
         model.setColumns(2);
-        model.setGroupedApps(sampleSections());
-        QCOMPARE(model.rowCount(), 7);
+        model.setSourceModel(&source);
+        model.setActive(true);
+        QCOMPARE(model.rowCount(), 6); // A: header + 3 rows, C: header + 1 row
 
         const QModelIndex header = model.index(0, 0);
         QCOMPARE(header.data(CategoryRowsModel::KindRole).toString(), QStringLiteral("header"));
@@ -90,46 +107,77 @@ private Q_SLOTS:
         QCOMPARE(lastOfA.data(CategoryRowsModel::FirstIndexRole).toInt(), 4);
         QCOMPARE(idsOf(lastOfA.data(CategoryRowsModel::AppsRole).toList()), QStringList{QStringLiteral("a4")});
 
-        const QModelIndex rowOfC = model.index(6, 0);
-        QCOMPARE(rowOfC.data(CategoryRowsModel::SectionRole).toInt(), 2);
+        const QModelIndex rowOfC = model.index(5, 0);
+        QCOMPARE(rowOfC.data(CategoryRowsModel::SectionRole).toInt(), 1);
         QCOMPARE(idsOf(rowOfC.data(CategoryRowsModel::AppsRole).toList()), (QStringList{QStringLiteral("c0"), QStringLiteral("c1")}));
     }
 
     void columnsChangeRelayouts()
     {
+        StubAppModel source;
+        source.setApps(sampleApps());
         CategoryRowsModel model;
-        model.setGroupedApps(sampleSections());
-        QCOMPARE(model.rowCount(), 10); // 3 headers + 5 + 0 + 2 single-app rows
+        model.setSourceModel(&source);
+        model.setActive(true);
+        QCOMPARE(model.rowCount(), 9);
 
         QSignalSpy reset(&model, &QAbstractItemModel::modelReset);
-        QSignalSpy changed(&model, &CategoryRowsModel::columnsChanged);
+        QSignalSpy columns(&model, &CategoryRowsModel::columnsChanged);
+        QSignalSpy sections(&model, &CategoryRowsModel::sectionsChanged);
         model.setColumns(5);
-        QCOMPARE(model.rowCount(), 5);
+        QCOMPARE(model.rowCount(), 4);
         QCOMPARE(reset.count(), 1);
-        QCOMPARE(changed.count(), 1);
+        QCOMPARE(columns.count(), 1);
+        QCOMPARE(sections.count(), 0); // same grouping, only new rows
 
         model.setColumns(5);
         QCOMPARE(reset.count(), 1);
-        QCOMPARE(changed.count(), 1);
+    }
+
+    void sourceChangeRegroupsOnce()
+    {
+        StubAppModel source;
+        source.setApps(sampleApps());
+        CategoryRowsModel model;
+        model.setSourceModel(&source);
+        model.setActive(true);
+
+        QSignalSpy sections(&model, &CategoryRowsModel::sectionsChanged);
+        source.setApps({app(QStringLiteral("b0"), {QStringLiteral("B")})});
+        source.setApps({app(QStringLiteral("b0"), {QStringLiteral("B")}), app(QStringLiteral("b1"), {QStringLiteral("B")})});
+        QCOMPARE(sections.count(), 0); // coalesced to the next turn
+        QTRY_COMPARE(sections.count(), 1);
+        QCOMPARE(model.appCount(), 2);
+        QCOMPARE(model.storageIdAt(1), QStringLiteral("b1"));
     }
 
     void lookups()
     {
+        StubAppModel source;
+        source.setApps(sampleApps());
         CategoryRowsModel model;
         model.setColumns(2);
-        model.setGroupedApps(sampleSections());
+        model.setSourceModel(&source);
+        model.setActive(true);
+
+        QCOMPARE(model.appCount(), 7);
+        QCOMPARE(model.storageIdAt(0), QStringLiteral("a0"));
+        QCOMPARE(model.storageIdAt(5), QStringLiteral("c0"));
+        QCOMPARE(model.storageIdAt(7), QString());
+        QCOMPARE(model.proxyIndexAt(6), 6);
+        QCOMPARE(model.proxyIndexAt(-1), -1);
 
         QCOMPARE(model.rowForFlatIndex(0), 1);
         QCOMPARE(model.rowForFlatIndex(3), 2);
         QCOMPARE(model.rowForFlatIndex(4), 3);
-        QCOMPARE(model.rowForFlatIndex(6), 6);
+        QCOMPARE(model.rowForFlatIndex(6), 5);
         QCOMPARE(model.rowForFlatIndex(7), -1);
-        QCOMPARE(model.rowForFlatIndex(-1), -1);
 
         QCOMPARE(model.rowForCategory(QStringLiteral("A")), 0);
-        QCOMPARE(model.rowForCategory(QStringLiteral("B")), 4);
-        QCOMPARE(model.rowForCategory(QStringLiteral("C")), 5);
+        QCOMPARE(model.rowForCategory(QStringLiteral("C")), 4);
         QCOMPARE(model.rowForCategory(QStringLiteral("missing")), -1);
+        QCOMPARE(model.flatIndexOfCategory(QStringLiteral("C")), 5);
+        QCOMPARE(model.flatIndexOfCategory(QStringLiteral("missing")), -1);
     }
 };
 

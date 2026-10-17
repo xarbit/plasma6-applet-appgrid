@@ -71,7 +71,6 @@ TestCase {
         id: appsModelStub
         property string searchText: ""
         property var recentApps: []
-        property var groupedByCategory: []
         property var favoriteApps: []
         property var hiddenApps: []
         property var launchCounts: []

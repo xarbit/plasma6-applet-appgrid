@@ -5,6 +5,8 @@
 
 #include "categoryrowsmodel.h"
 
+#include "categoryqueries.h"
+
 #include <QVariantMap>
 
 #include <algorithm>
@@ -31,6 +33,10 @@ QList<Row> build(const QList<int> &sectionSizes, int columns)
 CategoryRowsModel::CategoryRowsModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+    // One source change arrives as a burst of row signals; group once after it.
+    m_refreshTimer.setSingleShot(true);
+    m_refreshTimer.setInterval(0);
+    connect(&m_refreshTimer, &QTimer::timeout, this, &CategoryRowsModel::refresh);
 }
 
 int CategoryRowsModel::rowCount(const QModelIndex &parent) const
@@ -71,23 +77,41 @@ QHash<int, QByteArray> CategoryRowsModel::roleNames() const
     };
 }
 
-QVariantList CategoryRowsModel::groupedApps() const
+void CategoryRowsModel::setSourceModel(QAbstractItemModel *source)
 {
-    return m_groupedApps;
+    if (m_source) {
+        disconnect(m_source, nullptr, this, nullptr);
+    }
+    m_source = source;
+    if (source) {
+        const auto schedule = [this]() {
+            if (m_active) {
+                m_refreshTimer.start();
+            }
+        };
+        connect(source, &QAbstractItemModel::modelReset, this, schedule);
+        connect(source, &QAbstractItemModel::layoutChanged, this, schedule);
+        connect(source, &QAbstractItemModel::rowsInserted, this, schedule);
+        connect(source, &QAbstractItemModel::rowsRemoved, this, schedule);
+        connect(source, &QAbstractItemModel::dataChanged, this, schedule);
+    }
+    refresh();
 }
 
-void CategoryRowsModel::setGroupedApps(const QVariantList &sections)
+bool CategoryRowsModel::isActive() const
 {
-    m_groupedApps = sections;
-    m_categories.clear();
-    m_apps.clear();
-    for (const QVariant &section : sections) {
-        const QVariantMap map = section.toMap();
-        m_categories.append(map.value(QStringLiteral("category")).toString());
-        m_apps.append(map.value(QStringLiteral("apps")).toList());
+    return m_active;
+}
+
+void CategoryRowsModel::setActive(bool active)
+{
+    if (active == m_active) {
+        return;
     }
-    rebuild();
-    Q_EMIT groupedAppsChanged();
+    m_active = active;
+    // Group right away, so a view that just became visible starts with rows.
+    refresh();
+    Q_EMIT activeChanged();
 }
 
 int CategoryRowsModel::columns() const
@@ -102,8 +126,23 @@ void CategoryRowsModel::setColumns(int count)
         return;
     }
     m_columns = count;
-    rebuild();
+    rebuildRows();
     Q_EMIT columnsChanged();
+}
+
+int CategoryRowsModel::appCount() const
+{
+    return m_appCount;
+}
+
+QString CategoryRowsModel::storageIdAt(int flatIndex) const
+{
+    return appAt(flatIndex).value(QStringLiteral("storageId")).toString();
+}
+
+int CategoryRowsModel::proxyIndexAt(int flatIndex) const
+{
+    return appAt(flatIndex).value(QStringLiteral("proxyIndex"), -1).toInt();
 }
 
 int CategoryRowsModel::rowForFlatIndex(int flatIndex) const
@@ -131,7 +170,36 @@ int CategoryRowsModel::rowForCategory(const QString &category) const
     return -1;
 }
 
-void CategoryRowsModel::rebuild()
+int CategoryRowsModel::flatIndexOfCategory(const QString &category) const
+{
+    const int section = m_categories.indexOf(category);
+    return section < 0 ? -1 : m_sectionStarts.at(section);
+}
+
+void CategoryRowsModel::refresh()
+{
+    m_refreshTimer.stop();
+    setSections(m_active && m_source ? CategoryQueries::groupByCategory(m_source) : QVariantList());
+}
+
+void CategoryRowsModel::setSections(const QVariantList &sections)
+{
+    m_categories.clear();
+    m_apps.clear();
+    m_sectionStarts.clear();
+    m_appCount = 0;
+    for (const QVariant &section : sections) {
+        const QVariantMap map = section.toMap();
+        m_categories.append(map.value(QStringLiteral("category")).toString());
+        m_apps.append(map.value(QStringLiteral("apps")).toList());
+        m_sectionStarts.append(m_appCount);
+        m_appCount += m_apps.constLast().size();
+    }
+    rebuildRows();
+    Q_EMIT sectionsChanged();
+}
+
+void CategoryRowsModel::rebuildRows()
 {
     QList<int> sizes;
     sizes.reserve(m_apps.size());
@@ -141,4 +209,15 @@ void CategoryRowsModel::rebuild()
     beginResetModel();
     m_rows = CategoryRows::build(sizes, m_columns);
     endResetModel();
+}
+
+QVariantMap CategoryRowsModel::appAt(int flatIndex) const
+{
+    if (flatIndex < 0 || flatIndex >= m_appCount) {
+        return {};
+    }
+    // The last section starting at or before flatIndex holds it.
+    const auto next = std::upper_bound(m_sectionStarts.cbegin(), m_sectionStarts.cend(), flatIndex);
+    const int section = int(std::distance(m_sectionStarts.cbegin(), next)) - 1;
+    return m_apps.at(section).at(flatIndex - m_sectionStarts.at(section)).toMap();
 }

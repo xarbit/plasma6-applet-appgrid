@@ -213,6 +213,9 @@ void AppGridController::wireLaunchState()
         m_launchState.pruneActivities(activities);
     });
 
+    // The By Category view groups the filtered apps itself, while it is shown.
+    m_categoryRows.setSourceModel(&m_filterModel);
+
     // Favourites folders (issue #18): the store owns the persisted definitions +
     // layout, the grouped model owns the live reconciled view. Store → model is a
     // plain read (incoming external changes update the view). Model → store writes

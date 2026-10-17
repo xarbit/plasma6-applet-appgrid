@@ -968,8 +968,6 @@ Item {
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
             searchField: searchBar.field
             appsModel: panel.appsModel
-            groupedApps: panel.showCategoryGrid && panel.appsModel
-                ? panel.appsModel.groupedByCategory : []
             rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
             cellWidth: Math.floor(categoryGridView.width / panel.columns)
             cellHeight: GridMetrics.labelledCellHeight(panel.gridIconSize,

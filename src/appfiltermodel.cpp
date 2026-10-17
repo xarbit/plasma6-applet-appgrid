@@ -54,18 +54,6 @@ AppFilterModel::AppFilterModel(QObject *parent)
         Q_EMIT iconGenerationChanged();
     });
 
-    // groupedByCategory depends on visible rows — re-emit when filter state
-    // changes. The lambda marks the cache dirty before the signal travels
-    // to QML so the next groupedByCategory read recomputes.
-    auto markGroupedDirty = [this]() {
-        m_groupedByCategoryDirty = true;
-        Q_EMIT groupedByCategoryChanged();
-    };
-    connect(this, &AppFilterModel::hiddenAppsChanged, this, markGroupedDirty);
-    connect(this, &AppFilterModel::showFavoritesOnlyChanged, this, markGroupedDirty);
-    connect(this, &AppFilterModel::filterCategoryChanged, this, markGroupedDirty);
-    connect(this, &QAbstractItemModel::modelReset, this, markGroupedDirty);
-
     // storageId → source-row cache and per-row haystack cache: rebuilt
     // lazily on first read, invalidated together whenever the source
     // model changes shape or row data. Hooks attached via
@@ -723,15 +711,6 @@ bool AppFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right)
 }
 
 // --- Category queries ---
-
-QVariantList AppFilterModel::appsByCategory() const
-{
-    if (m_groupedByCategoryDirty) {
-        m_groupedByCategoryCache = CategoryQueries::groupByCategory(this);
-        m_groupedByCategoryDirty = false;
-    }
-    return m_groupedByCategoryCache;
-}
 
 QStringList AppFilterModel::nonEmptyCategories() const
 {

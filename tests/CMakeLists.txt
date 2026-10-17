@@ -55,6 +55,10 @@ appgrid_add_test(test_category_mapping
     ${CMAKE_SOURCE_DIR}/src/categorymapping.h)
 # CategoryQueries — pure category grouping over a stub source model.
 appgrid_add_test(test_categoryqueries ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
+# CategoryRowsModel — By Category header/app rows over a stub source model.
+appgrid_add_test(test_categoryrows ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h
+    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.h)
 # Jump-list action favourite id parsing (#64). appactionid.cpp is in
 # TEST_COMMON_SOURCES, so no extra source needed here.
 appgrid_add_test(test_appactionid)
@@ -115,15 +119,6 @@ add_executable(test_favoritesfolderlogic
 )
 target_link_libraries(test_favoritesfolderlogic PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_favoritesfolderlogic COMMAND test_favoritesfolderlogic)
-
-# CategoryRowsModel — By Category header/app rows, QtCore only.
-add_executable(test_categoryrows
-    test_categoryrows.cpp
-    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.h
-)
-target_link_libraries(test_categoryrows PRIVATE Qt6::Test Qt6::Core)
-add_test(NAME test_categoryrows COMMAND test_categoryrows)
 
 # FavoritesGroupedModel — editable grouped model (QtCore item model, no Kicker).
 add_executable(test_favoritesgroupedmodel
@@ -374,11 +369,6 @@ if(Qt6QuickTest_FOUND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/js/scale.js
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/scale.js
-        COPYONLY
-    )
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/package/contents/ui/js/categoryflatten.js
-        ${CMAKE_CURRENT_SOURCE_DIR}/qml/categoryflatten.js
         COPYONLY
     )
     configure_file(

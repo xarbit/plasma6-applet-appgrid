@@ -7,7 +7,9 @@
 
 #include <QAbstractListModel>
 #include <QList>
+#include <QPointer>
 #include <QStringList>
+#include <QTimer>
 #include <QVariantList>
 
 /**
@@ -41,16 +43,21 @@ struct Row {
 }
 
 /**
- * @brief The By Category view's rows over AppFilterModel::groupedByCategory.
+ * @brief The By Category view: the filtered apps grouped by category, as rows.
  *
- * QML sets the grouped sections ([{category, apps:[...]}]) and the column
- * count; each row is a category header or one grid row of app maps.
+ * Groups the source model (AppFilterModel) with CategoryQueries::groupByCategory
+ * while active, and lays the sections out as header and app rows of
+ * @c columns apps. The view navigates by flat app index (all sections in
+ * order); the lookups below map it to an app, a row or a category.
  */
 class CategoryRowsModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_PROPERTY(QVariantList groupedApps READ groupedApps WRITE setGroupedApps NOTIFY groupedAppsChanged)
+    // Only an active model groups the source; an inactive one is empty, so a
+    // hidden view holds no rows.
+    Q_PROPERTY(bool active READ isActive WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
+    Q_PROPERTY(int appCount READ appCount NOTIFY sectionsChanged)
 
 public:
     enum Roles {
@@ -67,26 +74,45 @@ public:
     [[nodiscard]] QVariant data(const QModelIndex &index, int role) const override;
     [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
-    [[nodiscard]] QVariantList groupedApps() const;
-    void setGroupedApps(const QVariantList &sections);
+    /** The apps to group; changes to it regroup on the next event-loop turn. */
+    void setSourceModel(QAbstractItemModel *source);
+
+    [[nodiscard]] bool isActive() const;
+    void setActive(bool active);
     [[nodiscard]] int columns() const;
     void setColumns(int count);
+    [[nodiscard]] int appCount() const;
 
+    /** The storage id of the app at @p flatIndex, or an empty string. */
+    Q_INVOKABLE QString storageIdAt(int flatIndex) const;
+    /** The source row of the app at @p flatIndex, or -1. */
+    Q_INVOKABLE int proxyIndexAt(int flatIndex) const;
     /** The row holding the app at @p flatIndex, or -1. */
     Q_INVOKABLE int rowForFlatIndex(int flatIndex) const;
     /** The header row of @p category, or -1. */
     Q_INVOKABLE int rowForCategory(const QString &category) const;
+    /** The flat index of the first app in @p category, or -1. */
+    Q_INVOKABLE int flatIndexOfCategory(const QString &category) const;
 
 Q_SIGNALS:
-    void groupedAppsChanged();
+    void activeChanged();
     void columnsChanged();
+    /** The grouping changed (not just the column count). */
+    void sectionsChanged();
 
 private:
-    void rebuild();
+    void refresh();
+    void setSections(const QVariantList &sections);
+    void rebuildRows();
+    [[nodiscard]] QVariantMap appAt(int flatIndex) const;
 
-    QVariantList m_groupedApps;
+    QPointer<QAbstractItemModel> m_source;
+    QTimer m_refreshTimer;
+    bool m_active = false;
+    int m_columns = 1;
     QStringList m_categories;
     QList<QVariantList> m_apps;
-    int m_columns = 1;
+    QList<int> m_sectionStarts;
+    int m_appCount = 0;
     QList<CategoryRows::Row> m_rows;
 };
