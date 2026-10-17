@@ -42,9 +42,6 @@ Item {
     // (Add to Folder, New Folder, Remove from Folder).
     property bool foldersEnabled: false
     property bool favoritesActive: false
-    property string popupFolderId: ""
-    // Whether the right-clicked folder is shown in every activity (#18).
-    property bool popupFolderGlobal: false
     // Folders available at all (feature enabled + model present + editable). The
     // favourites-tab gate is applied per-action where it matters (bulk/empty/folder menus).
     readonly property bool _canFolder: foldersEnabled && favoritesGroupedModel && favoritesGroupedModel.editable
@@ -109,16 +106,6 @@ Item {
                                           && popupSelectedSids.length >= 2
     property int popupNonFavCount: 0
     property int popupFavCount: 0
-    // KRunner row context: the RunnerFilterModel proxy row (the
-    // sourceIndex on a runner row from UnifiedSearchModel.get) whose
-    // secondary actions the runnerMenu is showing, plus the list itself.
-    property int popupRunnerSourceIndex: -1
-    property var popupRunnerActions: []
-    // KAStats favorite id for an app-backed runner result ("applications:<id>"),
-    // empty if it can't be favorited (#64).
-    property string popupRunnerFavoriteId: ""
-    property bool popupRunnerIsFavorite: false
-    readonly property bool _canFavoriteRunner: popupRunnerFavoriteId.length > 0 && sharedFavoritesModel
 
     // Favorites-mutation rows lock out while a drag-reorder is in flight
     // to avoid clobbering KAStats state mid-move.
@@ -243,19 +230,15 @@ Item {
         const favId = favoriteId || ""
         if ((!actions || actions.length === 0) && favId.length === 0)
             return
-        popupRunnerSourceIndex = runnerSourceIndex
-        popupRunnerActions = actions || []
-        popupRunnerFavoriteId = favId
-        popupRunnerIsFavorite = _canFavoriteRunner && sharedFavoritesModel.isFavorite(favId)
-        runnerMenu.popup()
+        const canFavorite = favId.length > 0 && !!sharedFavoritesModel
+        runnerMenu.showFor(runnerSourceIndex, actions, canFavorite ? favId : "",
+                           canFavorite && sharedFavoritesModel.isFavorite(favId))
     }
 
     function showForFolder(folderId) {
         if (!_canFolder || !folderId)
             return
-        popupFolderId = folderId
-        popupFolderGlobal = favoritesGroupedModel.isFolderGlobal(folderId)
-        folderMenu.popup()
+        folderMenu.showFor(folderId)
     }
 
     function showForEmptyArea() {
@@ -555,61 +538,14 @@ Item {
         }
     }
 
-    // Folder cell actions (issue #18). Right-clicking a folder in the favourites
-    // grid; "Ungroup" returns its members to loose favourites.
-    AppGridMenu {
+    // Folder cell actions (issue #18).
+    FolderContextMenu {
         id: folderMenu
-
-        AppGridMenuItem {
-            icon.name: "folder-open"
-            text: i18nd("dev.xarbit.appgrid", "Open Folder")
-            onClicked: {
-                contextMenu.openFolderRequested(contextMenu.popupFolderId)
-                folderMenu.close()
-            }
-        }
-        // Launch every app in the folder, through the same bulk-launch path (so
-        // the "open many at once?" confirm threshold still applies).
-        AppGridMenuItem {
-            icon.name: "system-run"
-            text: i18nd("dev.xarbit.appgrid", "Launch All")
-            enabled: contextMenu.favoritesGroupedModel
-                     && contextMenu.favoritesGroupedModel.folderMembers(contextMenu.popupFolderId).length > 0
-            onClicked: {
-                contextMenu.launchFolderRequested(contextMenu.popupFolderId)
-                folderMenu.close()
-            }
-        }
-        AppGridMenuItem {
-            icon.name: "edit-rename"
-            text: i18nd("dev.xarbit.appgrid", "Rename Folder…")
-            onClicked: {
-                contextMenu.renameFolderRequested(contextMenu.popupFolderId)
-                folderMenu.close()
-            }
-        }
-        // Per-activity opt-in only (#18): otherwise every folder is global anyway.
-        AppGridMenuItem {
-            visible: contextMenu.enableActivities
-            checkable: true
-            checked: contextMenu.popupFolderGlobal
-            text: i18nd("dev.xarbit.appgrid", "Show in all activities")
-            onClicked: {
-                if (contextMenu.favoritesGroupedModel)
-                    contextMenu.favoritesGroupedModel.setFolderGlobal(contextMenu.popupFolderId, !contextMenu.popupFolderGlobal)
-                folderMenu.close()
-            }
-        }
-        PlasmaComponents.MenuSeparator {}
-        AppGridMenuItem {
-            icon.name: "folder-remove"
-            text: i18nd("dev.xarbit.appgrid", "Ungroup Folder")
-            enabled: contextMenu.favoritesGroupedModel
-            onClicked: {
-                contextMenu.favoritesGroupedModel.ungroupFolder(contextMenu.popupFolderId)
-                folderMenu.close()
-            }
-        }
+        foldersModel: contextMenu.favoritesGroupedModel
+        enableActivities: contextMenu.enableActivities
+        onOpenRequested: folderId => contextMenu.openFolderRequested(folderId)
+        onLaunchAllRequested: folderId => contextMenu.launchFolderRequested(folderId)
+        onRenameRequested: folderId => contextMenu.renameFolderRequested(folderId)
     }
 
     // "Show in Favorites" submenu — attached to the single menu only for a
@@ -678,47 +614,13 @@ Item {
         }
     }
 
-    // KRunner secondary actions (e.g. calculator "Copy result"). Same menu
-    // owner as the app context menus so bounds/padding/close-tracking fixes
-    // apply once.
-    AppGridMenu {
+    // KRunner search results. Same menu owner as the app context menus so
+    // bounds/padding/close-tracking fixes apply once.
+    RunnerContextMenu {
         id: runnerMenu
-
         onAboutToHide: contextMenu._trackClose()
         onAboutToShow: contextMenu._stopMenuBounce(runnerMenu)
-
-        // Favorite an app-backed search result (apps, System Settings modules)
-        // straight from the search list, the same as a grid app (#64). The id is
-        // already the prefixed "applications:<id>" KAStats form.
-        AppGridMenuItem {
-            visible: contextMenu._canFavoriteRunner
-            icon.name: contextMenu.popupRunnerIsFavorite ? "bookmark-remove" : "bookmark-new"
-            text: contextMenu.popupRunnerIsFavorite
-                  ? i18nd("dev.xarbit.appgrid", "Remove from Favorites")
-                  : i18nd("dev.xarbit.appgrid", "Add to Favorites")
-            onClicked: {
-                contextMenu._toggleFavorite(contextMenu.popupRunnerFavoriteId)
-                runnerMenu.close()
-            }
-        }
-        AppGridMenuSeparator {
-            visible: contextMenu._canFavoriteRunner && contextMenu.popupRunnerActions.length > 0
-        }
-
-        Instantiator {
-            model: contextMenu.popupRunnerActions
-            delegate: AppGridMenuItem {
-                required property var modelData
-                required property int index
-                icon.name: modelData.icon || ""
-                text: modelData.text || ""
-                onClicked: {
-                    contextMenu.runRunnerAction(contextMenu.popupRunnerSourceIndex, index)
-                    runnerMenu.close()
-                }
-            }
-            onObjectAdded: (idx, obj) => runnerMenu.insertItem(idx, obj)
-            onObjectRemoved: (idx, obj) => runnerMenu.removeItem(obj)
-        }
+        onFavoriteToggled: favoriteId => contextMenu._toggleFavorite(favoriteId)
+        onActionTriggered: (sourceIndex, actionIndex) => contextMenu.runRunnerAction(sourceIndex, actionIndex)
     }
 }
