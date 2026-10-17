@@ -126,7 +126,7 @@ Item {
                || (delegateRoot._kvis && delegateRoot._kvis.decoration)
                || grid.defaultIcon)
             : (model.iconName || grid.defaultIcon)
-        displayIcon: delegateRoot._fromShared ? "" : grid.getDisplayIcon(model.index)
+        displayIcon: delegateRoot._fromShared ? "" : grid.shuffle.iconAt(model.index)
         appGenericName: delegateRoot._field("genericName")
         appComment: delegateRoot._field("comment")
         installSource: delegateRoot._field("installSource")
@@ -158,15 +158,12 @@ Item {
         }
         onShuffleRequested: {
             if (!delegateRoot._fromShared)
-                grid.shuffleIcon(model.index)
+                grid.shuffle.shuffle(model.index)
         }
     }
 
     Connections {
         target: grid
         function onShakeAllIcons() { iconDelegate.shake() }
-        function onShufflesUpdated() {
-            iconDelegate.displayIcon = grid.getDisplayIcon(model.index)
-        }
     }
 }

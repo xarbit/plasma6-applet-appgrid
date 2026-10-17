@@ -71,69 +71,12 @@ GridView {
         }
     }
 
-    // --- Shuffle animation state ---
-    // Maps proxy index -> icon name override for visual-only icon swaps.
-    property var iconSwaps: ({})
-    signal shufflesUpdated()
-
-    // Emitted when a shuffle animation should play. The overlay handles the visuals.
-    signal shuffleAnimRequested(real fromX, real fromY, real toX, real toY,
-                                string fromIcon, string toIcon,
-                                int fromIndex, int toIndex)
-
-    // Reference to the overlay container (set by GridPanel)
-    property Item shuffleOverlayParent: null
-
-    function shuffleIcon(fromIndex) {
-        if (count < 2) return
-
-        // Build list of visible indices (excluding the hovered one)
-        var firstVisible = indexAt(contentX, contentY)
-        var lastVisible = indexAt(contentX + width - 1, contentY + height - 1)
-        if (firstVisible < 0) firstVisible = 0
-        if (lastVisible < 0) lastVisible = count - 1
-
-        var candidates = []
-        for (var i = firstVisible; i <= lastVisible; i++) {
-            if (i !== fromIndex && itemAtIndex(i))
-                candidates.push(i)
-        }
-        if (candidates.length === 0) return
-
-        var otherIndex = candidates[Math.floor(Math.random() * candidates.length)]
-
-        var fromData = appsModel ? appsModel.get(fromIndex) : null
-        var otherData = appsModel ? appsModel.get(otherIndex) : null
-        if (!fromData || !otherData) return
-
-        var fromIcon = resolveIcon(fromIndex, fromData.iconName)
-        var otherIcon = resolveIcon(otherIndex, otherData.iconName)
-
-        var fromItem = itemAtIndex(fromIndex)
-        var otherItem = itemAtIndex(otherIndex)
-        if (!fromItem || !otherItem || !shuffleOverlayParent) {
-            applySwap(fromIndex, otherIndex, fromIcon, otherIcon)
-            return
-        }
-
-        var fromPos = fromItem.mapToItem(shuffleOverlayParent, fromItem.width / 2 - gridView.cellStyle.iconSize / 2, 0)
-        var otherPos = otherItem.mapToItem(shuffleOverlayParent, otherItem.width / 2 - gridView.cellStyle.iconSize / 2, 0)
-
-        shuffleAnimRequested(fromPos.x, fromPos.y, otherPos.x, otherPos.y,
-                             fromIcon, otherIcon, fromIndex, otherIndex)
-    }
-
-    function applySwap(fromIndex, otherIndex, fromIcon, otherIcon) {
-        var newSwaps = Object.assign({}, iconSwaps)
-        newSwaps[fromIndex] = otherIcon
-        newSwaps[otherIndex] = fromIcon
-        iconSwaps = newSwaps
-        shufflesUpdated()
-    }
-
-    function clearShuffles() {
-        iconSwaps = {}
-        shufflesUpdated()
+    // The "Shuffle" hover animation's visual icon swaps; the pane sets the
+    // overlay the icons fly across.
+    readonly property alias shuffle: iconShuffle
+    IconShuffle {
+        id: iconShuffle
+        grid: gridView
     }
 
     // Back to the just-opened state: top of the grid, nothing selected or
@@ -141,7 +84,7 @@ GridView {
     // originY, so the first such move scrolls to the top again.
     property bool _scrollToTopPending: false
     function resetView() {
-        clearShuffles()
+        shuffle.clear()
         selection.clear()
         contentY = originY
         currentIndex = -1
@@ -161,15 +104,6 @@ GridView {
     // tile that arms an add. The cursor must land inside this inset square; the
     // rest of the cell reorders. One value so the app icon and folder tile match.
     readonly property real foldZoneInset: 0.20
-
-    function getDisplayIcon(index) {
-        return iconSwaps[index] !== undefined ? iconSwaps[index] : ""
-    }
-
-    function resolveIcon(index, fallbackName) {
-        if (iconSwaps[index] !== undefined) return iconSwaps[index]
-        return fallbackName || defaultIcon
-    }
 
     clip: true
 

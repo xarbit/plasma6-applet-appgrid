@@ -91,12 +91,13 @@ ColumnLayout {
             // Editable here (unlike the read-only menu tree).
             groupedModel: pane.favoritesGroupedModel
             adaptiveColumns: true
+            // The shuffle animation's icons fly across the overlay.
+            shuffle.overlay: shuffleOverlay
             sortFavoritesAlphabetically: pane.cfg.sortFavoritesAlphabetically
             showRecentApps: pane.cfg.showRecentApps
             startWithFavorites: pane.cfg.startWithFavorites
             favoritesActive: pane.favoritesActive
             hideLabelsOnFavorites: pane.cfg.hideLabelsOnFavorites
-            shuffleOverlayParent: shuffleOverlay
 
             // Folders drill in place; Esc climbs back out (the window Shortcut
             // yields via folderOpen, like the menu view).
@@ -107,9 +108,6 @@ ColumnLayout {
             onEscapePressed: nav.goBack()
             onFolderContextMenuRequested: folderId => pane.folderContextMenuRequested(folderId)
             onEmptyAreaContextMenuRequested: pane.emptyAreaContextMenuRequested()
-            onShuffleAnimRequested: function(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex) {
-                shuffleOverlay.startAnim(fromX, fromY, toX, toY, fromIcon, toIcon, fromIndex, toIndex)
-            }
         }
 
         ShuffleOverlay {
@@ -117,9 +115,6 @@ ColumnLayout {
             anchors.fill: parent
             z: 10
             iconSize: pane.host.cellStyle.iconSize
-            onSwapFinished: function(fromIndex, toIndex, fromIcon, toIcon) {
-                appGrid.applySwap(fromIndex, toIndex, fromIcon, toIcon)
-            }
         }
     }
 }
