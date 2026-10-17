@@ -37,7 +37,7 @@ public:
      *  surface to it explicitly, and set the top margin from THAT screen's height:
      *  (height - @p panelFullHeight)/2 plus @p verticalOffsetPercent of the slack.
      *  Wayland-only. */
-    void positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen);
+    static void positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen);
 
 private:
     // The only stateful step: the layer scope decides KWin's WindowType.
