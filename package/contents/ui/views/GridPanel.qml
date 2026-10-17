@@ -400,7 +400,7 @@ Item {
     // the compact-mode starting state are invisible behind the fade-out
     // instead of flashing on the next open.
     function resetOnClose() {
-        contextMenu.close()
+        menus.close()
         categoryBar.closeCategoryMenu()
         headerActions.closeMenus()
         categoryBar.resetScroll()
@@ -448,7 +448,7 @@ Item {
     // -- Reset state (called when showing the grid) --
     function resetState() {
         const _t0 = Date.now()
-        contextMenu.close()
+        menus.close()
         categoryBar.closeCategoryMenu()
         headerActions.closeMenus()
         _resetSearchSession()
@@ -761,18 +761,9 @@ Item {
                 // search-results has no multi-select; passing canSelect=false
                 // hides the otherwise-no-op "Add to Selection" item.
                 if (storageId)
-                    contextMenu.showForApp(storageId, desktopFile, [], false)
+                    menus.showForApp(storageId, desktopFile, [], false)
             }
-            onRunnerContextMenuRequested: function(index) {
-                var item = panel.searchModel.get(index)
-                if (!item) return
-                var actions = panel.searchModel.runnerActions(index)
-                // runner.favoriteId maps via the runner submodel, so it takes the
-                // runner-row index (unified row minus the app count), the same
-                // sourceIndex showForRunner uses — not the raw unified index.
-                var favoriteId = panel.plasmoidBridge.runner.favoriteId(item.sourceIndex)
-                contextMenu.showForRunner(item.sourceIndex, actions, favoriteId)
-            }
+            onRunnerContextMenuRequested: index => menus.showForRunnerResult(index)
         }
 
         // Flat category sections (the By Category sort).
@@ -808,7 +799,7 @@ Item {
             onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
             onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
             onContextMenuRequested: function(proxyIndex, storageId, desktopFile) {
-                contextMenu.showForApp(storageId, desktopFile,
+                menus.showForApp(storageId, desktopFile,
                                        categoryGridView.selection.sidList())
             }
         }
@@ -840,9 +831,9 @@ Item {
             searchField: searchBar.field
             onLaunched: function(sid) { panel.launchAppByStorageId(sid) }
             onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
-            onFolderContextRequested: function(menuPath) { menuFolderContextMenu.showFor(menuPath) }
+            onFolderContextRequested: function(menuPath) { menus.showForMenuFolder(menuPath) }
             onAppContextRequested: function(sid, desktopFile, selectedSids) {
-                contextMenu.showForApp(sid, desktopFile, selectedSids)
+                menus.showForApp(sid, desktopFile, selectedSids)
             }
             onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
         }
@@ -872,9 +863,9 @@ Item {
             onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)
             onCategoryNavRequested: direction => panel.navigateCategory(direction)
             onContextMenuRequested: (storageId, desktopFile, selectedSids) =>
-                contextMenu.showForApp(storageId, desktopFile, selectedSids)
-            onFolderContextMenuRequested: folderId => contextMenu.showForFolder(folderId)
-            onEmptyAreaContextMenuRequested: contextMenu.showForEmptyArea()
+                menus.showForApp(storageId, desktopFile, selectedSids)
+            onFolderContextMenuRequested: folderId => menus.showForFolder(folderId)
+            onEmptyAreaContextMenuRequested: menus.showForEmptyArea()
         }
     }
 
@@ -885,77 +876,25 @@ Item {
         desktop: panel.plasmoidBridge ? panel.plasmoidBridge.systemActions : null
     }
 
-    // Right-click menu for a menu-tree folder (#201): open it, launch the apps
-    // directly in it (not its subfolders'), or edit it in kmenuedit, the same
-    // action the category bar offers per category.
-    FolderContextMenu {
-        id: menuFolderContextMenu
-        readonly property var _menuModel: panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
-        appIdsOf: id => _menuModel ? _menuModel.folderAppIds(id) : []
-        onOpenRequested: folderId => { if (_menuModel) _menuModel.enterFolder(folderId) }
-        onLaunchAllRequested: appIds => panel._requestBulkLaunch(appIds, true)
-
-        AppGridMenuItem {
-            text: i18nd("dev.xarbit.appgrid", "Edit in Menu Editor…")
-            icon.name: "kmenuedit"
-            onClicked: launcherActions.editMenuItem(menuFolderContextMenu.folderId)
-        }
-    }
-
     SessionActions { id: sessionActions }
 
-    AppContextMenu {
-        id: contextMenu
+    PanelMenus {
+        id: menus
+        plasmoidBridge: panel.plasmoidBridge
+        cfg: cfg
+        launcherActions: launcherActions
         appsModel: panel.appsModel
+        searchModel: panel.searchModel
         sharedFavoritesModel: panel.sharedFavoritesModel
-        // Always available so "Add to Folder" works for a favourite right-clicked
-        // anywhere (grid, search) — not only on the favourites tab.
         favoritesGroupedModel: panel.favoritesGroupedModel
         favoritesManager: favorites
-        foldersEnabled: cfg.favoriteFoldersEnabled
-        enableActivities: cfg.enableActivities
-        favoritesActive: panel.isFavoritesActive
         appletInterface: panel.appletInterface
-        onOpenFolderRequested: folderId => { if (panel.favoritesGroupedModel) panel.favoritesGroupedModel.enterFolder(folderId) }
+        favoritesActive: panel.isFavoritesActive
+        selectionView: panel.activeMultiSelectView
+        onBulkLaunchRequested: (sids, fromFolder) => panel._requestBulkLaunch(sids, fromFolder)
+        onBulkHideRequested: sids => dialogs.confirmBulkHide(sids)
         onRenameFolderRequested: folderId => dialogs.renameFolder(folderId)
-        onFolderLaunchRequested: sids => panel._requestBulkLaunch(sids, true)
-
-        // Wrap the bridge's C++ methods in closures (not bare refs): called as
-        // contextMenu.<prop>() the bare ref would run with the menu as `this`, not
-        // the bridge — Qt6 warns about that (NativeMethodBehavior). The arrow binds
-        // the call back to plasmoidBridge.
-        appActions: sid => panel.plasmoidBridge.launchService.appActions(sid)
-        launchAppAction: (sid, actionName) => panel.plasmoidBridge.launchService.launchAction(sid, actionName)
-        canManageInDiscover: sid => panel.plasmoidBridge.systemActions.canManageInDiscover(sid)
-        openInDiscover: sid => panel.plasmoidBridge.systemActions.openInDiscover(sid)
-        pinToTaskManager: launcherActions.pinToTaskManager
-        addToDesktop: launcherActions.addToDesktop
-        canPinToTaskManager: launcherActions.canPinToTaskManager
-        canAddToDesktop: launcherActions.canAddToDesktop
-        editApplication: launcherActions.editMenuItem
-        runRunnerAction: function(rowIdx, actIdx) {
-            if (panel.plasmoidBridge.runner.runAction(rowIdx, actIdx))
-                closeRequested()
-        }
-
-        onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
-        onBulkHideRequested: function(sids) {
-            if (!sids || sids.length === 0) return
-            dialogs.confirmBulkHide(sids)
-        }
-
-        // Route the menu's "Add / Remove from Selection" item to whichever
-        // grid currently owns the selection state. Resolved via the
-        // panel.activeMultiSelectView binding — search results and recents
-        // resolve to null, so the toggle silently no-ops there.
-        onToggleSelectionRequested: function(sid) {
-            const v = panel.activeMultiSelectView
-            if (v && sid) v.selection.toggleSelectionBySid(sid)
-        }
-        onClearSelectionRequested: {
-            const v = panel.activeMultiSelectView
-            if (v) v.selection.clear()
-        }
+        onCloseRequested: panel.closeRequested()
     }
 
     // Confirmations and the folder rename.
