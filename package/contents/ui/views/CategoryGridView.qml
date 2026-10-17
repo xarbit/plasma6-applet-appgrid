@@ -3,8 +3,10 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 
     Scrollable grid view that groups applications by category.
-    Each category has a label header, a Flow of app icons, and a separator.
-    Supports keyboard navigation across all categories via a flat index.
+    Each category has a label header and rows of app icons, separated by a
+    divider. The rows come from CategoryRowsModel, so the ListView creates
+    (and reuses) only the rows on screen. Supports keyboard navigation across
+    all categories via a flat index.
 */
 
 import QtQuick
@@ -17,7 +19,7 @@ import "../js/gridmetrics.js" as GridMetrics
 import "../js/categoryflatten.js" as CategoryFlatten
 import "../js/constants.js" as Const
 
-Flickable {
+ListView {
     id: categoryGrid
 
     clip: true
@@ -26,6 +28,9 @@ Flickable {
 
     property var appsModel: null
     property var groupedApps: []
+    // CategoryRowsModel from the controller; null leaves the view empty
+    // (e.g. tests without the C++ plugin).
+    property var rowsModel: null
     property real cellWidth: 100
     property real cellHeight: 100
     property real iconSize: Kirigami.Units.iconSizes.huge
@@ -54,10 +59,24 @@ Flickable {
     signal categoryNavRequested(int direction)
     signal shakeAllIcons()
 
-    contentWidth: width
-    contentHeight: contentColumn.implicitHeight
+    model: rowsModel
+    reuseItems: true
     boundsBehavior: Flickable.StopAtBounds
     focus: true
+
+    // The rows follow the sections and the column count.
+    Binding {
+        target: categoryGrid.rowsModel
+        property: "groupedApps"
+        value: categoryGrid.groupedApps
+        when: categoryGrid.rowsModel !== null
+    }
+    Binding {
+        target: categoryGrid.rowsModel
+        property: "columns"
+        value: categoryGrid.itemsPerRow
+        when: categoryGrid.rowsModel !== null
+    }
 
     // -- Keyboard navigation --
 
@@ -75,7 +94,7 @@ Flickable {
         sectionStartIndices = r.sectionStartIndices
     }
 
-    property int currentIndex: -1
+    property int appIndex: -1
     property int recentIndex: -1
     readonly property int itemsPerRow: GridMetrics.columnsForWidth(width, cellWidth, 1)
     readonly property int recentCount: showRecents && appsModel ? appsModel.recentApps.length : 0
@@ -96,7 +115,7 @@ Flickable {
     }
     readonly property int virtualIndex:
         recentIndex >= 0 ? recentIndex
-        : currentIndex >= 0 ? recentCount + currentIndex
+        : appIndex >= 0 ? recentCount + appIndex
         : -1
 
     function _unifiedSidAt(virtualIdx) {
@@ -143,9 +162,9 @@ Flickable {
     // Reset to a clean, unselected, scrolled-to-top state. Used after
     // search/filter changes and before re-showing the panel.
     function resetView() {
-        contentY = 0
+        positionViewAtBeginning()
         clearSelection()
-        currentIndex = -1
+        appIndex = -1
         recentIndex = -1
     }
     function selectedDesktopFileUrls() { return selection.desktopFileUrls(appsModel) }
@@ -183,29 +202,19 @@ Flickable {
     function selectFirst() {
         if (showRecents && recentCount > 0) {
             recentIndex = 0
-            currentIndex = -1
+            appIndex = -1
         } else {
-            currentIndex = flatApps.length > 0 ? 0 : -1
+            appIndex = flatApps.length > 0 ? 0 : -1
             recentIndex = -1
         }
-        contentY = 0
+        positionViewAtBeginning()
     }
 
     function ensureVisible() {
-        // Resolve the current flat index to its section via the prefix sums,
-        // then scroll the live section delegate into view.
-        if (currentIndex < 0) return
-        var i = CategoryFlatten.sectionForFlatIndex(currentIndex, sectionStartIndices)
-        if (i < 0) return
-        var section = sectionRepeater.itemAt(i)
-        if (!section) return
-        var localIdx = currentIndex - sectionStartIndices[i]
-        var row = Math.floor(localIdx / itemsPerRow)
-        var itemY = section.y + section.children[0].height + row * cellHeight
-        if (itemY < contentY)
-            contentY = itemY
-        else if (itemY + cellHeight > contentY + height)
-            contentY = itemY + cellHeight - height
+        if (appIndex < 0 || !rowsModel) return
+        var row = rowsModel.rowForFlatIndex(appIndex)
+        if (row >= 0)
+            positionViewAtIndex(row, ListView.Contain)
     }
 
     // Direction movers — encode the cursor-transition rules between
@@ -214,28 +223,28 @@ Flickable {
     // the selection through the destination cell.
     function _moveLeft() {
         if (recentIndex > 0) recentIndex--
-        else if (recentIndex < 0 && currentIndex > 0) {
-            currentIndex--
+        else if (recentIndex < 0 && appIndex > 0) {
+            appIndex--
             ensureVisible()
         }
     }
     function _moveRight() {
         if (recentIndex >= 0 && recentIndex < recentCount - 1) recentIndex++
-        else if (recentIndex < 0 && currentIndex < flatApps.length - 1) {
-            currentIndex++
+        else if (recentIndex < 0 && appIndex < flatApps.length - 1) {
+            appIndex++
             ensureVisible()
         }
     }
     function _moveUp() {
         if (recentIndex >= 0) {
             recentIndex -= itemsPerRow
-        } else if (currentIndex >= itemsPerRow) {
-            currentIndex -= itemsPerRow
+        } else if (appIndex >= itemsPerRow) {
+            appIndex -= itemsPerRow
             ensureVisible()
-        } else if (currentIndex >= 0 && showRecents && recentCount > 0) {
-            recentIndex = GridNav.recentsLandingFromGrid(currentIndex, recentCount, itemsPerRow)
-            currentIndex = -1
-            contentY = 0
+        } else if (appIndex >= 0 && showRecents && recentCount > 0) {
+            recentIndex = GridNav.recentsLandingFromGrid(appIndex, recentCount, itemsPerRow)
+            appIndex = -1
+            positionViewAtBeginning()
         }
     }
     function _moveDown() {
@@ -244,18 +253,18 @@ Flickable {
             if (newIdx < recentCount) {
                 recentIndex = newIdx
             } else {
-                currentIndex = GridNav.gridLandingFromRecents(recentIndex, itemsPerRow, flatApps.length)
+                appIndex = GridNav.gridLandingFromRecents(recentIndex, itemsPerRow, flatApps.length)
                 recentIndex = -1
                 ensureVisible()
             }
-        } else if (currentIndex + itemsPerRow < flatApps.length) {
-            currentIndex += itemsPerRow
+        } else if (appIndex + itemsPerRow < flatApps.length) {
+            appIndex += itemsPerRow
             ensureVisible()
         }
     }
     function _exitToSearchField() {
         recentIndex = -1
-        currentIndex = -1
+        appIndex = -1
         if (searchField) searchField.forceActiveFocus()
     }
 
@@ -279,8 +288,8 @@ Flickable {
         // recents is hidden.
         const exitingRecentsTop = recentIndex >= 0 && recentIndex < itemsPerRow
         const exitingGridTopWithoutRecents =
-            recentIndex < 0 && currentIndex >= 0
-            && currentIndex < itemsPerRow
+            recentIndex < 0 && appIndex >= 0
+            && appIndex < itemsPerRow
             && (!showRecents || recentCount === 0)
         if (exitingRecentsTop || exitingGridTopWithoutRecents) {
             _exitToSearchField()
@@ -289,7 +298,7 @@ Flickable {
         _arrowMoveWithSelection(event, _moveUp)
     }
     Keys.onDownPressed: function(event) {
-        if (recentIndex < 0 && currentIndex < 0) {
+        if (recentIndex < 0 && appIndex < 0) {
             // No focus yet — claim it (selectFirst handles recents-first preference).
             selectFirst()
             return
@@ -299,8 +308,8 @@ Flickable {
     function _launchCurrent() {
         if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
             recentLaunched(appsModel.recentApps[recentIndex])
-        else if (currentIndex >= 0 && currentIndex < flatApps.length)
-            launched(flatApps[currentIndex].proxyIndex)
+        else if (appIndex >= 0 && appIndex < flatApps.length)
+            launched(flatApps[appIndex].proxyIndex)
         clearSelection()
     }
     function activateCurrent() {
@@ -326,178 +335,195 @@ Flickable {
         // here ahead of the search-bar typing redirect that would otherwise
         // swallow the printable " ".
         if (event.key === Qt.Key_Space && multiSelectActive
-                && currentIndex >= 0 && recentIndex < 0) {
-            toggleSelectionAt(currentIndex)
+                && appIndex >= 0 && recentIndex < 0) {
+            toggleSelectionAt(appIndex)
             event.accepted = true
             return
         }
         if (keyNav.forwardTyping(event)) {
-            currentIndex = -1
+            appIndex = -1
             recentIndex = -1
         }
     }
 
     function scrollToCategory(name) {
-        for (var i = 0; i < sectionRepeater.count; i++) {
-            var section = sectionRepeater.itemAt(i)
-            if (section && groupedApps[i] && groupedApps[i].category === name) {
-                contentY = section.y
-                currentIndex = sectionStartIndices[i]
+        if (!rowsModel) return
+        var row = rowsModel.rowForCategory(name)
+        if (row < 0) return
+        positionViewAtIndex(row, ListView.Beginning)
+        for (var i = 0; i < groupedApps.length; i++) {
+            if (groupedApps[i].category === name) {
+                appIndex = sectionStartIndices[i]
                 recentIndex = -1
                 return
             }
         }
     }
 
+
     // -- Content --
 
-    Column {
-        id: contentColumn
-        width: parent.width
+    // Recently used section at the top
+    header: RecentAppsHeader {
+        id: catRecentHeader
+        width: categoryGrid.width
+        height: categoryGrid.showRecents ? implicitHeight : 0
+        visible: categoryGrid.showRecents
+        appsModel: categoryGrid.appsModel
+        cellWidth: categoryGrid.cellWidth
+        cellHeight: categoryGrid.cellHeight
+        iconSize: categoryGrid.iconSize
+        hoverAnimation: categoryGrid.hoverAnimation
+        shadowEnabled: categoryGrid.shadowEnabled
+        hoverHighlight: categoryGrid.hoverHighlight
+        currentRecentIndex: categoryGrid.recentIndex
+        gridHasFocus: categoryGrid.activeFocus
+        favoritesActive: false
+        hideBottomLabel: true
+        showDividers: categoryGrid.showDividers
+        showTooltips: categoryGrid.showTooltips
+        dragSource: categoryGrid.dragSource
+        multiSelectActive: categoryGrid.multiSelectActive
+        selectionSids: categoryGrid.selectedSids
+        multiSelectionUrls: categoryGrid.selectedDesktopFileUrls()
+        multiSelectionIcons: categoryGrid.selectedIconNames()
+        onRecentLaunched: function(storageId) { categoryGrid.recentLaunched(storageId) }
+        onContextMenuRequested: function(storageId, desktopFile) {
+            categoryGrid.contextMenuRequested(-1, storageId, desktopFile)
+        }
+        tryModifierClick: function(recentIdx, mouse) {
+            if (!categoryGrid.applyRecentClickModifiers(mouse, recentIdx)) return false
+            categoryGrid.recentIndex = recentIdx
+            categoryGrid.appIndex = -1
+            categoryGrid.forceActiveFocus()
+            return true
+        }
 
-        // Recently used section at the top
-        RecentAppsHeader {
-            id: catRecentHeader
-            width: contentColumn.width
-            height: categoryGrid.showRecents ? implicitHeight : 0
-            visible: categoryGrid.showRecents
-            appsModel: categoryGrid.appsModel
-            cellWidth: categoryGrid.cellWidth
-            cellHeight: categoryGrid.cellHeight
-            iconSize: categoryGrid.iconSize
-            hoverAnimation: categoryGrid.hoverAnimation
-            shadowEnabled: categoryGrid.shadowEnabled
-            hoverHighlight: categoryGrid.hoverHighlight
-            currentRecentIndex: categoryGrid.recentIndex
-            gridHasFocus: categoryGrid.activeFocus
-            favoritesActive: false
-            hideBottomLabel: true
-            showDividers: categoryGrid.showDividers
-            showTooltips: categoryGrid.showTooltips
-            dragSource: categoryGrid.dragSource
-            multiSelectActive: categoryGrid.multiSelectActive
-            selectionSids: categoryGrid.selectedSids
-            multiSelectionUrls: categoryGrid.selectedDesktopFileUrls()
-            multiSelectionIcons: categoryGrid.selectedIconNames()
-            onRecentLaunched: function(storageId) { categoryGrid.recentLaunched(storageId) }
-            onContextMenuRequested: function(storageId, desktopFile) {
-                categoryGrid.contextMenuRequested(-1, storageId, desktopFile)
-            }
-            tryModifierClick: function(recentIdx, mouse) {
-                if (!categoryGrid.applyRecentClickModifiers(mouse, recentIdx)) return false
-                categoryGrid.recentIndex = recentIdx
-                categoryGrid.currentIndex = -1
-                categoryGrid.forceActiveFocus()
-                return true
-            }
+        Connections {
+            target: categoryGrid
+            function onShakeAllIcons() { catRecentHeader.shakeAll() }
+        }
+    }
 
-            Connections {
-                target: categoryGrid
-                function onShakeAllIcons() { catRecentHeader.shakeAll() }
+    // One row: a category header (with the divider closing the previous
+    // category) or up to itemsPerRow app cells.
+    delegate: Item {
+        id: rowItem
+
+        required property string kind
+        required property string category
+        required property int section
+        required property int firstIndex
+        required property var apps
+
+        readonly property bool isHeader: kind === "header"
+
+        width: ListView.view.width
+        height: isHeader ? headerColumn.implicitHeight : categoryGrid.cellHeight
+
+        Column {
+            id: headerColumn
+            width: parent.width
+            visible: rowItem.isHeader
+
+            Item {
+                width: 1
+                height: Kirigami.Units.smallSpacing
+                visible: rowItem.section > 0
+            }
+            HorizontalDivider {
+                width: parent.width
+                visible: rowItem.section > 0
+                opacity: categoryGrid.showDividers ? 1 : 0
+            }
+            SectionLabel {
+                leftPadding: Kirigami.Units.largeSpacing
+                topPadding: (rowItem.section > 0 || categoryGrid.showRecents) ? Kirigami.Units.largeSpacing : 0
+                bottomPadding: Kirigami.Units.smallSpacing
+                text: rowItem.category
             }
         }
 
-        Repeater {
-            id: sectionRepeater
-            model: categoryGrid.groupedApps
+        Row {
+            visible: !rowItem.isHeader
 
-            delegate: Column {
-                id: sectionColumn
-                width: contentColumn.width
-                spacing: Kirigami.Units.smallSpacing
+            Repeater {
+                model: rowItem.isHeader ? 0 : categoryGrid.itemsPerRow
 
-                // Flat-index offset of this section, from the precomputed
-                // prefix-sum array (O(1) instead of re-summing prior sections).
-                readonly property int globalStartIndex: categoryGrid.sectionStartIndices[index] || 0
+                delegate: Item {
+                    id: cell
 
-                SectionLabel {
-                    leftPadding: Kirigami.Units.largeSpacing
-                    topPadding: (index > 0 || categoryGrid.showRecents) ? Kirigami.Units.largeSpacing : 0
-                    text: modelData.category
-                }
+                    required property int index
+                    // The app in this cell; a short last row leaves the rest empty.
+                    readonly property var app: rowItem.apps[index]
+                    readonly property var appData: app || ({})
+                    readonly property int flatIndex: rowItem.firstIndex + index
 
-                Flow {
-                    width: parent.width
+                    width: categoryGrid.cellWidth
+                    height: categoryGrid.cellHeight
+                    visible: app !== undefined
 
-                    Repeater {
-                        model: modelData.apps
+                    GridHighlight {
+                        cellWidth: categoryGrid.cellWidth
+                        cellHeight: categoryGrid.cellHeight
+                        visible: categoryGrid.activeFocus && categoryGrid.appIndex === cell.flatIndex
+                    }
 
-                        delegate: Item {
-                            width: categoryGrid.cellWidth
-                            height: categoryGrid.cellHeight
+                    AppIconDelegate {
+                        id: catIconDelegate
+                        anchors.fill: parent
+                        appName: cell.appData.name || ""
+                        appIcon: cell.appData.iconName || Const.DEFAULT_ICON
+                        iconGeneration: categoryGrid.appsModel ? categoryGrid.appsModel.iconGeneration : 0
+                        appComment: cell.appData.comment || ""
+                        installSource: cell.appData.installSource || ""
+                        showTooltip: categoryGrid.showTooltips
+                        iconSize: categoryGrid.iconSize
+                        fontScale: categoryGrid.fontScale
+                        hoverAnimation: categoryGrid.hoverAnimation
+                        shadowEnabled: categoryGrid.shadowEnabled
+                        hoverHighlight: categoryGrid.hoverHighlight
+                        isCurrentItem: categoryGrid.appIndex === cell.flatIndex && categoryGrid.activeFocus
+                        isNew: {
+                            categoryGrid._newAppsRevision // re-eval when used apps change
+                            return categoryGrid.showNewAppBadge && categoryGrid.appsModel
+                                ? categoryGrid.appsModel.isNewApp(cell.appData.storageId || "") : false
+                        }
+                        storageId: cell.appData.storageId || ""
+                        desktopFile: cell.appData.desktopFile || ""
+                        dragSource: categoryGrid.dragSource
 
-                            readonly property int flatIndex: sectionColumn.globalStartIndex + index
+                        selected: categoryGrid.multiSelectActive
+                                  && !!categoryGrid.selectedSids[cell.appData.storageId || ""]
+                        selectionAnchor: categoryGrid.multiSelectActive
+                                         && categoryGrid.selectionAnchor === cell.flatIndex
+                                         && categoryGrid.selectionCount > 0
+                        multiSelectionSids: selected ? categoryGrid.selectedSidList() : []
+                        multiSelectionUrls: selected ? categoryGrid.selectedDesktopFileUrls() : []
+                        multiSelectionIcons: selected ? categoryGrid.selectedIconNames() : []
 
-                            GridHighlight {
-                                cellWidth: categoryGrid.cellWidth
-                                cellHeight: categoryGrid.cellHeight
-                                visible: categoryGrid.activeFocus && categoryGrid.currentIndex === flatIndex
+                        onClicked: function(mouse) {
+                            const sid = cell.appData.storageId || ""
+                            if (mouse.button === Qt.RightButton) {
+                                // Selection persists — menu shows
+                                // "Add to selection" / "Remove from
+                                // selection" based on popup item.
+                                categoryGrid.contextMenuRequested(cell.appData.proxyIndex, sid, cell.appData.desktopFile || "")
+                                return
                             }
-
-                            AppIconDelegate {
-                                id: catIconDelegate
-                                anchors.fill: parent
-                                appName: modelData.name || ""
-                                appIcon: modelData.iconName || Const.DEFAULT_ICON
-                                iconGeneration: categoryGrid.appsModel ? categoryGrid.appsModel.iconGeneration : 0
-                                appComment: modelData.comment || ""
-                                installSource: modelData.installSource || ""
-                                showTooltip: categoryGrid.showTooltips
-                                iconSize: categoryGrid.iconSize
-                                fontScale: categoryGrid.fontScale
-                                hoverAnimation: categoryGrid.hoverAnimation
-                                shadowEnabled: categoryGrid.shadowEnabled
-                                hoverHighlight: categoryGrid.hoverHighlight
-                                isCurrentItem: categoryGrid.currentIndex === parent.flatIndex && categoryGrid.activeFocus
-                                isNew: {
-                                    categoryGrid._newAppsRevision // re-eval when used apps change
-                                    return categoryGrid.showNewAppBadge && categoryGrid.appsModel
-                                        ? categoryGrid.appsModel.isNewApp(modelData.storageId || "") : false
-                                }
-                                storageId: modelData.storageId || ""
-                                desktopFile: modelData.desktopFile || ""
-                                dragSource: categoryGrid.dragSource
-
-                                selected: categoryGrid.multiSelectActive
-                                          && !!categoryGrid.selectedSids[modelData.storageId || ""]
-                                selectionAnchor: categoryGrid.multiSelectActive
-                                                 && categoryGrid.selectionAnchor === parent.flatIndex
-                                                 && categoryGrid.selectionCount > 0
-                                multiSelectionSids: selected ? categoryGrid.selectedSidList() : []
-                                multiSelectionUrls: selected ? categoryGrid.selectedDesktopFileUrls() : []
-                                multiSelectionIcons: selected ? categoryGrid.selectedIconNames() : []
-
-                                onClicked: function(mouse) {
-                                    const sid = modelData.storageId || ""
-                                    if (mouse.button === Qt.RightButton) {
-                                        // Selection persists — menu shows
-                                        // "Add to selection" / "Remove from
-                                        // selection" based on popup item.
-                                        categoryGrid.contextMenuRequested(modelData.proxyIndex, sid, modelData.desktopFile || "")
-                                        return
-                                    }
-                                    if (categoryGrid.multiSelectActive) {
-                                        categoryGrid.currentIndex = parent.flatIndex
-                                        if (categoryGrid.applyClickModifiers(mouse, parent.flatIndex)) return
-                                    }
-                                    categoryGrid.clearSelection()
-                                    categoryGrid.launched(modelData.proxyIndex)
-                                }
-
+                            if (categoryGrid.multiSelectActive) {
+                                categoryGrid.appIndex = cell.flatIndex
+                                if (categoryGrid.applyClickModifiers(mouse, cell.flatIndex)) return
                             }
-
-                            Connections {
-                                target: categoryGrid
-                                function onShakeAllIcons() { catIconDelegate.shake() }
-                            }
+                            categoryGrid.clearSelection()
+                            categoryGrid.launched(cell.appData.proxyIndex)
                         }
                     }
-                }
 
-                HorizontalDivider {
-                    width: parent.width
-                    visible: index < categoryGrid.groupedApps.length - 1
-                    opacity: categoryGrid.showDividers ? 1 : 0
+                    Connections {
+                        target: categoryGrid
+                        function onShakeAllIcons() { catIconDelegate.shake() }
+                    }
                 }
             }
         }

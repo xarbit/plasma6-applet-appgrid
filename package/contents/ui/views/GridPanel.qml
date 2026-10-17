@@ -752,8 +752,7 @@ Item {
                             searchResultsList.currentIndex = next
                     } else if (panel.showCategoryGrid) {
                         categoryGridView.forceActiveFocus()
-                        if (categoryGridView.currentIndex < 0) {
-                            categoryGridView.contentY = 0
+                        if (categoryGridView.appIndex < 0) {
                             categoryGridView.selectFirst()
                         } else {
                             categoryGridView.ensureVisible()
@@ -971,6 +970,7 @@ Item {
             appsModel: panel.appsModel
             groupedApps: panel.showCategoryGrid && panel.appsModel
                 ? panel.appsModel.groupedByCategory : []
+            rowsModel: panel.plasmoidBridge ? panel.plasmoidBridge.categoryRowsModel : null
             cellWidth: Math.floor(categoryGridView.width / panel.columns)
             cellHeight: GridMetrics.labelledCellHeight(panel.gridIconSize,
                         Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, panel.densityScale)

@@ -116,6 +116,15 @@ add_executable(test_favoritesfolderlogic
 target_link_libraries(test_favoritesfolderlogic PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_favoritesfolderlogic COMMAND test_favoritesfolderlogic)
 
+# CategoryRowsModel — By Category header/app rows, QtCore only.
+add_executable(test_categoryrows
+    test_categoryrows.cpp
+    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.cpp
+    ${CMAKE_SOURCE_DIR}/src/categoryrowsmodel.h
+)
+target_link_libraries(test_categoryrows PRIVATE Qt6::Test Qt6::Core)
+add_test(NAME test_categoryrows COMMAND test_categoryrows)
+
 # FavoritesGroupedModel — editable grouped model (QtCore item model, no Kicker).
 add_executable(test_favoritesgroupedmodel
     test_favoritesgroupedmodel.cpp

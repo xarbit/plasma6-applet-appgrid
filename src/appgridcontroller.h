@@ -17,6 +17,7 @@ class ResultsModel;
 
 #include "appfiltermodel.h"
 #include "appmodel.h"
+#include "categoryrowsmodel.h"
 #include "defaultappsprovider.h"
 #include "favoritesgroupedmodel.h"
 #include "frecencyprovider.h"
@@ -57,6 +58,7 @@ class AppGridController : public QObject
     Q_PROPERTY(AppFilterModel *appsModel READ appsModel CONSTANT)
     Q_PROPERTY(FavoritesGroupedModel *favoritesGroupedModel READ favoritesGroupedModel CONSTANT)
     Q_PROPERTY(MenuTreeModel *menuTreeModel READ menuTreeModel CONSTANT)
+    Q_PROPERTY(CategoryRowsModel *categoryRowsModel READ categoryRowsModel CONSTANT)
     Q_PROPERTY(QAbstractItemModel *runnerModel READ runnerModel CONSTANT)
     // Opaque QObject* — QML uses it only via the dynamic queryString
     // property, no static KRunner type knowledge needed across the QML/C++
@@ -77,6 +79,8 @@ public:
     [[nodiscard]] FavoritesGroupedModel *favoritesGroupedModel() const;
     /** The read-only kmenuedit folder tree for the By Category view (issue #201). */
     [[nodiscard]] MenuTreeModel *menuTreeModel() const;
+    /** The By Category view's header and app rows. */
+    [[nodiscard]] CategoryRowsModel *categoryRowsModel() const;
     /** The shared launch-state store (appgridrc); the plasmoid uses it to seed
      *  the store from its old per-applet config on upgrade. */
     [[nodiscard]] LaunchStateStore *launchState() const;
@@ -255,6 +259,7 @@ private:
     DefaultAppsProvider m_defaultApps;
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
+    CategoryRowsModel m_categoryRows;
     MenuTreeModel m_menuTreeModel;
     // Built on first menuTreeModel() read (folders feature in use), not at startup.
     mutable bool m_menuTreeBuilt = false;

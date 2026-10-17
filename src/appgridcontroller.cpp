@@ -266,6 +266,11 @@ FavoritesGroupedModel *AppGridController::favoritesGroupedModel() const
     return const_cast<FavoritesGroupedModel *>(&m_favoritesGrouped);
 }
 
+CategoryRowsModel *AppGridController::categoryRowsModel() const
+{
+    return const_cast<CategoryRowsModel *>(&m_categoryRows);
+}
+
 MenuTreeModel *AppGridController::menuTreeModel() const
 {
     // Lazy: the menu tree (and its rebuild-on-KSycoca-reset subscription) only
