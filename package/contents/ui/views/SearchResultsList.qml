@@ -129,6 +129,11 @@ ListView {
         currentIndex = 0
         positionViewAtBeginning()
     }
+    // Back to the just-opened state: the top, the first result current.
+    function resetView() {
+        contentY = originY
+        currentIndex = 0
+    }
     function goEnd() {
         if (count === 0) return
         currentIndex = count - 1

@@ -165,7 +165,7 @@ TestCase {
         testCase.launchedSids = []
         var p = make()
 
-        p._runBulkLaunch(["alpha", "beta", "gamma"])
+        p.launchCoordinator.runBulkLaunch(["alpha", "beta", "gamma"])
 
         compare(testCase.launchedSids.join(","), "alpha,beta,gamma",
                 "launchService.launch fired per sid in order")
@@ -179,7 +179,7 @@ TestCase {
         testCase.launchedSids = []
         var p = make()
 
-        p._requestBulkLaunch(["a", "b", "c", "d"]) // 4 == threshold
+        p.launchCoordinator.requestBulkLaunch(["a", "b", "c", "d"]) // 4 == threshold
 
         compare(testCase.launchedSids.length, 0, "nothing launched above threshold")
         p.destroy()
@@ -190,7 +190,7 @@ TestCase {
         testCase.launchedSids = []
         var p = make()
 
-        p._requestBulkLaunch(["a", "b", "c"]) // 3 < threshold
+        p.launchCoordinator.requestBulkLaunch(["a", "b", "c"]) // 3 < threshold
 
         compare(testCase.launchedSids.join(","), "a,b,c",
                 "launchService.launch fired per sid below threshold")
@@ -221,6 +221,20 @@ TestCase {
                "grid shown before the cleared query was applied")
         tryCompare(p, "showAppGrid", true)
         compare(appsModelStub.searchText, "")
+        p.destroy()
+    }
+
+    // Opening and closing put the panel back to its just-opened state: the
+    // search cleared and the views reset, without errors from any of them.
+    function test_resetsClearTheSession() {
+        var p = make()
+        var bar = findChild(p, "searchBar")
+        bar.text = "fi"
+        p.resetOnClose()
+        compare(bar.text, "")
+        bar.text = "fi"
+        p.resetState()
+        compare(bar.text, "")
         p.destroy()
     }
 

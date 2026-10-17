@@ -208,9 +208,9 @@ Item {
         searchField: searchBar.field
         cellStyle: cellStyle
         columns: cfg.gridColumns
-        onLaunchAppRequested: index => panel.launchApp(index)
-        onLaunchRequested: storageId => panel.launchAppByStorageId(storageId)
-        onBulkLaunchRequested: sids => panel._requestBulkLaunch(sids)
+        onLaunchAppRequested: index => launcher.launchApp(index)
+        onLaunchRequested: storageId => launcher.launchAppByStorageId(storageId)
+        onBulkLaunchRequested: sids => launcher.requestBulkLaunch(sids)
         onCategoryNavRequested: direction => panel.navigateCategory(direction)
         onAppMenuRequested: (storageId, desktopFile, selectedSids) =>
             menus.showForApp(storageId, desktopFile, selectedSids)
@@ -244,7 +244,7 @@ Item {
         collapsible: cfg.hideGridWhenEmpty
         collapsed: visibility.emptyHidden
         revealed: visibility.gridRevealed
-        onLaunchResultRequested: index => panel.launchSearchResult(index)
+        onLaunchResultRequested: index => launcher.launchSearchResult(index)
         onRunRequested: function(inTerminal) {
             const actions = panel.plasmoidBridge.systemActions
             if (inTerminal)
@@ -415,11 +415,13 @@ Item {
         favoritesManager: favorites
     }
 
-    // Reset everything that should be back to its just-opened state on
-    // every show or hide: the search input (SearchBar.onTextChanged
-    // propagates the empty string into appsModel and runnerSourceModel)
-    // and the compact-mode reveal flag.
-    function _resetSearchSession() {
+    // Back to the just-opened state on every show or hide: no menu open, the
+    // search input empty (SearchBar.onTextChanged propagates the empty string
+    // into appsModel and runnerSourceModel) and the compact grid collapsed.
+    function _resetSession() {
+        menus.close()
+        categoryBar.closeCategoryMenu()
+        headerActions.closeMenus()
         searchBar.text = ""
         visibility.gridRevealed = false
     }
@@ -428,13 +430,8 @@ Item {
     // the compact-mode starting state are invisible behind the fade-out
     // instead of flashing on the next open.
     function resetOnClose() {
-        menus.close()
-        categoryBar.closeCategoryMenu()
-        headerActions.closeMenus()
+        _resetSession()
         categoryBar.resetScroll()
-        _resetSearchSession()
-        // Don't reopen the last folder on the next launch (#18).
-        if (favoritesGroupedModel) favoritesGroupedModel.resetToRoot()
         // The visible state reset happens HERE, while the popup is hidden behind
         // the fade-out, so the next open shows a clean grid instead of flashing
         // the refresh as it appears.
@@ -454,12 +451,11 @@ Item {
     function _resetGridUiState() {
         categoryBar.altHeld = false
         appGridPane.reset()
-        searchResultsList.contentY = searchResultsList.originY
-        searchResultsList.currentIndex = 0
+        searchResultsList.resetView()
         categoryGridView.resetView()
         // Clear all navigation so the next open starts clean (the tab and filter
         // went back to the start in _applyStartState): the menu tree back to
-        // all-categories, and any open favourites folder closed.
+        // all-categories, and any open favourites folder closed (#18).
         if (categoryFolders && plasmoidBridge && plasmoidBridge.menuTreeModel)
             plasmoidBridge.menuTreeModel.setRootPath("")
         if (favoritesGroupedModel)
@@ -476,10 +472,7 @@ Item {
     // -- Reset state (called when showing the grid) --
     function resetState() {
         const _t0 = Date.now()
-        menus.close()
-        categoryBar.closeCategoryMenu()
-        headerActions.closeMenus()
-        _resetSearchSession()
+        _resetSession()
 
         // The heavy grid UI reset (scroll/selection/category view) already ran on
         // the previous close, while hidden. Here we only pick up config that may
@@ -498,10 +491,9 @@ Item {
         searchBar.field.forceActiveFocus()
     }
 
-    // Launch routing (single + bulk, the KActivities broadcast, the bulk
-    // confirm threshold) lives in the coordinator; the panel keeps the UI side
-    // effects it signals — the search-field paste and the two confirm dialogs.
-    // The functions below stay as the call sites' entry points.
+    // Launch routing (single + bulk, the bulk confirm threshold) lives in the
+    // coordinator; the panel keeps the UI side effects it signals — the
+    // search-field paste and the confirm dialog.
     LaunchCoordinator {
         id: launcher
         appsModel: panel.appsModel
@@ -516,11 +508,8 @@ Item {
             dialogs.confirmBulkLaunch(sids, fromFolder)
         }
     }
-    function launchSearchResult(index) { launcher.launchSearchResult(index) }
-    function launchApp(index) { launcher.launchApp(index) }
-    function launchAppByStorageId(sid) { launcher.launchAppByStorageId(sid) }
-    function _requestBulkLaunch(sids, fromFolder = false) { launcher.requestBulkLaunch(sids, fromFolder) }
-    function _runBulkLaunch(sids) { launcher.runBulkLaunch(sids) }
+    // For tests: the launch routing as the panel wired it.
+    readonly property alias launchCoordinator: launcher
 
     // Eat clicks so they don't pass through the panel
     MouseArea { anchors.fill: parent }
@@ -723,7 +712,7 @@ Item {
                 searchField: searchBar.field
                 favoritesManager: favorites
                 plasmoidBridge: panel.plasmoidBridge
-                onLaunched: function(index) { panel.launchSearchResult(index) }
+                onLaunched: index => launcher.launchSearchResult(index)
                 onContextMenuRequested: function(index, storageId, desktopFile) {
                     // search-results has no multi-select; passing canSelect=false
                     // hides the otherwise-no-op "Add to Selection" item.
@@ -795,7 +784,7 @@ Item {
         appletInterface: panel.appletInterface
         favoritesActive: panel.isFavoritesActive
         selectionView: panel.activeMultiSelectView
-        onBulkLaunchRequested: (sids, fromFolder) => panel._requestBulkLaunch(sids, fromFolder)
+        onBulkLaunchRequested: (sids, fromFolder) => launcher.requestBulkLaunch(sids, fromFolder)
         onBulkHideRequested: sids => dialogs.confirmBulkHide(sids)
         onRenameFolderRequested: folderId => dialogs.renameFolder(folderId)
         onCloseRequested: panel.closeRequested()
