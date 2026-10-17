@@ -223,4 +223,20 @@ TestCase {
         compare(appsModelStub.searchText, "")
         p.destroy()
     }
+
+    // Down / Tab / Enter in the search field reach the shown grid through one
+    // interface; while searching the results list takes them instead.
+    function test_keyViewFollowsTheShownView() {
+        appsModelStub.searchText = ""
+        var p = make()
+        tryCompare(p, "showAppGrid", true)
+        verify(p.activeKeyView, "the grid takes the keys")
+        compare(typeof p.activeKeyView.enterFromSearch, "function")
+        compare(typeof p.activeKeyView.activateCurrent, "function")
+
+        findChild(p, "searchBar").text = "fi"
+        tryCompare(p, "showSearchResults", true)
+        compare(p.activeKeyView, null, "no grid while searching")
+        p.destroy()
+    }
 }

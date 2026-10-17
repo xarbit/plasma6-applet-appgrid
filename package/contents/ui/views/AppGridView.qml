@@ -438,6 +438,18 @@ GridView {
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()
 
+    // Enter the grid from the search field (Down / Tab): focus it and select
+    // its first entry, the recents row's when it shows.
+    function enterFromSearch() {
+        forceActiveFocus()
+        if (showRecents) {
+            recentIndex = 0
+            currentIndex = -1
+        } else {
+            currentIndex = count > 0 ? 0 : -1
+        }
+    }
+
     // Shift+Arrow extends the multi-selection from the anchor through
     // the new virtual cursor index. Plain arrows just move. Reads the
     // virtual index so range fill spans recents and grid uniformly.

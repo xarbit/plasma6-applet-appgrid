@@ -59,7 +59,8 @@ Item {
 
     // Drill selection + the canGoBack mirror, shared with the favourites grid.
     readonly property alias canGoBack: nav.canGoBack
-    function focusGrid() { nav.focusGrid() }
+    function enterFromSearch() { menuGrid.enterFromSearch() }
+    function activateCurrent() { menuGrid.activateCurrent() }
     function resetToRoot() { if (menuModel) menuModel.resetToRoot() }
     // Full reset for close: clears the grid scroll/selection + nav memory (the
     // model floor is reset separately via setRootPath).

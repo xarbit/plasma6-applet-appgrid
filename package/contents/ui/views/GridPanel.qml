@@ -197,6 +197,12 @@ Item {
     readonly property var activeMultiSelectView: showAppGrid ? appGrid
                                               : showCategoryGrid ? categoryGridView
                                               : null
+    // The view the keyboard reaches from the search field (Down, Tab, Enter),
+    // or null while searching. Each has enterFromSearch() and activateCurrent().
+    readonly property var activeKeyView: showAppGrid ? appGrid
+                                       : showCategoryGrid ? categoryGridView
+                                       : showMenuFolders ? menuFolderView
+                                       : null
 
     // -- Icon size mapping (0=Small/medium, 1=Medium/large, 2=Large/huge) --
     readonly property real gridIconSize: {
@@ -585,14 +591,10 @@ Item {
                         if (panel.isSearching) {
                             var idx = searchResultsList.currentIndex >= 0 ? searchResultsList.currentIndex : 0
                             if (searchResultsList.count > 0) panel.launchSearchResult(idx)
-                        } else {
-                            // SearchBar holds focus by default, so Enter has
-                            // to delegate to whichever grid currently owns
-                            // the keyboard contract (and the selection).
-                            const v = panel.activeMultiSelectView
-                            if (v) v.activateCurrent()
-                            else if (appGrid.currentIndex >= 0)
-                                panel.launchApp(appGrid.currentIndex)
+                        } else if (panel.activeKeyView) {
+                            // SearchBar holds focus by default, so Enter goes
+                            // to the view that owns the cursor and selection.
+                            panel.activeKeyView.activateCurrent()
                         }
                     }
                 }
@@ -607,23 +609,8 @@ Item {
                             wrap === true)
                         if (next !== searchResultsList.currentIndex)
                             searchResultsList.currentIndex = next
-                    } else if (panel.showCategoryGrid) {
-                        categoryGridView.forceActiveFocus()
-                        if (categoryGridView.appIndex < 0) {
-                            categoryGridView.selectFirst()
-                        } else {
-                            categoryGridView.ensureVisible()
-                        }
-                    } else if (panel.showMenuFolders) {
-                        menuFolderView.focusGrid()
-                    } else if (!panel.isSearching) {
-                        appGrid.forceActiveFocus()
-                        if (appGrid.showRecents) {
-                            appGrid.recentIndex = 0
-                            appGrid.currentIndex = -1
-                        } else {
-                            appGrid.currentIndex = 0
-                        }
+                    } else if (panel.activeKeyView) {
+                        panel.activeKeyView.enterFromSearch()
                     }
                 }
 

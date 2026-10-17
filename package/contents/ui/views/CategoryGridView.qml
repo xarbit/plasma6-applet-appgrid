@@ -161,6 +161,16 @@ ListView {
             positionViewAtIndex(row, ListView.Contain)
     }
 
+    // Enter the grid from the search field (Down / Tab): focus it, keeping
+    // the cursor where it was if it has one.
+    function enterFromSearch() {
+        forceActiveFocus()
+        if (appIndex < 0)
+            selectFirst()
+        else
+            ensureVisible()
+    }
+
     // Direction movers — encode the cursor-transition rules between
     // the recents row and the flat category grid. Wrapped by the
     // shift-extender so Shift+Arrow at a recents/grid boundary extends

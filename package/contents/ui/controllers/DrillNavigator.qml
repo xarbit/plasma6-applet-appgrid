@@ -31,16 +31,6 @@ QtObject {
     property bool _canGoBack: false
     property string _prevPath: ""
 
-    // Enter the grid from the search field: select the first item + focus, so a
-    // single Down lands on item 0 (matches the flat grid's navigateToResults).
-    function focusGrid() {
-        if (!grid)
-            return
-        if (grid.count > 0)
-            grid.currentIndex = 0
-        grid.forceActiveFocus()
-    }
-
     function goBack() {
         if (model && model.canGoBack)
             model.goBack()
