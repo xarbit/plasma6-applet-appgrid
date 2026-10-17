@@ -167,21 +167,6 @@ LaunchStateStore *AppGridController::launchState() const
     return const_cast<LaunchStateStore *>(&m_launchState);
 }
 
-void AppGridController::setLayerScope(const QString &scope)
-{
-    m_window.setLayerScope(scope);
-}
-
-void AppGridController::configurePanelWindow(QWindow *window)
-{
-    m_window.configurePanelWindow(window);
-}
-
-void AppGridController::positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen)
-{
-    m_window.positionPanelWindow(window, panelFullHeight, verticalOffsetPercent, useActiveScreen);
-}
-
 AppFilterModel *AppGridController::appsModel() const
 {
     return const_cast<AppFilterModel *>(&m_filterModel);

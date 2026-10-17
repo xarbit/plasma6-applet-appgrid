@@ -24,7 +24,6 @@
 #include "systemactions.h"
 #include "unifiedsearchmodel.h"
 #include "usedappsprovider.h"
-#include "windowconfigurator.h"
 
 #ifdef APPGRID_UNIVERSAL_BUILD
 #include "updatechecker.h"
@@ -41,7 +40,7 @@ class Consumer;
  * @brief Applet-independent core of the AppGrid launcher.
  *
  * Owns the models and wires them together (launch state, favourites, default
- * apps, frecency) and places the daemon's window. Launching (launchService),
+ * apps, frecency). Launching (launchService),
  * KRunner search (runner), the calls to the center plasmoid (plasmoidClient)
  * and the actions on the rest of the system (systemActions) are services it
  * owns and exposes. It carries no Plasma::Applet dependency,
@@ -102,32 +101,6 @@ public:
     [[nodiscard]] UpdateChecker *updateChecker() const;
 #endif
 
-    /**
-     * Layer-shell scope the next configurePanelWindow() applies. The standalone
-     * executable sets a scope that KWin maps to WindowType::Normal so the window
-     * open/close effect (Glide/Scale/Fade) animates it like KRunner. Must be set
-     * before configurePanelWindow() is called.
-     */
-    void setLayerScope(const QString &scope);
-
-    // --- Window management (the standalone daemon's own window) ---
-
-    /** Configure @p window as the centered, content-sized panel surface that
-     *  carries the theme background and blur. */
-    Q_INVOKABLE void configurePanelWindow(QWindow *window);
-
-    /** Place the panel surface on the right screen and center it vertically, in
-     *  one atomic step (KRunner's model). Picks the target screen — the active
-     *  output (from KWin, authoritative on Wayland) when @p useActiveScreen, else
-     *  the panel's screen — sets the layer surface to it explicitly, and sets the
-     *  top margin from THAT screen's height: (height - panelFullHeight)/2 plus the
-     *  user vertical offset (@p verticalOffsetPercent of the slack). Doing screen
-     *  + margin together from the same screen avoids the cross-screen jump a split
-     *  (compositor picks screen, QML computes margin off a lagging QScreen) caused.
-     *  Wayland-only. @p panelFullHeight is the full (non-compact) panel height so a
-     *  compact panel still hangs from the full panel's top. */
-    Q_INVOKABLE void positionPanelWindow(QWindow *window, int panelFullHeight, int verticalOffsetPercent, bool useActiveScreen);
-
     /** Enable/disable the search-time frecency bias (opt-in via ConfigSearch). */
     Q_INVOKABLE void setSearchUsesFrecency(bool enabled);
 
@@ -166,9 +139,6 @@ private:
     UsedAppsProvider m_usedApps;
     // Declared after m_usedApps: the tracker subscribes to it on construction.
     NewAppsTracker m_newAppsTracker;
-    // Owns the standalone launcher window's layer-shell setup + positioning; the
-    // Q_INVOKABLE configure/position methods forward here.
-    WindowConfigurator m_window;
     PlasmoidClient m_plasmoidClient;
     SystemActions m_systemActions;
     LaunchService m_launchService;

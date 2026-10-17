@@ -40,6 +40,8 @@ PlasmaCore.Window {
     required property var appGridController
     required property var appGridConfig
     required property var appGridStandalone
+    // Places the window (WindowConfigurator).
+    required property var appGridWindow
     required property bool appGridAutoShow
     required property bool appGridStartCompact
 
@@ -108,7 +110,7 @@ PlasmaCore.Window {
     // reports its compact height from frame one. Cleared on a normal open.
     function showWindow(compact) {
         panel.forceCompact = (compact === true)
-        appGridController.configurePanelWindow(win)
+        appGridWindow.configurePanelWindow(win)
         panel.resetState()
         updatePosition()
         closeOnDeactivate = false
@@ -127,7 +129,7 @@ PlasmaCore.Window {
     }
 
     // Place on the right screen + center vertically, atomically in C++ (KRunner's
-    // model — see AppGridController::positionPanelWindow). The controller picks
+    // model — see WindowConfigurator::positionPanelWindow). It picks
     // the active output from KWin, sets the layer surface to it explicitly, and
     // sets the top margin from THAT screen's height — so screen and margin agree
     // and the panel never jumps across monitors. The FULL panelHeight is passed
@@ -135,7 +137,7 @@ PlasmaCore.Window {
     // top, and revealing the grid grows downward without drifting.
     function updatePosition() {
         const fullHeight = panel.panelHeight + win.topPadding + win.bottomPadding
-        appGridController.positionPanelWindow(win, fullHeight, cfg.verticalOffset, cfg.openOnActiveScreen)
+        appGridWindow.positionPanelWindow(win, fullHeight, cfg.verticalOffset, cfg.openOnActiveScreen)
     }
 
     // Close on focus loss (debounced; ignores transient drops e.g. a virtual-

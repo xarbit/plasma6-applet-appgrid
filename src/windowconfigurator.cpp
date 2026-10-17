@@ -83,9 +83,10 @@ QScreen *panelScreen()
 }
 }
 
-void WindowConfigurator::setLayerScope(const QString &scope)
+WindowConfigurator::WindowConfigurator(const QString &layerScope, QObject *parent)
+    : QObject(parent)
+    , m_layerScope(layerScope)
 {
-    m_layerScope = scope;
 }
 
 void WindowConfigurator::configurePanelWayland(QWindow *window)
@@ -93,9 +94,7 @@ void WindowConfigurator::configurePanelWayland(QWindow *window)
     auto *layer = LayerShellQt::Window::get(window);
     layer->setLayer(LayerShellQt::Window::LayerTop);
     layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
-    // m_layerScope decides KWin's WindowType: the standalone sets it
-    // (setLayerScope) to a scope KWin maps to WindowType::Normal so every window
-    // open/close effect animates it, like KRunner.
+    // m_layerScope decides KWin's WindowType (see the constructor).
     layer->setScope(m_layerScope);
     layer->setExclusiveZone(0);
     // Anchor the top edge only: horizontally the surface stays centered (no

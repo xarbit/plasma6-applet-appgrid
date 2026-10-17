@@ -20,6 +20,7 @@
 #include "residentquitguard.h"
 #include "settingswindow.h"
 #include "standaloneoptions.h"
+#include "windowconfigurator.h"
 
 #include <KAboutData>
 #include <KLocalizedQmlContext>
@@ -138,10 +139,10 @@ int main(int argc, char *argv[])
     AppGridController controller;
     // The shared QML names the C++ enums; register them before it loads.
     AppGridQml::registerTypes();
-    // A scope KWin does NOT special-case → scopeToType() falls through to
-    // WindowType::Normal, so the window open/close effect animates it. (The
-    // plasmoid keeps the "appgrid"/"utility"-style overlay scope.)
-    controller.setLayerScope(QStringLiteral("appgrid-standalone"));
+    // The launcher window's layer-shell setup and placement. A scope KWin does
+    // NOT special-case → scopeToType() falls through to WindowType::Normal, so
+    // the window open/close effect animates it.
+    WindowConfigurator windowConfigurator(QStringLiteral("appgrid-standalone"));
 
     // The plasmoid that opened this launcher session owns it: its Toggle/Configure
     // carry its id, so the settings window edits that instance's panel button.
@@ -191,6 +192,7 @@ int main(int argc, char *argv[])
         {QStringLiteral("appGridController"), QVariant::fromValue(&controller)},
         {QStringLiteral("appGridConfig"), QVariant::fromValue(&config)},
         {QStringLiteral("appGridStandalone"), QVariant::fromValue(&standalone)},
+        {QStringLiteral("appGridWindow"), QVariant::fromValue(&windowConfigurator)},
         {QStringLiteral("appGridAutoShow"), !options.daemon && !options.configure},
         {QStringLiteral("appGridStartCompact"), options.compact},
     };
