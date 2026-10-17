@@ -21,14 +21,12 @@
 class AppGridStandalone : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "dev.xarbit.appgrid.Standalone")
 
 public:
     explicit AppGridStandalone(QObject *parent = nullptr);
 
     static QString serviceName();
     static QString objectPath();
-    static QString interfaceName();
 
     /** True if registration succeeded (we are the primary instance). */
     bool registerService();
@@ -49,21 +47,21 @@ public:
      *  action), keeping the current owner plasmoid — not a D-Bus entry point. */
     Q_INVOKABLE void openSettings();
 
-public Q_SLOTS:
-    Q_SCRIPTABLE void Show();
-    Q_SCRIPTABLE void Hide();
+    // dev.xarbit.appgrid.Standalone (src/dbus), exported through StandaloneAdaptor.
+    void Show();
+    void Hide();
     /** @p plasmoidId — the center plasmoid that owns this launcher session
      *  (empty for a terminal launch), so the settings button rows edit it. */
-    Q_SCRIPTABLE void Toggle(const QString &plasmoidId = QString());
-    Q_SCRIPTABLE void ToggleCompact(const QString &plasmoidId = QString());
+    void Toggle(const QString &plasmoidId = QString());
+    void ToggleCompact(const QString &plasmoidId = QString());
     /** Open the settings window from a specific center plasmoid's "Configure
      *  Launcher" (@p plasmoidId; empty clears the owner). */
-    Q_SCRIPTABLE void Configure(const QString &plasmoidId = QString());
+    void Configure(const QString &plasmoidId = QString());
     /** Build version of this daemon — the plasmoid compares it against the
      *  installed build to detect a stale daemon left over from an upgrade. */
-    Q_SCRIPTABLE QString Version() const;
+    [[nodiscard]] QString Version() const;
     /** Quit the daemon (so a freshly-installed build can take its place). */
-    Q_SCRIPTABLE void Quit();
+    void Quit();
 
 Q_SIGNALS:
     void showRequested();

@@ -254,6 +254,17 @@ set(APPGRID_COMMON_SOURCES
     src/frecencyscoring.cpp
     src/frecencyscoring.h
 )
+# D-Bus: the plasmoid and the daemon each export one interface and call the
+# other's, both generated from the XML in src/dbus, so the two sides cannot
+# drift. The exporters get adaptors, the callers typed proxies.
+set(APPGRID_DBUS_PLASMOID_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/dbus/dev.xarbit.appgrid.Plasmoid.xml)
+set(APPGRID_DBUS_STANDALONE_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/dbus/dev.xarbit.appgrid.Standalone.xml)
+set_source_files_properties(${APPGRID_DBUS_PLASMOID_XML} PROPERTIES CLASSNAME PlasmoidInterface NO_NAMESPACE ON)
+set_source_files_properties(${APPGRID_DBUS_STANDALONE_XML} PROPERTIES CLASSNAME StandaloneInterface NO_NAMESPACE ON)
+qt_add_dbus_interface(APPGRID_COMMON_SOURCES ${APPGRID_DBUS_PLASMOID_XML} plasmoidinterface)
+qt_add_dbus_interface(APPGRID_COMMON_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standaloneinterface)
+qt_add_dbus_adaptor(APPGRID_COMMON_SOURCES ${APPGRID_DBUS_PLASMOID_XML} appgridplugin.h AppGridPlasmoidService plasmoidadaptor PlasmoidAdaptor)
+
 # Update checker is compiled in only for universal-tarball builds.
 if(APPGRID_UNIVERSAL_BUILD)
     list(APPEND APPGRID_COMMON_SOURCES src/updatechecker.cpp src/updatechecker.h)
@@ -272,6 +283,9 @@ function(appgrid_add_compiled_applet)
     cmake_parse_arguments(A "" "TARGET;VARIANT;METADATA" "SOURCES" ${ARGN})
 
     add_library(${A_TARGET} SHARED ${A_SOURCES})
+    # The generated D-Bus adaptor includes appgridplugin.h; sources include the
+    # generated proxies from the build dir.
+    target_include_directories(${A_TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
     set_target_properties(${A_TARGET} PROPERTIES PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plasma/applets")
     target_link_libraries(${A_TARGET} PRIVATE ${APPGRID_COMMON_LIBS})
@@ -384,10 +398,11 @@ set(APPGRID_STANDALONE_SOURCES
     src/standalone/appgridstandalone.cpp
     src/standalone/appgridstandalone.h
     ${APPGRID_COMMON_SOURCES})
+qt_add_dbus_adaptor(APPGRID_STANDALONE_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standalone/appgridstandalone.h AppGridStandalone standaloneadaptor StandaloneAdaptor)
 
 add_executable(appgrid ${APPGRID_STANDALONE_SOURCES})
 kconfig_add_kcfg_files(appgrid GENERATE_MOC ${CMAKE_BINARY_DIR}/appgridconfig.kcfgc)
-target_include_directories(appgrid PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(appgrid PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR})
 # KF6::ConfigGui supplies KConfigSkeleton (the generated AppGridConfig base);
 # Widgets gives the KDE platform palette, QuickControls2 the org.kde.desktop style.
 target_link_libraries(appgrid PRIVATE ${APPGRID_COMMON_LIBS} KF6::ConfigGui Qt6::Widgets Qt6::QuickControls2 KF6::ColorScheme KF6::I18nQml)

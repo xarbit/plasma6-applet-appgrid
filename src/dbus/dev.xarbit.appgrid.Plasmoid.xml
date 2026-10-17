@@ -1,0 +1,29 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!--
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    What the center plasmoid offers the standalone daemon, which has no live
+    applet or corona: pinning to the Task Manager, the screen of the panel
+    icon, and the panel button's appearance for the daemon's settings window.
+    Each plasmoid serves it at /Plasmoid/<applet id>; the first one also at
+    /Plasmoid.
+-->
+<node>
+  <interface name="dev.xarbit.appgrid.Plasmoid">
+    <method name="requestAddToTaskManager">
+      <arg name="desktopFile" type="s" direction="in"/>
+    </method>
+    <method name="panelScreenName">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="buttonAppearance">
+      <arg type="a{sv}" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
+    </method>
+    <method name="setButtonAppearance">
+      <arg name="values" type="a{sv}" direction="in"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+    </method>
+  </interface>
+</node>

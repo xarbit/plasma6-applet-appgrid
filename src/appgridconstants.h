@@ -18,14 +18,13 @@ inline constexpr QLatin1String ApplicationId{APPGRID_APP_ID};
  *  variant shares, so a reorder in one shows in the others. */
 inline constexpr QLatin1String FavoritesClientId{"dev.xarbit.appgrid.favorites"};
 
-/** D-Bus single-instance surface of the standalone `appgrid` daemon
- *  (src/standalone): the daemon registers/exports it, the plasmoid toggles the
- *  daemon through it. One source so the two never drift. */
+/** Where the standalone `appgrid` daemon serves dev.xarbit.appgrid.Standalone
+ *  (src/dbus): the daemon registers it, the plasmoid toggles the daemon
+ *  through it. */
 namespace Dbus
 {
 inline constexpr QLatin1String Service{APPGRID_APP_ID};
 inline constexpr QLatin1String Path{"/Standalone"};
-inline constexpr QLatin1String Interface{APPGRID_APP_ID ".Standalone"};
 // Timeout for the few blocking session-bus calls (the version probe; the
 // launcher-open screen lookups use the shorter OpenPathTimeoutMs). The default
 // is 25s — far too long for a call made from plasmashell, where an
@@ -38,12 +37,10 @@ inline constexpr int CallTimeoutMs = 1000;
 // millisecond normally (about 15 ms at worst measured with plasmashell
 // busy), and a miss falls back to the cursor's / primary screen.
 inline constexpr int OpenPathTimeoutMs = 250;
-// Method names exported by AppGridStandalone — must match its Q_SCRIPTABLE slots.
+// Methods of dev.xarbit.appgrid.Standalone the plasmoid calls by name, so a
+// cold start and a running daemon share one code path.
 inline constexpr QLatin1String MethodToggle{"Toggle"};
-inline constexpr QLatin1String MethodToggleCompact{"ToggleCompact"};
 inline constexpr QLatin1String MethodConfigure{"Configure"};
-inline constexpr QLatin1String MethodVersion{"Version"};
-inline constexpr QLatin1String MethodQuit{"Quit"};
 }
 
 /** The standalone daemon executable and the launch flags the plasmoid passes and
@@ -78,21 +75,15 @@ inline constexpr QLatin1String Interface{"org.kde.KWin"};
 inline constexpr QLatin1String ActiveOutputName{"activeOutputName"};
 }
 
-/** D-Bus helper the center plasmoid exports so the standalone daemon can ask it
- *  to run an in-process action that needs a live Plasma::Applet + corona — which
+/** Where the center plasmoid serves dev.xarbit.appgrid.Plasmoid (src/dbus), so
+ *  the standalone daemon can ask it to run an in-process action that needs a
+ *  live Plasma::Applet + corona — which
  *  the daemon's own process lacks. Pinning to the Task Manager (with activities)
  *  goes through Kicker's ContainmentInterface, reachable only with an applet. */
 namespace PlasmoidDbus
 {
 inline constexpr QLatin1String Service{APPGRID_APP_ID ".plasmoid"};
 inline constexpr QLatin1String Path{"/Plasmoid"};
-inline constexpr QLatin1String Interface{APPGRID_APP_ID ".Plasmoid"};
-inline constexpr QLatin1String AddToTaskManager{"requestAddToTaskManager"};
-inline constexpr QLatin1String PanelScreenName{"panelScreenName"};
-// Read/write the panel button's appearance (icon + text label) so the daemon's
-// settings window can edit it on the plasmoid when one is present (#191).
-inline constexpr QLatin1String ButtonAppearance{"buttonAppearance"};
-inline constexpr QLatin1String SetButtonAppearance{"setButtonAppearance"};
 // Per-instance object path so the daemon can address one specific plasmoid's
 // button. Each center plasmoid registers its service here (and shares Path).
 inline QString pathFor(const QString &appletId)

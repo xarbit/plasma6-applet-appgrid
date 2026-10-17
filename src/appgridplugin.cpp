@@ -6,14 +6,14 @@
 #include "appgridplugin.h"
 
 #include "appgridconstants.h"
+#include "plasmoidadaptor.h"
+#include "standaloneinterface.h"
 
 #include <KConfig>
 #include <KConfigGroup>
 #include <KIO/CommandLauncherJob>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
-#include <QDBusMessage>
-#include <QDBusReply>
 #include <QGuiApplication>
 #include <QQuickWindow>
 #include <QScreen>
@@ -102,14 +102,15 @@ void AppGridPlugin::registerPlasmoidService()
     });
     connect(m_plasmoidService, &AppGridPlasmoidService::setButtonAppearanceRequested, this, &AppGridPlugin::setButtonAppearanceRequested);
 
+    new PlasmoidAdaptor(m_plasmoidService);
     auto bus = QDBusConnection::sessionBus();
     // Per-instance object path so the daemon can address THIS plasmoid's button
     // (icon/label) specifically when the user configures from it (#191). Each
     // instance owns a different path, so registration never collides.
-    bus.registerObject(AppGrid::PlasmoidDbus::pathFor(QString::number(id())), m_plasmoidService, QDBusConnection::ExportScriptableContents);
+    bus.registerObject(AppGrid::PlasmoidDbus::pathFor(QString::number(id())), m_plasmoidService, QDBusConnection::ExportAdaptors);
     // Also at the shared /Plasmoid path: the first instance wins it and services
     // the corona-only ops (pin, panel screen) and the no-origin settings case.
-    bus.registerObject(AppGrid::PlasmoidDbus::Path, m_plasmoidService, QDBusConnection::ExportScriptableContents);
+    bus.registerObject(AppGrid::PlasmoidDbus::Path, m_plasmoidService, QDBusConnection::ExportAdaptors);
     // registerService may fail if another center plasmoid already owns the name —
     // harmless: that instance services the daemon's requests.
     bus.registerService(AppGrid::PlasmoidDbus::Service);
@@ -150,6 +151,7 @@ void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringLi
 {
     auto bus = QDBusConnection::sessionBus();
     const bool running = bus.interface() && bus.interface()->isServiceRegistered(AppGrid::Dbus::Service);
+    StandaloneInterface daemon(AppGrid::Dbus::Service, AppGrid::Dbus::Path, bus);
 
     if (running) {
         // Detect a stale daemon left over from an upgrade — its build differs
@@ -159,23 +161,20 @@ void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringLi
             // Short timeout: this runs in plasmashell, so a hung daemon must not
             // freeze the panel. On timeout the reply is invalid → treated as not
             // stale → we just toggle it rather than aggressively replacing it.
-            auto probe = QDBusMessage::createMethodCall(AppGrid::Dbus::Service, AppGrid::Dbus::Path, AppGrid::Dbus::Interface, AppGrid::Dbus::MethodVersion);
-            const QDBusReply<QString> version = bus.call(probe, QDBus::Block, AppGrid::Dbus::CallTimeoutMs);
+            daemon.setTimeout(AppGrid::Dbus::CallTimeoutMs);
+            QDBusPendingReply<QString> version = daemon.Version();
+            version.waitForFinished();
             m_daemonStale = version.isValid() && version.value() != QLatin1String(APPGRID_VERSION);
             m_daemonVersionChecked = true;
         }
         if (!m_daemonStale) {
             // Current daemon — invoke the requested method on it (with any args).
-            auto call = QDBusMessage::createMethodCall(AppGrid::Dbus::Service, AppGrid::Dbus::Path, AppGrid::Dbus::Interface, dbusMethod);
-            if (!dbusArgs.isEmpty()) {
-                call.setArguments(dbusArgs);
-            }
-            bus.send(call);
+            daemon.asyncCallWithArgumentList(dbusMethod, dbusArgs);
             return;
         }
         // Stale: ask it to quit, then relaunch our build with --replace (it polls
         // for the freed bus name and takes over). Re-validate it next time.
-        bus.send(QDBusMessage::createMethodCall(AppGrid::Dbus::Service, AppGrid::Dbus::Path, AppGrid::Dbus::Interface, AppGrid::Dbus::MethodQuit));
+        daemon.Quit();
         m_daemonVersionChecked = false;
         QStringList args = launchArgs;
         args << AppGrid::Standalone::FlagReplace;
@@ -190,11 +189,7 @@ void AppGridPlugin::triggerStandalone(const QString &dbusMethod, const QStringLi
     // D-Bus/systemd .service unit, then delivers the call — no explicit launch and
     // no single-instance race. The unit starts it with --daemon (it stays hidden),
     // and this queued method drives the window.
-    auto call = QDBusMessage::createMethodCall(AppGrid::Dbus::Service, AppGrid::Dbus::Path, AppGrid::Dbus::Interface, dbusMethod);
-    if (!dbusArgs.isEmpty()) {
-        call.setArguments(dbusArgs);
-    }
-    bus.send(call);
+    daemon.asyncCallWithArgumentList(dbusMethod, dbusArgs);
 #else
     // No activation unit (e.g. the relocatable universal build): launch the binary
     // with the matching flags; it registers the service and acts on them on start.

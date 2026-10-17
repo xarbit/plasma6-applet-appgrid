@@ -186,16 +186,22 @@ add_executable(test_popup_size_policy
 target_link_libraries(test_popup_size_policy PRIVATE Qt6::Test Qt6::Core)
 add_test(NAME test_popup_size_policy COMMAND test_popup_size_policy)
 
-# AppGridStandalone — the daemon's D-Bus method→signal surface (QtDBus).
+# AppGridStandalone — the daemon's D-Bus method→signal surface (QtDBus),
+# called through the adaptor generated from its interface XML.
+set(TEST_STANDALONE_DBUS_SOURCES)
+set_source_files_properties(${APPGRID_DBUS_STANDALONE_XML} PROPERTIES CLASSNAME StandaloneInterface NO_NAMESPACE ON)
+qt_add_dbus_adaptor(TEST_STANDALONE_DBUS_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standalone/appgridstandalone.h AppGridStandalone standaloneadaptor StandaloneAdaptor)
+qt_add_dbus_interface(TEST_STANDALONE_DBUS_SOURCES ${APPGRID_DBUS_STANDALONE_XML} standaloneinterface)
 add_executable(test_standalone
     test_standalone.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/appgridstandalone.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/appgridstandalone.h
+    ${TEST_STANDALONE_DBUS_SOURCES}
 )
 target_compile_definitions(test_standalone PRIVATE
     "APPGRID_APP_ID=\"${APPGRID_APP_ID}\""
     "APPGRID_VERSION=\"${APPGRID_VERSION_STRING}\"")
-target_include_directories(test_standalone PRIVATE ${CMAKE_SOURCE_DIR}/src/standalone)
+target_include_directories(test_standalone PRIVATE ${CMAKE_SOURCE_DIR}/src/standalone ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(test_standalone PRIVATE Qt6::Test Qt6::Core Qt6::DBus)
 add_test(NAME test_standalone COMMAND test_standalone)
 

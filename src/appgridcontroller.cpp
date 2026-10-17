@@ -12,6 +12,7 @@
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
 #include "menutreesource.h"
+#include "plasmoidinterface.h"
 #include "pluginhelpers.h"
 
 #include <KConfigGroup>
@@ -34,7 +35,6 @@
 #endif
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
-#include <QDBusMessage>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 #include <QDir>
@@ -442,12 +442,8 @@ void AppGridController::addToTaskManager(const QString &desktopFile)
         Q_EMIT addToTaskManagerRequested(desktopFile);
         return;
     }
-    auto msg = QDBusMessage::createMethodCall(AppGrid::PlasmoidDbus::Service,
-                                              AppGrid::PlasmoidDbus::Path,
-                                              AppGrid::PlasmoidDbus::Interface,
-                                              AppGrid::PlasmoidDbus::AddToTaskManager);
-    msg << desktopFile;
-    QDBusConnection::sessionBus().asyncCall(msg);
+    PlasmoidInterface plasmoid(AppGrid::PlasmoidDbus::Service, AppGrid::PlasmoidDbus::Path, QDBusConnection::sessionBus());
+    plasmoid.requestAddToTaskManager(desktopFile);
 }
 
 void AppGridController::addToDesktop(const QString &desktopFile)
@@ -523,11 +519,8 @@ void AppGridController::requestPlasmoidButtonAppearance()
     // Asynchronous: a blocking call here would spin a nested event loop inside
     // the settings window's QML construction (deadlock-prone, can crash). Fetch
     // and notify when the reply lands instead.
-    auto msg = QDBusMessage::createMethodCall(AppGrid::PlasmoidDbus::Service,
-                                              m_buttonTargetPath,
-                                              AppGrid::PlasmoidDbus::Interface,
-                                              AppGrid::PlasmoidDbus::ButtonAppearance);
-    auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(msg), this);
+    PlasmoidInterface plasmoid(AppGrid::PlasmoidDbus::Service, m_buttonTargetPath, QDBusConnection::sessionBus());
+    auto *watcher = new QDBusPendingCallWatcher(plasmoid.buttonAppearance(), this);
     connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *call) {
         const QDBusPendingReply<QVariantMap> reply = *call;
         if (reply.isValid()) {
@@ -540,12 +533,8 @@ void AppGridController::requestPlasmoidButtonAppearance()
 
 void AppGridController::setPlasmoidButtonAppearance(const QVariantMap &values)
 {
-    auto msg = QDBusMessage::createMethodCall(AppGrid::PlasmoidDbus::Service,
-                                              m_buttonTargetPath,
-                                              AppGrid::PlasmoidDbus::Interface,
-                                              AppGrid::PlasmoidDbus::SetButtonAppearance);
-    msg.setArguments({values});
-    QDBusConnection::sessionBus().call(msg, QDBus::NoBlock);
+    PlasmoidInterface plasmoid(AppGrid::PlasmoidDbus::Service, m_buttonTargetPath, QDBusConnection::sessionBus());
+    plasmoid.setButtonAppearance(values);
 }
 
 bool AppGridController::canAddToDesktop() const

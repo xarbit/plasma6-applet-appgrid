@@ -1,0 +1,33 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!--
+    SPDX-FileCopyrightText: 2026 AppGrid Contributors
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    The standalone appgrid daemon at /Standalone. The plasmoid toggles it, a
+    second appgrid process forwards to it, and the plasmoid checks its Version
+    to replace a stale daemon after an upgrade. plasmoidId is the center
+    plasmoid that opened the launcher (empty when run from a terminal); the
+    argument-less overloads keep plain callers such as shortcuts working.
+-->
+<node>
+  <interface name="dev.xarbit.appgrid.Standalone">
+    <method name="Show"/>
+    <method name="Hide"/>
+    <method name="Toggle">
+      <arg name="plasmoidId" type="s" direction="in"/>
+    </method>
+    <method name="Toggle"/>
+    <method name="ToggleCompact">
+      <arg name="plasmoidId" type="s" direction="in"/>
+    </method>
+    <method name="ToggleCompact"/>
+    <method name="Configure">
+      <arg name="plasmoidId" type="s" direction="in"/>
+    </method>
+    <method name="Configure"/>
+    <method name="Version">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="Quit"/>
+  </interface>
+</node>

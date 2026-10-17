@@ -22,20 +22,19 @@ class AppGridPlugin;
 class AppGridPlasmoidService : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", APPGRID_APP_ID ".Plasmoid")
 
 public:
     explicit AppGridPlasmoidService(AppGridPlugin *plugin, QObject *parent = nullptr);
 
-public Q_SLOTS:
-    Q_SCRIPTABLE void requestAddToTaskManager(const QString &desktopFile);
+    // dev.xarbit.appgrid.Plasmoid (src/dbus), exported through PlasmoidAdaptor.
+    void requestAddToTaskManager(const QString &desktopFile);
     /** Name of the screen the panel icon sits on (empty if unknown). */
-    Q_SCRIPTABLE QString panelScreenName() const;
+    [[nodiscard]] QString panelScreenName() const;
     /** The panel button's appearance (read live from the plugin), for the daemon
      *  settings window to show. */
-    Q_SCRIPTABLE QVariantMap buttonAppearance() const;
+    [[nodiscard]] QVariantMap buttonAppearance() const;
     /** Apply a new button appearance — forwarded to QML which writes the config. */
-    Q_SCRIPTABLE void setButtonAppearance(const QVariantMap &values);
+    void setButtonAppearance(const QVariantMap &values);
 
 Q_SIGNALS:
     void addToTaskManagerRequested(const QString &desktopFile);

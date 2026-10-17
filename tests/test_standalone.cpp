@@ -2,8 +2,9 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Unit tests for AppGridStandalone's D-Bus surface: every exported method emits
-    its matching Qt signal (the QML entry / main.cpp wire these), and Version()
+    Unit tests for AppGridStandalone's D-Bus surface: every method of the
+    interface, called through the adaptor generated from its XML, emits its
+    matching Qt signal (the QML entry / main.cpp wire these), and Version()
     reports the build the daemon was compiled as (the plasmoid's stale-daemon
     check compares against it). Registration is not exercised — it needs a live
     session bus — only the method→signal mapping, which is pure.
@@ -13,6 +14,7 @@
 #include <QTest>
 
 #include "appgridstandalone.h"
+#include "standaloneadaptor.h"
 
 class TestAppGridStandalone : public QObject
 {
@@ -42,17 +44,19 @@ void TestAppGridStandalone::methodsEmitSignals()
     QFETCH(QByteArray, signal);
 
     AppGridStandalone standalone;
+    auto *adaptor = new StandaloneAdaptor(&standalone);
     QSignalSpy spy(&standalone, signal.constData());
     QVERIFY(spy.isValid());
-    QVERIFY(QMetaObject::invokeMethod(&standalone, method.constData()));
+    QVERIFY(QMetaObject::invokeMethod(adaptor, method.constData()));
     QCOMPARE(spy.count(), 1);
 }
 
 void TestAppGridStandalone::versionIsBuildVersion()
 {
     AppGridStandalone standalone;
-    QCOMPARE(standalone.Version(), QStringLiteral(APPGRID_VERSION));
-    QVERIFY(!standalone.Version().isEmpty());
+    auto *adaptor = new StandaloneAdaptor(&standalone);
+    QCOMPARE(adaptor->Version(), QStringLiteral(APPGRID_VERSION));
+    QVERIFY(!adaptor->Version().isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TestAppGridStandalone)

@@ -6,6 +6,7 @@
 #include "windowconfigurator.h"
 
 #include "appgridconstants.h"
+#include "plasmoidinterface.h"
 
 #include <KWindowSystem>
 #include <LayerShellQt/window.h>
@@ -74,11 +75,10 @@ QScreen *panelScreen()
 {
     // The daemon has no containment, so ask the plasmoid's helper which screen
     // the panel icon is on (the "open on the panel's screen" option).
-    auto msg = QDBusMessage::createMethodCall(AppGrid::PlasmoidDbus::Service,
-                                              AppGrid::PlasmoidDbus::Path,
-                                              AppGrid::PlasmoidDbus::Interface,
-                                              AppGrid::PlasmoidDbus::PanelScreenName);
-    const QDBusReply<QString> reply = QDBusConnection::sessionBus().call(msg, QDBus::Block, AppGrid::Dbus::OpenPathTimeoutMs);
+    PlasmoidInterface plasmoid(AppGrid::PlasmoidDbus::Service, AppGrid::PlasmoidDbus::Path, QDBusConnection::sessionBus());
+    plasmoid.setTimeout(AppGrid::Dbus::OpenPathTimeoutMs);
+    QDBusPendingReply<QString> reply = plasmoid.panelScreenName();
+    reply.waitForFinished();
     return reply.isValid() ? screenByName(reply.value()) : nullptr;
 }
 }
