@@ -32,6 +32,9 @@ AppGridMenu {
         popup()
     }
 
+    // The favourite row and the separator come first; the actions follow.
+    readonly property int _staticItems: 2
+
     AppGridMenuItem {
         visible: runnerMenu.favoriteId.length > 0
         icon.name: runnerMenu.isFavorite ? "bookmark-remove" : "bookmark-new"
@@ -59,7 +62,7 @@ AppGridMenu {
                 runnerMenu.close()
             }
         }
-        onObjectAdded: (idx, obj) => runnerMenu.insertItem(idx, obj)
+        onObjectAdded: (idx, obj) => runnerMenu.insertItem(runnerMenu._staticItems + idx, obj)
         onObjectRemoved: (idx, obj) => runnerMenu.removeItem(obj)
     }
 }

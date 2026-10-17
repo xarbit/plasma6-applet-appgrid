@@ -76,8 +76,10 @@ TestCase {
         m.showFor(3, [{ text: "Copy", icon: "edit-copy" }], "applications:org.kde.kcalc.desktop", false)
         compare(m.sourceIndex, 3)
         compare(m.isFavorite, false)
-        // The favourite row, the separator and the action.
+        // The favourite row, the separator, then the action.
         tryCompare(m, "count", 3)
+        compare(m.itemAt(0).text, "Add to Favorites")
+        compare(m.itemAt(2).text, "Copy")
         itemWithText(m, "Add to Favorites").clicked()
         compare(favSpy.signalArguments[0][0], "applications:org.kde.kcalc.desktop")
 
