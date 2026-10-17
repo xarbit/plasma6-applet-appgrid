@@ -11,7 +11,8 @@
     property of its wrapper's buffer and an entry in main.xml; every key it
     writes must also have a `cfg_` alias so Plasma saves it. (A key only read,
     like the Appearance page's showCategoryBar gate, is a plain buffer property
-    owned and saved by another page.)
+    owned and saved by another page.) The launcher's read surface, ConfigCache,
+    must cover every main.xml entry too.
 */
 
 #include <QDir>
@@ -113,6 +114,22 @@ private Q_SLOTS:
         for (const QString &key : keysUsedBy(pagePath, true)) {
             QVERIFY2(saved.contains(key),
                      qPrintable(QStringLiteral("%1 writes configuration.%2 but %3 has no cfg_%2, so it is never saved").arg(page, key, wrapper)));
+        }
+    }
+
+    // The launcher reads every setting through ConfigCache's typed
+    // properties; a schema entry it lacks would read as undefined there.
+    void configCacheReadsEverySetting()
+    {
+        static const QRegularExpression entryRe(QStringLiteral("<entry name=\"([A-Za-z]+)\""));
+        static const QRegularExpression cacheRe(QStringLiteral("\\bproperty\\s+[\\w<>]+\\s+([A-Za-z]+)\\s*:\\s*source\\.\\1\\b"));
+        const QString cache = readFile(QStringLiteral(APPGRID_SOURCE_DIR "/package/contents/ui/controllers/ConfigCache.qml"));
+        QVERIFY(!cache.isEmpty());
+        const QSet<QString> read = matches(cache, cacheRe);
+        const QSet<QString> entries = matches(readFile(kSchema), entryRe);
+        QVERIFY(!entries.isEmpty());
+        for (const QString &key : entries) {
+            QVERIFY2(read.contains(key), qPrintable(QStringLiteral("ConfigCache.qml has no property for main.xml entry %1").arg(key)));
         }
     }
 };

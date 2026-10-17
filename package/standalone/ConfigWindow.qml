@@ -57,6 +57,7 @@ Kirigami.ApplicationWindow {
     required property var appGridController
     //   aboutData           — KAboutData for the About page
     required property var aboutData
+    //   editableKeys        — the settings buffered for Apply/Cancel (below)
 
     title: i18nd("dev.xarbit.appgrid", "AppGrid Settings")
     width: Kirigami.Units.gridUnit * 44
@@ -69,30 +70,12 @@ Kirigami.ApplicationWindow {
     // appGridConfig after a bulk restore / load-defaults.
     property int revision: 0
 
-    // Keys we buffer for Reset/Cancel (every key the pages can edit).
-    readonly property var _editableKeys: [
-        // General (icon / customButtonImage / menuLabel are the panel button's,
-        // configured in the Plasma applet config, not here)
-        "gridColumns", "gridRows", "iconSize", "sortMode", "categoryBarDisplay",
-        "showCategoryBar", "startWithFavorites", "sortFavoritesAlphabetically",
-        "showRecentApps", "useSystemCategories", "categoryFoldersEnabled",
-        "hideEmptyCategories",
-        "openCategoryOnHover", "openOnActiveScreen", "verticalOffset",
-        "terminalShell", "checkForUpdates",
-        // Appearance / Animations
-        "showDividers", "showScrollbars", "showTooltips", "showNewAppBadge",
-        "iconShadow", "hoverHighlight", "independentTextSize", "reduceGridSpacing",
-        "hideLabelsOnFavorites", "favoriteFoldersEnabled", "enableActivities",
-        "hideGridWhenEmpty", "hoverAnimation", "shakeOnOpen",
-        // Search
-        "searchAll", "useExtraRunners", "searchUsesFrecency", "searchShowsHidden",
-        "searchInlineCompletion", "showSearchShortcuts",
-        // Header Actions
-        "headerActions", "customHeaderActions", "menuButtonIcon", "showActionLabels", "hideMenuButtonLabel"
-        // (Hidden apps are not buffered here — they live in the shared
-        // LaunchStateStore and the Hidden Apps page edits it live, like the
-        // grid's right-click "Hide".)
-    ]
+    // Keys we buffer for Reset/Cancel: every setting of the schema but the
+    // panel button's, read from the generated config. (Hidden apps are not
+    // config — they live in the shared LaunchStateStore and the Hidden Apps
+    // page edits it live, like the grid's right-click "Hide".)
+    required property var editableKeys
+    readonly property var _editableKeys: editableKeys
 
     // The live config as this window last saw it (captured on every sync/apply).
     // _apply writes back only the keys the user actually changed against this

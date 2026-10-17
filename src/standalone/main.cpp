@@ -119,6 +119,28 @@ private:
         return roots.isEmpty() ? nullptr : qobject_cast<QQuickWindow *>(roots.first());
     }
 
+    // Every setting of the shared schema the window buffers for Apply/Cancel:
+    // all of them but the panel button's appearance, which the plasmoid
+    // owns (#191). Read from the generated config, so a new setting is
+    // buffered without being listed anywhere.
+    QStringList editableKeys() const
+    {
+        static const QStringList buttonKeys{
+            QStringLiteral("icon"),
+            QStringLiteral("useCustomButtonImage"),
+            QStringLiteral("customButtonImage"),
+            QStringLiteral("menuLabel"),
+        };
+        QStringList keys;
+        const auto items = m_buffer->items();
+        for (const KConfigSkeletonItem *item : items) {
+            if (!buttonKeys.contains(item->name())) {
+                keys.append(item->name());
+            }
+        }
+        return keys;
+    }
+
     void load()
     {
         m_engine = new QQmlApplicationEngine;
@@ -132,6 +154,7 @@ private:
             {QStringLiteral("appGridConfigBuffer"), QVariant::fromValue(m_buffer)},
             {QStringLiteral("appGridController"), QVariant::fromValue(m_controller)},
             {QStringLiteral("aboutData"), QVariant::fromValue(KAboutData::applicationData())},
+            {QStringLiteral("editableKeys"), editableKeys()},
         });
         m_engine->load(QUrl(QStringLiteral("qrc:/qt/qml/appgrid/ConfigWindow.qml")));
         if (const QQuickWindow *w = window()) {
