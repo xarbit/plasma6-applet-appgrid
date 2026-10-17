@@ -20,7 +20,8 @@ Item {
     required property bool showScrollbars
 
     // Per-mode dependencies, forwarded to the individual prefix views.
-    required property var appsModel
+    // The controller's LaunchStateStore, for the hidden apps (h:).
+    required property var launchState
     required property var listDirectory
     required property var sysInfoProvider
     required property var updateChecker
@@ -58,7 +59,7 @@ Item {
     Prefix.PrefixHiddenView {
         anchors.fill: parent
         visible: prefixView.mode === PrefixModes.HIDDEN
-        appsModel: prefixView.appsModel
+        launchState: prefixView.launchState
     }
 
     // -- File browser --

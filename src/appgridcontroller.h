@@ -64,6 +64,8 @@ class AppGridController : public QObject
     Q_PROPERTY(PlasmoidClient *plasmoidClient READ plasmoidClient CONSTANT)
     Q_PROPERTY(SystemActions *systemActions READ systemActions CONSTANT)
     Q_PROPERTY(LaunchService *launchService READ launchService CONSTANT)
+    // The hidden apps, recents and launch counts (and the favourites folders).
+    Q_PROPERTY(LaunchStateStore *launchState READ launchState CONSTANT)
     // Drives QML's "Check for updates" visibility + i: view "Install" row.
     Q_PROPERTY(bool isUniversalBuild READ isUniversalBuild CONSTANT)
 #ifdef APPGRID_UNIVERSAL_BUILD

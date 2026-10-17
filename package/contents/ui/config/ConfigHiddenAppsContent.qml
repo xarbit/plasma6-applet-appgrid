@@ -4,12 +4,9 @@
 
     Plasmoid-free body of the Hidden Apps settings page: an info line, a filter
     field, an "Unhide All" button and the scrollable list of hidden apps with a
-    per-row unhide button. Hosts inject the live `appsModel` and size this
-    ColumnLayout. The hidden list is read and written straight on the model
-    (appsModel.hiddenApps) — both the panel config dialog (Plasmoid.controller.appsModel)
-    and the daemon settings window (the controller's model) carry the live model,
-    and AppGridController persists every change to the shared LaunchStateStore.
-    Value bindings depend on `revision` so a host can force a re-read.
+    per-row unhide button. Hosts inject the controller's launch state store and
+    size this ColumnLayout. The list follows the store live (also another
+    launcher's hides) and unhides there, so every launcher sees it at once.
 
     (The plasmoid wrapper kept "Unhide All" in the ScrollViewKCM page header;
     here it lives inline so the same body works for the daemon window too.)
@@ -20,6 +17,7 @@ import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 
 import org.kde.kirigami as Kirigami
+import dev.xarbit.appgrid.models
 
 import "../widgets"
 import "../js/constants.js" as Const
@@ -28,37 +26,15 @@ ColumnLayout {
     id: root
 
     // -- Injected context --------------------------------------------------
-    property var appsModel
-    property int revision: 0
-
-    property string _filter: ""
-    readonly property var _hidden: {
-        void root.revision
-        return (root.appsModel && root.appsModel.hiddenApps) || []
-    }
+    // The controller's LaunchStateStore.
+    property var launchState
 
     spacing: Kirigami.Units.smallSpacing
 
-    readonly property var _filteredApps: {
-        var apps = root._hidden
-        if (!root._filter)
-            return apps
-        var needle = root._filter.toLowerCase()
-        return apps.filter(function(sid) {
-            if (!sid) return false
-            if (sid.toLowerCase().indexOf(needle) >= 0) return true
-            var info = root.appsModel ? root.appsModel.getByStorageId(sid) : null
-            return info && info.name && info.name.toLowerCase().indexOf(needle) >= 0
-        })
-    }
-
-    function _unhide(storageId) {
-        var list = root._hidden.slice()
-        var i = list.indexOf(storageId)
-        if (i >= 0) {
-            list.splice(i, 1)
-            root.appsModel.hiddenApps = list
-        }
+    HiddenAppsModel {
+        id: hiddenApps
+        launchState: root.launchState
+        filter: filterField.text
     }
 
     // -- Header: info, filter, Unhide All ----------------------------------
@@ -75,16 +51,16 @@ ColumnLayout {
         spacing: Kirigami.Units.smallSpacing
 
         Kirigami.SearchField {
+            id: filterField
             Layout.fillWidth: true
-            enabled: root._hidden.length > 0
+            enabled: !hiddenApps.empty
             placeholderText: i18nd("dev.xarbit.appgrid", "Filter hidden apps…")
-            onTextChanged: root._filter = text
         }
         QQC2.Button {
             text: i18nd("dev.xarbit.appgrid", "Unhide All")
             icon.name: "edit-undo"
-            enabled: root._hidden.length > 0
-            onClicked: root.appsModel.hiddenApps = []
+            enabled: !hiddenApps.empty
+            onClicked: hiddenApps.unhideAll()
         }
     }
 
@@ -96,14 +72,14 @@ ColumnLayout {
 
         ListView {
             id: hiddenList
-            model: root._filteredApps
+            model: hiddenApps
             spacing: 0
             reuseItems: true
 
             EmptyStateMessage {
                 anchors.centerIn: parent
                 width: parent.width - Kirigami.Units.gridUnit * 4
-                visible: root._hidden.length === 0
+                visible: hiddenApps.empty
                 iconSource: "view-visible"
                 text: i18nd("dev.xarbit.appgrid", "No hidden applications")
             }
@@ -111,15 +87,17 @@ ColumnLayout {
             EmptyStateMessage {
                 anchors.centerIn: parent
                 width: parent.width - Kirigami.Units.gridUnit * 4
-                visible: root._hidden.length > 0 && root._filteredApps.length === 0
+                visible: !hiddenApps.empty && hiddenApps.count === 0
                 iconSource: "system-search-symbolic"
                 text: i18nd("dev.xarbit.appgrid", "No matches")
             }
 
             delegate: QQC2.ItemDelegate {
+                id: hiddenDelegate
                 width: hiddenList.width
-                required property string modelData
-                property var appInfo: (root.appsModel ? root.appsModel.getByStorageId(modelData) : null) || ({})
+                required property string storageId
+                required property string name
+                required property string iconName
 
                 contentItem: RowLayout {
                     spacing: Kirigami.Units.largeSpacing
@@ -127,20 +105,21 @@ ColumnLayout {
                     Kirigami.Icon {
                         implicitWidth: Kirigami.Units.iconSizes.smallMedium
                         implicitHeight: Kirigami.Units.iconSizes.smallMedium
-                        source: appInfo.iconName || Const.DEFAULT_ICON
+                        source: hiddenDelegate.iconName || Const.DEFAULT_ICON
                     }
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 0
                         QQC2.Label {
                             Layout.fillWidth: true
-                            text: appInfo.name || modelData
+                            text: hiddenDelegate.name
                             elide: Text.ElideRight
                         }
                         QQC2.Label {
                             Layout.fillWidth: true
-                            visible: !!appInfo.name
-                            text: modelData
+                            // The id, when the name isn't just the id again.
+                            visible: hiddenDelegate.name !== hiddenDelegate.storageId
+                            text: hiddenDelegate.storageId
                             font: Kirigami.Theme.smallFont
                             opacity: 0.4
                             elide: Text.ElideRight
@@ -152,7 +131,7 @@ ColumnLayout {
                         Accessible.name: QQC2.ToolTip.text
                         QQC2.ToolTip.visible: hovered
                         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                        onClicked: root._unhide(modelData)
+                        onClicked: hiddenApps.unhide(hiddenDelegate.storageId)
                     }
                 }
             }

@@ -7,6 +7,7 @@
 
 #include "abstractgroupedmodel.h"
 #include "appfiltermodel.h"
+#include "hiddenappsmodel.h"
 
 #include <QQmlEngine>
 
@@ -20,5 +21,6 @@ void AppGridQml::registerTypes()
         const QString reason = QStringLiteral("Owned by the launcher controller");
         qmlRegisterUncreatableType<AppFilterModel>(uri, 1, 0, "AppFilterModel", reason);
         qmlRegisterUncreatableType<AbstractGroupedModel>(uri, 1, 0, "AbstractGroupedModel", reason);
+        qmlRegisterType<HiddenAppsModel>(uri, 1, 0, "HiddenAppsModel");
     });
 }

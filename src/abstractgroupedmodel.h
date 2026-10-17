@@ -5,8 +5,9 @@
 
 #pragma once
 
+#include "appfieldscache.h"
+
 #include <QAbstractListModel>
-#include <QHash>
 #include <QStringList>
 
 /**
@@ -116,20 +117,11 @@ protected:
     }
 
 private:
-    // An App row's fields, resolved from its id.
-    struct AppFields {
-        QString name;
-        QString icon;
-        QString genericName;
-        QString comment;
-        QString desktopFile;
-        QString installSource;
-    };
-    [[nodiscard]] AppFields appFields(const QString &favoriteId) const;
     [[nodiscard]] QStringList memberIcons(const QStringList &members) const;
     // The installed apps changed: resolve again.
     void dropResolved();
 
     QList<Row> m_rows;
-    mutable QHash<QString, AppFields> m_resolved;
+    // App rows' fields, resolved from their ids.
+    AppFieldsCache m_resolved;
 };

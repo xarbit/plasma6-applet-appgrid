@@ -201,6 +201,8 @@ set(APPGRID_COMMON_SOURCES
     src/appmodel.h
     src/appmodelassembly.cpp
     src/appmodelassembly.h
+    src/appfieldscache.cpp
+    src/appfieldscache.h
     src/appfiltermodel.cpp
     src/appranking.cpp
     src/appranking.h
@@ -223,6 +225,8 @@ set(APPGRID_COMMON_SOURCES
     src/qmltypes.h
     src/discoverbackends.cpp
     src/discoverbackends.h
+    src/hiddenappsmodel.cpp
+    src/hiddenappsmodel.h
     src/installsource.cpp
     src/installsource.h
     src/appletmigration.cpp

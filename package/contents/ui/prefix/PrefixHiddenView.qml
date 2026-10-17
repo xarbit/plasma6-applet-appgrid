@@ -7,31 +7,20 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
+import dev.xarbit.appgrid.models
 
 import "../js/constants.js" as Const
 
 ColumnLayout {
     id: hiddenView
 
-    required property var appsModel
+    // The controller's LaunchStateStore. The list follows it live, also when
+    // another launcher hides or unhides an app.
+    required property var launchState
 
-    // Persistence is handled by GridPanel listening to
-    // AppFilterModel.hiddenAppsChanged — mutate the model and walk away.
-    //
-    // appsModel is a `var`, so a plain `appsModel.hiddenApps` binding does not
-    // reliably re-fire on the QStringList property's NOTIFY (e.g. a cross-process
-    // hide synced into the model). Re-read explicitly on the signal so the list
-    // tracks live changes from the other variant, not just the grid's row churn.
-    property var hiddenApps: []
-    function _refreshHidden() {
-        hiddenApps = appsModel ? appsModel.hiddenApps : []
-    }
-    Component.onCompleted: _refreshHidden()
-    Connections {
-        target: hiddenView.appsModel
-        function onHiddenAppsChanged() {
-            hiddenView._refreshHidden()
-        }
+    HiddenAppsModel {
+        id: hiddenApps
+        launchState: hiddenView.launchState
     }
 
     anchors.fill: parent
@@ -50,16 +39,16 @@ ColumnLayout {
         }
 
         PlasmaComponents.Button {
-            visible: hiddenView.hiddenApps.length > 0
+            visible: !hiddenApps.empty
             icon.name: "edit-undo"
             text: i18nd("dev.xarbit.appgrid", "Unhide All")
-            onClicked: hiddenView.appsModel.hiddenApps = []
+            onClicked: hiddenApps.unhideAll()
         }
     }
 
     // Empty state
     Item {
-        visible: hiddenView.hiddenApps.length === 0
+        visible: hiddenApps.empty
         Layout.fillWidth: true
         Layout.fillHeight: true
 
@@ -94,21 +83,23 @@ ColumnLayout {
     PlasmaComponents.ScrollView {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        visible: hiddenView.hiddenApps.length > 0
+        visible: !hiddenApps.empty
         PlasmaComponents.ScrollBar.horizontal.policy: PlasmaComponents.ScrollBar.AlwaysOff
 
         ListView {
             id: hiddenList
             clip: true
             boundsBehavior: Flickable.StopAtBounds
-            model: hiddenView.hiddenApps
+            model: hiddenApps
 
             delegate: PlasmaComponents.ItemDelegate {
                 id: hiddenDelegate
                 width: hiddenList.width
                 height: Kirigami.Units.iconSizes.medium + Kirigami.Units.smallSpacing * 2
-
-                property var appInfo: hiddenView.appsModel ? hiddenView.appsModel.getByStorageId(modelData) : ({})
+                required property string storageId
+                required property string name
+                required property string iconName
+                required property string genericName
 
                 contentItem: RowLayout {
                     spacing: Kirigami.Units.largeSpacing
@@ -116,7 +107,7 @@ ColumnLayout {
                     Kirigami.Icon {
                         implicitWidth: Kirigami.Units.iconSizes.medium
                         implicitHeight: Kirigami.Units.iconSizes.medium
-                        source: hiddenDelegate.appInfo.iconName || Const.DEFAULT_ICON
+                        source: hiddenDelegate.iconName || Const.DEFAULT_ICON
                     }
 
                     ColumnLayout {
@@ -125,14 +116,14 @@ ColumnLayout {
 
                         PlasmaComponents.Label {
                             Layout.fillWidth: true
-                            text: hiddenDelegate.appInfo.name || modelData
+                            text: hiddenDelegate.name
                             elide: Text.ElideRight
                         }
 
                         PlasmaComponents.Label {
                             Layout.fillWidth: true
                             visible: text.length > 0
-                            text: hiddenDelegate.appInfo.genericName || ""
+                            text: hiddenDelegate.genericName
                             font: Kirigami.Theme.smallFont
                             opacity: 0.5
                             elide: Text.ElideRight
@@ -145,7 +136,7 @@ ColumnLayout {
                         Accessible.name: PlasmaComponents.ToolTip.text
                         PlasmaComponents.ToolTip.visible: hovered
                         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-                        onClicked: hiddenView.appsModel.unhideApp(modelData)
+                        onClicked: hiddenApps.unhide(hiddenDelegate.storageId)
                     }
                 }
             }
@@ -155,8 +146,8 @@ ColumnLayout {
     PlasmaComponents.Label {
         Layout.fillWidth: true
         Layout.topMargin: Kirigami.Units.largeSpacing
-        visible: hiddenView.hiddenApps.length > 0
-        text: i18ndp("dev.xarbit.appgrid", "%1 hidden application", "%1 hidden applications", hiddenView.hiddenApps.length)
+        visible: !hiddenApps.empty
+        text: i18ndp("dev.xarbit.appgrid", "%1 hidden application", "%1 hidden applications", hiddenApps.count)
         font: Kirigami.Theme.smallFont
         opacity: 0.35
         horizontalAlignment: Text.AlignHCenter

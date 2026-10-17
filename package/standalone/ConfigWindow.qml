@@ -408,11 +408,9 @@ Kirigami.ApplicationWindow {
                         ConfigHiddenAppsContent {
                             anchors.fill: parent
                             anchors.margins: Kirigami.Units.largeSpacing
-                            // The live model the launcher reads; edits persist to
-                            // the shared LaunchStateStore (appgridrc) via the
-                            // controller, live like the grid's right-click "Hide".
-                            appsModel: appGridController.appsModel
-                            revision: win.revision
+                            // The shared store (appgridrc) the launcher reads:
+                            // edits apply live, like the grid's right-click "Hide".
+                            launchState: appGridController.launchState
                         }
                     }
 

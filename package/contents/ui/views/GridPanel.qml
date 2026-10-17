@@ -674,7 +674,7 @@ Item {
                     argument: panel.prefixArgument
                     searchField: searchBar.field
                     showScrollbars: look.showScrollbars
-                    appsModel: panel.appsModel
+                    launchState: panel.plasmoidBridge ? panel.plasmoidBridge.launchState : null
                     listDirectory: path => panel.plasmoidBridge.systemActions.listDirectory(path)
                     sysInfoProvider: panel.sysInfoProvider
                     updateChecker: panel.updateChecker

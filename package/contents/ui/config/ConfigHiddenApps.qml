@@ -28,6 +28,6 @@ KCM.AbstractKCM {
     ConfigHiddenAppsContent {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.largeSpacing
-        appsModel: Plasmoid.controller.appsModel
+        launchState: Plasmoid.controller.launchState
     }
 }
