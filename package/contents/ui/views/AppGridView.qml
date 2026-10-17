@@ -756,7 +756,7 @@ GridView {
         // inset a little so it's a tighter target and more of the cell reorders.
         // Landing on it merges/adds; a drag can still pass over a folder.
         readonly property rect foldRect: {
-            const r = _isFolder ? folderCell.iconRect : iconDelegate.iconRect
+            const r = (_isFolder && folderLoader.item) ? folderLoader.item.iconRect : iconDelegate.iconRect
             const m = r.width * gridView.foldZoneInset
             return Qt.rect(r.x + m, r.y + m, r.width - 2 * m, r.height - 2 * m)
         }
@@ -787,27 +787,32 @@ GridView {
         // have no favourite to toggle, so they never get here.
         function bounceFeedback() { iconDelegate.bounceFeedback() }
 
-        FolderCell {
-            id: folderCell
+        // A folder tile only for folder rows: most cells are apps (and the flat
+        // All-apps grid has no folders), so don't build a hidden FolderCell in
+        // every one of them.
+        Loader {
+            id: folderLoader
             anchors.fill: parent
-            visible: delegateRoot._isFolder
-            folderId: delegateRoot._isFolder ? (model.folderId || "") : ""
-            folderName: delegateRoot._isFolder ? (model.display || "") : ""
-            memberIcons: delegateRoot._folderIcons
-            iconSize: gridView.iconSize
-            fontScale: gridView.fontScale
-            hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
-            isCurrentItem: gridView.currentIndex === model.index && gridView.activeFocus
-            hoverHighlight: gridView.hoverHighlight
-            dragSource: gridView.dragSource
-            gridRow: model.index
-            // Record the tile as current so focus returns here when the folder
-            // closes (e.g. Esc), not to the search field.
-            onClicked: {
-                gridView.currentIndex = model.index
-                gridView.openFolderRequested(model.folderId)
+            active: delegateRoot._isFolder
+            sourceComponent: FolderCell {
+                folderId: delegateRoot._isFolder ? (model.folderId || "") : ""
+                folderName: delegateRoot._isFolder ? (model.display || "") : ""
+                memberIcons: delegateRoot._folderIcons
+                iconSize: gridView.iconSize
+                fontScale: gridView.fontScale
+                hideLabel: gridView.hideLabelsOnFavorites && gridView.favoritesActive
+                isCurrentItem: gridView.currentIndex === model.index && gridView.activeFocus
+                hoverHighlight: gridView.hoverHighlight
+                dragSource: gridView.dragSource
+                gridRow: model.index
+                // Record the tile as current so focus returns here when the folder
+                // closes (e.g. Esc), not to the search field.
+                onClicked: {
+                    gridView.currentIndex = model.index
+                    gridView.openFolderRequested(model.folderId)
+                }
+                onContextRequested: gridView.folderContextMenuRequested(model.folderId)
             }
-            onContextRequested: gridView.folderContextMenuRequested(model.folderId)
         }
 
         AppIconDelegate {
