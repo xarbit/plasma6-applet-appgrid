@@ -133,14 +133,20 @@ Item {
         }
     }
 
+    // The drag, selection and fold cues below are only ever shown on a few
+    // cells at a time, so each is loaded on demand instead of being built (and
+    // its colour bindings evaluated) in every cell of the grid.
+
     // Highlight background shown while this delegate is being dragged.
-    Rectangle {
+    Loader {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.cornerRadius
-        color: Kirigami.Theme.highlightColor
-        opacity: 0.25
-        visible: pointerDrag.active || touchDrag.active
+        active: pointerDrag.active || touchDrag.active
+        sourceComponent: Rectangle {
+            radius: Kirigami.Units.cornerRadius
+            color: Kirigami.Theme.highlightColor
+            opacity: 0.25
+        }
     }
 
     // Soft hover / keyboard-current highlight — neutral grey fill, no border,
@@ -160,29 +166,33 @@ Item {
     // -- Multi-select halo --
     // Persistent accent fill+border for items in the selection. Sits below
     // the content (z is default) so the icon and label stay legible.
-    Rectangle {
+    Loader {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.cornerRadius
-        color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.18)
-        border.width: root.selectionAnchor ? 2 : 1
-        border.color: ThemeColors.tint(Kirigami.Theme.highlightColor,
-                                       root.selectionAnchor ? 0.9 : 0.55)
-        visible: root.selected && !(pointerDrag.active || touchDrag.active)
+        active: root.selected && !(pointerDrag.active || touchDrag.active)
+        sourceComponent: Rectangle {
+            radius: Kirigami.Units.cornerRadius
+            color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.18)
+            border.width: root.selectionAnchor ? 2 : 1
+            border.color: ThemeColors.tint(Kirigami.Theme.highlightColor,
+                                           root.selectionAnchor ? 0.9 : 0.55)
+        }
     }
 
     // -- Fold target halo (#18) --
     // Another favourite is hovering this cell's centre long enough to merge into
     // a folder; a strong accent ring previews the fold.
     readonly property bool _isFoldTarget: root.dragSource && root.dragSource.isFoldTargetApp(root.storageId)
-    Rectangle {
+    Loader {
         anchors.fill: parent
         anchors.margins: Kirigami.Units.smallSpacing
-        radius: Kirigami.Units.cornerRadius
-        color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.3)
-        border.width: 2
-        border.color: Kirigami.Theme.highlightColor
-        visible: root._isFoldTarget
+        active: root._isFoldTarget
+        sourceComponent: Rectangle {
+            radius: Kirigami.Units.cornerRadius
+            color: ThemeColors.tint(Kirigami.Theme.highlightColor, 0.3)
+            border.width: 2
+            border.color: Kirigami.Theme.highlightColor
+        }
     }
 
     // The app icon's rect in this delegate's coordinates — the fold target zone
@@ -235,22 +245,29 @@ Item {
                 opacity: root._isFoldTarget ? 0 : (parent._showRemoveMarker ? 0.25 : 1.0)
             }
 
-            Kirigami.Icon {
+            Loader {
                 anchors.centerIn: parent
                 width: root.iconSize
                 height: root.iconSize
-                visible: parent._showRemoveMarker
-                source: "edit-delete-remove"
-                color: Kirigami.Theme.negativeTextColor
+                active: parent._showRemoveMarker
+                sourceComponent: Kirigami.Icon {
+                    source: "edit-delete-remove"
+                    color: Kirigami.Theme.negativeTextColor
+                }
             }
 
             // Folder-merge marker: a favourite dwelled on this icon long enough to
             // arm a fold (#200) — replaces the icon, pops to confirm.
-            FoldMarker {
+            Loader {
+                anchors.centerIn: parent
                 width: root.iconSize
                 height: root.iconSize
-                visible: root._isFoldTarget
-                source: "folder-new"
+                active: root._isFoldTarget
+                sourceComponent: FoldMarker {
+                    width: root.iconSize
+                    height: root.iconSize
+                    source: "folder-new"
+                }
             }
 
             // "New" badge — Plasma's standard pill (Kirigami.Badge). Behind a

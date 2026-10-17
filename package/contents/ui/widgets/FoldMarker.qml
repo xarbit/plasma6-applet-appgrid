@@ -21,8 +21,10 @@ Kirigami.Icon {
     anchors.centerIn: parent
     color: Kirigami.Theme.highlightColor
 
-    // One pop each time the marker appears (the fold arms), not a loop.
+    // One pop each time the marker appears (the fold arms), not a loop —
+    // including when it is created already visible (loaded on demand).
     onVisibleChanged: if (visible) pop.restart()
+    Component.onCompleted: if (visible) pop.restart()
     SequentialAnimation {
         id: pop
         NumberAnimation {
