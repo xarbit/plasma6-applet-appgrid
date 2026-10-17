@@ -103,6 +103,11 @@ TestCase {
         function unhideApp(sid) {}
         function launch(i) {}
         function launchByStorageId(sid) { appsModelStub.launchedSids.push(sid) }
+        function setSearchState(text, category, favoritesOnly) {
+            searchText = text
+            filterCategory = category
+            showFavoritesOnly = favoritesOnly
+        }
     }
 
     QtObject {
@@ -195,6 +200,33 @@ TestCase {
 
         compare(appsModelStub.launchedSids.join(","), "a,b,c",
                 "launchByStorageId fired per sid below threshold")
+        p.destroy()
+    }
+
+    // The grid and the search list swap only once the model's filter matches
+    // the search: switching on the live field text showed the search list
+    // with the unfiltered apps for a frame, and on clearing rebuilt the grid
+    // from the stale search results before the restored filter landed.
+    function test_viewsSwitchAfterFilterApplied() {
+        appsModelStub.searchText = ""
+        var p = make()
+        var bar = findChild(p, "searchBar")
+        verify(bar, "search field found")
+
+        // Typing: the filter pass is deferred (Qt.callLater), so right after the
+        // keystroke the search list must not show yet with the old query.
+        bar.text = "fi"
+        verify(!(p.showSearchResults && appsModelStub.searchText !== "fi"),
+               "search list shown before the query was applied")
+        tryCompare(p, "showSearchResults", true)
+        compare(appsModelStub.searchText, "fi")
+
+        // Clearing: the grid must not come back on the stale search filter.
+        bar.text = ""
+        verify(!(p.showAppGrid && appsModelStub.searchText !== ""),
+               "grid shown before the cleared query was applied")
+        tryCompare(p, "showAppGrid", true)
+        compare(appsModelStub.searchText, "")
         p.destroy()
     }
 }

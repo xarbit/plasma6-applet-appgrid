@@ -103,6 +103,12 @@ Item {
     // visibility (VisibilityState.qml); the aliases below preserve the
     // existing call sites.
     readonly property bool isSearching: searchBar.text.length > 0
+    // The views switch between grid and search list on the search the model
+    // has actually been filtered with, not the live field text: the filter
+    // pass is deferred (see _applySearchText), and switching early showed the
+    // search list on the unfiltered apps, or rebuilt the grid from the stale
+    // search results before the restored filter landed.
+    readonly property bool _searchApplied: _appliedSearchText.length > 0
     readonly property bool isFavoritesActive: categoryBar.favoritesActive
 
     VisibilityState {
@@ -110,7 +116,7 @@ Item {
         sizeToContent: panel.sizeToContent
         hideGridWhenEmpty: panel.effectiveHideGridWhenEmpty
         showCategoryBar: panel.cfgShowCategoryBar
-        isSearching: panel.isSearching
+        isSearching: panel._searchApplied
         isPrefixMode: panel.isPrefixMode
         isFavoritesActive: panel.isFavoritesActive
         isSortByCategory: panel.isSortByCategory
@@ -175,8 +181,10 @@ Item {
     // through Qt.callLater so a burst of fast keystrokes triggers a single
     // filter pass after input settles, never blocking the text field itself.
     property string _pendingSearchText: ""
+    property string _appliedSearchText: ""
     function _applySearchText() {
         searchSession.update(panel._pendingSearchText)
+        panel._appliedSearchText = panel._pendingSearchText
     }
 
     // Trailing-debounce window for continued typing into KRunner. Short enough to
@@ -654,6 +662,7 @@ Item {
 
             SearchBar {
                 id: searchBar
+                objectName: "searchBar"
                 // Hide the X while the header slot is mid-animation so it
                 // doesn't appear to slide in from the right with the
                 // growing field; snaps in once the layout settles.
@@ -922,7 +931,7 @@ Item {
             Layout.preferredHeight: panel.bodyHeight
             visible: panel.showSearchResults
             PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
-            model: panel.isSearching ? panel.searchModel : null
+            model: panel._searchApplied ? panel.searchModel : null
             iconSize: panel.gridIconSize
             fontScale: panel.densityScale
             showDividers: panel.cfgShowDividers
@@ -1065,7 +1074,7 @@ Item {
                 id: appGrid
                 anchors.fill: parent
                 PlasmaComponents.ScrollBar.vertical: OverlayScrollBar { showScrollbars: cfg.showScrollbars }
-                model: panel.isSearching ? null : panel.gridModel
+                model: panel._searchApplied ? null : panel.gridModel
                 appsModel: panel.appsModel
                 sharedFavoritesModel: panel.sharedFavoritesModel
                 favoritesGroupedModel: panel.favoritesGroupedModel
