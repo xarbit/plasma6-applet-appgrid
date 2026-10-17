@@ -16,7 +16,6 @@ import dev.xarbit.appgrid.models
 
 import "../controllers"
 import "../widgets"
-import "../js/favoriteid.js" as FavoriteId
 import "../js/constants.js" as Const
 import "../js/gridmetrics.js" as GridMetrics
 import "../js/scale.js" as Scale
@@ -368,8 +367,6 @@ Item {
         sharedFavoritesModel: panel.plasmoidBridge ? panel.plasmoidBridge.favoritesModel : null
         favoritesGroupedModel: panel.favoritesGroupedModel
     }
-    readonly property alias favoriteIdRole: favorites.favoriteIdRole
-    readonly property alias sharedFavoritesModel: favorites.sharedFavoritesModel
 
     // Favourites folders (issue #18). The C++ grouped model (shared by both
     // variants via the bridge) composes KAStats favourites with the folder layout.
@@ -416,10 +413,9 @@ Item {
         // Only while the favourites grid is on screen (its whole purpose): in
         // any other view, dragging an app that happens to be a favourite must
         // not arm a red ✕ across the grid.
-        enabled: panel.sharedFavoritesModel !== null && panel.isFavoritesActive
+        enabled: favorites.sharedFavoritesModel !== null && panel.isFavoritesActive
         dragSource: panel.dragSource
-        favoritesModel: panel.sharedFavoritesModel
-        favoritesGroupedModel: panel.favoritesGroupedModel
+        favoritesManager: favorites
     }
 
     // Reset everything that should be back to its just-opened state on
@@ -637,8 +633,7 @@ Item {
             visible: panel.showCatBar
             Layout.leftMargin: Kirigami.Units.smallSpacing
             appsModel: panel.appsModel
-            isFavorite: sid => panel.sharedFavoritesModel
-                               && panel.sharedFavoritesModel.isFavorite(FavoriteId.toPrefixed(sid))
+            isFavorite: sid => favorites.isFavorite(sid)
             editCategoryInMenu: launcherActions.editMenuItem
             favoritesFirst: panel.cfgStartWithFavorites
             isSortByCategory: panel.isSortByCategory
@@ -775,9 +770,7 @@ Item {
             // folders are off — reading menuTreeModel is what triggers the walk.
             menuModel: panel.categoryFolders && panel.plasmoidBridge ? panel.plasmoidBridge.menuTreeModel : null
             appsModel: panel.appsModel
-            sharedFavoritesModel: panel.sharedFavoritesModel
             favoritesManager: favorites
-            favoriteIdRole: panel.favoriteIdRole
             dragSource: panel.dragSource
             columns: panel.columns
             cellStyle: cellStyle
@@ -802,10 +795,7 @@ Item {
             cfg: cfg
             model: panel._searchApplied ? null : panel.gridModel
             appsModel: panel.appsModel
-            sharedFavoritesModel: panel.sharedFavoritesModel
-            favoritesGroupedModel: panel.favoritesGroupedModel
             favoritesManager: favorites
-            favoriteIdRole: panel.favoriteIdRole
             dragSource: panel.dragSource
             searchField: searchBar.field
             favoritesActive: panel.isFavoritesActive
@@ -838,8 +828,6 @@ Item {
         launcherActions: launcherActions
         appsModel: panel.appsModel
         searchModel: panel.searchModel
-        sharedFavoritesModel: panel.sharedFavoritesModel
-        favoritesGroupedModel: panel.favoritesGroupedModel
         favoritesManager: favorites
         appletInterface: panel.appletInterface
         favoritesActive: panel.isFavoritesActive

@@ -16,7 +16,8 @@ TestCase {
 
     QtObject {
         id: favoritesStub
-        function isFavorite(id) { return id === "applications:kate.desktop" || id === "applications:gimp.desktop" }
+        property var favoritesGroupedModel: null
+        function isFavorite(sid) { return sid === "kate.desktop" || sid === "gimp.desktop" }
     }
     QtObject {
         id: sourceStub
@@ -32,7 +33,7 @@ TestCase {
     function make() {
         var c = Qt.createComponent("../../package/contents/ui/widgets/FavoriteRemoveArea.qml")
         verify(c.status === Component.Ready, "load error: " + c.errorString())
-        return createTemporaryObject(c, null, { dragSource: sourceStub, favoritesModel: favoritesStub })
+        return createTemporaryObject(c, null, { dragSource: sourceStub, favoritesManager: favoritesStub })
     }
 
     function init() {

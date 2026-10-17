@@ -30,11 +30,16 @@ TestCase {
         function folderOfMember(sid) { return testCase.folderOf[sid] || "" }
         function folderMembers(folderId) { return [] }
     }
+    QtObject {
+        id: managerStub
+        property var sharedFavoritesModel: null
+        property var favoritesGroupedModel: groupedStub
+    }
 
     Component {
         id: menuComponent
         AppContextMenu {
-            favoritesGroupedModel: groupedStub
+            favoritesManager: managerStub
             foldersEnabled: true
             appActions: sid => []
             launchAppAction: (sid, actionName) => {}

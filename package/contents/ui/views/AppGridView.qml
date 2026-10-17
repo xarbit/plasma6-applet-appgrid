@@ -228,11 +228,16 @@ GridView {
     property Item searchField: null
     // The apps model for section queries
     property var appsModel: null
-    property var sharedFavoritesModel: null
+    // Single source of truth for favourites (controllers/FavoritesManager):
+    // the mutations, and the models read below.
+    property var favoritesManager: null
+    readonly property var sharedFavoritesModel: favoritesManager ? favoritesManager.sharedFavoritesModel : null
     // C++ grouped model (issue #18). When the grid is bound to it, favourite app
     // rows still resolve via favoriteId (like KAStats), and folder rows render a
     // FolderCell that opens on click.
-    property var favoritesGroupedModel: null
+    readonly property var favoritesGroupedModel: favoritesManager ? favoritesManager.favoritesGroupedModel : null
+    // The favourites model's FavoriteId role; -1 without one.
+    readonly property int favoriteIdRole: favoritesManager ? favoritesManager.favoriteIdRole : -1
     // The grouped model this grid renders when `model` is bound to it — the
     // favourites folders (favoritesGroupedModel) or the read-only menu tree
     // (#201). Both expose the AbstractGroupedModel row API, so the delegate and
@@ -241,15 +246,8 @@ GridView {
     // Favourites grouping is editable (reorder, drag-to-folder, create folder);
     // the menu tree is read-only. Gates those mutations.
     property bool groupEditable: true
-    // Single source of truth for favourite mutations (add/remove/toggle with
-    // folder cleanup). Injected by the boundary; see controllers/FavoritesManager.
-    property var favoritesManager: null
     // Shared DragSource from the plasmoid root; set by GridPanel.
     property DragSource dragSource: null
-
-    // FavoriteId role index — pushed in by the owner once the shared model
-    // is ready (see GridPanel.sharedFavoritesLoader). -1 disables lookup.
-    property int favoriteIdRole: -1
 
     // Name + icon for a favourite that has no row in the app model (a System
     // Settings module favourited via #64), read from KAStats. The grouped model

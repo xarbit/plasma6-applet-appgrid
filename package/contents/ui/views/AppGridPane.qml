@@ -23,10 +23,10 @@ ColumnLayout {
     // The model the grid shows: the grouped favourites, or the app model.
     property var model: null
     property var appsModel: null
-    property var sharedFavoritesModel: null
-    property var favoritesGroupedModel: null
+    // FavoritesManager: favourites and their folders.
     property var favoritesManager: null
-    property int favoriteIdRole: -1
+    readonly property var sharedFavoritesModel: favoritesManager ? favoritesManager.sharedFavoritesModel : null
+    readonly property var favoritesGroupedModel: favoritesManager ? favoritesManager.favoritesGroupedModel : null
     property var dragSource: null
     property var searchField: null
     property bool favoritesActive: false
@@ -97,12 +97,9 @@ ColumnLayout {
             anchors.fill: parent
             model: pane.model
             appsModel: pane.appsModel
-            sharedFavoritesModel: pane.sharedFavoritesModel
-            favoritesGroupedModel: pane.favoritesGroupedModel
             // Editable here (unlike the read-only menu tree).
             groupedModel: pane.favoritesGroupedModel
             favoritesManager: pane.favoritesManager
-            favoriteIdRole: pane.favoriteIdRole
             dragSource: pane.dragSource
             searchField: pane.searchField
             columns: pane.columns

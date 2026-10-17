@@ -29,12 +29,13 @@ Item {
 
     property var appletInterface: null
     property var appsModel: null
-    property var sharedFavoritesModel: null
-    // Favourites folders (issue #18): the editable grouped model + whether the
-    // favourites tab is active, gating the folder menu rows.
-    property var favoritesGroupedModel: null
-    // Single source of truth for favourite mutations (controllers/FavoritesManager).
+    // Single source of truth for favourites (controllers/FavoritesManager):
+    // the mutations, and the models read below.
     property var favoritesManager: null
+    readonly property var sharedFavoritesModel: favoritesManager ? favoritesManager.sharedFavoritesModel : null
+    // Favourites folders (issue #18): the editable grouped model, gating the
+    // folder menu rows.
+    readonly property var favoritesGroupedModel: favoritesManager ? favoritesManager.favoritesGroupedModel : null
     // Per-activity favourites/folders opt-in; off keeps everything global and
     // hides the activity menus.
     property bool enableActivities: false

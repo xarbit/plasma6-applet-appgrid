@@ -23,9 +23,9 @@ Item {
     required property var launcherActions
     property var appsModel: null
     property var searchModel: null
-    property var sharedFavoritesModel: null
-    property var favoritesGroupedModel: null
+    // FavoritesManager: favourites and their folders.
     property var favoritesManager: null
+    readonly property var _favoritesGroupedModel: favoritesManager ? favoritesManager.favoritesGroupedModel : null
     property var appletInterface: null
     property bool favoritesActive: false
     // The grid whose multi-selection the app menu's selection items change,
@@ -78,16 +78,14 @@ Item {
     AppContextMenu {
         id: appMenu
         appsModel: menus.appsModel
-        sharedFavoritesModel: menus.sharedFavoritesModel
-        // Always available so "Add to Folder" works for a favourite right-clicked
+        // The folders too, so "Add to Folder" works for a favourite right-clicked
         // anywhere (grid, search) — not only on the favourites tab.
-        favoritesGroupedModel: menus.favoritesGroupedModel
         favoritesManager: menus.favoritesManager
         foldersEnabled: menus.cfg.favoriteFoldersEnabled
         enableActivities: menus.cfg.enableActivities
         favoritesActive: menus.favoritesActive
         appletInterface: menus.appletInterface
-        onOpenFolderRequested: folderId => { if (menus.favoritesGroupedModel) menus.favoritesGroupedModel.enterFolder(folderId) }
+        onOpenFolderRequested: folderId => { if (menus._favoritesGroupedModel) menus._favoritesGroupedModel.enterFolder(folderId) }
         onRenameFolderRequested: folderId => menus.renameFolderRequested(folderId)
         onFolderLaunchRequested: sids => menus.bulkLaunchRequested(sids, true)
 

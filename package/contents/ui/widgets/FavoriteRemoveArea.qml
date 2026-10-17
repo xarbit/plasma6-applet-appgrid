@@ -12,27 +12,25 @@
 
 import QtQuick
 
-import "../js/favoriteid.js" as FavoriteId
 
 DropArea {
     id: root
 
     // The shared DragSource of the launcher's own drags.
     property var dragSource: null
-    // AppGridFavoritesModel; FavoritesGroupedModel for folders.
-    property var favoritesModel: null
-    property var favoritesGroupedModel: null
+    // FavoritesManager: favourites and their folders.
+    property var favoritesManager: null
 
     // The dragged sids that are actually favorites (empty unless this is an
     // own drag with at least one favorite source). Drives both the ✕ marker
     // and the drop removal.
     function _favoriteSids(drag) {
         const src = root.dragSource
-        if (!src || src.blockedOnFavoritesTab || !src.isOwnDrag(drag) || !root.favoritesModel) {
+        if (!src || src.blockedOnFavoritesTab || !src.isOwnDrag(drag) || !root.favoritesManager) {
             return []
         }
         const all = src.sourceStorageIds.length > 0 ? src.sourceStorageIds : [src.sourceStorageId]
-        return all.filter(sid => sid && root.favoritesModel.isFavorite(FavoriteId.toPrefixed(sid)))
+        return all.filter(sid => root.favoritesManager.isFavorite(sid))
     }
 
     // The dragged folder's id, if a folder cell is being dragged here (#18).
@@ -73,8 +71,9 @@ DropArea {
         // A folder dropped here is dissolved (members return to favourites),
         // the folder equivalent of removing an icon.
         const folderId = root._folderId(drag)
-        if (folderId.length > 0 && root.favoritesGroupedModel) {
-            root.favoritesGroupedModel.ungroupFolder(folderId)
+        const folders = root.favoritesManager ? root.favoritesManager.favoritesGroupedModel : null
+        if (folderId.length > 0 && folders) {
+            folders.ungroupFolder(folderId)
             drag.accept(Qt.MoveAction)
             return
         }
@@ -82,8 +81,9 @@ DropArea {
         if (sids.length === 0) {
             return
         }
+        // Through the manager, so a favourite in a folder leaves the folder too.
         for (var i = 0; i < sids.length; ++i) {
-            root.favoritesModel.removeFavorite(FavoriteId.toPrefixed(sids[i]))
+            root.favoritesManager.removeFavorite(sids[i])
         }
         drag.accept(Qt.MoveAction)
     }

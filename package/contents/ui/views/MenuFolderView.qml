@@ -28,9 +28,7 @@ Item {
     // enterFolder / goBack / canGoBack / currentFolderName.
     property var menuModel: null
     property var appsModel: null
-    property var sharedFavoritesModel: null
     property var favoritesManager: null
-    property int favoriteIdRole: -1
     property var dragSource: null
     property var searchField: null
 
@@ -98,9 +96,7 @@ Item {
             hideLabelsOnFavorites: false
 
             appsModel: root.appsModel
-            sharedFavoritesModel: root.sharedFavoritesModel
             favoritesManager: root.favoritesManager
-            favoriteIdRole: root.favoriteIdRole
             dragSource: root.dragSource
             searchField: root.searchField
 
