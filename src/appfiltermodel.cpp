@@ -9,27 +9,16 @@
 #include "applauncher.h"
 #include "appmodel.h"
 #include "categoryqueries.h"
-#include "defaultappsresolver.h"
 #include "searchranking.h"
 
-#include <KConfigGroup>
 #include <KIconLoader>
 #include <KService>
-#include <KSharedConfig>
-#include <KSycoca>
-
-#include <QElapsedTimer>
-#include <QLoggingCategory>
 
 #include <cstdlib>
 #include <limits>
 
 namespace
 {
-// Off by default; enable with QT_LOGGING_RULES="appgrid.perf.debug=true" to time
-// the per-refresh cost of resolving the role defaults (#200).
-Q_LOGGING_CATEGORY(lcPerf, "appgrid.perf", QtWarningMsg)
-
 // completionFor() scans only the top-ranked rows for an inline-completion word,
 // so it stays cheap enough to run synchronously on every keystroke (the heavy
 // filter pass is what's deferred in QML).
@@ -44,22 +33,6 @@ AppFilterModel::AppFilterModel(QObject *parent)
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setFilterCaseSensitivity(Qt::CaseInsensitive);
     sort(0);
-
-    reloadDefaultApps();
-
-    // Refresh the role defaults on change instead of re-resolving them on every
-    // popup open (#200): DefaultAppsResolver::resolve() runs full KApplicationTrader
-    // service-DB scans, far too costly for the open path. KSycoca::databaseChanged
-    // covers app install/removal and the mimeapps default set; the kdeglobals
-    // watcher below covers the terminal override the KCM writes there.
-    connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppFilterModel::reloadDefaultApps);
-
-    m_kdeglobalsWatcher = KConfigWatcher::create(KSharedConfig::openConfig(QStringLiteral("kdeglobals")));
-    connect(m_kdeglobalsWatcher.data(), &KConfigWatcher::configChanged, this, [this](const KConfigGroup &group, const QByteArrayList &) {
-        if (group.name() == QLatin1String("General")) {
-            reloadDefaultApps();
-        }
-    });
 
     // countChanged: modelReset covers invalidate() / setSourceModel; the row
     // signals cover incremental row insertion/removal. Earlier code also
@@ -577,23 +550,14 @@ void AppFilterModel::setDefaultApps(const QStringList &list)
     Q_EMIT defaultAppsChanged();
 }
 
-void AppFilterModel::reloadDefaultApps()
+void AppFilterModel::setPreferredApps(const QSet<QString> &apps)
 {
-    QElapsedTimer timer;
-    timer.start();
-
-    // DefaultAppsResolver reads every source (mimeapps, KApplicationTrader,
-    // kdeglobals). setDefaultApps already change-detects + re-sorts + notifies
-    // for the broad default set; handle the preferred (role-default) set here.
-    const auto resolved = DefaultAppsResolver::resolve();
-    setDefaultApps(QStringList(resolved.defaults.cbegin(), resolved.defaults.cend()));
-    if (resolved.preferred != m_preferredAppsSet) {
-        m_preferredAppsSet = resolved.preferred;
-        invalidateRowScoreCache(); // cached isPreferred changed
-        invalidate();
+    if (m_preferredAppsSet == apps) {
+        return;
     }
-
-    qCDebug(lcPerf) << "reloadDefaultApps resolved" << resolved.defaults.size() << "defaults in" << timer.nsecsElapsed() / 1000 << "us";
+    m_preferredAppsSet = apps;
+    invalidateRowScoreCache(); // cached isPreferred changed
+    invalidate(); // search ranking depends on this
 }
 
 void AppFilterModel::recordLaunch(const QString &storageId)

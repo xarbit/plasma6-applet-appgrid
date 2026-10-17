@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <KConfigWatcher>
-
 #include <QHash>
 #include <QSet>
 #include <QStringList>
@@ -116,8 +114,9 @@ public:
 
     [[nodiscard]] QStringList defaultApps() const;
     void setDefaultApps(const QStringList &list);
-    // Load defaults from system + user mimeapps.list and update m_defaultApps.
-    Q_INVOKABLE void reloadDefaultApps();
+    /** Storage ids of the role defaults (default browser / mail / file
+     *  manager / terminal); they outrank the mime defaults in search. */
+    void setPreferredApps(const QSet<QString> &apps);
 
     // Opt-in: substitute KActivities frecency scores for the raw launchCount
     // tiebreak inside search ranking. Off by default; the grid sort is never
@@ -242,10 +241,6 @@ private:
     // manager via KApplicationTrader, terminal via kdeglobals). Outrank the
     // broader mimeapps defaults in the search tiebreak.
     QSet<QString> m_preferredAppsSet;
-    // Refreshes the role defaults when kdeglobals' terminal override changes
-    // (the one default-app input KSycoca doesn't notify), so the open path
-    // never has to re-resolve them (#200).
-    KConfigWatcher::Ptr m_kdeglobalsWatcher;
 
     // Hidden / favorite / recent lists, launch counts, and the
     // derived membership sets + favorite-position index consulted by

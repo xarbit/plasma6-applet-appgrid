@@ -17,6 +17,7 @@ class ResultsModel;
 
 #include "appfiltermodel.h"
 #include "appmodel.h"
+#include "defaultappsprovider.h"
 #include "favoritesgroupedmodel.h"
 #include "frecencyprovider.h"
 #include "launchstatestore.h"
@@ -250,6 +251,8 @@ private:
 
     AppModel m_appModel;
     AppFilterModel m_filterModel;
+    // Resolves the default apps off the constructor and on change only.
+    DefaultAppsProvider m_defaultApps;
     LaunchStateStore m_launchState;
     FavoritesGroupedModel m_favoritesGrouped;
     MenuTreeModel m_menuTreeModel;

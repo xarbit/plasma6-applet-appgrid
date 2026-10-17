@@ -104,6 +104,13 @@ AppGridController::AppGridController(QObject *parent)
     connect(&m_frecencyProvider, &FrecencyProvider::scoresChanged, this, [this]() {
         m_filterModel.setFrecencyScores(m_frecencyProvider.scores());
     });
+    // The default apps rank search results; the provider resolves them shortly
+    // after startup and again whenever they change.
+    connect(&m_defaultApps, &DefaultAppsProvider::changed, this, [this]() {
+        const QSet<QString> defaults = m_defaultApps.defaults();
+        m_filterModel.setDefaultApps(QStringList(defaults.cbegin(), defaults.cend()));
+        m_filterModel.setPreferredApps(m_defaultApps.preferred());
+    });
     QQuickWindow::setDefaultAlphaBuffer(true);
 
     wireLaunchState();

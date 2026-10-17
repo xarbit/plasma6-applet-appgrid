@@ -10,7 +10,6 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/menuscanner.cpp
     ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp
     ${CMAKE_SOURCE_DIR}/src/appfiltermodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/defaultappsresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/categorymapping.cpp
     ${CMAKE_SOURCE_DIR}/src/categoryqueries.cpp
     ${CMAKE_SOURCE_DIR}/src/runnerfiltermodel.cpp

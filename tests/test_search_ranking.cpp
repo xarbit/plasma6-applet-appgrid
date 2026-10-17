@@ -49,6 +49,7 @@ private Q_SLOTS:
     void compare_terminalSearch();
     void favoriteRanksFirstInTier();
     void usageBeatsMimeDefaultInSameTier();
+    void roleDefaultBeatsUsageInSameTier();
 
 private:
     QString nameAt(int proxyRow) const;
@@ -633,6 +634,26 @@ void TestSearchRanking::usageBeatsMimeDefaultInSameTier()
     m_filter.setSearchText(QString());
     m_filter.setLaunchCountsMap({});
     m_filter.setDefaultApps({});
+}
+
+// A role default (the default terminal, browser, ...) beats a more used app in
+// its tier; the defaults now reach the model through setPreferredApps().
+void TestSearchRanking::roleDefaultBeatsUsageInSameTier()
+{
+    m_source.setApps({
+        {QStringLiteral("Konsole"), {}, {}, {}, QStringLiteral("Terminal"), QStringLiteral("konsole.desktop"), {}, {}, {}},
+        {QStringLiteral("Ghostty"), {}, {}, {}, QStringLiteral("Terminal"), QStringLiteral("ghostty.desktop"), {}, {}, {}},
+    });
+    QVariantMap counts;
+    counts[QStringLiteral("ghostty.desktop")] = 72;
+    m_filter.setLaunchCountsMap(counts);
+    m_filter.setSearchText(QStringLiteral("terminal"));
+    QCOMPARE(nameAt(0), QStringLiteral("Ghostty")); // most used
+    m_filter.setPreferredApps({QStringLiteral("konsole.desktop")});
+    QCOMPARE(nameAt(0), QStringLiteral("Konsole")); // the default terminal
+    m_filter.setPreferredApps({});
+    m_filter.setSearchText(QString());
+    m_filter.setLaunchCountsMap({});
 }
 
 QTEST_MAIN(TestSearchRanking)
