@@ -9,6 +9,7 @@
 #include "categorymapping.h"
 
 #include <KIO/ApplicationLauncherJob>
+#include <KIO/JobUiDelegateFactory>
 #include <KJob>
 #include <KLocalizedString>
 #include <KService>
@@ -283,15 +284,23 @@ void AppModel::launch(int index)
     }
 
     const auto &app = m_apps[index];
-    auto service = KService::serviceByDesktopPath(app.desktopFile);
+    // Resolve by menu id first, like Kickoff; the entry path is the fallback.
+    auto service = KService::serviceByStorageId(app.storageId);
+    if (!service) {
+        service = KService::serviceByDesktopPath(app.desktopFile);
+    }
     if (!service) {
         service = KService::serviceByDesktopName(app.desktopFile);
     }
     if (!service) {
+        qWarning() << "AppGrid: no service found to launch" << app.storageId << app.desktopFile;
         return;
     }
 
     auto *job = new KIO::ApplicationLauncherJob(service);
+    // Without a UI delegate KIO can't ask to trust a non-executable .desktop
+    // file or report a failed exec, so the launch fails silently (#226).
+    job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
     job->setAutoDelete(true);
     connect(job, &KJob::finished, this, [](KJob *j) {
         if (j->error()) {

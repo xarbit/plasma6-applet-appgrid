@@ -15,6 +15,7 @@
 #include <KGlobalAccel>
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/CommandLauncherJob>
+#include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
 #include <KLocalizedString>
 #include <KRunner/AbstractRunner>
@@ -624,6 +625,7 @@ void AppGridPlugin::launchAppAction(const QString &storageId, int actionIndex)
     }
 
     auto *job = new KIO::ApplicationLauncherJob(actions.at(actionIndex));
+    job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
     job->start();
 }
 
