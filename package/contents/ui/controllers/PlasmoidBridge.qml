@@ -27,7 +27,7 @@ QtObject {
     function runRunnerAction(idx, actIdx)   { return Plasmoid.runRunnerAction(idx, actIdx) }
     function runnerSubstitutionText(idx)    { return Plasmoid.runnerSubstitutionText(idx) }
     function appActions(sid)                { return Plasmoid.appActions(sid) }
-    function launchAppAction(sid, idx)      { Plasmoid.launchAppAction(sid, idx) }
+    function launchAppAction(sid, actionName) { Plasmoid.launchAppAction(sid, actionName) }
     function canManageInDiscover(sid)       { return Plasmoid.canManageInDiscover(sid) }
     function openInDiscover(sid)            { Plasmoid.openInDiscover(sid) }
     function listDirectory(path)            { return Plasmoid.listDirectory(path) }

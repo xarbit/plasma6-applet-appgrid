@@ -31,7 +31,7 @@ Item {
     property var sharedFavoritesModel: null
 
     // Plasmoid-glue callbacks, injected from the boundary:
-    //   appActions(sid) -> list        launchAppAction(sid, idx)
+    //   appActions(sid) -> list        launchAppAction(sid, actionName)
     //   canManageInDiscover(sid) -> bool   openInDiscover(sid)
     //   pinToTaskManager(df)           addToDesktop(df)
     //   editApplication(sid)           runRunnerAction(rowIdx, actionIdx)
@@ -203,11 +203,10 @@ Item {
             model: contextMenu.popupActions
             delegate: PlasmaComponents.MenuItem {
                 required property var modelData
-                required property int index
                 icon.name: modelData.icon || ""
                 text: modelData.text
                 onClicked: {
-                    contextMenu.launchAppAction(contextMenu.popupStorageId, index)
+                    contextMenu.launchAppAction(contextMenu.popupStorageId, modelData.name)
                     singleMenu.close()
                 }
             }

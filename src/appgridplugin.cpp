@@ -9,6 +9,7 @@
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
 #include "pluginhelpers.h"
+#include "serviceaction.h"
 
 #include <KConfigGroup>
 #include <KDesktopFile>
@@ -612,19 +613,14 @@ QVariantList AppGridPlugin::appActions(const QString &storageId)
     return result;
 }
 
-void AppGridPlugin::launchAppAction(const QString &storageId, int actionIndex)
+void AppGridPlugin::launchAppAction(const QString &storageId, const QString &actionName)
 {
-    auto service = KService::serviceByStorageId(storageId);
-    if (!service) {
+    const auto action = ServiceAction::find(KService::serviceByStorageId(storageId), actionName);
+    if (!action) {
         return;
     }
 
-    const auto actions = service->actions();
-    if (actionIndex < 0 || actionIndex >= actions.size()) {
-        return;
-    }
-
-    auto *job = new KIO::ApplicationLauncherJob(actions.at(actionIndex));
+    auto *job = new KIO::ApplicationLauncherJob(*action);
     job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
     job->start();
 }

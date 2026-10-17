@@ -187,7 +187,9 @@ set(APPGRID_COMMON_SOURCES
     src/discoverbackends.cpp
     src/discoverbackends.h
     src/pluginhelpers.cpp
+    src/serviceaction.cpp
     src/pluginhelpers.h
+    src/serviceaction.h
     src/searchranking.cpp
     src/searchranking.h
     src/launchbookkeeping.cpp

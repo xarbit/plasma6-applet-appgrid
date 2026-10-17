@@ -64,6 +64,16 @@ add_executable(test_pluginhelpers
 target_link_libraries(test_pluginhelpers PRIVATE Qt6::Test Qt6::Core KF6::ConfigCore)
 add_test(NAME test_pluginhelpers COMMAND test_pluginhelpers)
 
+# App actions are launched by name (the menu's row index skipped text-less
+# actions). Light target: KService only.
+add_executable(test_serviceaction
+    test_serviceaction.cpp
+    ${CMAKE_SOURCE_DIR}/src/serviceaction.cpp
+    ${CMAKE_SOURCE_DIR}/src/serviceaction.h
+)
+target_link_libraries(test_serviceaction PRIVATE Qt6::Test Qt6::Core KF6::Service)
+add_test(NAME test_serviceaction COMMAND test_serviceaction)
+
 # LaunchBookkeeping is a plain value type (QtCore only) — light standalone
 # target like test_pluginhelpers.
 add_executable(test_launchbookkeeping

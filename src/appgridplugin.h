@@ -172,8 +172,11 @@ public:
     /** Returns application-defined actions (jumplist) for the given storageId. */
     Q_INVOKABLE QVariantList appActions(const QString &storageId);
 
-    /** Launch a specific app action by storageId and action index. */
-    Q_INVOKABLE void launchAppAction(const QString &storageId, int actionIndex);
+    /** Launch the app action named @p actionName (KServiceAction::name(), as
+     *  returned by appActions()) of @p storageId. By name, not by index:
+     *  appActions() skips actions without text, so its indices don't match
+     *  KService::actions(). */
+    Q_INVOKABLE void launchAppAction(const QString &storageId, const QString &actionName);
 
     /** True if KDE Discover is installed. Standalone check; per-app
      *  manageability is queried separately via canManageInDiscover. */
