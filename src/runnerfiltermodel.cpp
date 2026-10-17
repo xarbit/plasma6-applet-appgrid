@@ -15,7 +15,7 @@
 #include <QUrl>
 
 RunnerFilterModel::RunnerFilterModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
+    : FilterProxyModel(parent)
 {
 }
 
@@ -27,7 +27,7 @@ void RunnerFilterModel::setAppModel(AppFilterModel *model)
     // (ensureAppNameCache), coalescing the burst of signals one keystroke emits.
     const auto markDirty = [this]() {
         m_appNameCacheDirty = true;
-        invalidate();
+        refilter();
     };
     connect(m_appModel, &QAbstractItemModel::modelReset, this, markDirty);
     connect(m_appModel, &QAbstractItemModel::layoutChanged, this, markDirty);
@@ -36,8 +36,8 @@ void RunnerFilterModel::setAppModel(AppFilterModel *model)
     // Hidden-set + searchShowsHidden control whether KRunner-served
     // hidden apps drop out — same gate AppFilterModel applies on its
     // own rows.
-    connect(m_appModel, &AppFilterModel::hiddenAppsChanged, this, &RunnerFilterModel::invalidate);
-    connect(m_appModel, &AppFilterModel::searchShowsHiddenChanged, this, &RunnerFilterModel::invalidate);
+    connect(m_appModel, &AppFilterModel::hiddenAppsChanged, this, &RunnerFilterModel::refilter);
+    connect(m_appModel, &AppFilterModel::searchShowsHiddenChanged, this, &RunnerFilterModel::refilter);
     m_appNameCacheDirty = true;
 }
 

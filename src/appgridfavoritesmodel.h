@@ -10,10 +10,11 @@
 
 #include <QMimeDatabase>
 #include <QSet>
-#include <QSortFilterProxyModel>
 #include <QUrl>
 
 #include <optional>
+
+#include "filterproxymodel.h"
 
 class QTimer;
 
@@ -51,7 +52,7 @@ class ResultWatcher;
  * same way Kicker hides it. The KActivities link is left in place — the favourite
  * comes back if the app is reinstalled — so this is non-destructive.
  */
-class AppGridFavoritesModel : public QSortFilterProxyModel
+class AppGridFavoritesModel : public FilterProxyModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
@@ -139,8 +140,6 @@ private:
         QUrl documentUrl;
     };
 
-    // Re-run the filter across Qt versions (6.13 replaced invalidateFilter()).
-    void invalidateFilterCompat();
     [[nodiscard]] QString resourceAt(const QModelIndex &index) const;
     [[nodiscard]] QString resourceForSourceRow(int sourceRow, const QModelIndex &sourceParent) const;
     [[nodiscard]] ResolvedFavorite resolve(const QString &favoriteId) const;

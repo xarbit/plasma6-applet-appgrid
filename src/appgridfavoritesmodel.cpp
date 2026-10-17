@@ -69,7 +69,7 @@ void AppGridFavoritesModel::registerQmlType()
 }
 
 AppGridFavoritesModel::AppGridFavoritesModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
+    : FilterProxyModel(parent)
     , m_consumer(new KActivities::Consumer(this))
 {
     // Coalesce the burst of watcher signals one external change emits (an unlink
@@ -98,13 +98,13 @@ AppGridFavoritesModel::AppGridFavoritesModel(QObject *parent)
     connect(m_consumer, &KActivities::Consumer::currentActivityChanged, this, [this] {
         if (!m_pendingRemovals.isEmpty()) {
             m_pendingRemovals.clear();
-            invalidateFilterCompat();
+            refilter();
         }
     });
 
     // An app installed or removed at runtime flips a favourite's validity; re-run
     // the filter so an uninstalled one drops (and a reinstalled one returns).
-    connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppGridFavoritesModel::invalidateFilterCompat);
+    connect(KSycoca::self(), &KSycoca::databaseChanged, this, &AppGridFavoritesModel::refilter);
 
     // The proxy's own row signals already fold in filtering, so count tracks the
     // visible favourites, not the raw store.
@@ -209,19 +209,6 @@ bool AppGridFavoritesModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     // the KActivities link stays, so reinstalling the app or restoring the file
     // brings the favourite back, matching Kicker, which also hides rather than unlinks.
     return resolve(resource).valid;
-}
-
-void AppGridFavoritesModel::invalidateFilterCompat()
-{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 13, 0)
-    beginFilterChange();
-    endFilterChange();
-#else
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    invalidateFilter();
-    QT_WARNING_POP
-#endif
 }
 
 QString AppGridFavoritesModel::resourceForSourceRow(int sourceRow, const QModelIndex &sourceParent) const
@@ -436,7 +423,7 @@ void AppGridFavoritesModel::setResourceHidden(const QString &resource, bool hidd
         changed = m_pendingRemovals.remove(resource);
     }
     if (changed) {
-        invalidateFilterCompat();
+        refilter();
     }
 }
 

@@ -9,10 +9,10 @@
 
 #include <QHash>
 #include <QSet>
-#include <QSortFilterProxyModel>
 #include <QStringList>
 #include <QVariantMap>
 
+#include "filterproxymodel.h"
 #include "launchbookkeeping.h"
 #include "searchranking.h"
 
@@ -23,7 +23,7 @@
  * Also exposes convenience methods to launch apps, hide/unhide by storageId,
  * and retrieve row data as a QVariantMap.
  */
-class AppFilterModel : public QSortFilterProxyModel
+class AppFilterModel : public FilterProxyModel
 {
     Q_OBJECT
     Q_PROPERTY(QString filterCategory READ filterCategory WRITE setFilterCategory NOTIFY filterCategoryChanged)
@@ -186,8 +186,6 @@ protected:
 
 private:
     void recordLaunch(const QString &storageId);
-    // Re-run only the filter (Qt-version-bridged invalidateFilter); see .cpp.
-    void invalidateFilterCompat();
     void invalidateStorageIdCache();
     void ensureStorageIdCache() const;
     // Drop recents whose app left the database (uninstalled); keeps the recents

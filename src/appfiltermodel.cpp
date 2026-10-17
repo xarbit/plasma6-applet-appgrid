@@ -36,26 +36,10 @@ Q_LOGGING_CATEGORY(lcPerf, "appgrid.perf", QtWarningMsg)
 constexpr int kCompletionScanLimit = 25;
 }
 
-// Re-run only the filter (not the sort). Qt 6.13 replaced invalidateFilter()
-// with begin/endFilterChange(); bridge both without leaking a deprecation
-// warning on the older path. Sort-affecting changes call invalidate() directly.
-void AppFilterModel::invalidateFilterCompat()
-{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 13, 0)
-    beginFilterChange();
-    endFilterChange();
-#else
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    invalidateFilter();
-    QT_WARNING_POP
-#endif
-}
-
 // --- Constructor ---
 
 AppFilterModel::AppFilterModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
+    : FilterProxyModel(parent)
 {
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -237,7 +221,7 @@ void AppFilterModel::setFilterCategory(const QString &category)
         return;
     }
     m_filterCategory = category;
-    invalidateFilterCompat();
+    refilter();
     Q_EMIT filterCategoryChanged();
 }
 
@@ -282,7 +266,7 @@ void AppFilterModel::setSearchState(const QString &text, const QString &category
     if (textChanged || favoritesChanged) {
         invalidate();
     } else {
-        invalidateFilterCompat();
+        refilter();
     }
     if (categoryChanged) {
         Q_EMIT filterCategoryChanged();
@@ -305,7 +289,7 @@ void AppFilterModel::setHiddenApps(const QStringList &list)
     if (!m_book.setHidden(list)) {
         return;
     }
-    invalidateFilterCompat();
+    refilter();
     Q_EMIT hiddenAppsChanged();
 }
 
@@ -316,7 +300,7 @@ void AppFilterModel::hideApp(int proxyIndex)
         return;
     }
     if (m_book.hide(idx.data(AppModel::StorageIdRole).toString())) {
-        invalidateFilterCompat();
+        refilter();
         Q_EMIT hiddenAppsChanged();
     }
 }
@@ -324,7 +308,7 @@ void AppFilterModel::hideApp(int proxyIndex)
 void AppFilterModel::hideByStorageId(const QString &storageId)
 {
     if (m_book.hide(storageId)) {
-        invalidateFilterCompat();
+        refilter();
         Q_EMIT hiddenAppsChanged();
     }
 }
@@ -332,7 +316,7 @@ void AppFilterModel::hideByStorageId(const QString &storageId)
 void AppFilterModel::unhideApp(const QString &storageId)
 {
     if (m_book.unhide(storageId)) {
-        invalidateFilterCompat();
+        refilter();
         Q_EMIT hiddenAppsChanged();
     }
 }
@@ -457,7 +441,7 @@ void AppFilterModel::setSearchShowsHidden(bool enabled)
     }
     m_searchShowsHidden = enabled;
     if (!m_searchText.isEmpty()) {
-        invalidateFilterCompat();
+        refilter();
     }
     Q_EMIT searchShowsHiddenChanged();
 }
@@ -494,7 +478,7 @@ void AppFilterModel::setShowFavoritesOnly(bool enabled)
         return;
     }
     m_showFavoritesOnly = enabled;
-    // Use invalidate() instead of invalidateFilterCompat() because
+    // Use invalidate() instead of refilter() because
     // toggling favorites mode changes the sort order (lessThan sorts by
     // favorite position when enabled, alphabetical otherwise).
     // A filter-only refresh would keep the previous sort, causing

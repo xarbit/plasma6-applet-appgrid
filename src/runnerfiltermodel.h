@@ -6,9 +6,9 @@
 #pragma once
 
 #include <QSet>
-#include <QSortFilterProxyModel>
 
 #include "appfiltermodel.h"
+#include "filterproxymodel.h"
 
 /**
  * @brief Proxy that filters KRunner results already present in AppFilterModel.
@@ -19,7 +19,7 @@
  * the O(app-count) rebuild happens at most once, on the next filter pass that
  * actually needs it (skipped entirely when there are no runner rows).
  */
-class RunnerFilterModel : public QSortFilterProxyModel
+class RunnerFilterModel : public FilterProxyModel
 {
     Q_OBJECT
 public:
