@@ -21,16 +21,16 @@ public:
         return m_list;
     }
     /** Returns whether the favourites changed. */
-    bool set(const QStringList &list)
+    bool set(const QStringList &favorites)
     {
-        if (m_list == list) {
+        if (m_list == favorites) {
             return false;
         }
-        m_list = list;
+        m_list = favorites;
         m_positions.clear();
-        m_positions.reserve(list.size());
-        for (int i = 0; i < list.size(); ++i) {
-            m_positions.insert(list.at(i), i);
+        m_positions.reserve(favorites.size());
+        for (int i = 0; i < favorites.size(); ++i) {
+            m_positions.insert(favorites.at(i), i);
         }
         return true;
     }
