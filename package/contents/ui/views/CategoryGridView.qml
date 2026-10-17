@@ -15,7 +15,6 @@ import org.kde.plasma.components as PlasmaComponents
 
 import "../controllers"
 import "../widgets"
-import "../js/gridnav.js" as GridNav
 import "../js/gridmetrics.js" as GridMetrics
 import "../js/constants.js" as Const
 
@@ -121,12 +120,6 @@ ListView {
         function onNewAppsChanged() { categoryGrid._newAppsRevision++ }
     }
 
-    function _arrowMoveWithSelection(event, moveFn) {
-        GridNav.arrowMoveWithSelection(selection, multiSelectActive,
-                                        event, moveFn,
-                                        function() { return selection.virtualIndex })
-    }
-
     Shortcut {
         sequence: StandardKey.SelectAll
         enabled: categoryGrid.multiSelectActive && categoryGrid.activeFocus
@@ -171,51 +164,6 @@ ListView {
             ensureVisible()
     }
 
-    // Direction movers — encode the cursor-transition rules between
-    // the recents row and the flat category grid. Wrapped by the
-    // shift-extender so Shift+Arrow at a recents/grid boundary extends
-    // the selection through the destination cell.
-    function _moveLeft() {
-        if (recentIndex > 0) recentIndex--
-        else if (recentIndex < 0 && appIndex > 0) {
-            appIndex--
-            ensureVisible()
-        }
-    }
-    function _moveRight() {
-        if (recentIndex >= 0 && recentIndex < recentCount - 1) recentIndex++
-        else if (recentIndex < 0 && appIndex < appCount - 1) {
-            appIndex++
-            ensureVisible()
-        }
-    }
-    function _moveUp() {
-        if (recentIndex >= 0) {
-            recentIndex -= itemsPerRow
-        } else if (appIndex >= itemsPerRow) {
-            appIndex -= itemsPerRow
-            ensureVisible()
-        } else if (appIndex >= 0 && showRecents && recentCount > 0) {
-            recentIndex = GridNav.recentsLandingFromGrid(appIndex, recentCount, itemsPerRow)
-            appIndex = -1
-            positionViewAtBeginning()
-        }
-    }
-    function _moveDown() {
-        if (recentIndex >= 0) {
-            var newIdx = recentIndex + itemsPerRow
-            if (newIdx < recentCount) {
-                recentIndex = newIdx
-            } else {
-                appIndex = GridNav.gridLandingFromRecents(recentIndex, itemsPerRow, appCount)
-                recentIndex = -1
-                ensureVisible()
-            }
-        } else if (appIndex + itemsPerRow < appCount) {
-            appIndex += itemsPerRow
-            ensureVisible()
-        }
-    }
     function _exitToSearchField() {
         recentIndex = -1
         appIndex = -1
@@ -225,40 +173,29 @@ ListView {
     GridKeyboardNav {
         id: keyNav
         searchField: categoryGrid.searchField
+        recentIndex: categoryGrid.recentIndex
+        gridIndex: categoryGrid.appIndex
+        recentCount: categoryGrid.recentCount
+        gridCount: categoryGrid.appCount
+        columns: categoryGrid.itemsPerRow
+        mirrored: categoryGrid.effectiveLayoutDirection === Qt.RightToLeft
+        selection: categoryGrid.selection
+        selectionActive: categoryGrid.multiSelectActive
         onCategoryNavRequested: direction => categoryGrid.host.categoryNavRequested(direction)
-    }
-    Keys.onLeftPressed: function(event) {
-        if (keyNav.handleAltArrow(event, -1)) return
-        _arrowMoveWithSelection(event, _moveLeft)
-    }
-    Keys.onRightPressed: function(event) {
-        if (keyNav.handleAltArrow(event, 1)) return
-        _arrowMoveWithSelection(event, _moveRight)
-    }
-    Keys.onUpPressed: function(event) {
-        // Leaving the grid is a focus transfer, not a cursor move, so it
-        // bypasses the shift-extender. Top row of recents exits straight
-        // to the search field; first row of the category grid exits when
-        // recents is hidden.
-        const exitingRecentsTop = recentIndex >= 0 && recentIndex < itemsPerRow
-        const exitingGridTopWithoutRecents =
-            recentIndex < 0 && appIndex >= 0
-            && appIndex < itemsPerRow
-            && (!showRecents || recentCount === 0)
-        if (exitingRecentsTop || exitingGridTopWithoutRecents) {
-            _exitToSearchField()
-            return
+        onCursorRequested: (recent, grid) => {
+            categoryGrid.recentIndex = recent
+            categoryGrid.appIndex = grid
+            if (grid >= 0)
+                categoryGrid.ensureVisible()
+            else
+                categoryGrid.positionViewAtBeginning()
         }
-        _arrowMoveWithSelection(event, _moveUp)
+        onExitRequested: categoryGrid._exitToSearchField()
     }
-    Keys.onDownPressed: function(event) {
-        if (recentIndex < 0 && appIndex < 0) {
-            // No focus yet — claim it (selectFirst handles recents-first preference).
-            selectFirst()
-            return
-        }
-        _arrowMoveWithSelection(event, _moveDown)
-    }
+    Keys.onUpPressed: event => keyNav.handleArrow(event)
+    Keys.onDownPressed: event => keyNav.handleArrow(event)
+    Keys.onLeftPressed: event => keyNav.handleArrow(event)
+    Keys.onRightPressed: event => keyNav.handleArrow(event)
     function _launchCurrent() {
         if (recentIndex >= 0 && recentIndex < recentCount && appsModel)
             host.launchRequested(appsModel.recentApps[recentIndex])

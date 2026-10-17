@@ -15,7 +15,6 @@ import "../widgets"
 import "../js/favoriteid.js" as FavoriteId
 import "../js/favoritetoggle.js" as FavoriteToggle
 import "../js/favoritevisual.js" as FavoriteVisual
-import "../js/gridnav.js" as GridNav
 import "../js/gridmetrics.js" as GridMetrics
 import "../js/constants.js" as Const
 
@@ -433,118 +432,34 @@ GridView {
         }
     }
 
-    // Shift+Arrow extends the multi-selection from the anchor through
-    // the new virtual cursor index. Plain arrows just move. Reads the
-    // virtual index so range fill spans recents and grid uniformly.
-    function _arrowMoveWithSelection(event, moveFn) {
-        GridNav.arrowMoveWithSelection(selection, multiSelectActive,
-                                        event, moveFn,
-                                        function() { return selection.virtualIndex })
-    }
-
-    // Direction movers — encode the cursor-transition rules between
-    // the recents row and the grid. Callers wrap them with the
-    // shift-extender so a Shift+Arrow at a recents/grid boundary
-    // extends the selection through the destination cell.
-    function _moveUp() {
-        if (recentIndex >= 0) {
-            var newIdx = recentIndex - effectiveColumns
-            if (newIdx >= 0)
-                recentIndex = newIdx
-            else
-                _exitToSearchField()
-        } else if (currentIndex >= 0 && currentIndex < effectiveColumns && showRecents) {
-            recentIndex = GridNav.recentsLandingFromGrid(currentIndex, recentCount, effectiveColumns)
-            currentIndex = -1
-        } else {
-            moveCurrentIndexUp()
-        }
-    }
-    function _moveDown() {
-        if (recentIndex >= 0) {
-            var newIdx = recentIndex + effectiveColumns
-            if (newIdx < recentCount) {
-                recentIndex = newIdx
-            } else {
-                currentIndex = GridNav.gridLandingFromRecents(recentIndex, effectiveColumns, count)
-                recentIndex = -1
-            }
-        } else {
-            moveCurrentIndexDown()
-        }
-    }
-    function _moveLeft() {
-        if (recentIndex > 0)
-            recentIndex--
-        else if (recentIndex < 0)
-            moveCurrentIndexLeft()
-    }
-    function _moveRight() {
-        if (recentIndex >= 0 && recentIndex < recentCount - 1)
-            recentIndex++
-        else if (recentIndex < 0)
-            moveCurrentIndexRight()
-    }
     function _exitToSearchField() {
         recentIndex = -1
         currentIndex = -1
         if (searchField) searchField.forceActiveFocus()
     }
 
-    Keys.onUpPressed: function(event) {
-        // Leaving the grid is a focus transfer, not a cursor move, so it
-        // bypasses the shift-extender. Triggered when the cursor sits on
-        // the top row of recents (any column) or nothing is focused yet.
-        const exitingRecentsTop = recentIndex >= 0 && recentIndex < effectiveColumns
-        const nothingFocused = recentIndex < 0 && currentIndex < 0
-        if (exitingRecentsTop || nothingFocused) {
-            _exitToSearchField()
-            return
-        }
-        _arrowMoveWithSelection(event, _moveUp)
-    }
-    // Land on the first cell when the grid has focus but nothing is selected yet
-    // (e.g. entered without a preselect) — moving from an empty current index is
-    // unreliable, so a first arrow press should just select the start.
-    function _selectFirstIfEmpty() {
-        if (recentIndex >= 0 || currentIndex >= 0)
-            return false
-        if (showRecents && recentCount > 0)
-            recentIndex = 0
-        else if (count > 0)
-            currentIndex = 0
-        return true
-    }
-    Keys.onDownPressed: function(event) {
-        if (_selectFirstIfEmpty()) {
-            event.accepted = true
-            return
-        }
-        _arrowMoveWithSelection(event, _moveDown)
-    }
     GridKeyboardNav {
         id: keyNav
         searchField: gridView.searchField
+        recentIndex: gridView.recentIndex
+        gridIndex: gridView.currentIndex
+        recentCount: gridView.recentCount
+        gridCount: gridView.count
+        columns: gridView.effectiveColumns
+        mirrored: gridView.effectiveLayoutDirection === Qt.RightToLeft
+        selection: gridView.selection
+        selectionActive: gridView.multiSelectActive
         onCategoryNavRequested: direction => gridView.host.categoryNavRequested(direction)
-    }
-    Keys.onLeftPressed: function(event) {
-        if (keyNav.handleAltArrow(event, -1))
-            return
-        if (_selectFirstIfEmpty()) {
-            event.accepted = true
-            return
+        onCursorRequested: (recent, grid) => {
+            gridView.currentIndex = grid
+            gridView.recentIndex = recent
         }
-        _arrowMoveWithSelection(event, _moveLeft)
+        onExitRequested: gridView._exitToSearchField()
     }
-    Keys.onRightPressed: function(event) {
-        if (keyNav.handleAltArrow(event, 1))
-            return
-        if (_selectFirstIfEmpty()) {
-            event.accepted = true
-            return
-        }
-        _arrowMoveWithSelection(event, _moveRight)
-    }
+    Keys.onUpPressed: event => keyNav.handleArrow(event)
+    Keys.onDownPressed: event => keyNav.handleArrow(event)
+    Keys.onLeftPressed: event => keyNav.handleArrow(event)
+    Keys.onRightPressed: event => keyNav.handleArrow(event)
 
     // Esc clears multi-selection first. With no selection, hand off to the host
     // (e.g. the menu drill view goes back a level); if the host doesn't act, the

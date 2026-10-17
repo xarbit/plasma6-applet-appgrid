@@ -94,4 +94,51 @@ TestCase {
         // The move is handed to selection.extendOrMove, not called directly.
         verify(!moved)
     }
+
+    // --- moveCursor: the one arrow-key rule of both grids ---
+
+    // 6 recents over a 4-column layout (rows 0-3, 4-5), 10 grid cells.
+    readonly property var geo: ({ recentCount: 6, gridCount: 10, columns: 4, mirrored: false })
+    function move(recent, grid, key, geometry) {
+        const c = GridNav.moveCursor({ recent: recent, grid: grid }, key, geometry || geo)
+        return c.exit ? "exit" : c.recent + "/" + c.grid
+    }
+
+    function test_cursorStartsOnTheFirstCell() {
+        compare(move(-1, -1, Qt.Key_Down), "0/-1", "recents first")
+        compare(move(-1, -1, Qt.Key_Right), "0/-1")
+        compare(move(-1, -1, Qt.Key_Left, { recentCount: 0, gridCount: 3, columns: 4 }), "-1/0", "the grid without recents")
+        compare(move(-1, -1, Qt.Key_Down, { recentCount: 0, gridCount: 0, columns: 4 }), "-1/-1", "nothing to land on")
+        compare(move(-1, -1, Qt.Key_Up), "exit")
+    }
+
+    function test_upLeavesFromTheTopRow() {
+        compare(move(2, -1, Qt.Key_Up), "exit", "the top recents row")
+        compare(move(5, -1, Qt.Key_Up), "1/-1")
+        compare(move(-1, 1, Qt.Key_Up, { recentCount: 0, gridCount: 10, columns: 4 }), "exit", "the top grid row, no recents")
+        compare(move(-1, 6, Qt.Key_Up), "-1/2")
+    }
+
+    function test_crossingRecentsAndGridKeepsTheColumn() {
+        compare(move(-1, 1, Qt.Key_Up), "5/-1", "into the ragged last recents row")
+        compare(move(-1, 3, Qt.Key_Up), "5/-1", "clamped to its last cell")
+        compare(move(5, -1, Qt.Key_Down), "-1/1")
+        compare(move(1, -1, Qt.Key_Down), "5/-1", "within the recents first")
+        compare(move(5, -1, Qt.Key_Down, { recentCount: 6, gridCount: 0, columns: 4 }), "5/-1", "no grid to land on")
+    }
+
+    function test_downStopsAtTheLastRow() {
+        compare(move(-1, 5, Qt.Key_Down), "-1/9")
+        compare(move(-1, 7, Qt.Key_Down), "-1/7", "no cell below")
+    }
+
+    function test_leftRightStayInTheirRowsAndMirror() {
+        compare(move(0, -1, Qt.Key_Left), "0/-1")
+        compare(move(5, -1, Qt.Key_Right), "5/-1", "not into the grid")
+        compare(move(-1, 0, Qt.Key_Right), "-1/1")
+        compare(move(-1, 9, Qt.Key_Right), "-1/9")
+        const rtl = { recentCount: 6, gridCount: 10, columns: 4, mirrored: true }
+        compare(move(-1, 1, Qt.Key_Left, rtl), "-1/2", "Left moves forward right-to-left")
+        compare(move(-1, 1, Qt.Key_Right, rtl), "-1/0")
+    }
 }
