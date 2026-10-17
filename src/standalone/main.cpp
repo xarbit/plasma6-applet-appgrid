@@ -19,6 +19,7 @@
 #include <KConfigSkeleton>
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
+#include <PlasmaQuick/PlasmaQuick>
 
 #include <QApplication>
 #include <QEvent>
@@ -343,22 +344,14 @@ int main(int argc, char *argv[])
     constexpr int kModelScanBudgetMs = 500;
     QCoreApplication::processEvents(QEventLoop::AllEvents, kModelScanBudgetMs);
 
-    // Set the engine up the way PlasmaQuick::SharedQmlEngine did through
-    // Plasma 6.7 (6.8 removed it, #229): a plain QQmlEngine with a
-    // KLocalizedContext root context object for i18n, plus the Kirigami theme
-    // property below. Without these the reused plasmoid QML renders unthemed
-    // and half-broken. Same pattern as SettingsWindow, so no Plasma version gate.
-    QQmlEngine engine;
-    KLocalization::setupLocalizedContext(&engine);
-    // Make Kirigami.Theme source its colours from Plasma::Theme (the active
-    // Plasma Style), so text follows the Plasma desktop theme like the plasmoid
-    // and KRunner — not the kdeglobals colour scheme (which may be a light scheme
-    // and renders dark-on-dark over the dark Plasma background). Kirigami reads
-    // this engine property to choose its colour platform plugin
-    // (PlatformTheme::qmlAttachedProperties → findPlugin), and "Plasma" matches
-    // the KirigamiPlasmaStyle plugin. This is what the Plasma QML stack sets up
-    // for in-shell QML; a standalone binary must set it itself.
-    engine.setProperty("_kirigamiTheme", QStringLiteral("Plasma"));
+    // Load the QML in Plasma's shared QML engine, the one KRunner uses since
+    // Plasma 6.8. Plasma::setupPlasmaStyle() has already pointed Kirigami.Theme
+    // at the Plasma Style (text follows the Plasma desktop theme, not the
+    // kdeglobals colour scheme) and set the Plasma tooltip style, so the reused
+    // plasmoid QML renders like it does in the shell. Add the localized context
+    // for i18n on top.
+    const std::shared_ptr<QQmlEngine> engine = PlasmaQuick::globalEngine();
+    KLocalization::setupLocalizedContext(engine.get());
     // Inject the C++ dependencies as the entry root's *initial properties* (not
     // loose context properties): Main.qml declares each one `required`, so a
     // forgotten or renamed injection fails loudly at QML load instead of
@@ -372,7 +365,7 @@ int main(int argc, char *argv[])
     };
     // Bundled at this qrc path by qt_add_resources (see CMakeLists). The root is
     // a PlasmaCore.Window (PlasmaWindow) hosting GridPanel as its mainItem.
-    QQmlComponent component(&engine, QUrl(QStringLiteral("qrc:/qt/qml/appgrid/Main.qml")));
+    QQmlComponent component(engine.get(), QUrl(QStringLiteral("qrc:/qt/qml/appgrid/Main.qml")));
     const std::unique_ptr<QObject> rootObject(component.createWithInitialProperties(entryProperties));
     if (!rootObject) {
         qWarning("AppGrid: failed to load standalone entry QML: %s", qPrintable(component.errorString()));
