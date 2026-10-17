@@ -20,10 +20,13 @@ var DEFAULT_ICON = "application-x-executable"
 // search" is on): dimmed enough to read as hidden, legible enough to still pick.
 var HIDDEN_RESULT_OPACITY = 0.55
 
-// sortMode config values (config/main.xml + the General page's combo order).
-// Named so call sites read intent instead of a bare 0/1/2.
-var SortMode = {
-    Alphabetical: 0,
-    MostUsed: 1,
-    ByCategory: 2,
+// hoverAnimation config values (config/main.xml + the Appearance page's combo
+// order). The sort modes are the C++ AppFilterModel.SortMode enum.
+var HoverAnimation = {
+    None: 0,
+    Shake: 1,
+    Grow: 2,
+    Bounce: 3,
+    Spin: 4,
+    Shuffle: 5,
 }

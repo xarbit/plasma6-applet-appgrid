@@ -107,7 +107,7 @@ Item {
 
     function playAnimation() {
         if (Kirigami.Units.longDuration === 0) return
-        if (hoverAnimation === 5) {
+        if (hoverAnimation === Const.HoverAnimation.Shuffle) {
             shuffleRequested()
         } else if (iconAnimLoader.item) {
             iconAnimLoader.item.start()

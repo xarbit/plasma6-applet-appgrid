@@ -7,6 +7,7 @@
 
 import QtQuick
 import org.kde.kirigami as Kirigami
+import dev.xarbit.appgrid.models
 
 import "../controllers"
 import "../widgets"
@@ -285,7 +286,7 @@ GridView {
             return favoritesActive
 
         // Most Used without startWithFavorites → recents disabled
-        if (appsModel.sortMode === Const.SortMode.MostUsed)
+        if (appsModel.sortMode === AppFilterModel.MostUsed)
             return false
 
         return !favoritesActive
@@ -352,7 +353,7 @@ GridView {
         if (!multiSelectActive || idx < 0 || idx >= count) return ""
         if (_groupedGrid) {
             // 1 === AbstractGroupedModel.Folder — folders aren't selectable.
-            if (groupedModel.entryTypeAt(idx) === 1) return ""
+            if (groupedModel.entryTypeAt(idx) === AbstractGroupedModel.Folder) return ""
             return FavoriteId.stripPrefix(groupedModel.favoriteIdAt(idx)) || ""
         }
         if (_favoritesSelect) {
@@ -489,7 +490,7 @@ GridView {
         // launch through launchFavorite (app → our path, else the KAStats model).
         if (_groupedGrid) {
             // 1 === AbstractGroupedModel.Folder
-            if (groupedModel.entryTypeAt(currentIndex) === 1) {
+            if (groupedModel.entryTypeAt(currentIndex) === AbstractGroupedModel.Folder) {
                 openFolderRequested(groupedModel.folderIdAt(currentIndex))
             } else {
                 launchFavorite(FavoriteId.stripPrefix(groupedModel.favoriteIdAt(currentIndex)))
@@ -742,7 +743,7 @@ GridView {
         // FolderCell, app rows resolve via favoriteId exactly like the direct
         // KAStats grid does.
         readonly property bool _fromGrouped: gridView._groupedGrid
-        readonly property bool _isFolder: _fromGrouped && model.entryType === 1
+        readonly property bool _isFolder: _fromGrouped && model.entryType === AbstractGroupedModel.Folder
         // "Shared" = a favourite app row keyed by favoriteId — true for both the
         // direct KAStats grid and the grouped model's app rows.
         readonly property bool _fromShared: (gridView.favoritesActive

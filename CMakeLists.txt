@@ -207,6 +207,8 @@ set(APPGRID_COMMON_SOURCES
     src/categoryqueries.h
     src/categoryrowsmodel.cpp
     src/categoryrowsmodel.h
+    src/qmltypes.cpp
+    src/qmltypes.h
     src/discoverbackends.cpp
     src/discoverbackends.h
     src/pluginhelpers.cpp

@@ -20,6 +20,7 @@
 */
 
 import QtQuick
+import dev.xarbit.appgrid.models
 
 import "../controllers"
 import "../js/favoriteid.js" as FavoriteId
@@ -120,7 +121,7 @@ DropArea {
             return
         }
         // 1 === AbstractGroupedModel.Folder
-        if (gm.entryTypeAt(index) === 1) {
+        if (gm.entryTypeAt(index) === AbstractGroupedModel.Folder) {
             _source.foldTargetFolderId = gm.folderIdAt(index)
             _source.foldTargetStorageId = ""
         } else {

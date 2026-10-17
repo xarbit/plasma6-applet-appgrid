@@ -12,6 +12,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
+import dev.xarbit.appgrid.models
 
 import "../controllers"
 import "../widgets"
@@ -89,7 +90,7 @@ Item {
     readonly property bool effectiveHideGridWhenEmpty: cfgHideGridWhenEmpty || forceCompact
 
     // -- Sort helpers --
-    readonly property bool isSortByCategory: sortMode === Const.SortMode.ByCategory
+    readonly property bool isSortByCategory: sortMode === AppFilterModel.ByCategory
 
     // -- View state --
     // hideGridWhenEmpty: Compact mode — suppress grid/category chrome
@@ -930,7 +931,7 @@ Item {
             showDividers: panel.cfgShowDividers
             shadowEnabled: cfg.iconShadow
             showShortcuts: cfg.showSearchShortcuts
-            animateHighlight: cfg.hoverAnimation > 0
+            animateHighlight: cfg.hoverAnimation !== Const.HoverAnimation.None
             searchField: searchBar.field
             favoritesManager: favorites
             plasmoidBridge: panel.plasmoidBridge
@@ -1101,7 +1102,7 @@ Item {
                 showTooltips: panel.cfgShowTooltips
                 showNewAppBadge: panel.cfgShowNewAppBadge
                 hideLabelsOnFavorites: panel.cfgHideLabelsOnFavorites
-                animateHighlight: cfg.hoverAnimation > 0
+                animateHighlight: cfg.hoverAnimation !== Const.HoverAnimation.None
                 shuffleOverlayParent: shuffleOverlay
                 onOriginYChanged: {
                     if (panel._needsScrollToTop) {

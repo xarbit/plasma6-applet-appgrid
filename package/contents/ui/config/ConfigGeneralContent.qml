@@ -18,6 +18,7 @@ import QtQuick.Layouts
 
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
+import dev.xarbit.appgrid.models
 
 Kirigami.FormLayout {
     id: root
@@ -169,7 +170,7 @@ Kirigami.FormLayout {
     QQC2.CheckBox {
         id: showRecentApps
         text: i18nd("dev.xarbit.appgrid", "Show recently used applications")
-        enabled: sortMode.currentIndex !== 1 || startWithFavorites.checked
+        enabled: sortMode.currentIndex !== AppFilterModel.MostUsed || startWithFavorites.checked
         checked: (root.revision, root.configuration.showRecentApps)
         onToggled: root.configuration.showRecentApps = checked
     }

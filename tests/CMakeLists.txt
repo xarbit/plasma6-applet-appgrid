@@ -83,7 +83,7 @@ if(Qt6QuickTest_FOUND)
     # The tests load the components and JS libraries straight from package/
     # by relative path, so they always run against the shipped files.
     add_executable(tst_qml qml/main.cpp)
-    target_link_libraries(tst_qml PRIVATE Qt6::QuickTest Qt6::Quick Qt6::Qml Qt6::Core)
+    target_link_libraries(tst_qml PRIVATE appgrid_core Qt6::QuickTest Qt6::Quick Qt6::Qml Qt6::Core)
     target_compile_definitions(tst_qml PRIVATE
         QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml")
     add_test(NAME tst_qml COMMAND tst_qml)

@@ -8,6 +8,7 @@
 #include "appgridconstants.h"
 #include "applauncher.h"
 #include "plasmoidadaptor.h"
+#include "qmltypes.h"
 #include "standaloneinterface.h"
 
 #include <KConfig>
@@ -25,6 +26,8 @@
 AppGridPlugin::AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
     : Plasma::Applet(parent, data, args)
 {
+    // The shared QML names the C++ enums; register them before it loads.
+    AppGridQml::registerTypes();
     // Do NOT prune/sync this applet's config here: config() is plasmashell's
     // appletsrc, and writing+syncing it from the constructor (before the shell
     // finishes restoring its containments) persists a partial file and resets

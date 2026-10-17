@@ -16,6 +16,7 @@
 #include "appgridconstants.h"
 #include "appgridcontroller.h"
 #include "appgridstandalone.h"
+#include "qmltypes.h"
 
 #include <KAboutData>
 #include <KConfigSkeleton>
@@ -281,6 +282,8 @@ int main(int argc, char *argv[])
     QQuickWindow::setDefaultAlphaBuffer(true);
 
     AppGridController controller;
+    // The shared QML names the C++ enums; register them before it loads.
+    AppGridQml::registerTypes();
     // A scope KWin does NOT special-case → scopeToType() falls through to
     // WindowType::Normal, so the window open/close effect animates it. (The
     // plasmoid keeps the "appgrid"/"utility"-style overlay scope.)
