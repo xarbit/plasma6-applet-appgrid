@@ -6,14 +6,13 @@
 #include "appfiltermodel.h"
 
 #include "appactionid.h"
+#include "applauncher.h"
 #include "appmodel.h"
 #include "categoryqueries.h"
 #include "defaultappsresolver.h"
 #include "searchranking.h"
 
 #include <KConfigGroup>
-#include <KIO/ApplicationLauncherJob>
-#include <KIO/JobUiDelegateFactory>
 #include <KIconLoader>
 #include <KService>
 #include <KSharedConfig>
@@ -974,9 +973,7 @@ void AppFilterModel::launchByStorageId(const QString &storageId)
         const auto action = AppActionId::resolveAction(service, parsed.actionName);
         if (action) {
             recordRecentLaunch(storageId);
-            auto *job = new KIO::ApplicationLauncherJob(*action);
-            job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
-            job->start();
+            AppLauncher::launch(*action);
         }
         return;
     }

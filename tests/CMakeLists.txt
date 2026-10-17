@@ -5,6 +5,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 
 set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/appactionid.cpp
+    ${CMAKE_SOURCE_DIR}/src/applauncher.cpp
     ${CMAKE_SOURCE_DIR}/src/appmodel.cpp
     ${CMAKE_SOURCE_DIR}/src/menuscanner.cpp
     ${CMAKE_SOURCE_DIR}/src/appmodelassembly.cpp

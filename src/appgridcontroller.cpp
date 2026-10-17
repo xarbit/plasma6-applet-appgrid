@@ -8,6 +8,7 @@
 #include "appactionid.h"
 #include "appgridconstants.h"
 #include "appgridfavoritesmodel.h"
+#include "applauncher.h"
 #include "appstreamresolver.h"
 #include "discoverbackends.h"
 #include "menutreesource.h"
@@ -16,9 +17,7 @@
 #include <KConfigGroup>
 #include <KDesktopFile>
 
-#include <KIO/ApplicationLauncherJob>
 #include <KIO/CommandLauncherJob>
-#include <KIO/JobUiDelegateFactory>
 #include <KIO/OpenUrlJob>
 #include <KRunner/AbstractRunner>
 #include <KRunner/QueryMatch>
@@ -657,9 +656,7 @@ void AppGridController::launchAppAction(const QString &storageId, const QString 
         return;
     }
 
-    auto *job = new KIO::ApplicationLauncherJob(*action);
-    job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
-    job->start();
+    AppLauncher::launch(*action);
 }
 
 bool AppGridController::isDiscoverAvailable() const

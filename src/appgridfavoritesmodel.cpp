@@ -6,12 +6,10 @@
 #include "appgridfavoritesmodel.h"
 
 #include "appactionid.h"
+#include "applauncher.h"
 #include "favoriteid.h"
 #include "pluginhelpers.h"
 
-#include <KIO/ApplicationLauncherJob>
-#include <KIO/JobUiDelegateFactory>
-#include <KIO/OpenUrlJob>
 #include <KSycoca>
 
 #include <PlasmaActivities/Consumer>
@@ -263,13 +261,8 @@ KService::Ptr AppGridFavoritesModel::serviceFor(const QString &storageId)
     if (storageId.isEmpty()) {
         return {};
     }
-    if (KService::Ptr service = KService::serviceByMenuId(storageId)) {
-        return service;
-    }
-    if (KService::Ptr service = KService::serviceByStorageId(storageId)) {
-        return service;
-    }
-    return KService::serviceByDesktopPath(storageId);
+    // Tries the menu id, then the desktop path, the file and the desktop name.
+    return KService::serviceByStorageId(storageId);
 }
 
 AppGridFavoritesModel::ResolvedFavorite AppGridFavoritesModel::resolve(const QString &favoriteId) const
@@ -552,13 +545,12 @@ bool AppGridFavoritesModel::trigger(int row, const QString &actionId, const QVar
     if (!resolved.valid) {
         return false;
     }
-    if (resolved.service) {
-        auto *job = resolved.action ? new KIO::ApplicationLauncherJob(*resolved.action) : new KIO::ApplicationLauncherJob(resolved.service);
-        job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
-        job->start();
-        return true;
+    if (resolved.action) {
+        AppLauncher::launch(*resolved.action);
+    } else if (resolved.service) {
+        AppLauncher::launch(resolved.service);
+    } else {
+        AppLauncher::open(resolved.documentUrl);
     }
-    auto *job = new KIO::OpenUrlJob(resolved.documentUrl);
-    job->start();
     return true;
 }

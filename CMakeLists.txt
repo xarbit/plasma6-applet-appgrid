@@ -185,6 +185,8 @@ set(APPGRID_COMMON_LIBS
 # for center, appgridpanelplugin.* for panel), which the calls add inline.
 set(APPGRID_COMMON_SOURCES
     src/appactionid.cpp
+    src/applauncher.cpp
+    src/applauncher.h
     src/appactionid.h
     src/appgridcontroller.cpp
     src/appgridcontroller.h

@@ -5,13 +5,11 @@
 
 #include "appmodel.h"
 
+#include "applauncher.h"
 #include "appmodelassembly.h"
 #include "categorymapping.h"
 #include "menuscanner.h"
 
-#include <KIO/ApplicationLauncherJob>
-#include <KIO/JobUiDelegateFactory>
-#include <KJob>
 #include <KLocalizedString>
 #include <KService>
 #include <KSycoca>
@@ -221,30 +219,15 @@ void AppModel::launch(int index)
     }
 
     const auto &app = m_apps[index];
-    // Resolve by menu id first, like Kickoff; the entry path is the fallback.
+    // serviceByStorageId tries the menu id, the desktop path and the desktop
+    // name, like Kickoff; the entry path is the fallback for an id it misses.
     auto service = KService::serviceByStorageId(app.storageId);
     if (!service) {
-        service = KService::serviceByDesktopPath(app.desktopFile);
+        service = KService::serviceByStorageId(app.desktopFile);
     }
-    if (!service) {
-        service = KService::serviceByDesktopName(app.desktopFile);
-    }
-    if (!service) {
+    if (!AppLauncher::launch(service)) {
         qWarning() << "AppGrid: no service found to launch" << app.storageId << app.desktopFile;
-        return;
     }
-
-    auto *job = new KIO::ApplicationLauncherJob(service);
-    // Without a UI delegate KIO can't ask to trust a non-executable .desktop
-    // file or report a failed exec, so the launch fails silently (#226).
-    job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
-    job->setAutoDelete(true);
-    connect(job, &KJob::finished, this, [](KJob *j) {
-        if (j->error()) {
-            qWarning() << "AppGrid: failed to launch application:" << j->errorString();
-        }
-    });
-    job->start();
 }
 
 QStringList AppModel::categories() const
