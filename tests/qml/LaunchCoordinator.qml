@@ -50,6 +50,13 @@ QtObject {
         closeRequested()
     }
 
+    // Launch without closing, e.g. one member of a folder's "Launch All".
+    function launchAppByStorageIdNoClose(sid) {
+        if (!appsModel || !sid)
+            return
+        _launchOneBySid(sid)
+    }
+
     function launchSearchResult(index) {
         var item = searchModel.get(index)
         if (!item)

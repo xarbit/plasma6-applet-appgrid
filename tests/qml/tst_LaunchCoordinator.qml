@@ -88,6 +88,18 @@ TestCase {
         compare(closeSpy.count, 1)
     }
 
+    // A folder's "Launch All" launches each member in place: it must still
+    // broadcast the launch, and must not close the launcher per member.
+    function test_launchAppByStorageIdNoClose() {
+        _reset()
+        coord.launchAppByStorageIdNoClose("beta")
+        compare(notified.join(","), "beta")
+        compare(launchedSids.join(","), "beta")
+        compare(closeSpy.count, 0)
+        coord.launchAppByStorageIdNoClose("")
+        compare(notified.length, 1, "an empty sid is ignored")
+    }
+
     // A search result of type "app" routes to the index launch path.
     function test_launchSearchResultApp() {
         _reset()

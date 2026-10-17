@@ -56,6 +56,8 @@ GridView {
 
     // Emitted when a recent app is launched by storageId.
     signal recentLaunched(string storageId)
+    // Launch an app by storageId without closing (launchFavoriteNoClose).
+    signal launchInPlaceRequested(string storageId)
     signal openFolderRequested(string folderId)
     signal folderContextMenuRequested(string folderId)
     signal emptyAreaContextMenuRequested()
@@ -468,7 +470,7 @@ GridView {
             if (closeAfter)
                 recentLaunched(sid)
             else
-                appsModel.launchByStorageId(sid)
+                launchInPlaceRequested(sid)
         } else if (sharedFavoritesModel) {
             const krow = findFavoriteRow(sid)
             if (krow >= 0)

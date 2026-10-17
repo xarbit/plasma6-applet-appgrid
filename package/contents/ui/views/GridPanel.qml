@@ -1111,6 +1111,7 @@ Item {
                 onLaunched: function(index) { panel.launchApp(index) }
                 onCategoryNavRequested: function(direction) { panel.navigateCategory(direction) }
                 onRecentLaunched: function(storageId) { panel.launchAppByStorageId(storageId) }
+                onLaunchInPlaceRequested: function(storageId) { launcher.launchAppByStorageIdNoClose(storageId) }
                 onBulkLaunchRequested: function(sids) { panel._requestBulkLaunch(sids) }
                 onContextMenuRequested: function(index, storageId, desktopFile) {
                     // Forward the full live selection — the menu derives
