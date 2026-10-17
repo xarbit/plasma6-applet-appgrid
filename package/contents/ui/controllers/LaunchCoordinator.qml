@@ -88,7 +88,7 @@ QtObject {
         if (!appsModel)
             return
         // _launchOneBySid does not close; run it per sid then close once.
-        for (var i = 0; i < sids.length; ++i)
+        for (let i = 0; i < sids.length; ++i)
             _launchOneBySid(sids[i])
         closeRequested()
     }
@@ -96,7 +96,7 @@ QtObject {
     function runBulkHide(sids) {
         if (!appsModel)
             return
-        for (var i = 0; i < sids.length; ++i)
+        for (let i = 0; i < sids.length; ++i)
             appsModel.hideByStorageId(sids[i])
     }
 }

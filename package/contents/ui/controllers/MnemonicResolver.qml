@@ -24,11 +24,11 @@ QtObject {
     readonly property var map: {
         var used = {}
         var m = {}
-        for (var i = 0; i < names.length; i++) {
-            var name = names[i]
-            var label = _label(name)
-            for (var j = 0; j < label.length; j++) {
-                var ch = label.charAt(j).toUpperCase()
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i]
+            const label = _label(name)
+            for (let j = 0; j < label.length; j++) {
+                const ch = label.charAt(j).toUpperCase()
                 if (ch >= 'A' && ch <= 'Z' && !used[ch]) {
                     used[ch] = true
                     m[ch] = name
@@ -42,7 +42,7 @@ QtObject {
     // Returns the index of the assigned mnemonic letter in the label of
     // `name`, or -1.
     function indexFor(name) {
-        for (var letter in map) {
+        for (let letter in map) {
             if (map[letter] === name)
                 return _label(name).toUpperCase().indexOf(letter)
         }

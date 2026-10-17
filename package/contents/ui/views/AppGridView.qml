@@ -273,7 +273,7 @@ GridView {
     function removeSelectedFromFavorites() {
         if (!_favoritesSelect || selection.selectionCount === 0 || !favoritesManager) return
         const sids = selection.sidList()
-        for (var i = 0; i < sids.length; ++i)
+        for (let i = 0; i < sids.length; ++i)
             favoritesManager.removeFavorite(sids[i])
         selection.clear()
     }

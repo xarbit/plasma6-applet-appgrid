@@ -102,8 +102,8 @@ Kirigami.ApplicationWindow {
     }
     function _fillButtonBuffer() {
         var live = appGridController.plasmoidClient.buttonAppearance()
-        for (var i = 0; i < _buttonKeys.length; ++i) {
-            var k = _buttonKeys[i]
+        for (let i = 0; i < _buttonKeys.length; ++i) {
+            const k = _buttonKeys[i]
             if (live[k] !== undefined)
                 buttonBuffer[k] = live[k]
         }
@@ -123,7 +123,7 @@ Kirigami.ApplicationWindow {
         if (!ConfigBuffer.isDirty(buttonBuffer, win._buttonBaseline, _buttonKeys))
             return
         var values = ({})
-        for (var i = 0; i < _buttonKeys.length; ++i)
+        for (let i = 0; i < _buttonKeys.length; ++i)
             values[_buttonKeys[i]] = buttonBuffer[_buttonKeys[i]]
         appGridController.plasmoidClient.setButtonAppearance(values)
     }

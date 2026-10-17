@@ -41,7 +41,7 @@ PlasmaComponents.ScrollView {
         function refresh() {
             var items = fileBrowser.listDirectory(fileBrowser.path)
             fileModel.clear()
-            for (var i = 0; i < items.length; i++)
+            for (let i = 0; i < items.length; i++)
                 fileModel.append(items[i])
             currentIndex = fileModel.count > 0 ? 0 : -1
         }

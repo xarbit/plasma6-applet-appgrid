@@ -82,7 +82,7 @@ DropArea {
             return
         }
         // Through the manager, so a favourite in a folder leaves the folder too.
-        for (var i = 0; i < sids.length; ++i) {
+        for (let i = 0; i < sids.length; ++i) {
             root.favoritesManager.removeFavorite(sids[i])
         }
         drag.accept(Qt.MoveAction)

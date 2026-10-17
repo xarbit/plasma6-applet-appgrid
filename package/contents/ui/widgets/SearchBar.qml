@@ -130,7 +130,7 @@ RowLayout {
                 return
             }
             if (event.modifiers & Qt.AltModifier) {
-                var num = event.key - Qt.Key_0
+                const num = event.key - Qt.Key_0
                 if (num >= 1 && num <= 9) {
                     searchBar.altNumberPressed(num)
                     event.accepted = true

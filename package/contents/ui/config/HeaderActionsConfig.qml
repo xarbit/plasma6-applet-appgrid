@@ -44,7 +44,7 @@ ColumnLayout {
 
     function _entries() {
         var arr = []
-        for (var i = 0; i < actionModel.count; ++i)
+        for (let i = 0; i < actionModel.count; ++i)
             arr.push({ id: actionModel.get(i).actionId, placement: actionModel.get(i).placement })
         return arr
     }
@@ -56,7 +56,7 @@ ColumnLayout {
         if (_matches(target))
             return
         actionModel.clear()
-        for (var i = 0; i < target.length; ++i)
+        for (let i = 0; i < target.length; ++i)
             actionModel.append({ actionId: target[i].id, placement: target[i].placement })
     }
     function _emit() { root.edited(HeaderActions.serialize(_entries())) }

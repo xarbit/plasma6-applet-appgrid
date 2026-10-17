@@ -336,7 +336,7 @@ DropArea {
         if (_canFold && (_source.foldTargetFolderId.length > 0 || _source.foldTargetStorageId.length > 0)) {
             const dragged = _isMultiDrag ? _source.sourceStorageIds : [_sourceId]
             if (_source.foldTargetFolderId.length > 0) {
-                for (var i = 0; i < dragged.length; ++i)
+                for (let i = 0; i < dragged.length; ++i)
                     gm.addToFolder(_source.foldTargetFolderId, dragged[i])
             } else {
                 gm.createFolderFromMembers([_source.foldTargetStorageId].concat(dragged),
@@ -369,7 +369,7 @@ DropArea {
         // dragged over the grid first) — add it at the end.
         if (_source && _source.isOwnDrag(drag) && gridView.favoritesActive) {
             const sids = _isMultiDrag ? _source.sourceStorageIds : [_sourceId]
-            for (var i = 0; i < sids.length; ++i) {
+            for (let i = 0; i < sids.length; ++i) {
                 if (sids[i])
                     gridView.sharedFavoritesModel.addFavorite(FavoriteId.toPrefixed(sids[i]))
             }
@@ -405,7 +405,7 @@ DropArea {
         if (_isMultiDrag && _source && _source.isOwnDrag(drag)
                 && gridView.favoritesActive) {
             const sids = _source.sourceStorageIds
-            for (var i = 0; i < sids.length; ++i) {
+            for (let i = 0; i < sids.length; ++i) {
                 const prefixed = FavoriteId.toPrefixed(sids[i])
                 if (!gridView.sharedFavoritesModel.isFavorite(prefixed))
                     gridView.sharedFavoritesModel.addFavorite(prefixed)

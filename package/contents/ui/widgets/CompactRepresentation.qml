@@ -53,9 +53,9 @@ Item {
 
     function updateSizeHints() {
         if (shouldHaveLabel) {
-            var iconWidth = shouldHaveIcon ? Math.min(root.height, Kirigami.Units.iconSizes.huge) : 0
-            var labelWidth = labelTextField.contentWidth + labelTextField.Layout.leftMargin + labelTextField.Layout.rightMargin
-            var totalWidth = iconWidth + labelWidth
+            const iconWidth = shouldHaveIcon ? Math.min(root.height, Kirigami.Units.iconSizes.huge) : 0
+            const labelWidth = labelTextField.contentWidth + labelTextField.Layout.leftMargin + labelTextField.Layout.rightMargin
+            const totalWidth = iconWidth + labelWidth
             root.Layout.minimumWidth = totalWidth
             root.Layout.minimumHeight = -1
             root.Layout.maximumWidth = totalWidth

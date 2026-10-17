@@ -35,14 +35,14 @@ ColumnLayout {
 
     function _ids() {
         var ids = []
-        for (var i = 0; i < actionModel.count; ++i)
+        for (let i = 0; i < actionModel.count; ++i)
             ids.push(actionModel.get(i).actionId)
         return ids
     }
     function _rebuild() {
         actionModel.clear()
         var parsed = CustomHeaderActions.parse(root.entries)
-        for (var i = 0; i < parsed.length; ++i) {
+        for (let i = 0; i < parsed.length; ++i) {
             actionModel.append({
                 actionId: parsed[i].id,
                 label: parsed[i].label,
@@ -55,8 +55,8 @@ ColumnLayout {
     }
     function _emit() {
         var arr = []
-        for (var i = 0; i < actionModel.count; ++i) {
-            var e = actionModel.get(i)
+        for (let i = 0; i < actionModel.count; ++i) {
+            const e = actionModel.get(i)
             arr.push({
                 id: e.actionId,
                 label: e.label,

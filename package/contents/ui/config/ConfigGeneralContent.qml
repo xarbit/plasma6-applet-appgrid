@@ -250,7 +250,7 @@ Kirigami.FormLayout {
             if (index === 0) {
                 root.configuration.terminalShell = ""
             } else {
-                var shells = root.availableShells || []
+                const shells = root.availableShells || []
                 root.configuration.terminalShell = shells[index - 1] || ""
             }
         }

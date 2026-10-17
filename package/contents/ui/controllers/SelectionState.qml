@@ -53,7 +53,7 @@ Item {
 
     function sidList() {
         var arr = []
-        for (var k in selectionSids) if (selectionSids[k]) arr.push(k)
+        for (let k in selectionSids) if (selectionSids[k]) arr.push(k)
         return arr
     }
 
@@ -90,7 +90,7 @@ Item {
         const hi = Math.max(anchor, idx)
         var copy = Object.assign({}, selectionSids)
         var added = 0
-        for (var i = lo; i <= hi; ++i) {
+        for (let i = lo; i <= hi; ++i) {
             const sid = sidAt(i)
             if (sid && !copy[sid]) {
                 copy[sid] = true
@@ -104,7 +104,7 @@ Item {
     function selectAll(currentIdx) {
         var copy = {}
         var n = 0
-        for (var i = 0; i < gridCount; ++i) {
+        for (let i = 0; i < gridCount; ++i) {
             const sid = sidAt(i)
             if (sid && !copy[sid]) {
                 copy[sid] = true
@@ -174,7 +174,7 @@ Item {
         var urls = []
         if (!appsModel) return urls
         const sids = sidList()
-        for (var i = 0; i < sids.length; ++i) {
+        for (let i = 0; i < sids.length; ++i) {
             const a = appsModel.getByStorageId(sids[i])
             if (a && a.desktopFile) urls.push("file://" + a.desktopFile)
         }
@@ -187,7 +187,7 @@ Item {
         var icons = []
         if (!appsModel) return icons
         const sids = sidList()
-        for (var i = 0; i < sids.length; ++i) {
+        for (let i = 0; i < sids.length; ++i) {
             const a = appsModel.getByStorageId(sids[i])
             if (a && a.iconName) icons.push(a.iconName)
         }
