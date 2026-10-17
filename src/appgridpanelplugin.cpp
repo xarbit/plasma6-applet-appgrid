@@ -8,6 +8,9 @@
 #include "popupsizepolicy.h"
 
 #include <KConfigGroup>
+#include <KSharedConfig>
+#include <Plasma/Containment>
+#include <Plasma/Corona>
 #include <QTimer>
 
 namespace
@@ -19,6 +22,17 @@ constexpr QLatin1String kPopupHeight{"popupHeight"};
 constexpr QLatin1String kPopupSizeOwner{"popupSizeOwner"};
 constexpr QLatin1String kGlobalPopupWidth{"appgridPopupWidth"};
 constexpr QLatin1String kGlobalPopupHeight{"appgridPopupHeight"};
+
+// Plasma 6.8 removed Plasma::Applet::globalConfig() (#229). Mirror what it
+// returned in 6.0-6.7 — [AppletGlobals][<pluginId>] in the corona's config —
+// so the stored size keeps its location across the upgrade.
+KConfigGroup appletGlobalConfig(const Plasma::Applet *applet)
+{
+    const Plasma::Containment *cont = applet->containment();
+    const Plasma::Corona *corona = cont ? cont->corona() : nullptr;
+    const KSharedConfig::Ptr config = corona ? corona->config() : KSharedConfig::openConfig();
+    return config->group(QStringLiteral("AppletGlobals")).group(applet->pluginMetaData().pluginId());
+}
 }
 
 AppGridPanelPlugin::AppGridPanelPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
@@ -43,7 +57,7 @@ AppGridPanelPlugin::~AppGridPanelPlugin()
 void AppGridPanelPlugin::restorePopupSizeIfStranger()
 {
     auto inst = config();
-    auto global = globalConfig();
+    auto global = appletGlobalConfig(this);
 
     const int instW = inst.readEntry(kPopupWidth, -1);
     const int instH = inst.readEntry(kPopupHeight, -1);
@@ -75,7 +89,7 @@ void AppGridPanelPlugin::restorePopupSizeIfStranger()
 void AppGridPanelPlugin::persistPopupSize()
 {
     auto inst = config();
-    auto global = globalConfig();
+    auto global = appletGlobalConfig(this);
 
     const int w = inst.readEntry(kPopupWidth, 0);
     const int h = inst.readEntry(kPopupHeight, 0);
