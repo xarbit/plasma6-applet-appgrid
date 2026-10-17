@@ -6,7 +6,7 @@
 
 All notable changes to AppGrid are documented here.
 
-## [1.9.4] - 2026-10-17
+## [1.9.4] - 2026.10.17
 
 ### Fixed
 
