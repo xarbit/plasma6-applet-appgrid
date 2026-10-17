@@ -377,82 +377,18 @@ Item {
     // grid's own reorder DropArea catches reorders first; a drop the compositor
     // routes outside the window never reaches here, so it stays put. Acts only on
     // an own drag whose source is actually a favorite — other drops fall through.
-    DropArea {
-        id: favoriteRemoveArea
+    // Dropping a dragged favourite or folder on empty space removes it.
+    FavoriteRemoveArea {
         anchors.fill: parent
         z: -10
-        // Drag-OUT removal only makes sense while the favourites grid is on
-        // screen (its whole purpose). In any other view dragging an app that
-        // happens to be a favourite must not arm a red ✕ across the grid (the
-        // forbidden-over-tab case is handled by the tab hover instead).
+        // Only while the favourites grid is on screen (its whole purpose): in
+        // any other view, dragging an app that happens to be a favourite must
+        // not arm a red ✕ across the grid.
         enabled: panel.sharedFavoritesModel !== null && panel.isFavoritesActive
-
-        // The dragged sids that are actually favorites (empty unless this is an
-        // own drag with at least one favorite source). Drives both the ✕ marker
-        // and the drop removal.
-        function _favoriteSids(drag) {
-            const src = panel.dragSource
-            if (!src || src.blockedOnFavoritesTab || !src.isOwnDrag(drag) || !panel.sharedFavoritesModel) {
-                return []
-            }
-            const all = src.sourceStorageIds.length > 0 ? src.sourceStorageIds : [src.sourceStorageId]
-            return all.filter(sid => sid && panel.sharedFavoritesModel.isFavorite(FavoriteId.toPrefixed(sid)))
-        }
-
-        // The dragged folder's id, if a folder cell is being dragged here (#18).
-        function _folderId(drag) {
-            const src = panel.dragSource
-            return (src && !src.blockedOnFavoritesTab && src.isOwnDrag(drag)) ? (src.sourceFolderId || "") : ""
-        }
-
-        // Both helpers above return empty while blockedOnFavoritesTab is set, so
-        // nothing here arms or removes — the drop over the Favorites tab cancels.
-        function _removable(drag) {
-            return _favoriteSids(drag).length > 0 || _folderId(drag).length > 0
-        }
-
-        // Hovering empty space with a favorite/folder drag arms removal: flag the
-        // drag source (the cell shows a ✕) and accept so the cursor reads
-        // droppable. onExited reverts when the cursor returns to the grid.
-        onEntered: drag => {
-            if (favoriteRemoveArea._removable(drag)) {
-                panel.dragSource.dropWillRemove = true
-                drag.accept(Qt.MoveAction)
-            } else {
-                // Not a removable drag (e.g. blocked over the Favorites tab):
-                // reject so the platform shows the forbidden indicator instead
-                // of a droppable cursor.
-                drag.accepted = false
-            }
-        }
-        onPositionChanged: drag => {
-            if (favoriteRemoveArea._removable(drag))
-                drag.accept(Qt.MoveAction)
-            else
-                drag.accepted = false
-        }
-        onExited: { if (panel.dragSource) panel.dragSource.dropWillRemove = false }
-
-        onDropped: drag => {
-            // A folder dropped here is dissolved (members return to favourites),
-            // the folder equivalent of removing an icon.
-            const folderId = favoriteRemoveArea._folderId(drag)
-            if (folderId.length > 0 && panel.favoritesGroupedModel) {
-                panel.favoritesGroupedModel.ungroupFolder(folderId)
-                drag.accept(Qt.MoveAction)
-                return
-            }
-            const sids = favoriteRemoveArea._favoriteSids(drag)
-            if (sids.length === 0) {
-                return
-            }
-            for (var i = 0; i < sids.length; ++i) {
-                panel.sharedFavoritesModel.removeFavorite(FavoriteId.toPrefixed(sids[i]))
-            }
-            drag.accept(Qt.MoveAction)
-        }
+        dragSource: panel.dragSource
+        favoritesModel: panel.sharedFavoritesModel
+        favoritesGroupedModel: panel.favoritesGroupedModel
     }
-
 
     // Reset everything that should be back to its just-opened state on
     // every show or hide: the search input (SearchBar.onTextChanged
