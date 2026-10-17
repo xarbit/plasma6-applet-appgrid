@@ -28,6 +28,27 @@ TestCase {
         return createTemporaryObject(c, null, p)
     }
 
+    // Enter launches a selection of several apps in bulk, else the cursor's
+    // entry, and ends the selection either way.
+    function test_activateLaunchesTheSelectionOrTheCursor() {
+        var s = make()
+        var many = []
+        var current = 0
+        s.toggleSelectionAt(0)
+        s.toggleSelectionAt(2)
+        s.activate(sids => { many = sids }, () => { ++current })
+        compare(many.sort().join(","), "g0,g2")
+        compare(current, 0)
+        compare(s.sidList().length, 0, "selection cleared")
+
+        many = []
+        s.toggleSelectionAt(1)
+        s.activate(sids => { many = sids }, () => { ++current })
+        compare(many.length, 0, "one selected app is the cursor's launch")
+        compare(current, 1)
+        compare(s.sidList().length, 0, "selection cleared")
+    }
+
     function test_sharedIndexSpace() {
         var s = make()
         compare(s.gridCount, 5)

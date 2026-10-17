@@ -427,13 +427,7 @@ GridView {
         }
     }
     function activateCurrent() {
-        const sids = selection.sidList()
-        if (sids.length > 1) {
-            bulkLaunchRequested(sids)
-        } else {
-            _launchCurrent()
-        }
-        selection.clear()
+        selection.activate(sids => bulkLaunchRequested(sids), _launchCurrent)
     }
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()

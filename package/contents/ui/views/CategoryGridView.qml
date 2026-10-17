@@ -264,16 +264,9 @@ ListView {
             recentLaunched(appsModel.recentApps[recentIndex])
         else if (appIndex >= 0 && appIndex < appCount)
             launched(rowsModel.proxyIndexAt(appIndex))
-        selection.clear()
     }
     function activateCurrent() {
-        const sids = selection.sidList()
-        if (sids.length > 1) {
-            bulkLaunchRequested(sids)
-            selection.clear()
-        } else {
-            _launchCurrent()
-        }
+        selection.activate(sids => bulkLaunchRequested(sids), _launchCurrent)
     }
     Keys.onReturnPressed: activateCurrent()
     Keys.onEnterPressed: activateCurrent()

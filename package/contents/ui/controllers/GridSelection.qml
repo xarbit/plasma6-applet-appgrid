@@ -65,6 +65,17 @@ SelectionState {
     function selectAllVisible() {
         if (active) selectAll(virtualIndex)
     }
+    // Enter on the grid: several selected apps go to @p launchMany(sids) (the
+    // bulk launch, with its confirmation), else @p launchCurrent() starts the
+    // cursor's entry. Either way the selection is done with.
+    function activate(launchMany, launchCurrent) {
+        const sids = sidList()
+        if (sids.length > 1)
+            launchMany(sids)
+        else
+            launchCurrent()
+        clear()
+    }
     function selectedDesktopFileUrls() { return desktopFileUrls(appsModel) }
     function selectedIconNames() { return iconNames(appsModel) }
 }
