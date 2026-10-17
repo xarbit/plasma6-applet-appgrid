@@ -475,6 +475,11 @@ Kirigami.ShadowedRectangle {
         searchResultsList.currentIndex = 0
         categoryGridView.resetView()
         _needsScrollToTop = true
+        focusSearchField()
+    }
+
+    // Give the search field keyboard focus so typing searches right away.
+    function focusSearchField() {
         searchBar.field.forceActiveFocus()
     }
 

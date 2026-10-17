@@ -72,14 +72,44 @@ PlasmoidItem {
             opacity: 1.0
             onCloseRequested: appgrid.expanded = false
 
+            // On Wayland resetState()'s focus request can land before the popup
+            // window is mapped and active, and is lost when Plasma activates it.
+            // Re-assert search focus once the window is active — once per open,
+            // not on every re-activation, so closing a context menu doesn't pull
+            // focus from the grid back to the search field (#213).
+            property bool _focusSearchOnActivate: false
+
+            function _onOpened() {
+                panel.resetState()
+                if (Plasmoid.configuration.shakeOnOpen)
+                    panel.shakeAllIcons()
+                panel._focusSearchOnActivate = !(panel.Window.window && panel.Window.window.active)
+            }
+
+            // The full representation is created lazily on the first expand,
+            // possibly after expandedChanged already fired (#213).
+            Component.onCompleted: {
+                if (appgrid.expanded)
+                    panel._onOpened()
+            }
+
+            Connections {
+                target: panel.Window.window
+                function onActiveChanged() {
+                    if (panel._focusSearchOnActivate && panel.Window.window.active) {
+                        panel._focusSearchOnActivate = false
+                        panel.focusSearchField()
+                    }
+                }
+            }
+
             Connections {
                 target: appgrid
                 function onExpandedChanged() {
                     if (appgrid.expanded) {
-                        panel.resetState()
-                        if (Plasmoid.configuration.shakeOnOpen)
-                            panel.shakeAllIcons()
+                        panel._onOpened()
                     } else {
+                        panel._focusSearchOnActivate = false
                         panel.resetOnClose()
                         // Mirror Plasma's per-instance popupWidth/Height
                         // into our globalConfig so the user's chosen size
