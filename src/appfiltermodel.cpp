@@ -247,17 +247,53 @@ QString AppFilterModel::searchText() const
     return m_searchText;
 }
 
+void AppFilterModel::applySearchText(const QString &text)
+{
+    m_searchText = text;
+    m_searchTextLower = text.toCaseFolded();
+    m_searchTextLowerSingular = SearchRanking::singularize(m_searchTextLower);
+    invalidateRowScoreCache(); // cached relevance depends on the query
+}
+
 void AppFilterModel::setSearchText(const QString &text)
 {
     if (m_searchText == text) {
         return;
     }
-    m_searchText = text;
-    m_searchTextLower = text.toCaseFolded();
-    m_searchTextLowerSingular = SearchRanking::singularize(m_searchTextLower);
-    invalidateRowScoreCache(); // cached relevance depends on the query
+    applySearchText(text);
     invalidate(); // Re-run filter + sort for relevance ranking
     Q_EMIT searchTextChanged();
+}
+
+void AppFilterModel::setSearchState(const QString &text, const QString &category, bool favoritesOnly)
+{
+    const bool textChanged = m_searchText != text;
+    const bool categoryChanged = m_filterCategory != category;
+    const bool favoritesChanged = m_showFavoritesOnly != favoritesOnly;
+    if (!textChanged && !categoryChanged && !favoritesChanged) {
+        return;
+    }
+    if (textChanged) {
+        applySearchText(text);
+    }
+    m_filterCategory = category;
+    m_showFavoritesOnly = favoritesOnly;
+    // One pass: the query and favourites mode affect the sort order (see
+    // setShowFavoritesOnly), the category only the filter.
+    if (textChanged || favoritesChanged) {
+        invalidate();
+    } else {
+        invalidateFilterCompat();
+    }
+    if (categoryChanged) {
+        Q_EMIT filterCategoryChanged();
+    }
+    if (favoritesChanged) {
+        Q_EMIT showFavoritesOnlyChanged();
+    }
+    if (textChanged) {
+        Q_EMIT searchTextChanged();
+    }
 }
 
 QStringList AppFilterModel::hiddenApps() const

@@ -19,6 +19,13 @@ TestCase {
             property string filterCategory: ""
             property bool showFavoritesOnly: false
             property string searchText: ""
+            property int stateCalls: 0
+            function setSearchState(text, category, favoritesOnly) {
+                searchText = text
+                filterCategory = category
+                showFavoritesOnly = favoritesOnly
+                stateCalls++
+            }
         }
     }
 
@@ -168,5 +175,23 @@ TestCase {
         compare(s._filtersCleared, true)
         s.update("")
         compare(s._filtersCleared, false)
+    }
+
+    // Each update hands the model one combined state change, so a search start
+    // or end filters once instead of once per property.
+    function test_eachUpdateIsOneModelCall() {
+        var f = build()
+        f.model.filterCategory = "Development"
+        f.model.showFavoritesOnly = true
+        f.bar.favoritesActive = true
+        f.session.update("fire")
+        compare(f.model.stateCalls, 1)
+        f.session.update("firef")
+        compare(f.model.stateCalls, 2)
+        f.session.update("")
+        compare(f.model.stateCalls, 3)
+        compare(f.model.filterCategory, "Development")
+        compare(f.model.showFavoritesOnly, true)
+        compare(f.bar.favoritesActive, true)
     }
 }

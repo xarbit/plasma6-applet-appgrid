@@ -43,6 +43,9 @@ private Q_SLOTS:
     void countSignalEmitsOnSourceChange();
     void hideAppByProxyIndexAddsToList();
     void hideAppDoesNothingForInvalidIndex();
+    void searchStateIsOnePass();
+    void benchmarkSearchStartAndEnd_data();
+    void benchmarkSearchStartAndEnd();
     void unhideAppRemovesFromList();
     void isRecentReflectsList();
     void setRecentAppsSkipsWorkWhenUnchanged();
@@ -55,6 +58,41 @@ private Q_SLOTS:
     void databaseReloadPrunesUninstalledRecents();
 
 private:
+    // ~300 apps over a few categories, every 10th a favourite: enough rows
+    // for a search transition to cost something measurable.
+    void fillManyApps();
+    // Structural change notifications the views rebuild on.
+    struct PassSpies {
+        explicit PassSpies(AppFilterModel *m)
+            : layout(m, &QAbstractItemModel::layoutChanged)
+            , inserted(m, &QAbstractItemModel::rowsInserted)
+            , removed(m, &QAbstractItemModel::rowsRemoved)
+            , reset(m, &QAbstractItemModel::modelReset)
+        {
+        }
+        int count() const
+        {
+            return layout.count() + inserted.count() + removed.count() + reset.count();
+        }
+        QSignalSpy layout;
+        QSignalSpy inserted;
+        QSignalSpy removed;
+        QSignalSpy reset;
+    };
+    // A search transition the way SearchSessionManager drives it today.
+    void startSearchSeparately()
+    {
+        m_filter.setFilterCategory(QString());
+        m_filter.setShowFavoritesOnly(false);
+        m_filter.setSearchText(QStringLiteral("app 1"));
+    }
+    void endSearchSeparately()
+    {
+        m_filter.setFilterCategory(QStringLiteral("Cat0"));
+        m_filter.setShowFavoritesOnly(true);
+        m_filter.setSearchText(QString());
+    }
+
     StubAppModel m_source;
     AppFilterModel m_filter;
 };
@@ -451,6 +489,100 @@ void TestAppFilterModel::databaseReloadPrunesUninstalledRecents()
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(m_filter.recentApps(), QStringList{QStringLiteral("keep.desktop")});
+}
+
+void TestAppFilterModel::fillManyApps()
+{
+    QVector<StubApp> apps;
+    QStringList favorites;
+    for (int i = 0; i < 300; ++i) {
+        const QString id = QStringLiteral("app%1.desktop").arg(i);
+        apps.append({QStringLiteral("App %1").arg(i),
+                     QStringLiteral("icon"),
+                     QStringLiteral("/x/") + id,
+                     {QStringLiteral("Cat%1").arg(i % 5)},
+                     QStringLiteral("Generic %1").arg(i),
+                     id,
+                     {},
+                     QStringLiteral("Comment %1").arg(i),
+                     QString()});
+        if (i % 10 == 0) {
+            favorites.append(id);
+        }
+    }
+    m_source.setApps(apps);
+    m_filter.setFavoriteApps(favorites);
+}
+
+// setSearchState() makes a search start and end one proxy pass each — one
+// structural notification for the view — with the same rows as the separate
+// setters.
+void TestAppFilterModel::searchStateIsOnePass()
+{
+    fillManyApps();
+    m_filter.setSearchState(QString(), QStringLiteral("Cat0"), true);
+    const int browsingRows = m_filter.rowCount();
+    QCOMPARE(browsingRows, 30);
+
+    QSignalSpy textSpy(&m_filter, &AppFilterModel::searchTextChanged);
+    QSignalSpy categorySpy(&m_filter, &AppFilterModel::filterCategoryChanged);
+    QSignalSpy favoritesSpy(&m_filter, &AppFilterModel::showFavoritesOnlyChanged);
+
+    PassSpies start(&m_filter);
+    m_filter.setSearchState(QStringLiteral("app 1"), QString(), false);
+    QCOMPARE(start.count(), 1);
+    const int searchRows = m_filter.rowCount();
+    QCOMPARE(m_filter.searchText(), QStringLiteral("app 1"));
+    QCOMPARE(m_filter.filterCategory(), QString());
+    QVERIFY(!m_filter.showFavoritesOnly());
+    QCOMPARE(textSpy.count(), 1);
+    QCOMPARE(categorySpy.count(), 1);
+    QCOMPARE(favoritesSpy.count(), 1);
+
+    PassSpies end(&m_filter);
+    m_filter.setSearchState(QString(), QStringLiteral("Cat0"), true);
+    QCOMPARE(end.count(), 1);
+    QCOMPARE(m_filter.rowCount(), browsingRows);
+
+    // Same rows as setting the three properties one by one.
+    startSearchSeparately();
+    QCOMPARE(m_filter.rowCount(), searchRows);
+
+    // Unchanged state: no pass, no notification.
+    PassSpies none(&m_filter);
+    m_filter.setSearchState(QStringLiteral("app 1"), QString(), false);
+    QCOMPARE(none.count(), 0);
+}
+
+void TestAppFilterModel::benchmarkSearchStartAndEnd_data()
+{
+    QTest::addColumn<bool>("batched");
+    QTest::newRow("separate setters") << false;
+    QTest::newRow("setSearchState") << true;
+}
+
+void TestAppFilterModel::benchmarkSearchStartAndEnd()
+{
+    QFETCH(bool, batched);
+    fillManyApps();
+    m_filter.setFilterCategory(QStringLiteral("Cat0"));
+    m_filter.setShowFavoritesOnly(true);
+    // The proxy maps rows lazily: read them back after each transition, as a
+    // bound view does, or the benchmark measures nothing.
+    QBENCHMARK {
+        if (batched) {
+            m_filter.setSearchState(QStringLiteral("app 1"), QString(), false);
+        } else {
+            startSearchSeparately();
+        }
+        QVERIFY(m_filter.rowCount() > 0);
+        if (batched) {
+            m_filter.setSearchState(QString(), QStringLiteral("Cat0"), true);
+        } else {
+            endSearchSeparately();
+        }
+        QVERIFY(m_filter.rowCount() > 0);
+    }
 }
 
 QTEST_MAIN(TestAppFilterModel)

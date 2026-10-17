@@ -36,26 +36,28 @@ QtObject {
     // SearchBar still owns that.
     function update(text) {
         const searching = text.length > 0 && !isPrefixMode
+        let category = appsModel ? appsModel.filterCategory : ""
+        let favorites = appsModel ? appsModel.showFavoritesOnly : false
+        let restoreFavoritesTab = false
 
         if (searching && searchAll && !_filtersCleared) {
-            _savedCategory = appsModel ? appsModel.filterCategory : ""
+            _savedCategory = category
             _savedFavorites = categoryBar ? categoryBar.favoritesActive : false
-            if (appsModel) {
-                appsModel.filterCategory = ""
-                appsModel.showFavoritesOnly = false
-            }
+            category = ""
+            favorites = false
             _filtersCleared = true
         } else if (!searching && _filtersCleared) {
-            if (appsModel) {
-                appsModel.filterCategory = _savedCategory
-                appsModel.showFavoritesOnly = _savedFavorites
-            }
-            if (categoryBar)
-                categoryBar.favoritesActive = _savedFavorites
+            category = _savedCategory
+            favorites = _savedFavorites
+            restoreFavoritesTab = true
             _filtersCleared = false
         }
 
+        // Text, category and favourites change together on a search start or
+        // end: hand them over in one call so the model filters once.
         if (appsModel)
-            appsModel.searchText = isPrefixMode ? "" : text
+            appsModel.setSearchState(isPrefixMode ? "" : text, category, favorites)
+        if (restoreFavoritesTab && categoryBar)
+            categoryBar.favoritesActive = _savedFavorites
     }
 }

@@ -67,6 +67,12 @@ public:
     [[nodiscard]] QString searchText() const;
     void setSearchText(const QString &text);
 
+    /** Set the search text, category filter and favourites-only mode together
+     *  in a single proxy pass. A search starting or ending changes all three;
+     *  setting them one by one re-filtered up to three times and sent the view
+     *  one notification per removed row range. */
+    Q_INVOKABLE void setSearchState(const QString &text, const QString &category, bool favoritesOnly);
+
     [[nodiscard]] int count() const;
     [[nodiscard]] int iconGeneration() const
     {
@@ -209,6 +215,8 @@ private:
     // shared QStrings + scalars, so the copy is cheap.
     [[nodiscard]] RowScore rowScore(const QModelIndex &sourceIndex) const;
     void invalidateRowScoreCache();
+    // Store @p text and its folded forms, and drop the cached relevance.
+    void applySearchText(const QString &text);
 
     QString m_filterCategory;
     QString m_searchText;
