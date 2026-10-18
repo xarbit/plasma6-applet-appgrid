@@ -9,6 +9,7 @@
 
 #include <QAbstractListModel>
 #include <QList>
+#include <QSet>
 #include <QString>
 #include <QVector>
 
@@ -24,6 +25,9 @@ struct AppEntry {
     QString comment;
     QString installSource;
     QString folderRelPath; ///< menu path of the group this occurrence sits in (#201)
+    // A favourite the XDG menu doesn't list (#224): served for the favourites
+    // view only, never in the grid.
+    bool outsideMenu = false;
 };
 
 /**
@@ -49,6 +53,7 @@ public:
         KeywordsRole,
         CommentRole,
         InstallSourceRole,
+        OutsideMenuRole,
     };
 
     explicit AppModel(QObject *parent = nullptr);
@@ -61,8 +66,8 @@ public:
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     [[nodiscard]] Q_INVOKABLE QString categoryIcon(const QString &category) const;
 
-    /** Storage ids of every currently installed app, in model order. The
-     *  new-app tracker diffs this against its stored baseline. */
+    /** Storage ids of every app the menu lists, in model order. The new-app
+     *  tracker diffs this against its stored baseline. */
     [[nodiscard]] QStringList storageIds() const;
 
     /** The cached menu scan behind this model — every subgroup and every app
@@ -84,6 +89,13 @@ public:
     [[nodiscard]] bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
 
+    /** The favourite storage ids. A favourite the menu doesn't list (an app
+     *  with no categories under a menu file without a catch-all, or one the
+     *  user removed with the menu editor) is still served, flagged
+     *  OutsideMenuRole, so the favourites can show and launch it the way
+     *  Kickoff's do (#224). */
+    void setFavoriteApps(const QStringList &favorites);
+
 Q_SIGNALS:
     void useSystemCategoriesChanged();
 
@@ -92,6 +104,7 @@ private Q_SLOTS:
 
 private:
     void loadApplications();
+    [[nodiscard]] QStringList favoritesOutsideMenu() const;
 
     QVector<AppEntry> m_apps;
     QStringList m_categories;
@@ -102,4 +115,10 @@ private:
     QList<MenuTree::RawFolder> m_menuFolders;
     QVector<AppEntry> m_occurrences;
     bool m_useSystemCategories = false;
+    // Set once the first load ran; setFavoriteApps() only reloads after that.
+    bool m_loaded = false;
+    QStringList m_favoriteApps;
+    // Storage ids the menu lists, and the favourites it leaves out.
+    QSet<QString> m_placed;
+    QStringList m_outsideMenu;
 };

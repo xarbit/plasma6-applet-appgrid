@@ -7,7 +7,6 @@
 
 #include "installsource.h"
 
-#include <KService>
 #include <KServiceGroup>
 
 #include <QString>
@@ -16,6 +15,34 @@
 
 namespace MenuScanner
 {
+
+std::optional<AppEntry> entryFor(const KService::Ptr &service, bool systemMode, const QString &topCategory, const QString &relPath)
+{
+    if (!service || !service->isApplication() || service->noDisplay() || service->exec().isEmpty()) {
+        return std::nullopt;
+    }
+    const QString storageId = service->storageId();
+    if (storageId.isEmpty()) {
+        return std::nullopt;
+    }
+
+    AppEntry appEntry;
+    appEntry.name = service->name();
+    appEntry.icon = service->icon();
+    appEntry.desktopFile = service->entryPath();
+    appEntry.genericName = service->genericName();
+    appEntry.storageId = storageId;
+    appEntry.keywords = service->keywords();
+    appEntry.comment = service->comment();
+    appEntry.installSource = InstallSource::of(service);
+    appEntry.folderRelPath = relPath;
+    if (systemMode) {
+        appEntry.categories.append(topCategory.isEmpty() ? QStringLiteral("Other") : topCategory);
+    } else {
+        appEntry.categories = AppModel::mapCategories(service->categories());
+    }
+    return appEntry;
+}
 
 RawScan scan(bool systemMode)
 {
@@ -56,31 +83,9 @@ RawScan scan(bool systemMode)
             if (!entry->isType(KST_KService)) {
                 continue;
             }
-            const auto service = KService::Ptr(static_cast<KService *>(entry.data()));
-            if (!service->isApplication() || service->noDisplay() || service->exec().isEmpty()) {
-                continue;
+            if (auto appEntry = entryFor(KService::Ptr(static_cast<KService *>(entry.data())), systemMode, topCategory, relPath)) {
+                out.occurrences.append(*appEntry);
             }
-            const QString storageId = service->storageId();
-            if (storageId.isEmpty()) {
-                continue;
-            }
-
-            AppEntry appEntry;
-            appEntry.name = service->name();
-            appEntry.icon = service->icon();
-            appEntry.desktopFile = service->entryPath();
-            appEntry.genericName = service->genericName();
-            appEntry.storageId = storageId;
-            appEntry.keywords = service->keywords();
-            appEntry.comment = service->comment();
-            appEntry.installSource = InstallSource::of(service);
-            appEntry.folderRelPath = relPath;
-            if (systemMode) {
-                appEntry.categories.append(topCategory.isEmpty() ? QStringLiteral("Other") : topCategory);
-            } else {
-                appEntry.categories = AppModel::mapCategories(service->categories());
-            }
-            out.occurrences.append(appEntry);
         }
     };
 

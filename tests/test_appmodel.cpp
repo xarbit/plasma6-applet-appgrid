@@ -14,11 +14,15 @@
     setThemeName hammer doesn't return.
 */
 
+#include "appfiltermodel.h"
 #include "appmodel.h"
 
+#include <KSycoca>
+#include <QDir>
 #include <QFile>
 #include <QGuiApplication>
 #include <QRegularExpression>
+#include <QStandardPaths>
 #include <QTest>
 
 class AppModelTest : public QObject
@@ -34,7 +38,112 @@ private Q_SLOTS:
     /// explanatory comment that mentions the removed API by name does
     /// not register as a re-introduction.
     void sourceDoesNotCallSetThemeName();
+
+    void initTestCase();
+    void cleanupTestCase();
+    /// The grid follows the menu: an app the menu doesn't list stays out.
+    void appTheMenuLeavesOutIsNotListed();
+    /// Issue #224: a favourite the menu doesn't list (a Brave webapp with no
+    /// Categories= under a menu without a catch-all) is still served, flagged
+    /// as outside the menu, as soon as it becomes a favourite.
+    void favouriteTheMenuLeavesOutIsServed();
+    /// ...and the filter model shows it among the favourites only.
+    void favouriteOutsideTheMenuShowsOnlyInFavourites();
+
+private:
+    [[nodiscard]] static int rowOf(const AppModel &model, const QString &storageId);
+    QString m_applicationsDir;
 };
+
+namespace
+{
+const QString kUncategorisedId = QStringLiteral("appgrid-test-webapp.desktop");
+const QString kCategorisedId = QStringLiteral("appgrid-test-tool.desktop");
+
+void writeDesktopFile(const QString &path, const QByteArray &extraLines)
+{
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    file.write("[Desktop Entry]\nType=Application\nName=AppGrid Test App\nExec=true\n" + extraLines);
+}
+}
+
+void AppModelTest::initTestCase()
+{
+    // A menu file that doesn't exist: the menu places no app at all, the way a
+    // distro menu without an "Unallocated" catch-all leaves out an app with no
+    // categories (#224).
+    qputenv("XDG_MENU_PREFIX", "appgrid-test-nonexistent-");
+
+    m_applicationsDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QStringLiteral("/applications");
+    QVERIFY(QDir().mkpath(m_applicationsDir));
+    writeDesktopFile(m_applicationsDir + QLatin1Char('/') + kUncategorisedId, QByteArray());
+    writeDesktopFile(m_applicationsDir + QLatin1Char('/') + kCategorisedId, "Categories=Utility;\n");
+    KSycoca::self()->ensureCacheValid();
+}
+
+void AppModelTest::cleanupTestCase()
+{
+    QFile::remove(m_applicationsDir + QLatin1Char('/') + kUncategorisedId);
+    QFile::remove(m_applicationsDir + QLatin1Char('/') + kCategorisedId);
+}
+
+int AppModelTest::rowOf(const AppModel &model, const QString &storageId)
+{
+    for (int row = 0; row < model.rowCount(); ++row) {
+        if (model.index(row).data(AppModel::StorageIdRole).toString() == storageId) {
+            return row;
+        }
+    }
+    return -1;
+}
+
+void AppModelTest::appTheMenuLeavesOutIsNotListed()
+{
+    AppModel model;
+    QVERIFY(QMetaObject::invokeMethod(&model, "reload"));
+    QCOMPARE(rowOf(model, kUncategorisedId), -1);
+    QCOMPARE(rowOf(model, kCategorisedId), -1);
+}
+
+void AppModelTest::favouriteTheMenuLeavesOutIsServed()
+{
+    AppModel model;
+    QVERIFY(QMetaObject::invokeMethod(&model, "reload"));
+    model.setFavoriteApps({kUncategorisedId, QStringLiteral("not-installed.desktop")});
+
+    const int row = rowOf(model, kUncategorisedId);
+    QVERIFY2(row >= 0, "a favourite the menu leaves out must be served");
+    QVERIFY(model.index(row).data(AppModel::OutsideMenuRole).toBool());
+    QCOMPARE(rowOf(model, QStringLiteral("not-installed.desktop")), -1);
+    QVERIFY(!model.categories().contains(QStringLiteral("Other")));
+
+    model.setFavoriteApps({});
+    QCOMPARE(rowOf(model, kUncategorisedId), -1);
+}
+
+void AppModelTest::favouriteOutsideTheMenuShowsOnlyInFavourites()
+{
+    AppModel model;
+    QVERIFY(QMetaObject::invokeMethod(&model, "reload"));
+    AppFilterModel filter;
+    filter.setSourceModel(&model);
+    filter.setFavoriteApps({kUncategorisedId});
+
+    const auto shown = [&filter] {
+        for (int row = 0; row < filter.rowCount(); ++row) {
+            if (filter.index(row, 0).data(AppModel::StorageIdRole).toString() == kUncategorisedId) {
+                return true;
+            }
+        }
+        return false;
+    };
+    QVERIFY(!shown());
+    filter.setShowFavoritesOnly(true);
+    QVERIFY(shown());
+    filter.setSortFavoritesAlphabetically(true);
+    QVERIFY(shown());
+}
 
 void AppModelTest::sourceDoesNotCallSetThemeName()
 {
@@ -60,6 +169,7 @@ void AppModelTest::sourceDoesNotCallSetThemeName()
 // Widgets) and want zero link-time dependency on QtWidgets.
 int main(int argc, char *argv[])
 {
+    QStandardPaths::setTestModeEnabled(true);
     QGuiApplication app(argc, argv);
     AppModelTest test;
     return QTest::qExec(&test, argc, argv);

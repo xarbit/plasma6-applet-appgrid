@@ -8,8 +8,12 @@
 #include "appmodel.h" // AppEntry
 #include "menutree.h" // MenuTree::RawFolder
 
+#include <KService>
+
 #include <QList>
 #include <QVector>
+
+#include <optional>
 
 /**
  * The single KServiceGroup walk feeding both AppGrid views (the flat app list
@@ -40,4 +44,13 @@ struct RawScan {
  * field mapped to clean buckets — matching AppModel's two modes exactly.
  */
 [[nodiscard]] RawScan scan(bool systemMode);
+
+/**
+ * The AppEntry for @p service, or nothing when it isn't a displayable
+ * application (no-display, not an application, no Exec, no storage id). The
+ * walk uses it for every menu entry; AppModel for the favourites the menu
+ * doesn't list. @p topCategory is the system-mode category ("Other" if empty),
+ * @p relPath the folder the entry sits in.
+ */
+[[nodiscard]] std::optional<AppEntry> entryFor(const KService::Ptr &service, bool systemMode, const QString &topCategory, const QString &relPath);
 }

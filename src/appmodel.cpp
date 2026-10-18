@@ -10,6 +10,7 @@
 #include "menuscanner.h"
 
 #include <KLocalizedString>
+#include <KService>
 #include <KSycoca>
 
 #include <QTimer>
@@ -63,6 +64,8 @@ QVariant AppModel::data(const QModelIndex &index, int role) const
         return app.comment;
     case InstallSourceRole:
         return app.installSource;
+    case OutsideMenuRole:
+        return app.outsideMenu;
     default:
         return {};
     }
@@ -81,6 +84,7 @@ QHash<int, QByteArray> AppModel::roleNames() const
         {KeywordsRole, "keywords"},
         {CommentRole, "comment"},
         {InstallSourceRole, "installSource"},
+        {OutsideMenuRole, "outsideMenu"},
     };
 }
 
@@ -167,6 +171,21 @@ void AppModel::loadApplications()
     auto assembled = AppModelAssembly::assemble(m_occurrences, systemMode);
     m_apps = std::move(assembled.apps);
     m_categories = std::move(assembled.categories);
+    for (const AppEntry &app : std::as_const(m_apps)) {
+        m_placed.insert(app.storageId);
+    }
+
+    // Favourites the menu leaves out: listed after the menu's apps, and kept
+    // out of m_categories and the occurrences, so no category or folder shows
+    // for an app the grid hides.
+    m_outsideMenu = favoritesOutsideMenu();
+    for (const QString &storageId : std::as_const(m_outsideMenu)) {
+        if (auto appEntry = MenuScanner::entryFor(KService::serviceByStorageId(storageId), systemMode, QString(), QString())) {
+            appEntry->outsideMenu = true;
+            m_apps.append(*appEntry);
+        }
+    }
+    m_loaded = true;
 
     if (systemMode) {
         // The category label is a top-level group's caption; its menu path and
@@ -207,6 +226,7 @@ void AppModel::reload()
     m_categories.clear();
     m_categoryMenuPaths.clear();
     m_categoryIcons.clear();
+    m_placed.clear();
     loadApplications();
     endResetModel();
 }
@@ -216,7 +236,34 @@ QStringList AppModel::storageIds() const
     QStringList ids;
     ids.reserve(m_apps.size());
     for (const AppEntry &app : m_apps) {
-        ids.append(app.storageId);
+        if (!app.outsideMenu) {
+            ids.append(app.storageId);
+        }
+    }
+    return ids;
+}
+
+void AppModel::setFavoriteApps(const QStringList &favorites)
+{
+    if (m_favoriteApps == favorites) {
+        return;
+    }
+    m_favoriteApps = favorites;
+    // Nearly every favourite is a menu app already listed; reload only when
+    // the favourites the menu leaves out change. Before the first load there
+    // is nothing to update: that load reads the list.
+    if (m_loaded && favoritesOutsideMenu() != m_outsideMenu) {
+        reload();
+    }
+}
+
+QStringList AppModel::favoritesOutsideMenu() const
+{
+    QStringList ids;
+    for (const QString &storageId : m_favoriteApps) {
+        if (!m_placed.contains(storageId) && !ids.contains(storageId) && KService::serviceByStorageId(storageId)) {
+            ids.append(storageId);
+        }
     }
     return ids;
 }
