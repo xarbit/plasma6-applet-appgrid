@@ -6,6 +6,21 @@
 
 All notable changes to AppGrid are documented here.
 
+## [1.9.6] - 2026-10-18
+
+### Fixed
+
+- *(menu)* Launch app actions by name, not by menu row index
+- *(favorites)* Show and launch favourites the menu doesn't list (#224)
+- *(favorites)* Reorder only on a grid that shows the stored order
+- *(grid)* Honour the configured column count under pixel-snapping
+- *(apps)* Tell Flatpak and Snap apps by whole path segments
+- *(update)* Compare pre-release versions by SemVer precedence
+- *(panel)* Keep the configured visible rows with the category bar off (#205)
+- *(panel)* Keep the panel size while searching
+- *(recents)* Drop an uninstalled app from the recents row
+
+
 ## [1.9.5] - 2026-10-17
 
 ### Added
