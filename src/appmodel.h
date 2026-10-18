@@ -7,9 +7,12 @@
 
 #include <QAbstractListModel>
 #include <QSet>
+#include <QSharedData> // QExplicitlySharedDataPointer (KService::Ptr)
 #include <QString>
 #include <QStringList>
 #include <QVector>
+
+class KService;
 
 /** Data for a single installed application. */
 struct AppEntry {
@@ -64,8 +67,13 @@ public:
     [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     [[nodiscard]] Q_INVOKABLE QString categoryIcon(const QString &category) const;
 
+    /** detectInstallSource() for @p service. */
+    [[nodiscard]] static QString installSourceOf(const QExplicitlySharedDataPointer<KService> &service);
+
     // Pure helpers — testable without constructing the model.
-    [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
+    /** Where an app comes from: "Web App", "Flatpak", "Snap", "AppImage" or
+     *  "System", from its Exec line and its installed .desktop path. */
+    [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &entryPath);
     [[nodiscard]] static QStringList mapCategories(const QStringList &categories);
 
     [[nodiscard]] bool useSystemCategories() const;

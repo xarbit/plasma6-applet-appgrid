@@ -23,6 +23,10 @@ private Q_SLOTS:
     void detectsWebAppFromAppIdFlag();
     void defaultsToSystem();
     void webAppBeatsFlatpak();
+    void nameContainingSnapIsSystem();
+    void nameContainingFlatpakIsSystem();
+    void distroPackageWithFlatpakKeyIsSystem();
+    void copiedFlatpakEntryIsFlatpak();
 
     void mapsKnownCategoryToBuiltinBucket();
     void mapsMultipleCategoriesToBucket();
@@ -92,6 +96,45 @@ void TestAppModelHelpers::webAppBeatsFlatpak()
                  QStringLiteral("flatpak run org.chromium.Chromium --app=https://x"),
                  QStringLiteral("/var/lib/flatpak/exports/share/applications/foo.desktop")),
              QStringLiteral("Web App"));
+}
+
+void TestAppModelHelpers::nameContainingSnapIsSystem()
+{
+    // Seen on a real install with no snapd: a Limine/snapper tool and
+    // Discover's own Snap helper entry are distro packages.
+    QCOMPARE(AppModel::detectInstallSource(QStringLiteral("/usr/bin/limine-snapper-restore"),
+                                           QStringLiteral("/usr/share/applications/limine-snapper-restore.desktop")),
+             QStringLiteral("System"));
+    QCOMPARE(AppModel::detectInstallSource(QStringLiteral("plasma-discover --backends snap-backend"),
+                                           QStringLiteral("/usr/share/applications/org.kde.discover.snap.desktop")),
+             QStringLiteral("System"));
+    QCOMPARE(AppModel::detectInstallSource(QStringLiteral("snapshot"),
+                                           QStringLiteral("/usr/share/applications/org.gnome.Snapshot.desktop")),
+             QStringLiteral("System"));
+}
+
+void TestAppModelHelpers::nameContainingFlatpakIsSystem()
+{
+    QCOMPARE(AppModel::detectInstallSource(QStringLiteral("/usr/bin/flatpak-builder-gui"),
+                                           QStringLiteral("/usr/share/applications/flatpak-builder-gui.desktop")),
+             QStringLiteral("System"));
+}
+
+void TestAppModelHelpers::distroPackageWithFlatpakKeyIsSystem()
+{
+    // podman-desktop from the distro ships upstream's .desktop file, which
+    // carries X-Flatpak; Exec and path say System.
+    QCOMPARE(AppModel::detectInstallSource(QStringLiteral("podman-desktop %U"),
+                                           QStringLiteral("/usr/share/applications/io.podman_desktop.PodmanDesktop.desktop")),
+             QStringLiteral("System"));
+}
+
+void TestAppModelHelpers::copiedFlatpakEntryIsFlatpak()
+{
+    // A Flatpak's .desktop copied to ~/.local/share/applications still runs it.
+    QCOMPARE(AppModel::detectInstallSource(QStringLiteral("/usr/bin/flatpak run --branch=master ch.threema.threema-desktop"),
+                                           QStringLiteral("/home/u/.local/share/applications/ch.threema.threema-desktop.desktop")),
+             QStringLiteral("Flatpak"));
 }
 
 void TestAppModelHelpers::mapsKnownCategoryToBuiltinBucket()

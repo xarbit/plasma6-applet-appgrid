@@ -51,7 +51,6 @@
 #include <QMimeDatabase>
 #include <QProcess>
 #include <QQuickWindow>
-#include <QStandardPaths>
 #include <QTimer>
 #include <QUrl>
 #include <QWindow>
@@ -644,8 +643,7 @@ bool AppGridPlugin::canManageInDiscover(const QString &storageId) const
     // location authoritatively identifies the backend (PackageKit / Flatpak
     // / Snap) — more reliable than the AppStream id, which on its own can't
     // tell apart multiple sources of the same component.
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    const QString backend = DiscoverBackends::forInstallSource(AppModel::installSourceOf(service));
     if (backend.isEmpty() || !DiscoverBackends::isBackendInstalled(backend)) {
         return false;
     }
@@ -676,8 +674,7 @@ void AppGridPlugin::openInDiscover(const QString &storageId)
         return;
     }
 
-    const auto resolvedPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, service->entryPath());
-    const QString backend = DiscoverBackends::forInstallSource(AppModel::detectInstallSource(service->exec(), resolvedPath));
+    const QString backend = DiscoverBackends::forInstallSource(AppModel::installSourceOf(service));
 
     // Target the backend that owns the installed copy so a multi-source app
     // (e.g. Flatpak + distro) opens the right version instead of Discover's

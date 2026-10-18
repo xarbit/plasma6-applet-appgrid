@@ -144,21 +144,35 @@ QStringList AppModel::mapCategories(const QStringList &categories)
     return result.values();
 }
 
-QString AppModel::detectInstallSource(const QString &exec, const QString &resolvedPath)
+QString AppModel::detectInstallSource(const QString &exec, const QString &entryPath)
 {
+    // A web app may itself run in a Flatpak browser; it is still a web app.
     if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id="))) {
         return QStringLiteral("Web App");
     }
-    if (exec.contains(QLatin1String("flatpak")) || resolvedPath.contains(QLatin1String("flatpak"))) {
+    // Whole path segments only: a name merely containing "snap" (snapper,
+    // Snapshot, Discover's snap helper) or "flatpak" is a system app. The
+    // X-Flatpak key is no proof either: distro packages ship upstream's
+    // .desktop file with it (Podman Desktop).
+    if (entryPath.contains(QLatin1String("/flatpak/exports/")) || exec.contains(QLatin1String("flatpak run"))) {
         return QStringLiteral("Flatpak");
     }
-    if (exec.contains(QLatin1String("/snap/")) || resolvedPath.contains(QLatin1String("snap"))) {
+    if (entryPath.contains(QLatin1String("/snapd/desktop/")) || exec.contains(QLatin1String("/snap/"))) {
         return QStringLiteral("Snap");
     }
     if (exec.contains(QLatin1String("appimage"), Qt::CaseInsensitive)) {
         return QStringLiteral("AppImage");
     }
     return QStringLiteral("System");
+}
+
+QString AppModel::installSourceOf(const QExplicitlySharedDataPointer<KService> &service)
+{
+    if (!service) {
+        return {};
+    }
+    // entryPath() is the absolute .desktop path KService resolved.
+    return detectInstallSource(service->exec(), service->entryPath());
 }
 
 bool AppModel::useSystemCategories() const
@@ -209,11 +223,7 @@ void AppModel::loadApplications()
         appEntry.keywords = service->keywords();
         appEntry.comment = service->comment();
 
-        // Detect install source from the exec line and the installed
-        // .desktop path. entryPath() is already the resolved absolute path
-        // (KService applies XDG precedence), so no QStandardPaths::locate()
-        // stat per app is needed — it would just return entryPath() back.
-        appEntry.installSource = detectInstallSource(service->exec(), service->entryPath());
+        appEntry.installSource = installSourceOf(service);
 
         if (systemMode) {
             appEntry.categories.append(category.isEmpty() ? QStringLiteral("Other") : category);
