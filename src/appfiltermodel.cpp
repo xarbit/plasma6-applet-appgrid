@@ -253,6 +253,9 @@ void AppFilterModel::setFavoriteApps(const QStringList &list)
     if (!m_book.setFavorites(list)) {
         return;
     }
+    if (auto *model = qobject_cast<AppModel *>(sourceModel())) {
+        model->setFavoriteApps(list);
+    }
     if (m_showFavoritesOnly) {
         invalidate();
     }
@@ -551,6 +554,11 @@ bool AppFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
         if (m_searchText.isEmpty() || !m_searchShowsHidden) {
             return false;
         }
+    }
+
+    // A favourite the menu doesn't list shows only among the favourites (#224).
+    if (!m_showFavoritesOnly && idx.data(AppModel::OutsideMenuRole).toBool()) {
+        return false;
     }
 
     // Favorites-only filter

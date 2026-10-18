@@ -6,7 +6,9 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QSet>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 /** Data for a single installed application. */
@@ -20,6 +22,9 @@ struct AppEntry {
     QStringList keywords;
     QString comment;
     QString installSource;
+    // A favourite the XDG menu doesn't list (#224): served for the favourites
+    // view only, never in the grid.
+    bool outsideMenu = false;
 };
 
 /**
@@ -45,6 +50,7 @@ public:
         KeywordsRole,
         CommentRole,
         InstallSourceRole,
+        OutsideMenuRole,
     };
 
     explicit AppModel(QObject *parent = nullptr);
@@ -65,6 +71,13 @@ public:
     [[nodiscard]] bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
 
+    /** The favourite storage ids. A favourite the menu doesn't list (an app
+     *  with no categories under a menu file without a catch-all, or one the
+     *  user removed with the menu editor) is still served, flagged
+     *  OutsideMenuRole, so the favourites can show and launch it the way
+     *  Kickoff's do (#224). */
+    void setFavoriteApps(const QStringList &storageIds);
+
 Q_SIGNALS:
     void useSystemCategoriesChanged();
 
@@ -73,10 +86,17 @@ private Q_SLOTS:
 
 private:
     void loadApplications();
+    [[nodiscard]] QStringList favoritesOutsideMenu() const;
 
     QVector<AppEntry> m_apps;
     QStringList m_categories;
     QHash<QString, QString> m_categoryMenuPaths;
     QHash<QString, QString> m_categoryIcons;
     bool m_useSystemCategories = false;
+    // Set once the first load ran; setFavoriteApps() only reloads after that.
+    bool m_loaded = false;
+    QStringList m_favoriteApps;
+    // Storage ids the menu walk listed, and the favourites it left out.
+    QSet<QString> m_placed;
+    QStringList m_outsideMenu;
 };

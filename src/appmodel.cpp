@@ -18,6 +18,8 @@
 
 #include <QTimer>
 
+#include <optional>
+
 AppModel::AppModel(QObject *parent)
     : QAbstractListModel(parent)
 {
@@ -67,6 +69,8 @@ QVariant AppModel::data(const QModelIndex &index, int role) const
         return app.comment;
     case InstallSourceRole:
         return app.installSource;
+    case OutsideMenuRole:
+        return app.outsideMenu;
     default:
         return {};
     }
@@ -85,6 +89,7 @@ QHash<int, QByteArray> AppModel::roleNames() const
         {KeywordsRole, "keywords"},
         {CommentRole, "comment"},
         {InstallSourceRole, "installSource"},
+        {OutsideMenuRole, "outsideMenu"},
     };
 }
 
@@ -182,6 +187,43 @@ void AppModel::loadApplications()
     const bool systemMode = m_useSystemCategories;
     QVector<AppEntry> occurrences;
 
+    const auto entryFor = [systemMode](const KService::Ptr &service, const QString &category) -> std::optional<AppEntry> {
+        if (!service->isApplication()) {
+            return std::nullopt;
+        }
+        if (service->noDisplay() || service->exec().isEmpty()) {
+            return std::nullopt;
+        }
+
+        const QString storageId = service->storageId();
+        if (storageId.isEmpty()) {
+            return std::nullopt;
+        }
+
+        AppEntry appEntry;
+        appEntry.name = service->name();
+        appEntry.icon = service->icon();
+        appEntry.desktopFile = service->entryPath();
+        appEntry.genericName = service->genericName();
+        appEntry.storageId = storageId;
+        appEntry.keywords = service->keywords();
+        appEntry.comment = service->comment();
+
+        // Detect install source from the exec line and the installed
+        // .desktop path. entryPath() is already the resolved absolute path
+        // (KService applies XDG precedence), so no QStandardPaths::locate()
+        // stat per app is needed — it would just return entryPath() back.
+        appEntry.installSource = detectInstallSource(service->exec(), service->entryPath());
+
+        if (systemMode) {
+            appEntry.categories.append(category.isEmpty() ? QStringLiteral("Other") : category);
+        } else {
+            appEntry.categories = mapCategories(service->categories());
+        }
+
+        return appEntry;
+    };
+
     std::function<void(KServiceGroup::Ptr, const QString &)> walkGroup;
     walkGroup = [&](KServiceGroup::Ptr group, const QString &category) {
         if (!group || !group->isValid()) {
@@ -221,42 +263,10 @@ void AppModel::loadApplications()
                 continue;
             }
 
-            auto service = KService::Ptr(static_cast<KService *>(entry.data()));
-
-            if (!service->isApplication()) {
-                continue;
+            if (auto appEntry = entryFor(KService::Ptr(static_cast<KService *>(entry.data())), category)) {
+                m_placed.insert(appEntry->storageId);
+                occurrences.append(*appEntry);
             }
-            if (service->noDisplay() || service->exec().isEmpty()) {
-                continue;
-            }
-
-            const QString storageId = service->storageId();
-            if (storageId.isEmpty()) {
-                continue;
-            }
-
-            AppEntry appEntry;
-            appEntry.name = service->name();
-            appEntry.icon = service->icon();
-            appEntry.desktopFile = service->entryPath();
-            appEntry.genericName = service->genericName();
-            appEntry.storageId = storageId;
-            appEntry.keywords = service->keywords();
-            appEntry.comment = service->comment();
-
-            // Detect install source from the exec line and the installed
-            // .desktop path. entryPath() is already the resolved absolute path
-            // (KService applies XDG precedence), so no QStandardPaths::locate()
-            // stat per app is needed — it would just return entryPath() back.
-            appEntry.installSource = detectInstallSource(service->exec(), service->entryPath());
-
-            if (systemMode) {
-                appEntry.categories.append(category.isEmpty() ? QStringLiteral("Other") : category);
-            } else {
-                appEntry.categories = mapCategories(service->categories());
-            }
-
-            occurrences.append(appEntry);
         }
     };
 
@@ -265,6 +275,17 @@ void AppModel::loadApplications()
     auto assembled = AppModelAssembly::assemble(occurrences, systemMode);
     m_apps = std::move(assembled.apps);
     m_categories = std::move(assembled.categories);
+
+    // Favourites the menu leaves out: listed after the menu's apps, and kept
+    // out of m_categories so no category shows for an app the grid hides.
+    m_outsideMenu = favoritesOutsideMenu();
+    for (const QString &storageId : std::as_const(m_outsideMenu)) {
+        if (auto appEntry = entryFor(KService::serviceByStorageId(storageId), QString())) {
+            appEntry->outsideMenu = true;
+            m_apps.append(*appEntry);
+        }
+    }
+    m_loaded = true;
 
     // Simple mode: the bar shows translated bucket names, so key the icon
     // lookup by the same translated label. (System mode already captured each
@@ -324,8 +345,34 @@ void AppModel::reload()
     m_categories.clear();
     m_categoryMenuPaths.clear();
     m_categoryIcons.clear();
+    m_placed.clear();
     loadApplications();
     endResetModel();
+}
+
+void AppModel::setFavoriteApps(const QStringList &storageIds)
+{
+    if (m_favoriteApps == storageIds) {
+        return;
+    }
+    m_favoriteApps = storageIds;
+    // Nearly every favourite is a menu app already listed; reload only when
+    // the favourites the menu leaves out change. Before the first load there
+    // is nothing to update: that load reads the list.
+    if (m_loaded && favoritesOutsideMenu() != m_outsideMenu) {
+        reload();
+    }
+}
+
+QStringList AppModel::favoritesOutsideMenu() const
+{
+    QStringList ids;
+    for (const QString &storageId : m_favoriteApps) {
+        if (!m_placed.contains(storageId) && !ids.contains(storageId) && KService::serviceByStorageId(storageId)) {
+            ids.append(storageId);
+        }
+    }
+    return ids;
 }
 
 QString AppModel::categoryMenuPath(const QString &category) const
