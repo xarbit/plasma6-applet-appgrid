@@ -206,6 +206,45 @@ TestCase {
         configStub.showCategoryBar = false
     }
 
+    function findSearchBar(item) {
+        if (!item) return null
+        if (item.field !== undefined && item.text !== undefined && item.field && item.field.text !== undefined) return item
+        for (var i = 0; i < item.children.length; ++i) {
+            var bar = findSearchBar(item.children[i])
+            if (bar) return bar
+        }
+        return null
+    }
+
+    // The category bar hides while searching; the panel keeps its size, with
+    // the bar on or off in the settings.
+    function test_searchingKeepsThePanelSize_data() {
+        return [
+            { tag: "center, category bar", catBar: true, nativePopup: false },
+            { tag: "center, no category bar", catBar: false, nativePopup: false },
+            { tag: "popup, category bar", catBar: true, nativePopup: true },
+        ]
+    }
+
+    function test_searchingKeepsThePanelSize(data) {
+        configStub.showCategoryBar = data.catBar
+        var p = make()
+        p.nativePopup = data.nativePopup
+        p.availableWidth = 4000
+        p.availableHeight = 4000
+        waitForRendering(p)
+        var before = data.nativePopup ? p.implicitHeight : p.height
+        var bar = findSearchBar(p)
+        verify(bar, "search bar found")
+        bar.field.text = "kate"
+        verify(p.isSearching, "panel is searching")
+        waitForRendering(p)
+        compare(data.nativePopup ? p.implicitHeight : p.height, before)
+        bar.field.text = ""
+        p.destroy()
+        configStub.showCategoryBar = false
+    }
+
     // The decoupling milestone: GridPanel constructs with no Plasmoid.
     function test_instantiatesFromStubs() {
         var p = make()
