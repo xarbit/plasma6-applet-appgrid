@@ -212,7 +212,14 @@ Kirigami.ShadowedRectangle {
                                           Kirigami.Units.gridUnit, Kirigami.Units.smallSpacing, densityScale)
 
     readonly property real panelMargin: nativePopup ? Kirigami.Units.largeSpacing : Kirigami.Units.largeSpacing * 2
-    readonly property real headerHeight: Kirigami.Units.gridUnit * 5
+    // Header estimate, including the category bar block (the bar and its two
+    // dividers, each followed by the layout spacing). A hidden item takes no
+    // space in the ColumnLayout, so take the block out when the bar is off;
+    // otherwise its space went to the grid, which then showed part of an
+    // extra row (#205).
+    readonly property real catBarBlockHeight: catBarTopDivider.implicitHeight + categoryBar.implicitHeight
+        + catBarBottomDivider.implicitHeight + Kirigami.Units.largeSpacing * 3
+    readonly property real headerHeight: Kirigami.Units.gridUnit * 5 - (showCatBar ? 0 : catBarBlockHeight)
     readonly property real panelWidth: estCellWidth * columns + panelMargin * 2
     readonly property real panelHeight: estCellHeight * rows + panelMargin * 2 + headerHeight
     // Compact mode height — snug fit around the header row (search +
@@ -764,6 +771,7 @@ Kirigami.ShadowedRectangle {
 
         // -- Category bar --
         HorizontalDivider {
+            id: catBarTopDivider
             Layout.fillWidth: true
             visible: panel.showCatBar
             opacity: panel.cfgShowDividers ? 1 : 0
@@ -813,6 +821,7 @@ Kirigami.ShadowedRectangle {
         }
 
         HorizontalDivider {
+            id: catBarBottomDivider
             Layout.fillWidth: true
             visible: panel.showCatBar
             opacity: panel.cfgShowDividers ? 1 : 0

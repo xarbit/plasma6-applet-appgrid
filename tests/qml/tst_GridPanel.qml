@@ -167,6 +167,45 @@ TestCase {
         return obj
     }
 
+    function findGrid(item) {
+        if (!item) return null
+        if (item.cellHeight !== undefined && item.sortFavoritesAlphabetically !== undefined) return item
+        for (var i = 0; i < item.children.length; ++i) {
+            var grid = findGrid(item.children[i])
+            if (grid) return grid
+        }
+        return null
+    }
+
+    // #205: the grid shows the configured number of rows whether or not the
+    // category bar is shown, in the centred window and the panel popup.
+    function test_visibleRowsHonoured_data() {
+        return [
+            { tag: "center, category bar", catBar: true, nativePopup: false },
+            { tag: "center, no category bar", catBar: false, nativePopup: false },
+            { tag: "popup, category bar", catBar: true, nativePopup: true },
+            { tag: "popup, no category bar", catBar: false, nativePopup: true },
+        ]
+    }
+
+    function test_visibleRowsHonoured(data) {
+        configStub.showCategoryBar = data.catBar
+        var p = make()
+        p.nativePopup = data.nativePopup
+        p.availableWidth = 4000
+        p.availableHeight = 4000
+        if (data.nativePopup) {
+            p.width = p.implicitWidth
+            p.height = p.implicitHeight
+        }
+        var grid = findGrid(p)
+        verify(grid, "grid found")
+        waitForRendering(p)
+        fuzzyCompare(grid.height / grid.cellHeight, configStub.gridRows, 0.1)
+        p.destroy()
+        configStub.showCategoryBar = false
+    }
+
     // The decoupling milestone: GridPanel constructs with no Plasmoid.
     function test_instantiatesFromStubs() {
         var p = make()
