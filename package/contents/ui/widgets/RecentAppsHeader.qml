@@ -59,6 +59,18 @@ Column {
 
     spacing: Kirigami.Units.smallSpacing
 
+    // Bumped when the app list reloads (an install or uninstall), so each
+    // tile reads its app again. getByStorageId() is a call, which a binding
+    // only re-runs when its arguments change: the tile of an uninstalled app
+    // kept its name and icon until the recents changed.
+    property int _appsRevision: 0
+    Connections {
+        target: recentHeader.appsModel
+        function onModelReset() {
+            recentHeader._appsRevision++
+        }
+    }
+
     SectionLabel {
         leftPadding: Kirigami.Units.largeSpacing
         text: i18nd("dev.xarbit.appgrid", "Recently Used")
@@ -73,7 +85,8 @@ Column {
                 id: recentDelegate
                 required property string modelData
                 required property int index
-                readonly property var appData: recentHeader.appsModel ? recentHeader.appsModel.getByStorageId(modelData) : ({})
+                readonly property var appData: recentHeader.appsModel && recentHeader._appsRevision >= 0
+                    ? recentHeader.appsModel.getByStorageId(modelData) : ({})
                 width: recentHeader.cellWidth
                 height: recentHeader.cellHeight
                 visible: appData.name !== undefined
