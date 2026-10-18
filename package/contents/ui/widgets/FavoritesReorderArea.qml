@@ -64,6 +64,15 @@ DropArea {
         return gridView.findFavoriteRow(_sourceId) < 0
     }
 
+    // Rows of the grid are rows of the stored favourites order only while the
+    // grid shows the favourites model itself. Elsewhere (the All tab, a
+    // category, alphabetically sorted favourites) a reorder would move stored
+    // favourites by rows of another view and scramble the manual order.
+    function canReorder() {
+        return gridView.favoritesActive && !!gridView.sharedFavoritesModel
+            && gridView.model === gridView.sharedFavoritesModel
+    }
+
     // Multi-drag (selection of 2+ favorites) is treated as drag-OUT only.
     // Internal reorder of N items has ambiguous semantics (non-contiguous
     // selection, where do the gaps land?) and most file managers behave the
@@ -131,6 +140,7 @@ DropArea {
         }
 
         // --- Reorder existing favorite (or move the just-inserted preview) ---
+        if (!canReorder()) return
         const liveSourceRow = _sourceId ? gridView.findFavoriteRow(_sourceId) : -1
         if (liveSourceRow < 0) return
         if (_source.sourceItem) _source.sourceItem.gridRow = liveSourceRow
