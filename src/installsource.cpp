@@ -7,15 +7,16 @@
 
 namespace InstallSource
 {
-QString detect(const QString &exec, const QString &entryPath, const QString &flatpakId, const QString &snapName)
+QString detect(const QString &exec, const QString &entryPath, const QString &snapName)
 {
     // A web app may itself run in a Flatpak browser; it is still a web app.
     if (exec.contains(QLatin1String("--app=")) || exec.contains(QLatin1String("--app-id="))) {
         return QStringLiteral("Web App");
     }
     // Whole path segments only: a name merely containing "snap" (snapper,
-    // Snapshot) or "flatpak" is a system app.
-    if (!flatpakId.isEmpty() || entryPath.contains(QLatin1String("/flatpak/exports/")) || exec.contains(QLatin1String("flatpak run"))) {
+    // Snapshot) or "flatpak" is a system app. Not the X-Flatpak key either:
+    // the distro's Podman Desktop package ships upstream's .desktop with it.
+    if (entryPath.contains(QLatin1String("/flatpak/exports/")) || exec.contains(QLatin1String("flatpak run"))) {
         return QStringLiteral("Flatpak");
     }
     if (!snapName.isEmpty() || entryPath.contains(QLatin1String("/snapd/desktop/")) || exec.contains(QLatin1String("/snap/"))) {
@@ -33,9 +34,6 @@ QString of(const KService::Ptr &service)
         return {};
     }
     // entryPath() is the absolute .desktop path KService resolved.
-    return detect(service->exec(),
-                  service->entryPath(),
-                  service->property<QString>(QStringLiteral("X-Flatpak")),
-                  service->property<QString>(QStringLiteral("X-SnapInstanceName")));
+    return detect(service->exec(), service->entryPath(), service->property<QString>(QStringLiteral("X-SnapInstanceName")));
 }
 }

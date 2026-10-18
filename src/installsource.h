@@ -15,11 +15,11 @@
  */
 namespace InstallSource
 {
-/** The source of the app with @p exec, installed at @p entryPath. Flatpak
- *  and snapd mark the desktop files they export with @p flatpakId
- *  (X-Flatpak) and @p snapName (X-SnapInstanceName); without them the
- *  export dirs and the exec line tell. */
-[[nodiscard]] QString detect(const QString &exec, const QString &entryPath, const QString &flatpakId = {}, const QString &snapName = {});
+/** The source of the app with @p exec, installed at @p entryPath. snapd
+ *  marks the desktop files it exports with @p snapName (X-SnapInstanceName);
+ *  otherwise the export dirs and the exec line tell. Flatpak's X-Flatpak key
+ *  is no proof: distro packages ship upstream's .desktop file with it. */
+[[nodiscard]] QString detect(const QString &exec, const QString &entryPath, const QString &snapName = {});
 
 /** detect() for @p service. */
 [[nodiscard]] QString of(const KService::Ptr &service);

@@ -24,14 +24,17 @@ private Q_SLOTS:
         QCOMPARE(detect(QStringLiteral("gedit"), QStringLiteral("/var/lib/flatpak/exports/share/applications/gedit.desktop")), QStringLiteral("Flatpak"));
         QCOMPARE(detect(QStringLiteral("gedit"), QStringLiteral("/home/u/.local/share/flatpak/exports/share/applications/gedit.desktop")),
                  QStringLiteral("Flatpak"));
-        QCOMPARE(detect(QStringLiteral("gedit"), QStringLiteral("/somewhere/gedit.desktop"), QStringLiteral("org.gnome.Gedit")), QStringLiteral("Flatpak"));
+        // A distro package that ships upstream's .desktop file, X-Flatpak key
+        // and all (Podman Desktop), is a system app.
+        QCOMPARE(detect(QStringLiteral("podman-desktop %U"), QStringLiteral("/usr/share/applications/io.podman_desktop.PodmanDesktop.desktop")),
+                 QStringLiteral("System"));
     }
 
     void snap()
     {
         QCOMPARE(detect(QStringLiteral("/snap/code/123/bin/code"), QStringLiteral("/usr/share/applications/code.desktop")), QStringLiteral("Snap"));
         QCOMPARE(detect(QStringLiteral("code"), QStringLiteral("/var/lib/snapd/desktop/applications/code_code.desktop")), QStringLiteral("Snap"));
-        QCOMPARE(detect(QStringLiteral("code"), QStringLiteral("/somewhere/code.desktop"), {}, QStringLiteral("code")), QStringLiteral("Snap"));
+        QCOMPARE(detect(QStringLiteral("code"), QStringLiteral("/somewhere/code.desktop"), QStringLiteral("code")), QStringLiteral("Snap"));
     }
 
     // A name that only contains "snap" or "flatpak" is not a sandboxed app.
